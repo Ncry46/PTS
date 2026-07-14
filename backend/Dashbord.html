@@ -1,0 +1,427 @@
+<!DOCTYPE html><html class="light" lang="th" style="width: 1241px; height: 981px; overflow: hidden; position: relative;"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>PTS Learning Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<!-- Tailwind Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#591128",
+                    "secondary-fixed-dim": "#b3ceab",
+                    "primary-fixed-dim": "#ffb1c1",
+                    "on-secondary": "#ffffff",
+                    "on-background": "#1a1930",
+                    "tertiary-container": "#55a56b",
+                    "inverse-surface": "#302e46",
+                    "on-secondary-container": "#526b4d",
+                    "surface-container-low": "#f6f1ff",
+                    "primary": "#974258",
+                    "on-primary-fixed-variant": "#7a2b41",
+                    "secondary": "#4c6548",
+                    "primary-container": "#d9778e",
+                    "tertiary": "#166c39",
+                    "surface-container-highest": "#e3dfff",
+                    "on-tertiary-container": "#003617",
+                    "on-secondary-fixed-variant": "#354d31",
+                    "inverse-on-surface": "#f3eeff",
+                    "surface-container-high": "#eae5ff",
+                    "on-primary-fixed": "#3f0017",
+                    "primary-fixed": "#ffd9df",
+                    "tertiary-fixed": "#a2f5b4",
+                    "on-error": "#ffffff",
+                    "on-surface-variant": "#544245",
+                    "surface-variant": "#e3dfff",
+                    "on-secondary-fixed": "#0a2009",
+                    "surface-tint": "#974258",
+                    "surface-dim": "#dbd6f6",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#fcf8ff",
+                    "outline": "#867275",
+                    "background": "#fcf8ff",
+                    "surface-container": "#f0ebff",
+                    "surface": "#fcf8ff",
+                    "error": "#ba1a1a",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#005227",
+                    "on-surface": "#1a1930",
+                    "on-error-container": "#93000a",
+                    "inverse-primary": "#ffb1c1",
+                    "outline-variant": "#d9c1c4",
+                    "on-tertiary-fixed": "#00210c",
+                    "error-container": "#ffdad6",
+                    "secondary-container": "#ceeac5",
+                    "tertiary-fixed-dim": "#87d899",
+                    "secondary-fixed": "#ceeac5"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px",
+                    "20px": "20px",
+                    "24px": "24px"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "xl": "80px",
+                    "container-max": "1200px",
+                    "lg": "48px",
+                    "sm": "12px",
+                    "md": "24px",
+                    "gutter": "24px",
+                    "margin-mobile": "16px",
+                    "base": "8px"
+            },
+            "fontFamily": {
+                    "body-lg": ["IBM Plex Sans Thai"],
+                    "body-sm": ["IBM Plex Sans Thai"],
+                    "body-md": ["IBM Plex Sans Thai"],
+                    "label-md": ["IBM Plex Sans Thai"],
+                    "headline-md": ["IBM Plex Sans Thai"],
+                    "headline-xl": ["IBM Plex Sans Thai"],
+                    "headline-lg": ["IBM Plex Sans Thai"],
+                    "headline-lg-mobile": ["IBM Plex Sans Thai"],
+                    "headline-sm": ["IBM Plex Sans Thai"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                    "headline-md": ["24px", {"lineHeight": "34px", "fontWeight": "600"}],
+                    "headline-xl": ["40px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["28px", {"lineHeight": "38px", "fontWeight": "600"}],
+                    "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #FAFAFA;
+            font-family: 'IBM Plex Sans Thai', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        .soft-shadow {
+            box-shadow: 0 10px 30px -5px rgba(151, 66, 88, 0.05);
+        }
+        .glass-header {
+            background: rgba(252, 248, 255, 0.8);
+            backdrop-filter: blur(12px);
+        }
+        .circular-progress {
+            background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
+                        conic-gradient(#974258 75%, #f4c7d3 0);
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<div class="flex min-h-screen">
+<!-- SideNavBar -->
+<aside class="h-screen w-72 hidden lg:flex flex-col sticky left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30">
+<div class="flex flex-col gap-base p-md h-full">
+<!-- Brand Anchor -->
+<div class="flex items-center gap-sm mb-lg px-xs">
+<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-primary-container/30 shrink-0">
+<img alt="User Profile" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLtzIYU184zJePCq2mE7-nvwDKiy7lZKnTwB8PIhhdygm6F3F2XJpgOVEc2ewjmifgCBf3AYL3_i4w1VA69NtLJg_PMxPn485q444V4n3u8rPRRJfeB34PqTkUr50U6Z0YfauJY18prKwe4761TB3IJ-YZF3Vcm7ygM3mFY5PnqrJYwyrC3MLIGL48QX8UZ-KshQvoHEwpaczEve-p2x64tBTOAhMTL-x3dL_lWawpBRmXhoXiQje0_bvW4">
+</div>
+<div class="overflow-hidden">
+<h1 class="font-headline-sm text-headline-sm font-bold text-on-primary-container leading-tight truncate">คุณ ปลาย</h1>
+<p class="text-[10px] text-on-surface-variant truncate">Executive Assistant</p>
+</div>
+</div>
+<!-- Navigation Links -->
+<nav class="flex flex-col gap-xs flex-grow"><a class="flex items-center gap-sm bg-secondary-container text-on-secondary-container rounded-xl px-md py-sm font-bold shadow-sm transition-transform active:scale-98" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">หน้าหลัก</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+<span class="font-label-md text-label-md">คอร์สของฉัน</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<span class="material-symbols-outlined">calendar_today</span>
+<span class="font-label-md text-label-md">ตารางเรียน</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<span class="material-symbols-outlined">bookmark</span>
+<span class="font-label-md text-label-md">รายการโปรด</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-label-md text-label-md">ชำระเงิน</span>
+</a>
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<span class="material-symbols-outlined">workspace_premium</span>
+<span class="font-label-md text-label-md">ใบประกาศ</span>
+</a></nav>
+<!-- Footer Tab -->
+<div class="mt-auto border-t border-outline-variant/30 pt-md">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98 mb-xs" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">ตั้งค่า</span>
+</a><button class="w-full flex items-center gap-sm text-error hover:bg-error-container/20 rounded-xl px-md py-sm transition-all">
+<span class="material-symbols-outlined">logout</span>
+<span class="font-label-md text-label-md">ออกจากระบบ</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-grow min-w-0 pb-xl lg:pb-md">
+<!-- Top Bar / Header -->
+<header class="bg-white sticky top-0 z-50 border-b border-outline-variant/10">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-lg py-sm max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-xl">
+<div class="flex items-center gap-md">
+<div class="flex items-center gap-2"><img src="https://lh3.googleusercontent.com/aida/AP1WRLt-sz504jrNcvfWLeUda4incT1iEaU21RRGLbFll2RyAA6vU5MSNSaRKv9-8BxwZyT5eRXjf-PfbRss04k05K51TK15JrRGFGESsDYnmDobY0oH1UlvYQz9uYU86g3Mtd4l4tmi9HevjdHgKUPk7y4VoGkwVFnUanSfzvq2D8e9Wv4CxCLppw5EXE3dXVB3sGxp4JUfoizfO0fKr3WI5s6b3Bb7FPqR3IFpzekgPHVQXhX2xsdhY2q1Zfph" alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain"></div>
+</div>
+<nav class="hidden lg:flex items-center gap-md font-body-md text-body-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">หน้าแรก</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">คอร์สเรียน</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="#">คอมมูนิตี้</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-all active:scale-95">
+<span class="material-symbols-outlined text-outline">notifications</span>
+</button>
+<div class="flex items-center gap-sm cursor-pointer hover:bg-surface-container-low p-1 rounded-full transition-all">
+<div class="flex flex-col items-end hidden md:flex">
+<span class="text-label-md font-bold text-on-surface">คุณ ปลาย</span>
+<span class="text-[10px] text-on-surface-variant/60"><span style="color: rgb(151, 66, 88); font-weight: 600; letter-spacing: 0.5px; text-align: right; text-transform: uppercase; background-color: rgba(252, 248, 255, 0.9);" class="">Executive Assistant</span></span>
+</div>
+<img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLuRlQEihIstMfcaCkBnQuwjKoebHnBkf6eAJ0qO6topKT4B7OI3sNS2gqSnhdbrI2mDONZaKH-Lmyt-xsMptOK2yFZ2EI4nPghjirtLlnFKqNapj9bM4TL7LcWwCmIX9HFT2paVcyon_bFYdvJ7A_ytAT2rOuhpQioENuNDvlC1Bz2gvMm-wnfQQckSMai9STrdwaKcpOHQjr03z1cMUZNCH_BbkigqMMYUB0ntPynWtz6jfVtISkgJn3cg">
+</div>
+</div>
+</div>
+</header>
+<div class="px-margin-mobile md:px-lg py-md max-w-container-max mx-auto space-y-lg">
+<!-- Stats Overview (Asymmetric Layout) -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-md">
+<div class="md:col-span-1 bg-surface-container-lowest p-md rounded-20px soft-shadow flex flex-col items-center justify-center text-center" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="relative w-24 h-24 circular-progress rounded-full flex items-center justify-center mb-base">
+<span class="font-headline-sm text-headline-sm text-primary">75%</span>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant">ความคืบหน้าภาพรวม</p>
+</div>
+<div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-md">
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center gap-md" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="w-12 h-12 bg-secondary-container rounded-2xl flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">schedule</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">42 ชม.</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ชั่วโมงเรียนสะสม</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center gap-md" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">play_lesson</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">3 คอร์ส</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">กำลังเรียนอยู่</p>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center gap-md" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="w-12 h-12 bg-tertiary-fixed rounded-2xl flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">task_alt</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">12 คอร์ส</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">เรียนจบแล้ว</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
+<!-- Recently Learning & Schedule (L-Side) -->
+<div class="lg:col-span-2 space-y-lg">
+<!-- Learning Card -->
+<div>
+<div class="flex justify-between items-end mb-md">
+<h3 class="font-headline-sm text-headline-sm">คอร์สที่กำลังเรียนล่าสุด</h3>
+<a class="text-primary font-label-md text-label-md hover:underline" href="#">ดูทั้งหมด</a>
+</div>
+<div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden group" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="flex flex-col md:flex-row h-full">
+<div class="md:w-1/3 relative h-48 md:h-auto overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent z-10"></div>
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" data-alt="A modern and high-end office desk workspace with a sleek laptop, a planner with a rose gold pen, and a small vase of pink peonies. The lighting is soft and airy, creating a professional yet feminine atmosphere for an executive assistant's learning course image. Soft pink and cream tones dominate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1toQo3wOnBSZHMdibpLqemkNS260NVegUXEmuaY6oYLAK2FQaR1Kjh1RZ1G0JIYm3wGbCxaVxHV4FUBXgpdF9AaQL7zovzusFKjHeiILUHYpIH97xgxO_D6pXF71CTIaoW6eeS-zzVNal8I2izao02gfV0BmTVC7yLvOBWCUMHhXCsUtwpoH0BFkfKCys8OrTKArA-ICBvVWSy4tF82VdtBz2R_qTjV8t5vUW58YVcnrbmZ3J4MUJ9w">
+<div class="absolute bottom-4 left-4 z-20">
+<span class="bg-primary text-white text-[12px] px-sm py-1 rounded-full font-bold">ภาษาอังกฤษ</span>
+</div>
+</div>
+<div class="p-md md:w-2/3 flex flex-col justify-between">
+<div>
+<h4 class="font-headline-sm text-headline-sm mb-xs">Business English for Executive Assistants</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md line-clamp-2">เทคนิคการสื่อสารภาษาอังกฤษอย่างมืออาชีพสำหรับการนัดหมายและจัดการตารางงานของผู้บริหารระดับสูง</p>
+</div>
+<div class="space-y-sm">
+<div class="flex justify-between items-center text-label-md">
+<span class="text-on-surface-variant">ความคืบหน้า</span>
+<span class="text-primary font-bold">65%</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 65%;"></div>
+</div>
+<button class="mt-md w-full md:w-auto bg-primary text-white px-lg py-sm rounded-full font-bold hover:opacity-90 active:scale-95 transition-all">
+                                                เรียนต่อจากที่ค้างไว้
+                                            </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Schedule List -->
+<div>
+<div class="flex justify-between items-end mb-md">
+<h3 class="font-headline-sm text-headline-sm">ตารางเรียนที่กำลังจะมาถึง</h3>
+</div>
+<div class="space-y-sm">
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-primary" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="flex items-center gap-md">
+<div class="text-center min-w-[50px]">
+<p class="text-[12px] text-on-surface-variant uppercase">พฤ.</p>
+<p class="font-headline-sm text-headline-sm text-primary">15</p>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">Workshop: Time Management</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">10:00 - 12:00 น. | ผ่าน Zoom</p>
+</div>
+</div>
+<button class="text-primary border border-primary/20 px-md py-1 rounded-full text-label-md hover:bg-primary/5 transition-colors">เข้าห้องเรียน</button>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-secondary" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="flex items-center gap-md">
+<div class="text-center min-w-[50px]">
+<p class="text-[12px] text-on-surface-variant uppercase">ศ.</p>
+<p class="font-headline-sm text-headline-sm text-secondary">16</p>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">Advanced Excel for Reports</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">13:30 - 15:30 น. | บทเรียนสด</p>
+</div>
+</div>
+<span class="text-on-surface-variant font-label-md text-label-md">รอดำเนินการ</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Sidebar News/Notifications (R-Side) -->
+<div class="space-y-lg"><div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="p-md">
+<div class="flex justify-between items-center mb-sm">
+<h3 class="font-label-md text-label-md font-bold text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]">forum</span>
+Community Feed
+</h3>
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">3 New</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">ร่วมพูดคุยและแลกเปลี่ยนเทคนิคกับเพื่อนร่วมอาชีพในคอมมูนิตี้</p>
+<a href="#" class="flex items-center justify-center gap-xs w-full bg-primary/5 text-primary py-2 rounded-xl font-bold text-label-md hover:bg-primary/10 transition-colors">
+เข้าสู่ฟีดคอมมูนิตี้
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<div>
+
+<div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+
+
+</div>
+</div>
+<!-- Mini CTA / Promotion -->
+<div class="relative overflow-hidden rounded-24px bg-primary p-md text-white soft-shadow h-48 flex flex-col justify-end" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+
+<div class="relative z-10">
+<h4 class="font-headline-sm text-headline-sm mb-xs">ปลดล็อกศักยภาพสูงสุด</h4>
+<p class="font-body-sm text-body-sm opacity-90 mb-md">สมัครสมาชิก Pro เพื่อเข้าถึงคอร์สพิเศษมากกว่า 50 รายการ</p>
+<button class="bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูรายละเอียด</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Navigation (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/95 dark:bg-surface-dim/95 backdrop-blur-lg lg:hidden rounded-t-xl shadow-lg">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined">play_circle</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined">event_note</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<span class="material-symbols-outlined">person</span>
+</a>
+</nav>
+</main>
+</div>
+<script>
+        // Simple Micro-interaction for hover states on cards
+        document.querySelectorAll('.soft-shadow').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-4px)';
+                card.style.transition = 'transform 0.3s ease-out, box-shadow 0.3s ease-out';
+                card.style.boxShadow = '0 20px 40px -10px rgba(151, 66, 88, 0.1)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+                card.style.boxShadow = '0 10px 30px -5px rgba(151, 66, 88, 0.05)';
+            });
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body></html>
