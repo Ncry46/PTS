@@ -3,9 +3,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>สมัครสมาชิก | PTS Learning</title>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-<!-- Tailwind Configuration -->
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -115,7 +114,6 @@
     </style>
 </head>
 <body class="min-h-screen bg-surface flex flex-col">
-<!-- Top Navigation Bar -->
 <nav class="shadow-sm full-width top-0 sticky z-50 bg-white">
         <div class="flex justify-between items-center w-full px-margin-mobile md:px-lg py-sm max-w-container-max mx-auto gap-lg">
             <div class="flex items-center gap-md"><div class="flex items-center gap-sm"><img alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AP1WRLuMaoVMkkHPOqMuezhx_admymCweA1objiv0OHkPk-lTEzaUuVOlfWWBzt6yMdTNnZqQKzwO1q6jfoIdrhA_MQbNDdQvtgUzkqwMzriL4RqAW25IS6Kog1IFRW-TPC7jBiZb5CpAYL_V06l4Xekg0kGPa_LoMJwbVOmGSgp4FsJkui_aupBGRggcJ-Z2bc784Hf3Rz-g401nq9ei08h0a64KIgoSi5j1LwgO5ZBAIf0vHREbfvD0R5v2sc"/></div><div class="hidden lg:flex gap-md ml-lg whitespace-nowrap">
@@ -129,9 +127,7 @@
                 <a href="Register.html" class="hidden md:block px-6 py-2 bg-primary text-white rounded-full text-label-md font-label-md hover:brightness-110 transition-all shadow-md shadow-primary/20 font-bold whitespace-nowrap">สมัครสมาชิก</a>
         </div>
 </nav>
-<!-- Main Content: Split Screen Layout -->
 <main class="flex-grow flex items-center justify-center p-margin-mobile md:p-lg pt-md"><div class="w-full max-w-[1000px] bg-white rounded-[32px] soft-shadow improved-border overflow-hidden flex flex-col md:flex-row">
-<!-- Left Side: Image Banner -->
 <div class="hidden md:block md:w-1/2 relative">
 <img alt="Professional Assistant" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLu61qFiJeJEdBsvnElBbonj85VUvMdzq_XrVF21KxKkp_YNxmc9A2L_2cNOND_iBUu24i6XFezP8q401jYiQSX3wIlJrdDezXi95jI4Nk47qwt2eTHnMbOuafVPyQgI1PFH0kywy8GICpZQ6qOHtySgxqGHglfTynq9PqZv9jYIAfzzCMmQ814drzgVEgwKY0Gi6m-lq9gx5F7Q0puDdj1Oj_3fdFREsgDmHdBICrKRNg8RzK6sS6EhwAZ0">
 <div class="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/20 to-transparent"></div>
@@ -140,7 +136,6 @@
 <p class="font-body-sm text-body-sm opacity-90">เรียนรู้ทักษะที่จำเป็นสำหรับการเป็น Personal Assistant ระดับสากล</p>
 </div>
 </div>
-<!-- Right Side: Form -->
 <div class="w-full md:w-1/2 p-lg md:p-lg">
 <div class="text-center mb-md">
 <h1 class="font-headline-md text-headline-md text-on-surface mb-xs">สร้างบัญชีใหม่</h1>
@@ -151,14 +146,14 @@
 <label class="font-label-md text-label-md text-on-surface-variant" for="fullname">ชื่อ-นามสกุล</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">person</span>
-<input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="fullname" placeholder="พิมพ์ชื่อและนามสกุลของคุณ" type="text">
+<input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="fullname" placeholder="พิมพ์ชื่อและนามสกุลของคุณ" type="text" required>
 </div>
 </div>
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="email">อีเมล</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
-<input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="email" placeholder="example@email.com" type="email">
+<input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="email" placeholder="example@email.com" type="email" required>
 </div>
 </div>
 <div class="space-y-xs">
@@ -172,9 +167,9 @@
 <label class="font-label-md text-label-md text-on-surface-variant" for="password">รหัสผ่าน</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
-<input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="password" placeholder="••••••••" type="password">
-<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
-<span class="material-symbols-outlined">visibility</span>
+<input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="password" placeholder="••••••••" type="password" required>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button" onclick="togglePasswordVisibility('password')">
+<span class="material-symbols-outlined" id="password-icon">visibility</span>
 </button>
 </div>
 </div>
@@ -182,14 +177,14 @@
 <label class="font-label-md text-label-md text-on-surface-variant" for="confirm-password">ยืนยันรหัสผ่าน</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock_reset</span>
-<input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="confirm-password" placeholder="••••••••" type="password">
-<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
-<span class="material-symbols-outlined">visibility</span>
+<input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="confirm-password" placeholder="••••••••" type="password" required>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button" onclick="togglePasswordVisibility('confirm-password')">
+<span class="material-symbols-outlined" id="confirm-password-icon">visibility</span>
 </button>
 </div>
 </div>
 <div class="flex items-center gap-base">
-<input class="w-5 h-5 rounded-[4px] border-outline-variant text-primary focus:ring-primary/20 transition-all cursor-pointer" id="tos" type="checkbox">
+<input class="w-5 h-5 rounded-[4px] border-outline-variant text-primary focus:ring-primary/20 transition-all cursor-pointer" id="tos" type="checkbox" required>
 <label class="font-label-md text-label-md text-on-surface-variant cursor-pointer select-none" for="tos">ฉันยอมรับ <a class="text-primary hover:underline" href="#">เงื่อนไขการใช้งาน</a> และ <a class="text-primary hover:underline" href="#">นโยบายความเป็นส่วนตัว</a></label>
 </div>
 <div class="pt-base space-y-md">
@@ -206,8 +201,8 @@
 </p>
 </div>
 </div></main>
-<!-- Micro-interaction Script -->
 <script>
+        // ไอคอนการกรอกข้อมูล Focus Interaction
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', () => {
                 const icon = input.parentElement.querySelector('span');
@@ -219,39 +214,77 @@
             });
         });
 
+        // ฟังก์ชันเปิด-ปิดตา ดูรหัสผ่าน
+        function togglePasswordVisibility(id) {
+            const input = document.getElementById(id);
+            const icon = document.getElementById(`${id}-icon`);
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.innerText = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.innerText = 'visibility';
+            }
+        }
+
+        // ⚡ ระบบส่งข้อมูลเข้าฐานข้อมูลจริง (Connect with Node.js 后台)
         const form = document.querySelector('form');
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            const tosChecked = document.getElementById('tos').checked;
+
+            // 1. ตรวจสอบรหัสผ่านตรงกันไหม
+            if (password !== confirmPassword) {
+                alert('❌ ล้มเหลว: รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+                return;
+            }
+
+            // 2. ตรวจสอบการกดยอมรับเงื่อนไข
+            if (!tosChecked) {
+                alert('❌ กรุณากดเลือกยอมรับเงื่อนไขการใช้งานก่อนสมัครสมาชิก');
+                return;
+            }
+
             const btn = e.target.querySelector('button[type="submit"]');
             const originalText = btn.innerText;
-            btn.innerText = 'กำลังดำเนินการ...';
+            btn.innerText = 'กำลังดำเนินการส่งข้อมูล...';
             btn.disabled = true;
-            
-            setTimeout(() => {
+
+            // มัดรวมข้อมูลส่งไป API
+            const formData = {
+                full_name: document.getElementById('fullname').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                password: password
+            };
+
+            try {
+                // ยิงไปหาพอร์ต Node.js หลังบ้านที่เราตั้งค่าไว้
+                const response = await fetch('http://localhost:3000/api/users/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+
+                if (result.success) {
+                    alert('✨ สำเร็จ: ' + result.message);
+                    form.reset(); // ล้างฟอร์มเคลียร์ข้อมูลช่องกรอกทั้งหมด
+                    window.location.href = 'Login.html'; // พากลับไปหน้าเข้าสู่ระบบเมื่อสำเร็จ
+                } else {
+                    alert('❌ ล้มเหลว: ' + result.message);
+                }
+            } catch (err) {
+                console.error(err);
+                alert('❌ เกิดข้อผิดพลาด: ไม่สามารถติดต่อระบบหลังบ้านได้ (ตรวจสอบว่ารัน node server.js อยู่หรือเปล่า)');
+            } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;
-                alert('ยินดีด้วย! บัญชีของคุณถูกสร้างเรียบร้อยแล้ว (Demo)');
-            }, 1500);
+            }
         });
     </script>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 </body></html>
