@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>ตู้ Kiosk ลงเวลาทำงาน</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #eceff1; padding: 20px; }
+        .kiosk-box { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #reader { width: 100%; border-radius: 8px; overflow: hidden; }
+        .result { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; display: none; }
+        .success { background: #d4edda; color: #155724; display: block; }
+        .error { background: #f8d7da; color: #721c24; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="kiosk-box">
+    <h2>📸 ตู้สแกนลงเวลาเข้า-ออกงาน</h2>
+    <div id="reader"></div>
+    <div id="scan-result" class="result"></div>
+</div>
+
+<script>
+    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+    html5QrcodeScanner.render(onScanSuccess);
+
+    async function onScanSuccess(decodedText) {
+        // decodedText คือค่าลิงก์ไลน์ที่สแกนได้
+        const resultDiv = document.getElementById('scan-result');
+        
+        try {
+            const response = await fetch('http://localhost:3000/api/attendance/scan', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    employee_id: decodedText,
+                    kiosk_device_id: 'KIOSK_MAIN_CAMERA'
+                })
+            });
+            const resData = await response.json();
+
+            if (resData.success) {
+                resultDiv.className = "result success";
+                resultDiv.innerHTML = `✅ บันทึกสำเร็จ!<br>
+                                       👤 คุณ: ${resData.data.employee_name}<br>
+                                       🆔 รหัส: ${resData.data.employee_code} (${resData.data.department})<br>
+                                       ⏰ เวลา: ${resData.data.scan_time} [${resData.data.scan_type}]<br>
+                                       📢 สถานะ: ${resData.data.status}`;
+            } else {
+                resultDiv.className = "result error";
+                resultDiv.innerHTML = `❌ ล้มเหลว: ${resData.message}`;
+            }
+        } catch (err) {
+            resultDiv.className = "result error";
+            resultDiv.innerHTML = "❌ ไม่สามารถติดต่อเซิร์ฟเวอร์หลังบ้านได้";
+        }
+    }
+</script>
+</body>
+</html>
