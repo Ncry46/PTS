@@ -1,0 +1,339 @@
+<!DOCTYPE html><html lang="th" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Community | PTS Learning</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#591128",
+                        "primary-container": "#d9778e",
+                        "surface-dim": "#dbd6f6",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed-dim": "#87d899",
+                        "surface-container-lowest": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#005227",
+                        "surface-container-low": "#f6f1ff",
+                        "on-secondary-fixed-variant": "#354d31",
+                        "on-background": "#1a1930",
+                        "on-primary-fixed-variant": "#7a2b41",
+                        "on-surface": "#1a1930",
+                        "on-primary-fixed": "#3f0017",
+                        "primary": "#974258",
+                        "outline": "#867275",
+                        "on-tertiary-container": "#003617",
+                        "surface-container": "#f0ebff",
+                        "on-error": "#ffffff",
+                        "inverse-primary": "#ffb1c1",
+                        "surface-container-highest": "#e3dfff",
+                        "surface-container-high": "#eae5ff",
+                        "inverse-on-surface": "#f3eeff",
+                        "background": "#fcf8ff",
+                        "on-secondary-container": "#526b4d",
+                        "on-surface-variant": "#544245",
+                        "on-secondary-fixed": "#0a2009",
+                        "tertiary-container": "#55a56b",
+                        "surface": "#fcf8ff",
+                        "outline-variant": "#d9c1c4",
+                        "on-tertiary-fixed": "#00210c",
+                        "secondary": "#4c6548",
+                        "primary-fixed-dim": "#ffb1c1",
+                        "secondary-fixed": "#ceeac5",
+                        "tertiary": "#166c39",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed": "#ffd9df",
+                        "surface-variant": "#e3dfff",
+                        "surface-bright": "#fcf8ff",
+                        "secondary-fixed-dim": "#b3ceab",
+                        "surface-tint": "#974258",
+                        "secondary-container": "#ceeac5",
+                        "inverse-surface": "#302e46",
+                        "tertiary-fixed": "#a2f5b4"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "base": "8px",
+                        "container-max": "1200px",
+                        "xs": "4px",
+                        "sm": "12px",
+                        "lg": "48px",
+                        "xl": "80px",
+                        "margin-mobile": "16px",
+                        "md": "24px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["IBM Plex Sans Thai"],
+                        "headline-sm": ["IBM Plex Sans Thai"],
+                        "body-sm": ["IBM Plex Sans Thai"],
+                        "body-md": ["IBM Plex Sans Thai"],
+                        "body-lg": ["IBM Plex Sans Thai"],
+                        "headline-xl": ["IBM Plex Sans Thai"],
+                        "headline-md": ["IBM Plex Sans Thai"],
+                        "headline-lg": ["IBM Plex Sans Thai"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'IBM Plex Sans Thai', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface">
+<!-- TopNavBar (Guest Version) -->
+<header class="sticky top-0 z-50 shadow-sm bg-white">
+<div class="flex justify-between items-center w-full px-margin-mobile md:px-lg py-sm max-w-container-max mx-auto h-16">
+<div class="flex items-center gap-lg">
+<div class="flex items-center gap-sm"><img src="https://lh3.googleusercontent.com/aida/AP1WRLuMaoVMkkHPOqMuezhx_admymCweA1objiv0OHkPk-lTEzaUuVOlfWWBzt6yMdTNnZqQKzwO1q6jfoIdrhA_MQbNDdQvtgUzkqwMzriL4RqAW25IS6Kog1IFRW-TPC7jBiZb5CpAYL_V06l4Xekg0kGPa_LoMJwbVOmGSgp4FsJkui_aupBGRggcJ-Z2bc784Hf3Rz-g401nq9ei08h0a64KIgoSi5j1LwgO5ZBAIf0vHREbfvD0R5v2sc" alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain"></div>
+<nav class="hidden md:flex gap-md items-center">
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">หน้าแรก</a>
+<a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors" href="#">คอร์สเรียน</a>
+<a class="font-body-md text-body-md text-primary font-bold border-b-2 border-primary pb-1" href="#">คอมมูนิตี้</a>
+</nav>
+</div>
+<div class="flex items-center gap-sm">
+<button class="px-md py-sm rounded-full border-primary bg-transparent text-on-surface hover:bg-primary/5 transition-all active:scale-95 border">เข้าสู่ระบบ</button>
+<button class="px-md py-sm rounded-full bg-primary text-white font-bold shadow-md hover:opacity-90 transition-all active:scale-95">สมัครสมาชิก</button>
+</div>
+</div>
+</header>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-lg py-md grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+<!-- Hero Section & Community Feed (Main Column) -->
+<div class="lg:col-span-8 flex flex-col gap-lg">
+<!-- Hero Banner -->
+<section class="relative overflow-hidden rounded-2xl bg-surface-container-high p-xl text-on-surface shadow-sm border border-outline-variant/20">
+  <div class="absolute -right-4 -top-12 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+  <div class="absolute -left-12 -bottom-12 w-48 h-48 bg-secondary/5 rounded-full blur-3xl"></div>
+  <div class="relative z-10 max-w-lg">
+    <h1 class="font-headline-xl text-headline-xl mb-md leading-tight text-primary">ร่วมเป็นส่วนหนึ่งของคอมมูนิตี้<br>ผู้ช่วยมืออาชีพ</h1>
+    <p class="font-body-lg text-body-lg text-on-surface-variant mb-lg leading-relaxed">
+      พื้นที่แลกเปลี่ยนเทคนิคการทำงาน แชร์ประสบการณ์ และสร้างคอนเนคชันกับเพื่อนร่วมอาชีพจากทั่วประเทศ
+    </p>
+    <div class="flex flex-wrap gap-sm">
+      <span class="px-md py-sm bg-white border border-outline-variant/30 rounded-full text-label-md font-label-md text-primary shadow-sm hover:shadow-md transition-all cursor-default">#PersonalAssistant</span>
+      <span class="px-md py-sm bg-white border border-outline-variant/30 rounded-full text-label-md font-label-md text-primary shadow-sm hover:shadow-md transition-all cursor-default">#ProfessionalGrowth</span>
+    </div>
+  </div>
+</section>
+<!-- Community Feed -->
+<div class="flex flex-col gap-md">
+<div class="flex justify-between items-end mb-xs">
+<h2 class="font-headline-md text-headline-md">โพสต์ล่าสุด</h2>
+<div class="flex gap-xs">
+<button class="p-base rounded-full bg-surface-container-high text-on-surface-variant hover:bg-primary-container hover:text-white transition-all">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- Post Card 1 -->
+<article class="bg-surface-container-lowest rounded-2xl p-md shadow-sm border border-outline-variant/30 hover:shadow-md transition-all group" style="transform: translateY(0px);">
+<div class="flex items-center gap-sm mb-md">
+<img class="w-12 h-12 rounded-full object-cover ring-2 ring-primary/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBmFZR9lJFlAR1bog_0HP41ZnWvKq6_3PsW6J-Abbk9rlWkBcV9ztxY-S17n66WjHT54uqFdMnIhWk1FhBx0r5_HmTy-sT_bbgSGpaoDGhAE-nK4e61XgoLexrKOSj6AnQ2KK8J37tWI605xuEOlgw8E4aJVUb2xcan7EArzsqXTS1BtSfVESLNitRIF9DesnB7IKa6nv6EG_JwjEJDWV80S0j82p_a_qzVuRwv9keEWO9zOjAIS3aG0A">
+<div class="flex flex-col">
+<span class="font-headline-sm text-[16px] leading-tight">คุณสิรินทร์ทิพย์</span>
+<span class="font-label-md text-on-surface-variant opacity-70">2 ชั่วโมงที่แล้ว</span>
+</div>
+</div>
+<div class="mb-md">
+<h3 class="font-headline-sm text-headline-sm mb-xs group-hover:text-primary transition-colors">แชร์เทคนิคการจัดตารางประชุมสำหรับผู้บริหารต่างชาติ</h3>
+<p class="font-body-md text-on-surface-variant line-clamp-3">ช่วงนี้ใครต้องดูแลเจ้านายจากโซนยุโรปบ้างคะ? วันนี้อยากมาแชร์เรื่องการจัดการ Timezone และการเลือกใช้ Tools ที่ช่วยให้การทำงานราบรื่นขึ้นเยอะเลย...</p>
+</div>
+<div class="flex items-center gap-md border-t border-outline-variant/20 pt-md text-on-surface-variant">
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+<span class="font-label-md">24</span>
+</div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+<span class="font-label-md">12</span>
+</div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</div>
+</div>
+</article>
+<!-- Post Card 2 -->
+<article class="bg-surface-container-lowest rounded-2xl p-md shadow-sm border border-outline-variant/30 hover:shadow-md transition-all group" style="transform: translateY(0px);">
+<div class="flex items-center gap-sm mb-md">
+<img class="w-12 h-12 rounded-full object-cover ring-2 ring-primary/10" src="https://lh3.googleusercontent.com/aida-public/AB6AXuARUzUpzS9-rYF0NWJ-4D41NUhboLTLzLiZLBskeBD1P1Ok3IEBLZQSTBe9VtgxlmTWtnxUzEL3jVrwv-lNDIf4f6EsNBVqtW7T_coTGZxQTVJiZtzlYaFPRdZxIANRjZOMjOmssuTZw__NhQg-_DsWii1A66RmMuingJBFzXliuzWvhYZsZOaw2L5DtsXgDOr4OrwKo_PMoAjZyz9o7nERk56lbvALUmHRq2QBPQ_gcxN0bLlePKJVeQ">
+<div class="flex flex-col">
+<span class="font-headline-sm text-[16px] leading-tight">ธนพงศ์ (Junior PA)</span>
+<span class="font-label-md text-on-surface-variant opacity-70">5 ชั่วโมงที่แล้ว</span>
+</div>
+</div>
+<div class="mb-md">
+<h3 class="font-headline-sm text-headline-sm mb-xs group-hover:text-primary transition-colors">แนะนำคอร์สภาษาอังกฤษเพื่อธุรกิจเบื้องต้นครับ</h3>
+<p class="font-body-md text-on-surface-variant line-clamp-3">พึ่งเรียนคอร์ส English for Professionals จบไป รู้สึกมั่นใจในการตอบอีเมลขึ้นมากเลยครับ มีใครสนใจอยากสอบถามรายละเอียดมั้ยครับ?</p>
+</div>
+<div class="flex items-center gap-md border-t border-outline-variant/20 pt-md text-on-surface-variant">
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">favorite</span>
+<span class="font-label-md">45</span>
+</div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+<span class="font-label-md">8</span>
+</div>
+<div class="flex items-center gap-xs cursor-pointer hover:text-primary">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</div>
+</div>
+</article>
+<div class="py-md text-center">
+<button class="px-xl py-sm rounded-full border-2 border-primary text-primary font-bold hover:bg-primary/5 transition-all">ดูโพสต์เพิ่มเติม</button>
+</div>
+</div>
+</div>
+<!-- Sidebar -->
+<aside class="lg:col-span-4 flex flex-col gap-gutter">
+<!-- Sticky CTA for Guest -->
+<div class="sticky top-24 flex flex-col gap-gutter">
+<section class="glass-card rounded-2xl p-md shadow-lg border-2 border-primary-container/30 relative overflow-hidden">
+<div class="absolute -right-4 -bottom-4 opacity-10">
+
+</div>
+<h3 class="font-headline-sm text-headline-sm text-primary mb-xs">เข้าร่วมพูดคุย</h3>
+<p class="font-body-md text-on-surface mb-md">เข้าสู่ระบบเพื่อโพสต์ข้อความ กดไลก์ และแลกเปลี่ยนความคิดเห็นกับสมาชิกท่านอื่นๆ</p>
+<div class="flex flex-col gap-sm">
+<button class="w-full py-sm bg-primary text-white rounded-full font-bold shadow-md hover:brightness-110 active:scale-95 transition-all">เข้าสู่ระบบตอนนี้</button>
+<button class="w-full py-sm border-2 border-primary text-primary rounded-full font-bold hover:bg-primary/5 active:scale-95 transition-all">ยังไม่มีบัญชี? สมัครสมาชิก</button>
+</div>
+</section>
+<!-- Trending Topics -->
+<section class="bg-surface-container-low rounded-2xl p-md">
+<div class="flex items-center gap-xs mb-md">
+<span class="material-symbols-outlined text-primary">trending_up</span>
+<h3 class="font-headline-sm text-[18px]">Trending Topics</h3>
+</div>
+<ul class="flex flex-col gap-sm">
+<li class="">
+<a class="block p-sm rounded-xl hover:bg-white transition-all" href="#">
+<span class="text-primary font-bold text-label-md block">#เทคนิคการจัดการประชุม</span>
+<span class="text-on-surface-variant text-body-sm">4.2k โพสต์วันนี้</span>
+</a>
+</li>
+<li class="">
+<a class="block p-sm rounded-xl hover:bg-white transition-all" href="#">
+<span class="text-primary font-bold text-label-md block">#ภาษาอังกฤษสำหรับPA</span>
+<span class="text-on-surface-variant text-body-sm">2.8k โพสต์วันนี้</span>
+</a>
+</li>
+<li class="">
+<a class="block p-sm rounded-xl hover:bg-white transition-all" href="#">
+<span class="text-primary font-bold text-label-md block">#เครื่องมือDigitalPA</span>
+<span class="text-on-surface-variant text-body-sm">1.5k โพสต์วันนี้</span>
+</a>
+</li>
+</ul>
+</section>
+<!-- Popular Courses -->
+<section class="bg-surface-container-low rounded-2xl p-md">
+<h3 class="font-headline-sm text-[18px] mb-md">คอร์สเรียนยอดนิยม</h3>
+<div class="flex flex-col gap-md">
+<div class="flex gap-sm group cursor-pointer">
+<div class="w-20 h-14 bg-outline-variant rounded-lg overflow-hidden shrink-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="A professional digital workspace background for a business course, featuring a minimalist desk with a laptop, notebooks, and a soft cup of coffee, in a high-key light mode aesthetic with soft pink accents." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCmatQLLGUOxHivBb-PBWXhhZiTdC-F2Veg8xRL24HYmzzzgUvSroTYyAxWQo6TEdU_ANCGT2HffAcguGovEKf3AKwD74WhWE8Jc5tsxFOOxHYvImRbhPnrMM6B6pYEfE2L4lN1Cs0ZPxq8h8yjhOBVBKqASvNMuC-aNzLQLsqY4sPcaQCU740-3C11Zw7EOQ7QWdJSAIELY1lkcUo7tCbUKIO0XB4T8qdFDaQ75rPckx50dQMSU_SHNw')"></div>
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-md text-on-surface leading-tight group-hover:text-primary transition-colors">Advanced Secretary Skills</span>
+<span class="text-primary font-bold text-body-sm">฿2,500</span>
+</div>
+</div>
+<div class="flex gap-sm group cursor-pointer">
+<div class="w-20 h-14 bg-outline-variant rounded-lg overflow-hidden shrink-0">
+<div class="w-full h-full bg-cover bg-center" data-alt="Close-up of a high-end planner and an elegant pen on a marble surface, representing luxury time management and organizational skills, bright lighting, soft shadows, feminine professional aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCj2EnYfGSyuUFFpuNF8rX9a3wslJe_minI5rd8G7wXa1j02OOu-9t3FRxNcnpIscReqYRY005avFazeViCZbhUvdNrnvL-F2f2kna6b4Ro5n4_EN6ZU2w0sXA4oSvrZAE5H0uGP1y0AUBkb-ZMXOwq_FI_jRd8ZGZfmK1kAI4VU8l31lAYQAghoJo5zAdT5tU3vkdCjJHj8wvgKNTi5kNw8NNQ7y-1YOdHsIcN1PQBTI8NHeH4K4Qarw')"></div>
+</div>
+<div class="flex flex-col justify-center">
+<span class="font-label-md text-on-surface leading-tight group-hover:text-primary transition-colors">Time Management Mastery</span>
+<span class="text-primary font-bold text-body-sm">฿1,800</span>
+</div>
+</div>
+</div>
+</section>
+</div>
+</aside>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-highest w-full py-lg mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-lg gap-md max-w-container-max mx-auto">
+<div class="flex flex-col items-center md:items-start gap-xs">
+<img src="https://lh3.googleusercontent.com/aida/AP1WRLuMaoVMkkHPOqMuezhx_admymCweA1objiv0OHkPk-lTEzaUuVOlfWWBzt6yMdTNnZqQKzwO1q6jfoIdrhA_MQbNDdQvtgUzkqwMzriL4RqAW25IS6Kog1IFRW-TPC7jBiZb5CpAYL_V06l4Xekg0kGPa_LoMJwbVOmGSgp4FsJkui_aupBGRggcJ-Z2bc784Hf3Rz-g401nq9ei08h0a64KIgoSi5j1LwgO5ZBAIf0vHREbfvD0R5v2sc" alt="Personal Assistant Academy Logo" class="h-8 w-auto object-contain mb-xs">
+<p class="font-body-sm text-body-sm text-on-surface-variant text-center md:text-left opacity-80">© 2024 PTS Learning. All Rights Reserved. สำหรับผู้ช่วยส่วนตัวมืออาชีพ</p>
+</div>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">เกี่ยวกับเรา</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">นโยบายความเป็นส่วนตัว</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">ติดต่อเรา</a>
+<a class="font-body-sm text-body-sm text-on-surface-variant hover:text-primary transition-colors" href="#">LINE OA Support</a>
+</div>
+</div>
+</footer>
+<!-- BottomNavBar (Mobile Only) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/95 backdrop-blur-lg lg:hidden shadow-lg border-t border-outline-variant/10">
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-md">หน้าแรก</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">play_circle</span>
+<span class="font-label-md">เรียน</span>
+</a>
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 shadow-sm" href="#">
+<span class="material-symbols-outlined">groups</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">event_note</span>
+<span class="font-label-md">ปฏิทิน</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-md">โปรไฟล์</span>
+</a>
+</nav>
+<script>
+        // Micro-interactions for post cards
+        document.querySelectorAll('article').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                card.style.transform = 'translateY(-2px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'translateY(0)';
+            });
+        });
+    </script>
+
+
+
+
+
+
+
+
+
+
+</body></html>
