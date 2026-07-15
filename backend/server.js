@@ -2,13 +2,26 @@ const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
+const session = require('express-session');
 
 const app = express();
 const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
+
+// 🌟 2. เปิดใช้งานระบบจำสิทธิ์ (Session) ยึดตามเบราว์เซอร์
+app.use(session({
+    secret: 'your-secret-key-pts-academy', // เปลี่ยนคีย์ความปลอดภัยได้ตามใจชอบ
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // อยู่ได้นาน 24 ชั่วโมง
+}));
+
+// 1. ตัวเปิดสิทธิ์โฟลเดอร์หน้าบ้านเดิมของคุณ (ดึงจากระดับโฟลเดอร์ชั้นนอก)
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
+// 2. 🌟 เพิ่มบรรทัดนี้: เปิดสิทธิ์ให้เบราว์เซอร์เข้าถึงโฟลเดอร์ components ข้างนอกได้
+app.use('/comp', express.static(path.join(__dirname, '..', 'components')));
 
 // 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
 const dbConfig = {
@@ -40,9 +53,26 @@ const smsTokenCache = new Map();
 
 // 🎯 ตั้งหน้าแรกสุด
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'frontend', 'Register.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'Home.html'));
 });
 
+// 🌟 3. [เพิ่มใหม่] API สำหรับส่งข้อมูลคนล็อกอินไปให้ navbar.js หน้าบ้านเอาไปวาด
+app.get('/api/users/me', (req, res) => {
+    if (req.session && req.session.user) {
+        res.json({ loggedIn: true, user: req.session.user });
+    } else {
+        res.json({ loggedIn: false, user: null });
+    }
+});
+
+// 🌟 4. [เพิ่มใหม่] API สำหรับการล็อกเอาต์ (ล้างค่าในเซิร์ฟเวอร์)
+app.post('/api/users/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) return res.status(500).json({ success: false, message: 'ไม่สามารถออกจากระบบได้' });
+        res.clearCookie('connect.sid'); // ล้างคุกกี้ Session บนเบราว์เซอร์
+        res.json({ success: true, message: 'ออกจากระบบเรียบร้อย' });
+    });
+});
 // -------------------------------------------------------------------------
 // [API ล็อกอิน]
 // -------------------------------------------------------------------------
@@ -53,10 +83,30 @@ app.post('/api/users/login', async (req, res) => {
         const result = await pool.request()
             .input('email', sql.VarChar, email)
             .input('pass', sql.VarChar, password)
-            .query('SELECT email, full_name FROM BD_PTS.dbo.users_main WHERE email = @email AND password_hash = @pass');
+            // 🌟 5. แก้ไข SQL ดึงคอลัมน์ Role และ FlagUse เพิ่มเติมเข้ามา
+            .query('SELECT email, full_name, Role, FlagUse FROM BD_PTS.dbo.users_main WHERE email = @email AND password_hash = @pass');
 
         if (result.recordset.length > 0) {
-            res.json({ success: true, message: `เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ${result.recordset[0].full_name}` });
+            const userData = result.recordset[0];
+
+            // 🌟 6. เช็กก่อนว่าบัญชีผู้ใช้ถูกปิดใช้งาน (FlagUse == 'N') หรือไม่
+            if (userData.FlagUse === 'N') {
+                return res.status(403).json({ success: false, message: 'บัญชีนี้ถูกระงับการใช้งานชั่วคราว' });
+            }
+
+            // 🌟 7. จัดเก็บข้อมูลลงในเซสชันของหลังบ้าน
+            req.session.user = {
+                name: userData.full_name,
+                email: userData.email,
+                // แปลงสิทธิ์เป็นตัวพิมพ์เล็ก (เช่น admin / student) เพื่อให้ตรงกับโค้ด navbar.js
+                role: userData.Role ? userData.Role.toLowerCase() : 'student' 
+            };
+
+            res.json({ 
+                success: true, 
+                message: `เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ${userData.full_name}`,
+                role: req.session.user.role
+            });
         } else {
             res.status(401).json({ success: false, message: 'อีเมลหรือรหัสผ่านไม่ถูกต้อง' });
         }
@@ -179,5 +229,115 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดภายในระบบฐานข้อมูลหลังบ้าน' });
     }
 });
+// -------------------------------------------------------------------------
+// 📚 [API ดึงข้อมูลคอร์สเรียน] ดึงข้อมูลจากตาราง courses_main
+// -------------------------------------------------------------------------
+app.get('/api/courses', async (req, res) => {
+    try {
+        // 1. เรียกใช้งาน Pool การเชื่อมต่อ SQL Server ตัวเดิมของคุณ
+        const pool = await poolPromise;
+        
+        // 2. ยิงคำสั่ง SELECT เพื่อดึงข้อมูลฟิลด์ที่ต้องการใช้งาน
+        // (แนะนำให้เลือกเฉพาะคอลัมน์ที่จำเป็น เพื่อความเร็วในการโหลด)
+        const result = await pool.request()
+            .query(`
+                SELECT 
+                    course_id, 
+                    course_name, 
+                    instructor_name, 
+                    delivery_mode, 
+                    difficulty_level, 
+                    total_hours, 
+                    average_rating, 
+                    total_reviews, 
+                    cover_image_url, -- 🌟 ตรงนี้เก็บ Absolute URL ของรูปปกคอร์สเรียนไว้แล้ว
+                    is_featured
+                FROM BD_PTS.dbo.courses_main
+                ORDER BY created_at DESC -- ดึงคอร์สที่สร้างใหม่ขึ้นก่อน
+            `);
 
+        // 3. ส่งข้อมูลกลับไปให้หน้าบ้านเป็นรูปแบบ JSON Array
+        res.json({
+            success: true,
+            data: result.recordset // ข้อมูลคอร์สทั้งหมดจะอยู่ในนี้
+        });
+
+    } catch (error) {
+        console.error("❌ ดึงข้อมูลคอร์สล้มเหลว:", error.message);
+        res.status(500).json({ 
+            success: false, 
+            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลคอร์สเรียนจากฐานข้อมูล' 
+        });
+    }
+});
+
+
+// =========================================================================
+// 🎯 API สำหรับดึงข้อมูลโพสต์คอมมูนิตี้ (ดึงข้อมูลจาก SQL Server ส่งให้หน้าบ้าน)
+// =========================================================================
+app.get('/api/community', async (req, res) => {
+    try {
+        // 1. เชื่อมต่อฐานข้อมูล SQL Server
+        const pool = await poolPromise; 
+        
+        // 2. ส่งคิวรีดึงข้อมูลโพสต์พร้อม JOIN ตารางผู้ใช้เพื่อเอารูปโปรไฟล์และชื่อ
+        const result = await pool.request().query(`
+            SELECT 
+                p.post_id,
+                p.content,
+                p.created_at,
+                u.full_name AS author_name,
+                
+                -- 🌟 ดึงลิงก์รูปโปรไฟล์จำลองหรือรูปจริงที่เราทำไว้ระดับ SQL 
+                ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
+                
+                -- 🌟 นับจำนวน Likes สด ๆ จากตารางความสัมพันธ์
+                (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
+                
+                -- 🌟 นับจำนวน Comments สด ๆ จากตารางความสัมพันธ์
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count
+            FROM 
+                community_posts p
+            INNER JOIN 
+                users_main u ON p.user_id = u.user_id
+            WHERE 
+                p.flag_use = 1 -- ดึงเฉพาะโพสต์ที่ยังไม่ถูกลบ
+            ORDER BY 
+                p.created_at DESC; -- โพสต์ล่าสุดขึ้นก่อน
+        `);
+
+        // 3. ส่งข้อมูลกลับไปหาหน้าบ้านในรูปแบบ JSON format สำเร็จรูป
+        res.json({ 
+            success: true, 
+            data: result.recordset 
+        });
+
+    } catch (error) {
+        console.error('❌ ดึงข้อมูลคอมมูนิตี้ล้มเหลว:', error);
+        res.status(500).json({ 
+            success: false, 
+            message: 'เกิดข้อผิดพลาดภายในระบบหลังบ้าน: ' + error.message 
+        });
+    }
+});
+// =========================================================================
+// 🎯 API สำหรับดึงข้อมูลแฮชแท็กยอดนิยม (Trending Topics)
+// =========================================================================
+app.get('/api/community/trending', async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        
+        // ดึงแฮชแท็กที่มียอดโพสต์สูงสุด 5 อันดับแรก
+        const result = await pool.request().query(`
+            SELECT TOP (5) tag_id, tag_name, post_count
+            FROM hashtags
+            ORDER BY post_count DESC;
+        `);
+
+        res.json({ success: true, data: result.recordset });
+    } catch (error) {
+        console.error('❌ ดึงข้อมูล Trending ล้มเหลว:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

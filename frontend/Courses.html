@@ -96,71 +96,7 @@
         }
       }catch(_e){}</script></head><body class="bg-background text-on-background min-h-screen">
 <!-- TopNavBar -->
-<nav class="fixed top-0 left-0 right-0 z-50 bg-white border-b border-outline-variant/30">
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg h-16 flex items-center justify-between">
-<div class="flex items-center">
-<div class="flex items-center gap-sm">
-<img alt="PA Logo" class="h-10 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog">
-</div>
-<div class="hidden lg:flex items-center gap-lg ml-xl h-16">
-<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Home.html">หน้าแรก</a>
-<!-- Mega Menu Trigger -->
-<div class="group relative h-full flex items-center">
-<button class="text-label-md font-label-md text-primary font-bold transition-colors border-b-2 border-primary h-full flex items-center gap-1">
-                        หลักสูตร
-                        <span class="material-symbols-outlined text-[18px]">expand_more</span>
-</button>
-<!-- Mega Menu Content -->
-<div class="mega-menu absolute top-full left-0 w-[480px] bg-white shadow-xl rounded-b-xl border border-outline-variant/30 overflow-hidden">
-<div class="p-md grid grid-cols-1 gap-base">
-<a class="flex items-start gap-md p-sm hover:bg-surface-container-low rounded-lg transition-colors group/item" href="Online-Courses.html">
-<div class="w-10 h-10 rounded-full bg-primary-fixed-dim flex items-center justify-center text-primary shrink-0">
-<span class="material-symbols-outlined">laptop_mac</span>
-</div>
-<div>
-<h4 class="font-label-md text-on-surface group-hover/item:text-primary">Online</h4>
-<p class="text-body-sm text-on-surface-variant">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา</p>
-</div>
-</a>
-<a class="flex items-start gap-md p-sm hover:bg-surface-container-low rounded-lg transition-colors group/item" href="Onsite-Courses.html">
-<div class="w-10 h-10 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
-<span class="material-symbols-outlined">location_on</span>
-</div>
-<div>
-<h4 class="font-label-md text-on-surface group-hover/item:text-primary">Onsite</h4>
-<p class="text-body-sm text-on-surface-variant">เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code</p>
-</div>
-</a>
-<a class="flex items-start gap-md p-sm hover:bg-surface-container-low rounded-lg transition-colors group/item" href="Hybrid-Courses.html">
-<div class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center text-tertiary shrink-0">
-<span class="material-symbols-outlined">devices</span>
-</div>
-<div>
-<h4 class="font-label-md text-on-surface group-hover/item:text-primary">Hybrid</h4>
-<p class="text-body-sm text-on-surface-variant">เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว</p>
-</div>
-</a>
-</div>
-<div class="bg-surface-container-low p-md border-t border-outline-variant/30">
-<button class="w-full bg-primary text-white py-sm rounded-full text-label-md font-medium hover:brightness-110 transition-all">ดูหลักสูตรทั้งหมด</button>
-</div>
-</div>
-</div>
-<a class="text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Community.html">Community</a>
-
-</div>
-</div>
-<div class="flex items-center gap-md">
-<div class="hidden md:flex items-center gap-sm">
-<a class="px-4 py-2 text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors border border-outline-variant rounded-full" href="Login.html">เข้าสู่ระบบ</a>
-<a class="px-6 py-2 bg-primary text-white rounded-full text-label-md font-label-md hover:brightness-110 transition-all ring-2 ring-primary/20" href="Register.html">สมัครสมาชิก</a>
-</div>
-<button class="md:hidden w-10 h-10 flex items-center justify-center text-on-surface-variant">
-<span class="material-symbols-outlined">menu</span>
-</button>
-</div>
-</div>
-</nav>
+<div id="app-navbar"></div>
 <main class="max-w-container-max mx-auto px-margin-mobile md:px-lg py-lg mt-xl">
 <!-- Hero Section & Filters -->
 <section class="mb-xl pt-8">
@@ -179,12 +115,15 @@
 <!-- Category Filter Swiper -->
 <div class="flex overflow-x-auto pb-4 gap-sm no-scrollbar">
     <button data-filter="all" class="whitespace-nowrap bg-primary text-white px-md py-sm rounded-full font-label-md shadow-md active:scale-95 transition-all px-4">ทั้งหมด</button>
-    <button data-filter="Online" class="whitespace-nowrap bg-surface-container-lowest border border-outline-variant text-on-surface-variant px-md py-sm rounded-full font-label-md hover:border-primary hover:text-primary transition-all px-4">ออนไลน์</button>
-
-
     <button class="whitespace-nowrap bg-surface-container-lowest border border-outline-variant text-on-surface-variant px-md py-sm rounded-full font-label-md hover:border-primary hover:text-primary transition-all px-4">การบริหารเวลา</button>
     <button class="whitespace-nowrap bg-surface-container-lowest border border-outline-variant text-on-surface-variant px-md py-sm rounded-full font-label-md hover:border-primary hover:text-primary transition-all px-4">เครื่องมือดิจิทัลและ AI</button>
     <button class="whitespace-nowrap bg-surface-container-lowest border border-outline-variant text-on-surface-variant px-md py-sm rounded-full font-label-md hover:border-primary hover:text-primary transition-all px-4">การจัดการบุคลิกภาพ</button>
+</div>
+
+<div class="hidden">
+    <button data-filter="online"></button>
+    <button data-filter="onsite"></button>
+    <button data-filter="hybrid"></button>
 </div>
 </section>
 <!-- Courses Grid -->
@@ -247,7 +186,7 @@
 </button>
 </nav>
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+ document.addEventListener('DOMContentLoaded', () => {
     const filterButtons = document.querySelectorAll('[data-filter]');
     const coursesGrid = document.getElementById('courses-grid');
     const apiUrl = '/api/courses';
@@ -319,7 +258,7 @@
       const cards = Array.from(coursesGrid.querySelectorAll('[data-type]'));
       cards.forEach(card => {
         const type = (card.dataset.type || '').toLowerCase();
-        if (filter === 'all' || type === filter.toLowerCase()) {
+        if (filter === 'all' || type === (filter || '').toLowerCase()) {
           card.classList.remove('hidden');
         } else {
           card.classList.add('hidden');
@@ -343,24 +282,48 @@
       });
     });
 
+    const handleUrlFilter = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlFilter = urlParams.get('filter');
+        
+        if (urlFilter) {
+            console.log('🤖 ตรวจพบคำสั่งกรองจาก URL:', urlFilter);
+            filterCourses(urlFilter);
+            
+            filterButtons.forEach(btn => {
+                btn.classList.remove('bg-primary', 'text-white');
+                btn.classList.add('bg-surface-container-lowest', 'border', 'border-outline-variant', 'text-on-surface-variant');
+            });
+            
+            if (urlFilter === 'all') {
+                const btnAll = document.querySelector('[data-filter="all"]');
+                if (btnAll) setActiveButton(btnAll);
+            }
+        }
+    };
+
     const loadCourses = async () => {
       try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(apiUrl, { credentials: 'include' });
         const payload = await response.json();
+        
         if (!response.ok || !payload.success) {
           throw new Error(payload.message || 'ไม่สามารถโหลดข้อมูลคอร์สได้');
         }
+        
         renderCourseList(payload.data || []);
-        const activeButton = document.querySelector('[data-filter].bg-primary') || document.querySelector('[data-filter="all"]');
-        if (activeButton) filterCourses(activeButton.dataset.filter);
+        handleUrlFilter();
+
       } catch (error) {
-        coursesGrid.innerHTML = `<div class="col-span-full rounded-[24px] bg-white p-md text-error bg-error-container shadow-sm">${error.message}</div>`;
-        console.error('Course load failed:', error);
+        coursesGrid.innerHTML = `<div class="col-span-full rounded-[24px] bg-white p-md text-error bg-error-container shadow-sm text-center">${error.message}</div>`;
       }
     };
 
+    window.addEventListener('popstate', handleUrlFilter);
     loadCourses();
-  });
+});
 </script>
+
+<script src="/comp/navbar.js"></script>
 </body>
 </html>
