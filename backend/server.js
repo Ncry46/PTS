@@ -8,8 +8,6 @@ const PORT = 3000;
 
 app.use(cors());
 app.use(express.json());
-
-// ✅ แก้ไข Path ให้ถูกต้อง (เนื่องจากตอนนี้ server.js อยู่ในโฟลเดอร์ backend ต้องถอย 1 ก้าวด้วย '..')
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
