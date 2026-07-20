@@ -5,52 +5,68 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตารางเรียน | PTS Learning</title>
 <link rel="stylesheet" href="/comp/site.css">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif}</style>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
 </head>
-<body class="pts-body text-on-surface">
+<body class="pts-body">
 <div id="app-navbar"></div>
 <main class="pts-main">
-  <h1 class="text-3xl font-bold text-primary mb-2">ตารางเรียน</h1>
-  <p class="text-on-surface-variant mb-6">คลาสที่กำลังจะมาถึงของคอร์สที่คุณสมัครไว้</p>
-  <div id="schedule-list" class="space-y-3">กำลังโหลด...</div>
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">My Schedule</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตารางเรียนของฉัน</h1>
+    <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากคอร์สที่คุณสมัครไว้เท่านั้น</p>
+  </section>
+  <div id="schedule-list" class="space-y-3">
+    <div class="pts-empty">กำลังโหลดตาราง...</div>
+  </div>
 </main>
+<div class="pts-footer-note">© PTS Learning</div>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const fmt = (d) => new Date(d).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
-
 async function load() {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
-
   const res = await fetch('/api/my/schedules', { credentials: 'include' });
   const data = await res.json();
   const el = document.getElementById('schedule-list');
   if (!res.ok || !data.success) {
-    el.innerHTML = `<div class="bg-red-50 text-red-700 p-4 rounded-2xl">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
+    el.innerHTML = `<div class="pts-empty pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
     return;
   }
   if (!data.data.length) {
-    el.innerHTML = `<div class="bg-white p-6 rounded-2xl border text-on-surface-variant">ยังไม่มีตารางเรียนที่เกี่ยวข้อง<br><span class="text-sm">แอดมินสามารถเพิ่มตารางได้จากหน้า Admin</span></div>`;
+    el.innerHTML = `<div class="pts-empty">
+      <div class="pts-empty__icon"><span class="material-symbols-outlined">event_busy</span></div>
+      <p class="font-semibold mb-1">ยังไม่มีตารางเรียน</p>
+      <p class="text-sm mb-4">เมื่อสมัครคอร์สที่มีตาราง จะแสดงที่นี่</p>
+      <a class="pts-btn pts-btn-primary" href="Courses.html">ดูหลักสูตร</a>
+    </div>`;
     return;
   }
-  el.innerHTML = data.data.map(s => `
-    <article class="bg-white rounded-2xl border border-pink-100 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-      <div>
-        <p class="text-xs uppercase text-primary font-bold mb-1">${escapeHtml(s.delivery_mode || 'online')}</p>
-        <h2 class="font-bold text-lg">${escapeHtml(s.title)}</h2>
-        <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || 'ทั่วไป')} · ${fmt(s.start_at)} - ${fmt(s.end_at)}</p>
-        <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(s.location || 'ออนไลน์')}</p>
+  el.innerHTML = data.data.map(s => {
+    const d = new Date(s.start_at);
+    const month = d.toLocaleDateString('th-TH', { month: 'short' });
+    const day = d.getDate();
+    const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    const end = new Date(s.end_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    return `<article class="pts-row">
+      <div class="flex items-start gap-4">
+        <div class="pts-date-badge"><span class="text-xs font-bold uppercase">${escapeHtml(month)}</span><strong>${day}</strong></div>
+        <div>
+          <span class="pts-chip mb-2">${escapeHtml(s.delivery_mode || 'online')}</span>
+          <h2 class="font-bold text-lg mt-1">${escapeHtml(s.title)}</h2>
+          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(s.course_name || '')} · ${escapeHtml(time)}–${escapeHtml(end)}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(s.location || 'ออนไลน์')}</p>
+        </div>
       </div>
-      ${s.meeting_url ? `<a href="${escapeHtml(s.meeting_url)}" target="_blank" class="bg-primary text-white px-5 py-2 rounded-full font-bold text-center">เข้าห้องเรียน</a>` : '<span class="text-sm text-on-surface-variant">รอประกาศลิงก์</span>'}
-    </article>
-  `).join('');
+      ${s.meeting_url
+        ? `<a href="${escapeHtml(s.meeting_url)}" target="_blank" rel="noopener" class="pts-btn pts-btn-primary">เข้าห้องเรียน</a>`
+        : `<span class="text-sm text-on-surface-variant">รอประกาศลิงก์</span>`}
+    </article>`;
+  }).join('');
 }
 load().catch(err => {
-  document.getElementById('schedule-list').innerHTML = `<div class="text-red-600">${escapeHtml(err.message)}</div>`;
+  document.getElementById('schedule-list').innerHTML = `<div class="pts-empty pts-msg--err">${escapeHtml(err.message)}</div>`;
 });
 </script>
 <script src="/comp/navbar.js"></script>

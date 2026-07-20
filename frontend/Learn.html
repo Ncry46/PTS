@@ -5,23 +5,28 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>เรียนบทเรียน | PTS Learning</title>
 <link rel="stylesheet" href="/comp/site.css">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif}</style>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
 </head>
-<body class="pts-body text-on-surface">
+<body class="pts-body">
 <div id="app-navbar"></div>
-<main class="pts-main pts-main--wide grid grid-cols-1 lg:grid-cols-12 gap-6">
-  <aside class="lg:col-span-4 bg-white rounded-2xl border border-pink-100 p-4 h-fit">
-    <h1 id="course-title" class="text-xl font-bold text-primary mb-3">กำลังโหลด...</h1>
-    <div id="lesson-list" class="space-y-2"></div>
-  </aside>
-  <section class="lg:col-span-8 bg-white rounded-2xl border border-pink-100 p-5 min-h-[480px]">
-    <div id="lesson-view" class="text-on-surface-variant">เลือกบทเรียนจากด้านซ้าย</div>
+<main class="pts-main pts-main--wide">
+  <section class="pts-page-hero mb-5">
+    <span class="pts-chip mb-3">Learning</span>
+    <h1 id="course-title" class="text-2xl md:text-3xl font-bold text-primary pts-display">กำลังโหลด...</h1>
   </section>
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+    <aside class="lg:col-span-4 pts-panel h-fit lg:sticky lg:top-24">
+      <h2 class="font-bold mb-3 text-sm uppercase tracking-wide text-on-surface-variant">บทเรียน</h2>
+      <div id="lesson-list" class="space-y-2"></div>
+    </aside>
+    <section class="lg:col-span-8 pts-panel min-h-[480px]">
+      <div id="lesson-view" class="text-on-surface-variant">เลือกบทเรียนจากด้านซ้าย</div>
+    </section>
+  </div>
 </main>
+<div class="pts-footer-note">© PTS Learning</div>
 <script>
 const params = new URLSearchParams(location.search);
 const courseId = params.get('courseId');
@@ -39,18 +44,18 @@ async function loadCourseLessons() {
   if (!res.ok || !data.success) throw new Error(data.message || 'โหลดบทเรียนไม่สำเร็จ');
   if (!data.enrolled) {
     document.getElementById('course-title').textContent = data.course.course_name;
-    document.getElementById('lesson-view').innerHTML = `<p class="mb-4">คุณยังไม่ได้สมัครคอร์สนี้</p><a class="inline-block bg-primary text-white px-5 py-2 rounded-full" href="Courses.html">ไปสมัครเรียน</a>`;
+    document.getElementById('lesson-view').innerHTML = `<div class="pts-empty" style="border:none;padding:24px 0"><p class="mb-4">คุณยังไม่ได้สมัครคอร์สนี้</p><a class="pts-btn pts-btn-primary" href="Courses.html">ไปสมัครเรียน</a></div>`;
     return;
   }
   document.getElementById('course-title').textContent = data.course.course_name;
   const list = document.getElementById('lesson-list');
   if (!data.data.length) {
-    list.innerHTML = '<p class="text-sm text-on-surface-variant p-2">ยังไม่มีบทเรียนในคอร์สนี้ รอแอดมินเพิ่มเนื้อหา</p>';
-    document.getElementById('lesson-view').innerHTML = '<p class="text-on-surface-variant">ยังไม่มีบทเรียนให้เรียน</p>';
+    list.innerHTML = '<p class="text-sm text-on-surface-variant p-2">ยังไม่มีบทเรียนในคอร์สนี้</p>';
+    document.getElementById('lesson-view').innerHTML = '<div class="pts-empty" style="border:none">ยังไม่มีบทเรียนให้เรียน</div>';
     return;
   }
   list.innerHTML = data.data.map(l => `
-    <button data-id="${l.lesson_id}" class="lesson-item w-full text-left p-3 rounded-xl border ${Number(l.completed) ? 'border-green-200 bg-green-50' : 'border-gray-100 hover:bg-pink-50'}">
+    <button data-id="${l.lesson_id}" class="lesson-item w-full text-left p-3 rounded-xl border transition ${Number(l.completed) ? 'border-emerald-200 bg-emerald-50' : 'border-[var(--pts-border)] hover:bg-[var(--pts-primary-soft)]'}">
       <div class="font-semibold text-sm">${escapeHtml(l.title)}</div>
       <div class="text-xs text-on-surface-variant mt-1">${l.duration_minutes || 0} นาที ${Number(l.completed) ? '· เรียนจบแล้ว' : ''}</div>
     </button>
@@ -72,36 +77,36 @@ async function openLesson(lessonId) {
   const res = await fetch(`/api/lessons/${lessonId}`, { credentials: 'include' });
   const data = await res.json();
   if (!res.ok || !data.success) {
-    view.innerHTML = `<p class="text-red-600">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</p>`;
+    view.innerHTML = `<p class="pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</p>`;
     return;
   }
   const lesson = data.data;
   const video = lesson.video_url
-    ? `<div class="aspect-video mb-4 rounded-xl overflow-hidden bg-black"><iframe class="w-full h-full" src="${escapeHtml(lesson.video_url)}" allowfullscreen></iframe></div>`
+    ? `<div class="aspect-video mb-5 rounded-xl overflow-hidden bg-black"><iframe class="w-full h-full" src="${escapeHtml(lesson.video_url)}" allowfullscreen></iframe></div>`
     : '';
   view.innerHTML = `
-    <h2 class="text-2xl font-bold mb-2">${escapeHtml(lesson.title)}</h2>
-    <p class="text-sm text-on-surface-variant mb-4">${lesson.duration_minutes || 0} นาที · ${escapeHtml(lesson.course_name || '')}</p>
+    <h2 class="text-2xl font-bold mb-2 pts-display">${escapeHtml(lesson.title)}</h2>
+    <p class="text-sm text-on-surface-variant mb-5">${lesson.duration_minutes || 0} นาที · ${escapeHtml(lesson.course_name || '')}</p>
     ${video}
-    <div class="prose max-w-none text-on-surface-variant leading-relaxed mb-6">${lesson.content_html || '<p>ยังไม่มีเนื้อหา</p>'}</div>
-    <button id="complete-btn" class="bg-primary text-white px-6 py-3 rounded-full font-bold ${Number(lesson.completed) ? 'opacity-60' : ''}">
+    <div class="leading-relaxed mb-6 text-[15px]">${lesson.content_html || '<p>ยังไม่มีเนื้อหา</p>'}</div>
+    <button id="complete-btn" class="pts-btn pts-btn-primary ${Number(lesson.completed) ? 'opacity-60' : ''}">
       ${Number(lesson.completed) ? 'เรียนจบบทนี้แล้ว' : 'ทำเครื่องหมายว่าเรียนจบ'}
     </button>
-    <p id="complete-msg" class="mt-3 text-sm text-on-surface-variant"></p>
+    <p id="complete-msg" class="pts-msg"></p>
   `;
   document.getElementById('complete-btn').onclick = async () => {
     const r = await fetch(`/api/lessons/${lessonId}/complete`, { method: 'POST', credentials: 'include' });
     const j = await r.json();
     const msg = document.getElementById('complete-msg');
-    if (!r.ok || !j.success) { msg.textContent = j.message || 'บันทึกไม่สำเร็จ'; msg.className='mt-3 text-sm text-red-600'; return; }
+    if (!r.ok || !j.success) { msg.textContent = j.message || 'บันทึกไม่สำเร็จ'; msg.className='pts-msg pts-msg--err'; return; }
     msg.textContent = `บันทึกแล้ว ความคืบหน้าคอร์ส ${j.progress}% (${j.completed}/${j.total} บท)`;
-    msg.className = 'mt-3 text-sm text-primary font-semibold';
+    msg.className = 'pts-msg pts-msg--ok';
     loadCourseLessons();
   };
 }
 
 loadCourseLessons().catch(err => {
-  document.getElementById('lesson-view').innerHTML = `<p class="text-red-600">${escapeHtml(err.message)}</p>`;
+  document.getElementById('lesson-view').innerHTML = `<p class="pts-msg--err">${escapeHtml(err.message)}</p>`;
 });
 </script>
 <script src="/comp/navbar.js"></script>

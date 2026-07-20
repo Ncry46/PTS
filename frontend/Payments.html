@@ -5,30 +5,34 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ชำระเงิน | PTS Learning</title>
 <link rel="stylesheet" href="/comp/site.css">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif}</style>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
 </head>
-<body class="pts-body text-on-surface">
+<body class="pts-body">
 <div id="app-navbar"></div>
-<main class="pts-main grid grid-cols-1 lg:grid-cols-2 gap-6">
-  <section class="bg-white rounded-2xl border border-pink-100 p-5">
-    <h1 class="text-2xl font-bold text-primary mb-2">ชำระเงินคอร์ส</h1>
-    <p class="text-sm text-on-surface-variant mb-4">ชำระผ่าน PromptPay — กดยืนยันเมื่อโอนแล้ว เพื่อเปิดสิทธิ์เรียน (บันทึกตามบัญชีของคุณ)</p>
-    <label class="block text-sm mb-1">เลือกคอร์ส</label>
-    <select id="course-select" class="w-full border rounded-xl px-3 py-2 mb-3"></select>
-    <label class="block text-sm mb-1">จำนวนเงิน (บาท)</label>
-    <input id="amount" type="number" value="0" min="0" class="w-full border rounded-xl px-3 py-2 mb-4">
-    <button id="create-pay" class="w-full bg-primary text-white py-3 rounded-full font-bold">สร้างรายการชำระเงิน</button>
-    <p id="pay-msg" class="mt-3 text-sm text-on-surface-variant"></p>
+<main class="pts-main">
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Payments</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ชำระเงินคอร์ส</h1>
+    <p class="text-on-surface-variant max-w-xl">สร้างรายการ PromptPay แล้วกดยืนยันหลังโอน — บันทึกตามบัญชีของคุณ</p>
   </section>
-  <section class="bg-white rounded-2xl border border-pink-100 p-5">
-    <h2 class="text-xl font-bold mb-4">ประวัติการชำระเงิน</h2>
-    <div id="payment-list" class="space-y-3">กำลังโหลด...</div>
-  </section>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <section class="pts-panel">
+      <h2 class="font-bold text-lg mb-4">สร้างรายการ</h2>
+      <label class="pts-field"><span>เลือกคอร์ส</span><select id="course-select" class="pts-input"></select></label>
+      <label class="pts-field"><span>จำนวนเงิน (บาท)</span><input id="amount" type="number" value="0" min="0" class="pts-input"></label>
+      <button id="create-pay" class="pts-btn pts-btn-primary w-full">สร้างรายการชำระเงิน</button>
+      <p id="pay-msg" class="pts-msg"></p>
+    </section>
+    <section class="pts-panel">
+      <h2 class="font-bold text-lg mb-4">ประวัติการชำระเงิน</h2>
+      <div id="payment-list" class="space-y-3">กำลังโหลด...</div>
+    </section>
+  </div>
 </main>
+<div class="pts-footer-note">© PTS Learning</div>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const params = new URLSearchParams(location.search);
@@ -50,7 +54,6 @@ async function init() {
   };
   select.onchange = syncPrice;
   syncPrice();
-
   await loadPayments();
 
   document.getElementById('create-pay').onclick = async () => {
@@ -58,14 +61,13 @@ async function init() {
     const amount = Number(document.getElementById('amount').value || 0);
     const msg = document.getElementById('pay-msg');
     const res = await fetch(`/api/courses/${courseId}/pay`, {
-      method: 'POST',
-      credentials: 'include',
+      method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount })
     });
     const data = await res.json();
     msg.textContent = data.message || '';
-    msg.className = res.ok ? 'mt-3 text-sm text-primary font-semibold' : 'mt-3 text-sm text-red-600';
+    msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
     await loadPayments();
   };
 }
@@ -75,23 +77,23 @@ async function loadPayments() {
   const data = await res.json();
   const el = document.getElementById('payment-list');
   if (!res.ok || !data.success) {
-    el.innerHTML = `<div class="text-red-600">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
+    el.innerHTML = `<div class="pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
     return;
   }
   if (!data.data.length) {
-    el.innerHTML = '<div class="text-on-surface-variant">ยังไม่มีรายการชำระเงิน</div>';
+    el.innerHTML = `<div class="pts-empty" style="padding:28px"><p>ยังไม่มีรายการชำระเงิน</p></div>`;
     return;
   }
   el.innerHTML = data.data.map(p => `
-    <div class="border rounded-xl p-3">
-      <div class="flex justify-between gap-2">
-        <div>
-          <p class="font-bold">${escapeHtml(p.course_name)}</p>
-          <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} ${p.currency} · ${escapeHtml(p.status)}</p>
-          <p class="text-xs text-on-surface-variant">${escapeHtml(p.reference_code || '')}</p>
-        </div>
-        ${p.status === 'pending' ? `<button data-id="${p.payment_id}" class="confirm-pay bg-primary text-white px-3 py-2 rounded-full text-sm font-bold h-fit">ยืนยันชำระ</button>` : '<span class="text-green-700 text-sm font-bold">ชำระแล้ว</span>'}
+    <div class="pts-row" style="padding:14px">
+      <div>
+        <p class="font-bold">${escapeHtml(p.course_name)}</p>
+        <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} ${escapeHtml(p.currency)} · ${escapeHtml(p.status)}</p>
+        <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(p.reference_code || '')}</p>
       </div>
+      ${p.status === 'pending'
+        ? `<button data-id="${p.payment_id}" class="confirm-pay pts-btn pts-btn-primary">ยืนยันชำระ</button>`
+        : `<span class="pts-chip">ชำระแล้ว</span>`}
     </div>
   `).join('');
 

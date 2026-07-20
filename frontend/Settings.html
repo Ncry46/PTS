@@ -4,43 +4,46 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตั้งค่าบัญชี | PTS Learning</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <link rel="stylesheet" href="/comp/site.css">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 </head>
 <body class="pts-body">
 <div id="app-navbar"></div>
 <main class="pts-main" style="max-width:720px">
   <section class="pts-page-hero">
-    <h1 class="text-3xl font-bold text-primary mb-2">ตั้งค่าบัญชี</h1>
+    <span class="pts-chip mb-3">Account</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตั้งค่าบัญชี</h1>
     <p class="text-on-surface-variant">จัดการโปรไฟล์และรหัสผ่านของคุณ</p>
   </section>
-  <section class="pts-card p-5 mb-4 space-y-3">
-    <h2 class="font-bold text-lg">โปรไฟล์</h2>
-    <label class="block text-sm">ชื่อ-นามสกุล<input id="full_name" class="mt-1 w-full border rounded-xl px-3 py-2"></label>
-    <label class="block text-sm">อีเมล<input id="email" disabled class="mt-1 w-full border rounded-xl px-3 py-2 bg-gray-50"></label>
-    <label class="block text-sm">เบอร์โทร<input id="phone" class="mt-1 w-full border rounded-xl px-3 py-2"></label>
-    <label class="block text-sm">URL รูปโปรไฟล์<input id="url" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="https://..."></label>
+
+  <section class="pts-panel mb-5">
+    <h2 class="font-bold text-lg mb-4">โปรไฟล์</h2>
+    <label class="pts-field"><span>ชื่อ-นามสกุล</span><input id="full_name" class="pts-input"></label>
+    <label class="pts-field"><span>อีเมล</span><input id="email" disabled class="pts-input"></label>
+    <label class="pts-field"><span>เบอร์โทร</span><input id="phone" class="pts-input"></label>
+    <label class="pts-field"><span>URL รูปโปรไฟล์</span><input id="url" class="pts-input" placeholder="https://..."></label>
     <button id="save-profile" class="pts-btn pts-btn-primary">บันทึกโปรไฟล์</button>
-    <p id="profile-msg" class="text-sm text-on-surface-variant"></p>
+    <p id="profile-msg" class="pts-msg"></p>
   </section>
-  <section class="pts-card p-5 space-y-3">
-    <h2 class="font-bold text-lg">เปลี่ยนรหัสผ่าน</h2>
-    <p class="text-sm text-on-surface-variant">ระบบจะส่งรหัส OTP ไปที่อีเมลบัญชีของคุณเพื่อยืนยันก่อนเปลี่ยนรหัสผ่าน</p>
-    <label class="block text-sm">รหัสผ่านปัจจุบัน<input id="current_password" type="password" class="mt-1 w-full border rounded-xl px-3 py-2"></label>
-    <label class="block text-sm">รหัสผ่านใหม่<input id="new_password" type="password" class="mt-1 w-full border rounded-xl px-3 py-2"></label>
-    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
-      <label class="block text-sm flex-1">รหัส OTP จากอีเมล
-        <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="mt-1 w-full border rounded-xl px-3 py-2 tracking-widest text-center font-bold" placeholder="••••••">
+
+  <section class="pts-panel">
+    <h2 class="font-bold text-lg mb-2">เปลี่ยนรหัสผ่าน</h2>
+    <p class="text-sm text-on-surface-variant mb-4">ระบบส่ง OTP ไปที่อีเมลบัญชีเพื่อยืนยันก่อนเปลี่ยนรหัสผ่าน</p>
+    <label class="pts-field"><span>รหัสผ่านปัจจุบัน</span><input id="current_password" type="password" class="pts-input"></label>
+    <label class="pts-field"><span>รหัสผ่านใหม่</span><input id="new_password" type="password" class="pts-input"></label>
+    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
+      <label class="pts-field flex-1 mb-0"><span>รหัส OTP จากอีเมล</span>
+        <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="pts-input text-center tracking-[0.3em] font-bold" placeholder="••••••">
       </label>
       <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap">ส่ง OTP ไปอีเมล</button>
     </div>
     <button id="save-password" class="pts-btn pts-btn-primary">ยืนยันเปลี่ยนรหัสผ่าน</button>
-    <p id="password-msg" class="text-sm text-on-surface-variant"></p>
+    <p id="password-msg" class="pts-msg"></p>
   </section>
 </main>
+<div class="pts-footer-note">© PTS Learning</div>
 <script>
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
@@ -66,7 +69,7 @@ document.getElementById('save-profile').onclick = async () => {
   const data = await res.json();
   const msg = document.getElementById('profile-msg');
   msg.textContent = data.message || '';
-  msg.className = res.ok ? 'text-sm text-primary font-semibold' : 'text-sm text-error';
+  msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
 };
 
 document.getElementById('request-password-otp').onclick = async () => {
@@ -75,15 +78,13 @@ document.getElementById('request-password-otp').onclick = async () => {
   btn.disabled = true;
   btn.textContent = 'กำลังส่ง...';
   try {
-    const res = await fetch('/api/profile/password/request-otp', {
-      method: 'POST', credentials: 'include'
-    });
+    const res = await fetch('/api/profile/password/request-otp', { method: 'POST', credentials: 'include' });
     const data = await res.json();
     msg.textContent = data.message || '';
-    msg.className = res.ok ? 'text-sm text-primary font-semibold' : 'text-sm text-error';
+    msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
   } catch (e) {
     msg.textContent = e.message;
-    msg.className = 'text-sm text-error';
+    msg.className = 'pts-msg pts-msg--err';
   } finally {
     btn.disabled = false;
     btn.textContent = 'ส่ง OTP ไปอีเมล';
@@ -103,7 +104,7 @@ document.getElementById('save-password').onclick = async () => {
   const data = await res.json();
   const msg = document.getElementById('password-msg');
   msg.textContent = data.message || '';
-  msg.className = res.ok ? 'text-sm text-primary font-semibold' : 'text-sm text-error';
+  msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
   if (res.ok) {
     document.getElementById('current_password').value = '';
     document.getElementById('new_password').value = '';

@@ -5,26 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ใบประกาศ | PTS Learning</title>
 <link rel="stylesheet" href="/comp/site.css">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif}
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
+<style>
 @media print {
-  #app-navbar, .pts-page-hero a, .pts-btn, .pts-footer-note { display:none !important; }
+  #app-navbar, .pts-page-hero, .pts-footer-note, .no-print { display:none !important; }
   body { background:#fff !important; }
-  .pts-main { padding:0 !important; max-width:none !important; }
-  article { break-inside: avoid; border:2px solid #974258 !important; min-height: 70vh; }
+  .pts-main { padding:24px !important; max-width:none !important; }
+  .cert-sheet { border:2px solid #974258 !important; min-height:70vh; box-shadow:none !important; }
 }
 </style>
 </head>
-<body class="pts-body text-on-surface">
+<body class="pts-body">
 <div id="app-navbar"></div>
 <main class="pts-main">
-  <h1 class="text-3xl font-bold text-primary mb-2">ใบประกาศของฉัน</h1>
-  <p class="text-on-surface-variant mb-6">ระบบจะออกใบประกาศอัตโนมัติเมื่อเรียนครบทุกบทของคอร์ส</p>
-  <div id="cert-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">กำลังโหลด...</div>
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Certificates</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ใบประกาศของฉัน</h1>
+    <p class="text-on-surface-variant max-w-xl">ออกอัตโนมัติเมื่อเรียนครบทุกบทของคอร์ส</p>
+  </section>
+  <div id="cert-list" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    <div class="pts-empty col-span-full">กำลังโหลด...</div>
+  </div>
 </main>
+<div class="pts-footer-note">© PTS Learning</div>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 async function load() {
@@ -34,28 +39,33 @@ async function load() {
   const data = await res.json();
   const el = document.getElementById('cert-list');
   if (!res.ok || !data.success) {
-    el.innerHTML = `<div class="bg-red-50 text-red-700 p-4 rounded-2xl col-span-full">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
+    el.innerHTML = `<div class="pts-empty col-span-full pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
     return;
   }
   if (!data.data.length) {
-    el.innerHTML = `<div class="bg-white p-6 rounded-2xl border col-span-full text-on-surface-variant">ยังไม่มีใบประกาศ<br><a class="text-primary font-bold" href="Courses.html">ไปเรียนคอร์สต่อ</a></div>`;
+    el.innerHTML = `<div class="pts-empty col-span-full">
+      <div class="pts-empty__icon"><span class="material-symbols-outlined">workspace_premium</span></div>
+      <p class="font-semibold mb-1">ยังไม่มีใบประกาศ</p>
+      <p class="text-sm mb-4">เรียนให้ครบทุกบทแล้วระบบจะออกใบประกาศให้อัตโนมัติ</p>
+      <a class="pts-btn pts-btn-primary" href="Courses.html">ไปเรียนต่อ</a>
+    </div>`;
     return;
   }
   el.innerHTML = data.data.map(c => `
-    <article class="bg-white rounded-2xl border-2 border-primary/20 p-5 relative overflow-hidden">
-      <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-primary/10"></div>
-      <p class="text-xs font-bold text-primary tracking-wider mb-2">PTS CERTIFICATE</p>
-      <h2 class="text-xl font-bold mb-1">${escapeHtml(c.course_name)}</h2>
-      <p class="text-sm text-on-surface-variant mb-4">วิทยากร ${escapeHtml(c.instructor_name || '-')}</p>
-      <p class="text-sm">ออกให้แก่ <span class="font-bold">${escapeHtml(me.user.name || '')}</span></p>
-      <p class="text-xs text-on-surface-variant mt-2">รหัส: ${escapeHtml(c.certificate_code)}</p>
-      <p class="text-xs text-on-surface-variant">วันที่ออก: ${new Date(c.issued_at).toLocaleDateString('th-TH')}</p>
-      <button onclick="window.print()" class="mt-4 bg-primary text-white px-4 py-2 rounded-full text-sm font-bold">พิมพ์ใบประกาศ</button>
+    <article class="cert-sheet pts-panel relative overflow-hidden border-2 border-primary/15">
+      <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-primary/10 pointer-events-none"></div>
+      <p class="text-xs font-bold tracking-[0.18em] text-primary mb-3">PTS CERTIFICATE</p>
+      <h2 class="text-xl font-bold pts-display mb-1">${escapeHtml(c.course_name)}</h2>
+      <p class="text-sm text-on-surface-variant mb-5">วิทยากร ${escapeHtml(c.instructor_name || '-')}</p>
+      <p class="text-sm">มอบให้แก่ <strong>${escapeHtml(me.user.name || '')}</strong></p>
+      <p class="text-xs text-on-surface-variant mt-3">รหัส ${escapeHtml(c.certificate_code)}</p>
+      <p class="text-xs text-on-surface-variant">วันที่ออก ${new Date(c.issued_at).toLocaleDateString('th-TH')}</p>
+      <button onclick="window.print()" class="pts-btn pts-btn-outline mt-5 no-print">พิมพ์ใบประกาศ</button>
     </article>
   `).join('');
 }
 load().catch(err => {
-  document.getElementById('cert-list').innerHTML = `<div class="text-red-600">${escapeHtml(err.message)}</div>`;
+  document.getElementById('cert-list').innerHTML = `<div class="pts-empty col-span-full pts-msg--err">${escapeHtml(err.message)}</div>`;
 });
 </script>
 <script src="/comp/navbar.js"></script>
