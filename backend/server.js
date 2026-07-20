@@ -2,6 +2,7 @@ const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const session = require('express-session');
 try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
 const { ensureLearningSchema, createNotification } = require('./ensureSchema');
@@ -9,6 +10,7 @@ const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createProfileRouter } = require('./profileRoutes');
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
+const { writeSecretsFile } = require('./mailSecrets');
 
 const app = express();
 const PORT = 3000;
@@ -24,24 +26,49 @@ app.use(session({
     cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // อยู่ได้นาน 24 ชั่วโมง
 }));
 
-// 1. ตัวเปิดสิทธิ์โฟลเดอร์หน้าบ้านเดิมของคุณ (ดึงจากระดับโฟลเดอร์ชั้นนอก)
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
-// 2. 🌟 เพิ่มบรรทัดนี้: เปิดสิทธิ์ให้เบราว์เซอร์เข้าถึงโฟลเดอร์ components ข้างนอกได้
-app.use('/comp', express.static(path.join(__dirname, '..', 'components')));
+const frontendDir = path.join(__dirname, '..', 'frontend');
+const componentsDir = path.join(__dirname, '..', 'components');
+
+// เสิร์ฟหน้าบ้าน + ไฟล์ navbar/css ที่อยู่ใน frontend โดยตรง
+app.use(express.static(frontendDir));
+// /comp ชี้ทั้ง frontend และ components (กันพาธเก่าพัง)
+app.use('/comp', express.static(frontendDir));
+app.use('/comp', express.static(componentsDir));
 
 // 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
 const dbConfig = {
-    user: 'uinet',                       
+    user: 'uinet',
     password: 'p@$$w0rd', // ⚠️ ตรวจสอบรหัสผ่าน SQL Server ของคุณให้ถูกต้องตรงนี้ครับ
-    server: 'tvsdb2.thanvasupos.com',    
-    port: 28914,                         
-    database: 'BD_PTS',                  
+    server: 'tvsdb2.thanvasupos.com',
+    port: 28914,
+    database: 'BD_PTS',
     options: {
         encrypt: true,
-        trustServerCertificate: true     
+        trustServerCertificate: true
     },
     pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
 };
+
+// 📧 ตั้งค่าส่ง Email OTP (แก้ตรงนี้เหมือนรหัส SQL ด้านบน)
+// App Password จาก https://myaccount.google.com/apppasswords
+const mailConfig = {
+    mode: 'smtp',
+    smtpHost: 'smtp.gmail.com',
+    smtpPort: 587,
+    smtpSecure: false,
+    smtpUser: 'businessdev@thanvasu.com',
+    smtpPass: 'zwqmqqykmgrzqbcj',
+    fromName: 'PTS Learning',
+    fromEmail: 'businessdev@thanvasu.com',
+    brevoApiKey: ''
+};
+
+try {
+    writeSecretsFile(mailConfig);
+    console.log('📧 บันทึกค่า Email OTP จาก server.js → mail.local.js / mail.secrets.json');
+} catch (e) {
+    console.error('⚠️ บันทึกค่าอีเมลไม่สำเร็จ:', e.message);
+}
 
 const poolPromise = new sql.ConnectionPool(dbConfig)
     .connect()
@@ -54,14 +81,12 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
             console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
         }
         const mail = getMailStatus();
+        const localPath = path.join(__dirname, 'mail.local.js');
+        console.log('📁 mail.local.js =', localPath, fs.existsSync(localPath) ? '(มีไฟล์)' : '(ไม่พบ)');
         if (mail.ready) {
             console.log(`📧 Email OTP ready → ส่งจาก ${mail.fromEmail || '-'} ผ่าน ${mail.smtpHost || mail.mode}`);
         } else {
-            console.warn('⚠️ Email OTP ยังไม่พร้อม');
-            console.warn('   thanvasu.com ใช้ Google Workspace');
-            console.warn('   1) เปิด https://myaccount.google.com/apppasswords สร้าง App Password');
-            console.warn('   2) ใส่รหัส 16 ตัวใน backend/mail.local.js ที่ช่อง smtpPass');
-            console.warn('   หรือตั้งผ่าน Admin → แท็บ อีเมล OTP แล้วกดทดสอบส่ง');
+            console.warn('⚠️ Email OTP ยังไม่พร้อม — ตรวจ mailConfig.smtpPass ใน server.js');
         }
         return pool;
     })
