@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายละเอียดคอร์ส | PTS Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<link rel="stylesheet" href="/comp/site.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+</head>
+<body class="pts-body">
+<div id="app-navbar"></div>
+<main class="pts-main pts-main--wide">
+  <div id="content" class="pts-card overflow-hidden">กำลังโหลด...</div>
+</main>
+<script>
+const courseId = new URLSearchParams(location.search).get('courseId');
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+(async () => {
+  if (!courseId) {
+    document.getElementById('content').innerHTML = '<div class="p-6">ไม่พบรหัสคอร์ส</div>';
+    return;
+  }
+  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
+  const res = await fetch(`/api/courses/${courseId}`, { credentials:'include' });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    document.getElementById('content').innerHTML = `<div class="p-6 text-error">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
+    return;
+  }
+  const c = data.data;
+  const price = Number(c.price || 0);
+  const enrolled = Number(c.is_enrolled) === 1;
+  const loggedIn = !!me.loggedIn;
+  document.getElementById('content').innerHTML = `
+    <div class="grid grid-cols-1 lg:grid-cols-2">
+      <img class="w-full h-64 lg:h-full object-cover" src="${c.cover_image_url || 'https://placehold.co/800x500/f8e8ec/974258?text=PTS+Course'}" alt="">
+      <div class="p-6 lg:p-8 flex flex-col">
+        <span class="pts-chip mb-3">${escapeHtml(c.delivery_mode || 'course')}</span>
+        <h1 class="text-3xl font-bold text-primary mb-2">${escapeHtml(c.course_name)}</h1>
+        <p class="text-sm text-on-surface-variant mb-3">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.difficulty_level||'-')}</p>
+        <p class="text-on-surface-variant mb-4 leading-relaxed">${escapeHtml(c.description || 'หลักสูตรพัฒนาทักษะ PA จาก PTS Academy')}</p>
+        <p class="text-2xl font-bold mb-4">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ฟรี / ตามแพ็กเกจ'}</p>
+        <div class="flex flex-wrap gap-2 mb-6">
+          ${!loggedIn ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>` : enrolled
+            ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
+            : `<button id="enroll" class="pts-btn pts-btn-primary">สมัครเรียน</button>
+               <a class="pts-btn pts-btn-outline" href="Payments.html?courseId=${c.course_id}">ชำระเงิน ${price ? price.toLocaleString('th-TH')+'฿' : ''}</a>`}
+          ${loggedIn ? `<button id="fav" class="pts-btn pts-btn-ghost">${Number(c.is_favorited)?'นำออกจากโปรด':'บันทึกโปรด'}</button>` : ''}
+          <a class="pts-btn pts-btn-outline" href="Courses.html">กลับรายการคอร์ส</a>
+        </div>
+        <h2 class="font-bold mb-2">บทเรียนในคอร์ส</h2>
+        <ul class="space-y-2">${(data.lessons||[]).map((l,i)=>`<li class="text-sm text-on-surface-variant border rounded-xl px-3 py-2">${i+1}. ${escapeHtml(l.title)} <span class="float-right">${l.duration_minutes||0} นาที</span></li>`).join('') || '<li class="text-sm text-on-surface-variant">ยังไม่มีบทเรียน</li>'}</ul>
+      </div>
+    </div>`;
+
+  document.getElementById('enroll')?.addEventListener('click', async () => {
+    const r = await fetch(`/api/courses/${courseId}/enroll`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    alert(j.message || (r.ok ? 'สำเร็จ' : 'ไม่สำเร็จ'));
+    if (r.ok) location.href = `Learn.html?courseId=${courseId}`;
+  });
+  document.getElementById('fav')?.addEventListener('click', async () => {
+    const r = await fetch(`/api/courses/${courseId}/favorite`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    alert(j.message || '');
+    location.reload();
+  });
+})();
+</script>
+<script src="/comp/navbar.js"></script>
+</body>
+</html>

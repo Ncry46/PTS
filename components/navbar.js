@@ -72,11 +72,23 @@ async function checkUserAndRenderNavbar() {
                                 <a class="px-4 py-2 text-label-md font-label-md text-on-surface-variant hover:text-primary transition-colors border border-outline-variant rounded-full" href="Login.html">เข้าสู่ระบบ</a>
                                 <a class="px-6 py-2 bg-primary text-white rounded-full text-label-md font-label-md hover:brightness-110 transition-all ring-2 ring-primary/20" href="Register.html">สมัครสมาชิก</a>
                             </div>
-                            <button class="md:hidden w-10 h-10 flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined">menu</span></button>
+                            <button type="button" id="mobile-menu-btn" class="md:hidden w-10 h-10 flex items-center justify-center text-on-surface-variant"><span class="material-symbols-outlined">menu</span></button>
+                        </div>
+                        <div id="mobile-menu" class="hidden md:hidden border-t border-outline-variant/30 bg-white px-4 py-3 space-y-2">
+                            <a class="block py-2" href="Home.html">หน้าแรก</a>
+                            <a class="block py-2" href="Courses.html">หลักสูตร</a>
+                            <a class="block py-2" href="Community.html">คอมมูนิตี้</a>
+                            <a class="block py-2" href="Login.html">เข้าสู่ระบบ</a>
+                            <a class="block py-2 font-bold text-primary" href="Register.html">สมัครสมาชิก</a>
                         </div>
                     </div>
                 </nav>
             `;
+            setTimeout(() => {
+                const btn = document.getElementById('mobile-menu-btn');
+                const menu = document.getElementById('mobile-menu');
+                if (btn && menu) btn.onclick = () => menu.classList.toggle('hidden');
+            }, 0);
             return;
         }
 
@@ -137,20 +149,29 @@ async function checkUserAndRenderNavbar() {
                                     </div>
                                 </div>
                                 <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Community.html">คอมมูนิตี้</a>
+                                <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Liked.html">ถูกใจ</a>
+                                <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Favorites.html">คอร์สโปรด</a>
                                 <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="DashbordU.html">แดชบอร์ด</a>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-base">
                             <button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all active:scale-95">notifications</button>
-                            <div class="flex items-center gap-sm pl-base group cursor-pointer" onclick="logout()">
-                                <div class="text-right hidden sm:block">
-                                    <p class="font-label-md text-label-md text-on-surface font-bold">${currentUser.name || 'คุณ ปลาย'}</p>
-                                    <p class="text-[10px] text-primary uppercase tracking-wider font-semibold">PA Professional</p>
-                                </div>
-                                <div class="relative">
-                                    <img class="w-10 h-10 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary transition-all shadow-sm" src="${currentUser.Url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name || 'P') + '&background=F8BBD0&color=880E4F&size=128'}">
-                                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary border-2 border-white rounded-full"></div>
+                            <a href="Notifications.html" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">notifications</a>
+                            <div class="relative">
+                                <button type="button" class="flex items-center gap-sm pl-base group" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                    <div class="text-right hidden sm:block">
+                                        <p class="font-label-md text-label-md text-on-surface font-bold">${currentUser.name || 'คุณผู้ใช้'}</p>
+                                        <p class="text-[10px] text-primary uppercase tracking-wider font-semibold">Student</p>
+                                    </div>
+                                    <img class="w-10 h-10 rounded-full object-cover border-2 border-primary/20" src="${currentUser.Url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name || 'P') + '&background=F8BBD0&color=880E4F&size=128'}">
+                                </button>
+                                <div class="hidden absolute right-0 top-full mt-2 w-48 bg-white border rounded-xl shadow-lg z-50 overflow-hidden">
+                                    <a class="block px-4 py-2 hover:bg-surface-container-low text-sm" href="DashbordU.html">แดชบอร์ด</a>
+                                    <a class="block px-4 py-2 hover:bg-surface-container-low text-sm" href="Settings.html">ตั้งค่า</a>
+                                    <a class="block px-4 py-2 hover:bg-surface-container-low text-sm" href="Liked.html">โพสต์ถูกใจ</a>
+                                    <a class="block px-4 py-2 hover:bg-surface-container-low text-sm" href="Favorites.html">คอร์สโปรด</a>
+                                    <button type="button" class="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-error" onclick="logout()">ออกจากระบบ</button>
                                 </div>
                             </div>
                         </div>
@@ -210,20 +231,27 @@ async function checkUserAndRenderNavbar() {
                                     </div>
                                 </div>
                                 <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Community.html">คอมมูนิตี้</a>
+                                <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Liked.html">ถูกใจ</a>
+                                <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Favorites.html">คอร์สโปรด</a>
                                 <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="DashbordU.html">แดชบอร์ด</a>
                                 <a class="font-body-md text-body-md text-on-surface-variant hover:text-primary transition-colors flex items-center h-full" href="Admin.html">Admin</a>
                             </div>
                         </div>
 
                         <div class="flex items-center gap-base">
-                            <button class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all active:scale-95">notifications</button>
-                            <div class="flex items-center gap-sm pl-base group cursor-pointer" onclick="logout()">
-                                <div class="text-right hidden sm:block">
-                                    <p class="font-label-md text-label-md text-on-surface font-bold">${currentUser.name || 'คุณผู้ใช้งาน'}</p>
-                                </div>
-                                <div class="relative">
-                                    <img class="w-10 h-10 rounded-full object-cover border-2 border-primary/20 group-hover:border-primary transition-all shadow-sm" src="${currentUser.Url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name || 'P') + '&background=F8BBD0&color=880E4F&size=128'}">
-                                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-tertiary border-2 border-white rounded-full"></div>
+                            <a href="Notifications.html" class="material-symbols-outlined p-2 text-on-surface-variant hover:bg-surface-container-low rounded-full transition-all">notifications</a>
+                            <div class="relative">
+                                <button type="button" class="flex items-center gap-sm pl-base" onclick="this.nextElementSibling.classList.toggle('hidden')">
+                                    <div class="text-right hidden sm:block">
+                                        <p class="font-label-md text-label-md text-on-surface font-bold">${currentUser.name || 'คุณผู้ใช้งาน'}</p>
+                                        <p class="text-[10px] text-primary uppercase tracking-wider font-semibold">Admin</p>
+                                    </div>
+                                    <img class="w-10 h-10 rounded-full object-cover border-2 border-primary/20" src="${currentUser.Url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name || 'P') + '&background=F8BBD0&color=880E4F&size=128'}">
+                                </button>
+                                <div class="hidden absolute right-0 top-full mt-2 w-48 bg-white border rounded-xl shadow-lg z-50 overflow-hidden">
+                                    <a class="block px-4 py-2 hover:bg-surface-container-low text-sm" href="Admin.html">Admin</a>
+                                    <a class="block px-4 py-2 hover:bg-surface-container-low text-sm" href="Settings.html">ตั้งค่า</a>
+                                    <button type="button" class="w-full text-left px-4 py-2 hover:bg-red-50 text-sm text-error" onclick="logout()">ออกจากระบบ</button>
                                 </div>
                             </div>
                         </div>

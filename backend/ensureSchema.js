@@ -69,12 +69,106 @@ async function ensureLearningSchema(pool) {
             reference_code VARCHAR(64) NULL,
             paid_at DATETIME NULL,
             created_at DATETIME NOT NULL CONSTRAINT DF_payments_created DEFAULT (GETDATE())
-         )`
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'course_favorites')
+         CREATE TABLE dbo.course_favorites (
+            favorite_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            user_id INT NOT NULL,
+            course_id INT NOT NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_course_favorites_created DEFAULT (GETDATE()),
+            CONSTRAINT UQ_course_favorites_user_course UNIQUE (user_id, course_id)
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'notifications')
+         CREATE TABLE dbo.notifications (
+            notification_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            user_id INT NOT NULL,
+            title NVARCHAR(255) NOT NULL,
+            body NVARCHAR(1000) NULL,
+            link_url NVARCHAR(500) NULL,
+            is_read BIT NOT NULL CONSTRAINT DF_notifications_read DEFAULT (0),
+            created_at DATETIME NOT NULL CONSTRAINT DF_notifications_created DEFAULT (GETDATE())
+         )`,
+        `IF COL_LENGTH('dbo.courses_main', 'price') IS NULL
+         ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
+        `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL
+         ALTER TABLE dbo.courses_main ADD description NVARCHAR(MAX) NULL`
     ];
 
     for (const statement of statements) {
         await pool.request().query(statement);
     }
+
+    await seedSchedulesIfEmpty(pool);
+    await backfillCoursePrices(pool);
+}
+
+async function backfillCoursePrices(pool) {
+    try {
+        await pool.request().query(`
+            UPDATE BD_PTS.dbo.courses_main
+            SET price = CASE
+                WHEN LOWER(ISNULL(delivery_mode,'')) = 'onsite' THEN 3900
+                WHEN LOWER(ISNULL(delivery_mode,'')) = 'hybrid' THEN 2900
+                ELSE 1900
+            END
+            WHERE price IS NULL
+        `);
+        await pool.request().query(`
+            UPDATE BD_PTS.dbo.courses_main
+            SET description = N'หลักสูตรพัฒนาทักษะ Personal Assistant แบบมืออาชีพ จาก PTS Academy ครอบคลุมทั้งทฤษฎีและการฝึกปฏิบัติ'
+            WHERE description IS NULL OR LTRIM(RTRIM(description)) = ''
+        `);
+    } catch (e) {
+        console.error('⚠️ backfill course price/description:', e.message);
+    }
+}
+
+async function seedSchedulesIfEmpty(pool) {
+    try {
+        const count = await pool.request().query(`SELECT COUNT(*) AS cnt FROM BD_PTS.dbo.class_schedules WHERE flag_use = 1`);
+        if (count.recordset[0].cnt > 0) return;
+
+        const course = await pool.request().query(`SELECT TOP 1 course_id, course_name FROM BD_PTS.dbo.courses_main ORDER BY created_at DESC`);
+        const courseId = course.recordset[0]?.course_id || null;
+        const courseName = course.recordset[0]?.course_name || 'PTS Workshop';
+
+        const schedules = [
+            { title: `Workshop: ${courseName}`, days: 2, hours: 10, mode: 'online', loc: 'Zoom Meeting', url: 'https://zoom.us' },
+            { title: 'Onsite Practice: Executive Support', days: 5, hours: 13, mode: 'onsite', loc: 'PTS Academy Bangkok', url: null },
+            { title: 'Hybrid Clinic: Time Management', days: 9, hours: 14, mode: 'hybrid', loc: 'Online + Onsite', url: 'https://meet.google.com' }
+        ];
+
+        for (const s of schedules) {
+            await pool.request()
+                .input('courseId', sql.Int, courseId)
+                .input('title', sql.NVarChar, s.title)
+                .input('startAt', sql.DateTime, new Date(Date.now() + s.days * 86400000 + s.hours * 3600000))
+                .input('endAt', sql.DateTime, new Date(Date.now() + s.days * 86400000 + (s.hours + 2) * 3600000))
+                .input('location', sql.NVarChar, s.loc)
+                .input('meeting', sql.NVarChar, s.url)
+                .input('mode', sql.VarChar, s.mode)
+                .query(`
+                    INSERT INTO BD_PTS.dbo.class_schedules
+                    (course_id, title, start_at, end_at, location, meeting_url, delivery_mode, flag_use)
+                    VALUES (@courseId, @title, @startAt, @endAt, @location, @meeting, @mode, 1)
+                `);
+        }
+        console.log('📅 Seeded sample class schedules');
+    } catch (e) {
+        console.error('⚠️ seed schedules:', e.message);
+    }
+}
+
+async function createNotification(pool, userId, title, body, linkUrl) {
+    await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('title', sql.NVarChar, title)
+        .input('body', sql.NVarChar, body || null)
+        .input('link', sql.NVarChar, linkUrl || null)
+        .query(`
+            INSERT INTO BD_PTS.dbo.notifications (user_id, title, body, link_url, is_read)
+            VALUES (@userId, @title, @body, @link, 0)
+        `);
 }
 
 async function seedLessonsIfEmpty(pool, courseId, courseName) {
@@ -124,4 +218,4 @@ async function seedLessonsIfEmpty(pool, courseId, courseName) {
     }
 }
 
-module.exports = { ensureLearningSchema, seedLessonsIfEmpty };
+module.exports = { ensureLearningSchema, seedLessonsIfEmpty, createNotification, seedSchedulesIfEmpty };

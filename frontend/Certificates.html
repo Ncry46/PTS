@@ -4,15 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ใบประกาศ | PTS Learning</title>
+<link rel="stylesheet" href="/comp/site.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}</style>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif}
+@media print {
+  #app-navbar, .pts-page-hero a, .pts-btn, .pts-footer-note { display:none !important; }
+  body { background:#fff !important; }
+  .pts-main { padding:0 !important; max-width:none !important; }
+  article { break-inside: avoid; border:2px solid #974258 !important; min-height: 70vh; }
+}
+</style>
 </head>
-<body class="text-on-surface">
+<body class="pts-body text-on-surface">
 <div id="app-navbar"></div>
-<main class="max-w-5xl mx-auto px-4 py-6">
+<main class="pts-main">
   <h1 class="text-3xl font-bold text-primary mb-2">ใบประกาศของฉัน</h1>
   <p class="text-on-surface-variant mb-6">ระบบจะออกใบประกาศอัตโนมัติเมื่อเรียนครบทุกบทของคอร์ส</p>
   <div id="cert-list" class="grid grid-cols-1 md:grid-cols-2 gap-4">กำลังโหลด...</div>

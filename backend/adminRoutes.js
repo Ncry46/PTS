@@ -94,10 +94,10 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
     router.post('/courses', async (req, res) => {
         if (!requireAdmin(req, res)) return;
-        const {
-            course_name, instructor_name, delivery_mode, difficulty_level,
-            total_hours, cover_image_url, is_featured
-        } = req.body;
+                const {
+                    course_name, instructor_name, delivery_mode, difficulty_level,
+                    total_hours, cover_image_url, is_featured, price, description
+                } = req.body;
 
         if (!course_name) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อคอร์ส' });
@@ -113,12 +113,14 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('hours', sql.Decimal(10, 2), Number(total_hours || 1))
                 .input('cover', sql.NVarChar, cover_image_url || null)
                 .input('featured', sql.Bit, is_featured ? 1 : 0)
+                .input('price', sql.Decimal(10, 2), price != null ? Number(price) : 1900)
+                .input('description', sql.NVarChar, description || 'หลักสูตร PTS Academy')
                 .query(`
                     INSERT INTO BD_PTS.dbo.courses_main
                     (course_name, instructor_name, delivery_mode, difficulty_level, total_hours,
-                     average_rating, total_reviews, cover_image_url, is_featured, created_at)
+                     average_rating, total_reviews, cover_image_url, is_featured, created_at, price, description)
                     OUTPUT INSERTED.course_id, INSERTED.course_name
-                    VALUES (@name, @instructor, @mode, @level, @hours, 0, 0, @cover, @featured, GETDATE())
+                    VALUES (@name, @instructor, @mode, @level, @hours, 0, 0, @cover, @featured, GETDATE(), @price, @description)
                 `);
 
             const created = result.recordset[0];

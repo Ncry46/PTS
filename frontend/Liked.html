@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>โพสต์ที่ถูกใจ | PTS Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="/comp/site.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+</head>
+<body class="pts-body">
+<div id="app-navbar"></div>
+<main class="pts-main">
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Liked Posts</span>
+    <h1 class="text-3xl font-bold text-primary mb-2">โพสต์ที่คุณถูกใจ</h1>
+    <p class="text-on-surface-variant">รวมโพสต์ที่กดถูกใจไว้ อ่านซ้ำหรือเลิกถูกใจได้จากหน้านี้</p>
+    <div class="mt-4 flex gap-2">
+      <a class="pts-btn pts-btn-outline" href="Community.html">กลับคอมมูนิตี้</a>
+    </div>
+  </section>
+  <div id="list" class="space-y-4"></div>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+(async () => {
+  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+  const box = document.getElementById('list');
+  const res = await fetch('/api/my/liked-posts', { credentials:'include' });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    box.innerHTML = `<div class="pts-card p-5 text-error">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
+    return;
+  }
+  if (!data.data.length) {
+    box.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ<br><a class="text-primary font-bold" href="Community.html">ไปสำรวจคอมมูนิตี้</a></div>`;
+    return;
+  }
+  box.innerHTML = data.data.map(p => `
+    <article class="pts-card p-5">
+      <div class="flex items-start justify-between gap-3 mb-3">
+        <div class="flex items-center gap-3">
+          <img class="w-10 h-10 rounded-full object-cover" src="${p.author_avatar||''}" alt="">
+          <div>
+            <p class="font-bold">${escapeHtml(p.author_name||'')}</p>
+            <p class="text-xs text-on-surface-variant">${new Date(p.created_at).toLocaleString('th-TH')}</p>
+          </div>
+        </div>
+        <button class="unlike pts-btn pts-btn-ghost pts-like-active" data-id="${p.post_id}">
+          <span class="material-symbols-outlined">favorite</span> เลิกถูกใจ
+        </button>
+      </div>
+      <p class="whitespace-pre-line text-on-surface-variant mb-3">${escapeHtml(p.content||'')}</p>
+      <a class="text-sm font-bold text-primary" href="Community.html">ดูในคอมมูนิตี้ →</a>
+    </article>`).join('');
+
+  box.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.unlike');
+    if (!btn) return;
+    const r = await fetch(`/api/community/${btn.dataset.id}/like`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    if (!r.ok || !j.success) return alert(j.message||'ไม่สำเร็จ');
+    btn.closest('article').remove();
+    if (!box.children.length) {
+      box.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ</div>`;
+    }
+  });
+})();
+</script>
+<script src="/comp/navbar.js"></script>
+</body>
+</html>
