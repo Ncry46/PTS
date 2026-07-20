@@ -3,11 +3,12 @@ const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
 const { ensureLearningSchema, createNotification } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createProfileRouter } = require('./profileRoutes');
-const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
+const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 
 const app = express();
 const PORT = 3000;
@@ -51,6 +52,12 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
             console.log('📚 Learning schema ready');
         } catch (schemaErr) {
             console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
+        }
+        const mail = getMailStatus();
+        if (mail.ready) {
+            console.log(`📧 Email OTP ready (from ${mail.fromEmail || '-'})`);
+        } else {
+            console.warn('⚠️ Email OTP ยังไม่พร้อม — ตั้งค่าที่ Admin → อีเมล OTP หรือไฟล์ .env / backend/mail.secrets.json');
         }
         return pool;
     })
@@ -216,14 +223,21 @@ app.post('/api/users/request-otp', async (req, res) => {
         const issued = await issueEmailOtp(userCheck.recordset[0].email, 'reset');
         res.json({
             success: true,
-            message: `ส่งรหัส OTP ไปที่อีเมล ${issued.masked} แล้ว (หมดอายุใน 5 นาที)`,
+            message: `ส่งรหัส OTP ไปที่อีเมล ${issued.masked} แล้ว กรุณาตรวจกล่องจดหมาย (รวมถึงสแปม) — หมดอายุใน 5 นาที`,
             masked_email: issued.masked,
+            delivered: issued.delivered,
             expires_in_seconds: issued.expires_in_seconds
         });
     } catch (error) {
         console.error('❌ request email OTP:', error.message);
-        const status = error.code === 'SMTP_NOT_CONFIGURED' ? 503 : 500;
-        res.status(status).json({ success: false, message: error.message });
+        const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING'].includes(error.code)
+            ? 503
+            : 500;
+        res.status(status).json({
+            success: false,
+            message: error.message || 'ส่งอีเมล OTP ไม่สำเร็จ',
+            code: error.code || null
+        });
     }
 });
 

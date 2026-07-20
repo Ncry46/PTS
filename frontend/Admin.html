@@ -14,8 +14,11 @@
 <body class="pts-body text-on-surface">
 <div id="app-navbar"></div>
 <main class="pts-main pts-main--wide">
-  <h1 class="text-3xl font-bold text-primary mb-2">แผงควบคุมแอดมิน</h1>
-  <p class="text-on-surface-variant mb-4">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ และการชำระเงิน</p>
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Admin</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
+    <p class="text-on-surface-variant">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน และการส่งอีเมล OTP</p>
+  </section>
   <div id="stats" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6"></div>
   <div class="flex flex-wrap gap-2 mb-4">
     <button class="tab-btn active px-4 py-2 rounded-full border text-sm font-bold" data-tab="courses">คอร์ส</button>
@@ -24,8 +27,9 @@
     <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="users">ผู้ใช้</button>
     <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="posts">โพสต์</button>
     <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="payments">ชำระเงิน</button>
+    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="mail">อีเมล OTP</button>
   </div>
-  <section id="panel" class="bg-white rounded-2xl border border-pink-100 p-5"></section>
+  <section id="panel" class="pts-panel"></section>
 </main>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -264,13 +268,104 @@ async function renderPayments() {
     </div>`;
 }
 
+async function renderMail() {
+  const data = await api('/api/admin/mail');
+  const f = data.form || {};
+  const s = data.status || {};
+  document.getElementById('panel').innerHTML = `
+    <div class="mb-5 p-4 rounded-2xl ${s.ready ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}">
+      <p class="font-bold ${s.ready ? 'text-emerald-800' : 'text-amber-800'}">${s.ready ? 'พร้อมส่งอีเมล OTP จริง' : 'ยังไม่พร้อม — กรุณาตั้งค่าด้านล่าง'}</p>
+      <p class="text-sm mt-1 text-on-surface-variant">SMTP: ${s.smtpConfigured ? 'ตั้งแล้ว' : 'ยังไม่ตั้ง'} · Brevo: ${s.brevoConfigured ? 'ตั้งแล้ว' : 'ยังไม่ตั้ง'} · From: ${escapeHtml(s.fromEmail || '-')}</p>
+    </div>
+    <h2 class="font-bold text-lg mb-2">ตั้งค่าส่ง Email OTP จริง</h2>
+    <p class="text-sm text-on-surface-variant mb-4">กรอก SMTP ของบริษัท (เช่น Office 365 / Gmail App Password) หรือใส่ Brevo API Key — OTP จะถูกส่งเข้าอีเมลผู้ใช้จริง ไม่ใช่ mock</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <label class="text-sm">โหมด
+        <select id="m-mode" class="mt-1 w-full border rounded-xl px-3 py-2">
+          <option value="auto" ${f.mode==='auto'?'selected':''}>auto (Brevo ก่อน แล้ว SMTP)</option>
+          <option value="smtp" ${f.mode==='smtp'?'selected':''}>smtp เท่านั้น</option>
+          <option value="brevo" ${f.mode==='brevo'?'selected':''}>brevo เท่านั้น</option>
+        </select>
+      </label>
+      <label class="text-sm">ชื่อผู้ส่ง
+        <input id="m-from-name" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.fromName||'PTS Learning')}">
+      </label>
+      <label class="text-sm">อีเมลผู้ส่ง (From)
+        <input id="m-from-email" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="noreply@thanvasu.com" value="${escapeHtml(f.fromEmail||'')}">
+      </label>
+      <label class="text-sm">SMTP Host
+        <input id="m-host" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.smtpHost||'smtp.office365.com')}">
+      </label>
+      <label class="text-sm">SMTP Port
+        <input id="m-port" type="number" class="mt-1 w-full border rounded-xl px-3 py-2" value="${Number(f.smtpPort||587)}">
+      </label>
+      <label class="text-sm">SMTP User (อีเมลล็อกอิน)
+        <input id="m-user" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="you@thanvasu.com" value="${escapeHtml(f.smtpUser||'')}">
+      </label>
+      <label class="text-sm">SMTP Password / App Password ${f.hasSmtpPass ? '<span class="text-emerald-700">(มีรหัสบันทึกไว้แล้ว — เว้นว่างถ้าไม่เปลี่ยน)</span>' : ''}
+        <input id="m-pass" type="password" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="${f.hasSmtpPass ? '••••••••' : 'รหัสผ่านอีเมล'}">
+      </label>
+      <label class="text-sm">Brevo API Key ${f.hasBrevoKey ? '<span class="text-emerald-700">(มีคีย์แล้ว — เว้นว่างถ้าไม่เปลี่ยน)</span>' : ''}
+        <input id="m-brevo" type="password" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="${f.hasBrevoKey ? '••••••••' : 'xkeysib-...'}">
+      </label>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button id="save-mail" class="pts-btn pts-btn-primary">บันทึกการตั้งค่าอีเมล</button>
+    </div>
+    <h3 class="font-bold mb-2">ทดสอบส่ง OTP จริง</h3>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <input id="m-test-email" class="flex-1 border rounded-xl px-3 py-2" placeholder="อีเมลปลายทางทดสอบ">
+      <button id="test-mail" class="pts-btn pts-btn-outline">ส่ง OTP ทดสอบ</button>
+    </div>
+    <p id="mail-msg" class="pts-msg"></p>`;
+
+  document.getElementById('save-mail').onclick = async () => {
+    const msg = document.getElementById('mail-msg');
+    try {
+      const body = {
+        mode: document.getElementById('m-mode').value,
+        fromName: document.getElementById('m-from-name').value,
+        fromEmail: document.getElementById('m-from-email').value,
+        smtpHost: document.getElementById('m-host').value,
+        smtpPort: Number(document.getElementById('m-port').value || 587),
+        smtpUser: document.getElementById('m-user').value,
+        smtpPass: document.getElementById('m-pass').value,
+        brevoApiKey: document.getElementById('m-brevo').value
+      };
+      const res = await api('/api/admin/mail', { method: 'PUT', body: JSON.stringify(body) });
+      msg.textContent = res.message;
+      msg.className = 'pts-msg pts-msg--ok';
+      renderMail();
+    } catch (e) {
+      msg.textContent = e.message;
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  };
+
+  document.getElementById('test-mail').onclick = async () => {
+    const msg = document.getElementById('mail-msg');
+    try {
+      const res = await api('/api/admin/mail/test', {
+        method: 'POST',
+        body: JSON.stringify({ email: document.getElementById('m-test-email').value })
+      });
+      msg.textContent = res.message;
+      msg.className = 'pts-msg pts-msg--ok';
+    } catch (e) {
+      msg.textContent = e.message;
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  };
+}
+
 const tabs = {
   courses: renderCourses,
   lessons: renderLessons,
   schedules: renderSchedules,
   users: renderUsers,
   posts: renderPosts,
-  payments: renderPayments
+  payments: renderPayments,
+  mail: renderMail
 };
 
 document.querySelectorAll('.tab-btn').forEach(btn => {

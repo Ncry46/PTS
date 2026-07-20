@@ -11,6 +11,43 @@ npm start
 
 เปิดเว็บที่ `http://localhost:3000`
 
+## ส่ง Email OTP จริง (สำคัญ)
+
+ระบบ**บังคับส่ง OTP เข้าอีเมลจริง** — ไม่ใช้ mock
+
+ตั้งค่าอย่างใดอย่างหนึ่ง:
+
+### วิธีที่ 1 — จากหน้า Admin (แนะนำ)
+1. ล็อกอินด้วยบัญชี `Role = admin`
+2. เปิด `Admin.html` → แท็บ **อีเมล OTP**
+3. กรอก SMTP (เช่น Office 365 / Gmail App Password) หรือ Brevo API Key
+4. กด **บันทึก** แล้ว **ส่ง OTP ทดสอบ** ไปอีเมลตัวเอง
+
+### วิธีที่ 2 — ไฟล์ `.env`
+คัดลอก `.env.example` เป็น `.env` แล้วกรอกค่า:
+
+```bash
+cp .env.example .env
+```
+
+```env
+SMTP_HOST=smtp.office365.com
+SMTP_PORT=587
+SMTP_USER=your@thanvasu.com
+SMTP_PASS=your-password
+MAIL_FROM_EMAIL=your@thanvasu.com
+MAIL_FROM_NAME=PTS Learning
+```
+
+หรือใช้ Brevo:
+
+```env
+BREVO_API_KEY=xkeysib-xxxx
+MAIL_FROM_EMAIL=verified-sender@yourdomain.com
+```
+
+ค่าที่บันทึกจาก Admin อยู่ใน `backend/mail.secrets.json` (ไม่ commit ขึ้น git)
+
 ## โครงสร้างหลัก
 
 - `backend/` — Express API + SQL Server
@@ -35,25 +72,10 @@ npm start
 | Payments | ชำระเงิน PromptPay (ยืนยันในระบบตามบัญชีผู้ใช้) |
 | Certificates | ใบประกาศ |
 | Settings / Notifications | โปรไฟล์และการแจ้งเตือน |
-| Admin | แผงแอดมิน |
+| Admin | แผงแอดมิน + ตั้งค่าอีเมล OTP |
 | kiosk | ตัวจำลอง API สำหรับเครื่องจริง |
 
-## ลืมรหัสผ่าน / เปลี่ยนรหัสผ่าน (Email OTP)
+## ลืมรหัสผ่าน / เปลี่ยนรหัสผ่าน
 
-ระบบส่ง OTP 6 หลักทางอีเมล (หมดอายุ 5 นาที)
-
-ตั้งค่า SMTP ก่อนใช้งานจริง:
-
-```bash
-export SMTP_HOST=smtp.gmail.com
-export SMTP_PORT=587
-export SMTP_USER=your@gmail.com
-export SMTP_PASS=your-app-password
-export MAIL_FROM="PTS Learning <your@gmail.com>"
-```
-
-ถ้ายังไม่ตั้ง SMTP เซิร์ฟเวอร์จะพิมพ์ OTP ลง console เพื่อทดสอบในเครื่อง  
-ตั้ง `EMAIL_OTP_REQUIRE_SMTP=true` หากต้องการบังคับให้ส่งอีเมลจริงเท่านั้น
-
-- ลืมรหัสผ่าน: หน้า `Login.html` → ลืมรหัสผ่าน
-- เปลี่ยนรหัสผ่าน: หน้า `Settings.html` → ส่ง OTP ไปอีเมล แล้วยืนยันพร้อมรหัสผ่านปัจจุบัน
+- ลืมรหัสผ่าน: `Login.html` → ลืมรหัสผ่าน → OTP เข้าอีเมล
+- เปลี่ยนรหัสผ่าน: `Settings.html` → ส่ง OTP ไปอีเมล + รหัสผ่านปัจจุบัน

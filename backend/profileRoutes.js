@@ -78,8 +78,10 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             });
         } catch (error) {
             console.error('❌ change-password request OTP:', error.message);
-            const status = error.code === 'SMTP_NOT_CONFIGURED' ? 503 : 500;
-            res.status(status).json({ success: false, message: error.message });
+            const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING'].includes(error.code)
+                ? 503
+                : 500;
+            res.status(status).json({ success: false, message: error.message, code: error.code || null });
         }
     });
 

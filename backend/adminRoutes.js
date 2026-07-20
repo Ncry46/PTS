@@ -1,5 +1,7 @@
 const express = require('express');
 const sql = require('mssql');
+const { writeSecretsFile, readSecretsFile, publicMailStatus } = require('./mailSecrets');
+const { issueEmailOtp, getMailStatus } = require('./emailOtp');
 
 function createAdminRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -336,6 +338,74 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             `);
             res.json({ success: true, data: result.recordset });
         } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    // สถานะการส่งอีเมล OTP
+    router.get('/mail', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const secrets = readSecretsFile();
+        res.json({
+            success: true,
+            status: getMailStatus(),
+            form: {
+                mode: secrets.mode || 'auto',
+                smtpHost: secrets.smtpHost || 'smtp.office365.com',
+                smtpPort: secrets.smtpPort || 587,
+                smtpSecure: !!secrets.smtpSecure,
+                smtpUser: secrets.smtpUser || '',
+                fromName: secrets.fromName || 'PTS Learning',
+                fromEmail: secrets.fromEmail || '',
+                hasSmtpPass: !!secrets.smtpPass,
+                hasBrevoKey: !!secrets.brevoApiKey
+            }
+        });
+    });
+
+    // บันทึกค่าส่งอีเมลจริง (เก็บใน backend/mail.secrets.json)
+    router.put('/mail', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        try {
+            const body = req.body || {};
+            writeSecretsFile({
+                mode: body.mode || 'auto',
+                smtpHost: body.smtpHost,
+                smtpPort: body.smtpPort,
+                smtpSecure: body.smtpSecure,
+                smtpUser: body.smtpUser,
+                smtpPass: body.smtpPass, // ว่าง = คงรหัสเดิม
+                brevoApiKey: body.brevoApiKey,
+                fromName: body.fromName,
+                fromEmail: body.fromEmail
+            });
+            res.json({
+                success: true,
+                message: 'บันทึกการตั้งค่าอีเมลแล้ว — OTP จะส่งเข้าอีเมลจริง',
+                status: publicMailStatus()
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    // ทดสอบส่ง OTP ไปอีเมลที่ระบุ
+    router.post('/mail/test', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const email = String(req.body.email || '').trim().toLowerCase();
+        if (!email || !email.includes('@')) {
+            return res.status(400).json({ success: false, message: 'กรุณาระบุอีเมลทดสอบ' });
+        }
+        try {
+            const issued = await issueEmailOtp(email, 'reset');
+            res.json({
+                success: true,
+                message: `ส่ง OTP ทดสอบไปที่ ${issued.masked} แล้ว (ผ่าน ${issued.mode})`,
+                mode: issued.mode,
+                masked_email: issued.masked
+            });
+        } catch (error) {
+            console.error('❌ mail test:', error.message);
             res.status(500).json({ success: false, message: error.message });
         }
     });

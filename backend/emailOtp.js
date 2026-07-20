@@ -1,21 +1,10 @@
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
-
-/**
- * Email OTP สำหรับลืมรหัสผ่าน / เปลี่ยนรหัสผ่าน
- *
- * ตั้งค่า SMTP ผ่าน environment:
- *   SMTP_HOST, SMTP_PORT (default 587), SMTP_USER, SMTP_PASS
- *   SMTP_SECURE=true สำหรับพอร์ต 465
- *   MAIL_FROM (อีเมลผู้ส่ง)
- *
- * ถ้ายังไม่ตั้ง SMTP ระบบจะพิมพ์ OTP ลง console เพื่อทดสอบในเครื่อง
- * ตั้ง EMAIL_OTP_REQUIRE_SMTP=true เพื่อบังคับให้ต้องมี SMTP จริง
- */
+const { getMergedMailSettings, publicMailStatus } = require('./mailSecrets');
 
 const OTP_TTL_MS = 5 * 60 * 1000;
 const MAX_ATTEMPTS = 5;
-const otpStore = new Map(); // key -> { hash, expiresAt, attempts }
+const otpStore = new Map();
 
 function otpKey(email, purpose) {
     return `${String(email || '').trim().toLowerCase()}|${purpose || 'reset'}`;
@@ -29,20 +18,6 @@ function generateOtp() {
     return String(crypto.randomInt(100000, 999999));
 }
 
-function createTransporter() {
-    const host = process.env.SMTP_HOST || '';
-    const user = process.env.SMTP_USER || '';
-    const pass = process.env.SMTP_PASS || '';
-    if (!host || !user || !pass) return null;
-
-    return nodemailer.createTransport({
-        host,
-        port: Number(process.env.SMTP_PORT || 587),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: { user, pass }
-    });
-}
-
 function maskEmail(email) {
     const [name, domain] = String(email).split('@');
     if (!domain) return '***';
@@ -50,8 +25,35 @@ function maskEmail(email) {
     return `${visible}${'*'.repeat(Math.max(1, name.length - visible.length))}@${domain}`;
 }
 
-async function sendOtpEmail(to, otp, purpose) {
-    const from = process.env.MAIL_FROM || process.env.SMTP_USER || 'noreply@pts-learning.local';
+function resolveFrom(settings) {
+    const email = String(settings.fromEmail || settings.smtp.user || '').trim();
+    const name = settings.fromName || 'PTS Learning';
+    if (!email) return null;
+    return { name, email, formatted: `"${name}" <${email}>` };
+}
+
+function hasSmtpConfig(settings) {
+    return !!(settings.smtp.host && settings.smtp.user && settings.smtp.pass);
+}
+
+function hasBrevoConfig(settings) {
+    return !!String(settings.brevoApiKey || '').trim();
+}
+
+function createTransporter(settings) {
+    if (!hasSmtpConfig(settings)) return null;
+    return nodemailer.createTransport({
+        host: settings.smtp.host,
+        port: settings.smtp.port,
+        secure: !!settings.smtp.secure,
+        auth: {
+            user: settings.smtp.user,
+            pass: settings.smtp.pass
+        }
+    });
+}
+
+function buildOtpContent(otp, purpose) {
     const isChange = purpose === 'change_password';
     const subject = isChange
         ? 'รหัส OTP สำหรับเปลี่ยนรหัสผ่าน — PTS Learning'
@@ -59,27 +61,105 @@ async function sendOtpEmail(to, otp, purpose) {
     const action = isChange ? 'เปลี่ยนรหัสผ่าน' : 'กู้คืนรหัสผ่าน';
     const text = `รหัส OTP สำหรับ${action}ของ PTS Learning คือ ${otp}\nรหัสมีอายุ 5 นาที\nหากคุณไม่ได้ขอรหัสนี้ ให้เพิกเฉยอีเมลนี้`;
     const html = `
-      <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:24px;color:#1a1930">
-        <h2 style="color:#974258;margin:0 0 12px">PTS Learning</h2>
-        <p style="margin:0 0 16px">รหัส OTP สำหรับ<strong>${action}</strong>ของคุณคือ</p>
-        <p style="font-size:32px;letter-spacing:8px;font-weight:700;color:#974258;margin:0 0 16px">${otp}</p>
-        <p style="margin:0;color:#544245;font-size:14px">รหัสมีอายุ 5 นาที หากคุณไม่ได้ขอรหัสนี้ ให้เพิกเฉยอีเมลนี้</p>
+      <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:480px;margin:0 auto;padding:28px;color:#1c1520;background:#fff;border:1px solid #f0e4e7;border-radius:16px">
+        <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#974258;margin-bottom:12px">PTS Learning</div>
+        <h2 style="margin:0 0 12px;font-size:22px;color:#1c1520">ยืนยันตัวตนด้วยรหัส OTP</h2>
+        <p style="margin:0 0 18px;color:#5c4f55;line-height:1.5">รหัส OTP สำหรับ<strong>${action}</strong>ของคุณคือ</p>
+        <p style="font-size:34px;letter-spacing:10px;font-weight:700;color:#974258;margin:0 0 18px;text-align:center">${otp}</p>
+        <p style="margin:0;color:#5c4f55;font-size:13px;line-height:1.5">รหัสมีอายุ 5 นาที หากคุณไม่ได้ขอรหัสนี้ ให้เพิกเฉยอีเมลนี้</p>
       </div>
     `;
+    return { subject, text, html };
+}
 
-    const transporter = createTransporter();
+async function sendViaBrevo(settings, to, otp, purpose) {
+    const from = resolveFrom(settings);
+    if (!from) {
+        const err = new Error('ยังไม่ได้ตั้งอีเมลผู้ส่ง (From Email)');
+        err.code = 'MAIL_FROM_MISSING';
+        throw err;
+    }
+    const { subject, text, html } = buildOtpContent(otp, purpose);
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'api-key': settings.brevoApiKey
+        },
+        body: JSON.stringify({
+            sender: { name: from.name, email: from.email },
+            to: [{ email: to }],
+            subject,
+            htmlContent: html,
+            textContent: text
+        })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const detail = data?.message || JSON.stringify(data);
+        const err = new Error(`Brevo ส่งอีเมลไม่สำเร็จ: ${detail}`);
+        err.code = 'BREVO_SEND_FAILED';
+        throw err;
+    }
+    return { delivered: true, mode: 'brevo', messageId: data.messageId || null };
+}
+
+async function sendViaSmtp(settings, to, otp, purpose) {
+    const transporter = createTransporter(settings);
     if (!transporter) {
-        if (process.env.EMAIL_OTP_REQUIRE_SMTP === 'true') {
-            const err = new Error('ยังไม่ได้ตั้งค่า SMTP สำหรับส่งอีเมล (SMTP_HOST / SMTP_USER / SMTP_PASS)');
-            err.code = 'SMTP_NOT_CONFIGURED';
-            throw err;
+        const err = new Error('ยังไม่ได้ตั้งค่า SMTP (โฮสต์ / อีเมล / รหัสผ่าน)');
+        err.code = 'SMTP_NOT_CONFIGURED';
+        throw err;
+    }
+    const from = resolveFrom(settings);
+    if (!from) {
+        const err = new Error('ยังไม่ได้ตั้งอีเมลผู้ส่ง');
+        err.code = 'MAIL_FROM_MISSING';
+        throw err;
+    }
+    const { subject, text, html } = buildOtpContent(otp, purpose);
+    const info = await transporter.sendMail({
+        from: from.formatted,
+        to,
+        subject,
+        text,
+        html
+    });
+    return { delivered: true, mode: 'smtp', messageId: info.messageId || null };
+}
+
+async function sendOtpEmail(to, otp, purpose) {
+    const settings = getMergedMailSettings();
+    const mode = String(settings.mode || 'auto').toLowerCase();
+
+    const tryBrevo = () => sendViaBrevo(settings, to, otp, purpose);
+    const trySmtp = () => sendViaSmtp(settings, to, otp, purpose);
+
+    if (mode === 'brevo') return tryBrevo();
+    if (mode === 'smtp') return trySmtp();
+
+    if (hasBrevoConfig(settings)) {
+        try {
+            return await tryBrevo();
+        } catch (e) {
+            console.error('⚠️ Brevo failed:', e.message);
+            if (!hasSmtpConfig(settings)) throw e;
         }
-        console.log(`📧 [EMAIL OTP · console] to=${to} purpose=${purpose} otp=${otp}`);
-        return { delivered: false, mode: 'console', masked: maskEmail(to) };
+    }
+    if (hasSmtpConfig(settings)) {
+        return trySmtp();
     }
 
-    await transporter.sendMail({ from, to, subject, text, html });
-    return { delivered: true, mode: 'smtp', masked: maskEmail(to) };
+    if (!settings.requireRealDelivery && process.env.EMAIL_OTP_ALLOW_CONSOLE === 'true') {
+        console.log(`📧 [EMAIL OTP · console ONLY] to=${to} purpose=${purpose} otp=${otp}`);
+        return { delivered: false, mode: 'console' };
+    }
+
+    const err = new Error(
+        'ยังไม่ได้ตั้งค่าการส่งอีเมลจริง — ไปที่ Admin → อีเมล OTP แล้วกรอก SMTP หรือ Brevo API Key'
+    );
+    err.code = 'MAIL_NOT_CONFIGURED';
+    throw err;
 }
 
 async function issueEmailOtp(email, purpose = 'reset') {
@@ -98,13 +178,20 @@ async function issueEmailOtp(email, purpose = 'reset') {
         attempts: 0
     });
 
-    const sendResult = await sendOtpEmail(normalized, otp, purpose);
-    return {
-        email: normalized,
-        masked: sendResult.masked,
-        mode: sendResult.mode,
-        expires_in_seconds: Math.floor(OTP_TTL_MS / 1000)
-    };
+    try {
+        const sendResult = await sendOtpEmail(normalized, otp, purpose);
+        console.log(`📧 OTP email delivered via ${sendResult.mode} → ${maskEmail(normalized)}`);
+        return {
+            email: normalized,
+            masked: maskEmail(normalized),
+            mode: sendResult.mode,
+            delivered: !!sendResult.delivered,
+            expires_in_seconds: Math.floor(OTP_TTL_MS / 1000)
+        };
+    } catch (error) {
+        otpStore.delete(key);
+        throw error;
+    }
 }
 
 function verifyEmailOtp(email, otp, purpose = 'reset') {
@@ -131,13 +218,14 @@ function verifyEmailOtp(email, otp, purpose = 'reset') {
     return { ok: true };
 }
 
-function clearEmailOtp(email, purpose = 'reset') {
-    otpStore.delete(otpKey(email, purpose));
+function getMailStatus() {
+    return publicMailStatus();
 }
 
 module.exports = {
     issueEmailOtp,
     verifyEmailOtp,
-    clearEmailOtp,
-    maskEmail
+    getMailStatus,
+    maskEmail,
+    sendOtpEmail
 };
