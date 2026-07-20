@@ -3,10 +3,9 @@ const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
-const { ensureLearningSchema, seedLessonsIfEmpty, createNotification } = require('./ensureSchema');
+const { ensureLearningSchema } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
-const { createProfileRouter } = require('./profileRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -169,23 +168,6 @@ app.post('/api/users/register', async (req, res) => {
                 VALUES (@email, @fullName, @phone, @pass, 'student', 'Y')
             `);
 
-        const created = await pool.request()
-            .input('email', sql.VarChar, email)
-            .query(`SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email`);
-        if (created.recordset[0]) {
-            try {
-                await createNotification(
-                    pool,
-                    created.recordset[0].user_id,
-                    'ยินดีต้อนรับสู่ PTS Learning',
-                    'บัญชีของคุณพร้อมใช้งานแล้ว เริ่มเลือกหลักสูตรและเข้าร่วมคอมมูนิตี้ได้เลย',
-                    'Courses.html'
-                );
-            } catch (notifyErr) {
-                console.error('notify register:', notifyErr.message);
-            }
-        }
-
         res.json({ success: true, message: 'ลงทะเบียนสมาชิกสำเร็จแล้ว! กรุณาเข้าสู่ระบบ' });
     } catch (error) {
         console.error('❌ Register failed:', error.message);
@@ -315,47 +297,32 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
 // -------------------------------------------------------------------------
 app.get('/api/courses', async (req, res) => {
     try {
+        // 1. เรียกใช้งาน Pool การเชื่อมต่อ SQL Server ตัวเดิมของคุณ
         const pool = await poolPromise;
-        const userId = req.session?.user?.user_id || null;
-
+        
+        // 2. ยิงคำสั่ง SELECT เพื่อดึงข้อมูลฟิลด์ที่ต้องการใช้งาน
+        // (แนะนำให้เลือกเฉพาะคอลัมน์ที่จำเป็น เพื่อความเร็วในการโหลด)
         const result = await pool.request()
-            .input('userId', sql.Int, userId)
             .query(`
                 SELECT 
-                    c.course_id, 
-                    c.course_name, 
-                    c.instructor_name, 
-                    c.delivery_mode, 
-                    c.difficulty_level, 
-                    c.total_hours, 
-                    c.average_rating, 
-                    c.total_reviews, 
-                    c.cover_image_url,
-                    c.is_featured,
-                    c.price,
-                    c.description,
-                    CASE
-                        WHEN @userId IS NULL THEN 0
-                        WHEN EXISTS (
-                            SELECT 1 FROM BD_PTS.dbo.course_favorites f
-                            WHERE f.user_id = @userId AND f.course_id = c.course_id
-                        ) THEN 1 ELSE 0
-                    END AS is_favorited,
-                    CASE
-                        WHEN @userId IS NULL THEN 0
-                        WHEN EXISTS (
-                            SELECT 1 FROM BD_PTS.dbo.course_enrollments e
-                            WHERE e.user_id = @userId AND e.course_id = c.course_id
-                        ) THEN 1 ELSE 0
-                    END AS is_enrolled
-                FROM BD_PTS.dbo.courses_main c
-                ORDER BY c.created_at DESC
+                    course_id, 
+                    course_name, 
+                    instructor_name, 
+                    delivery_mode, 
+                    difficulty_level, 
+                    total_hours, 
+                    average_rating, 
+                    total_reviews, 
+                    cover_image_url, -- 🌟 ตรงนี้เก็บ Absolute URL ของรูปปกคอร์สเรียนไว้แล้ว
+                    is_featured
+                FROM BD_PTS.dbo.courses_main
+                ORDER BY created_at DESC -- ดึงคอร์สที่สร้างใหม่ขึ้นก่อน
             `);
 
+        // 3. ส่งข้อมูลกลับไปให้หน้าบ้านเป็นรูปแบบ JSON Array
         res.json({
             success: true,
-            loggedIn: !!userId,
-            data: result.recordset
+            data: result.recordset // ข้อมูลคอร์สทั้งหมดจะอยู่ในนี้
         });
 
     } catch (error) {
@@ -373,40 +340,38 @@ app.get('/api/courses', async (req, res) => {
 // =========================================================================
 app.get('/api/community', async (req, res) => {
     try {
-        const pool = await poolPromise;
-        const userId = req.session?.user?.user_id || null;
-
-        const result = await pool.request()
-            .input('userId', sql.Int, userId)
-            .query(`
+        // 1. เชื่อมต่อฐานข้อมูล SQL Server
+        const pool = await poolPromise; 
+        
+        // 2. ส่งคิวรีดึงข้อมูลโพสต์พร้อม JOIN ตารางผู้ใช้เพื่อเอารูปโปรไฟล์และชื่อ
+        const result = await pool.request().query(`
             SELECT 
                 p.post_id,
                 p.content,
                 p.created_at,
                 u.full_name AS author_name,
+                
+                -- 🌟 ดึงลิงก์รูปโปรไฟล์จำลองหรือรูปจริงที่เราทำไว้ระดับ SQL 
                 ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
+                
+                -- 🌟 นับจำนวน Likes สด ๆ จากตารางความสัมพันธ์
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
-                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
-                CASE
-                    WHEN @userId IS NULL THEN 0
-                    WHEN EXISTS (
-                        SELECT 1 FROM post_likes pl
-                        WHERE pl.post_id = p.post_id AND pl.user_id = @userId
-                    ) THEN 1 ELSE 0
-                END AS liked_by_me
+                
+                -- 🌟 นับจำนวน Comments สด ๆ จากตารางความสัมพันธ์
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count
             FROM 
                 community_posts p
             INNER JOIN 
                 users_main u ON p.user_id = u.user_id
             WHERE 
-                p.flag_use = 1
+                p.flag_use = 1 -- ดึงเฉพาะโพสต์ที่ยังไม่ถูกลบ
             ORDER BY 
-                p.created_at DESC;
+                p.created_at DESC; -- โพสต์ล่าสุดขึ้นก่อน
         `);
 
+        // 3. ส่งข้อมูลกลับไปหาหน้าบ้านในรูปแบบ JSON format สำเร็จรูป
         res.json({ 
             success: true, 
-            loggedIn: !!userId,
             data: result.recordset 
         });
 
@@ -418,101 +383,6 @@ app.get('/api/community', async (req, res) => {
         });
     }
 });
-
-// โพสต์ที่ฉันกดถูกใจ
-app.get('/api/my/liked-posts', async (req, res) => {
-    const user = requireLogin(req, res);
-    if (!user) return;
-
-    try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('userId', sql.Int, user.user_id)
-            .query(`
-                SELECT
-                    p.post_id,
-                    p.content,
-                    p.created_at,
-                    u.full_name AS author_name,
-                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
-                    (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
-                    (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
-                    1 AS liked_by_me
-                FROM BD_PTS.dbo.post_likes pl
-                INNER JOIN BD_PTS.dbo.community_posts p ON p.post_id = pl.post_id
-                INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
-                WHERE pl.user_id = @userId AND p.flag_use = 1
-                ORDER BY p.created_at DESC
-            `);
-        res.json({ success: true, data: result.recordset });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// คอร์สโปรด
-app.get('/api/my/favorite-courses', async (req, res) => {
-    const user = requireLogin(req, res);
-    if (!user) return;
-
-    try {
-        const pool = await poolPromise;
-        const result = await pool.request()
-            .input('userId', sql.Int, user.user_id)
-            .query(`
-                SELECT
-                    c.course_id, c.course_name, c.instructor_name, c.delivery_mode,
-                    c.difficulty_level, c.total_hours, c.average_rating, c.total_reviews,
-                    c.cover_image_url, c.is_featured, 1 AS is_favorited,
-                    CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
-                FROM BD_PTS.dbo.course_favorites f
-                INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = f.course_id
-                LEFT JOIN BD_PTS.dbo.course_enrollments e
-                    ON e.course_id = c.course_id AND e.user_id = @userId
-                WHERE f.user_id = @userId
-                ORDER BY f.created_at DESC
-            `);
-        res.json({ success: true, data: result.recordset });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-app.post('/api/courses/:courseId/favorite', async (req, res) => {
-    const user = requireLogin(req, res);
-    if (!user) return;
-
-    const courseId = parseInt(req.params.courseId, 10);
-    if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
-
-    try {
-        const pool = await poolPromise;
-        const existing = await pool.request()
-            .input('userId', sql.Int, user.user_id)
-            .input('courseId', sql.Int, courseId)
-            .query(`SELECT COUNT(*) AS cnt FROM BD_PTS.dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
-
-        let favorited = false;
-        if (existing.recordset[0].cnt > 0) {
-            await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .input('courseId', sql.Int, courseId)
-                .query(`DELETE FROM BD_PTS.dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
-            favorited = false;
-        } else {
-            await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .input('courseId', sql.Int, courseId)
-                .query(`INSERT INTO BD_PTS.dbo.course_favorites (user_id, course_id) VALUES (@userId, @courseId)`);
-            favorited = true;
-        }
-
-        res.json({ success: true, favorited, message: favorited ? 'บันทึกคอร์สโปรดแล้ว' : 'นำออกจากคอร์สโปรดแล้ว' });
-    } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
 // =========================================================================
 // 🎯 API สำหรับดึงข้อมูลแฮชแท็กยอดนิยม (Trending Topics)
 // =========================================================================
@@ -760,8 +630,6 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
                 VALUES (@userId, @courseId, 0, 'in_progress')
             `);
 
-        await seedLessonsIfEmpty(pool, courseId, courseCheck.recordset[0].course_name);
-
         res.json({
             success: true,
             already_enrolled: false,
@@ -873,7 +741,6 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 // เครื่อง Kiosk จริงให้ POST มาที่ endpoint นี้ด้วย payload เดียวกัน
 // -------------------------------------------------------------------------
 app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
-app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {

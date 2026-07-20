@@ -2,7 +2,6 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>PTS Learning Dashboard</title>
-<link rel="stylesheet" href="/comp/site.css">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -126,7 +125,7 @@
         }
     </style>
 </head>
-<body class="pts-body text-on-surface">
+<body class="text-on-surface">
 <div class="flex min-h-screen">
 <!-- SideNavBar -->
 <aside class="h-screen w-72 hidden lg:flex flex-col sticky left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30">
@@ -138,7 +137,7 @@
 </div>
 <div class="overflow-hidden">
 <h1 id="dash-sidebar-name" class="font-headline-sm text-headline-sm font-bold text-on-primary-container leading-tight truncate">กำลังโหลด...</h1>
-<p class="text-[10px] text-on-surface-variant truncate">PTS Student</p>
+<p class="text-[10px] text-on-surface-variant truncate">Executive Assistant</p>
 </div>
 </div>
 <!-- Navigation Links -->
@@ -154,9 +153,9 @@
 <span class="material-symbols-outlined">calendar_today</span>
 <span class="font-label-md text-label-md">ตารางเรียน</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Favorites.html">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Courses.html">
 <span class="material-symbols-outlined">bookmark</span>
-<span class="font-label-md text-label-md">คอร์สโปรด</span>
+<span class="font-label-md text-label-md">หลักสูตรทั้งหมด</span>
 </a>
 <a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Payments.html">
 <span class="material-symbols-outlined">payments</span>
@@ -168,7 +167,7 @@
 </a></nav>
 <!-- Footer Tab -->
 <div class="mt-auto border-t border-outline-variant/30 pt-md">
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98 mb-xs" href="Settings.html">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98 mb-xs" href="#">
 <span class="material-symbols-outlined">settings</span>
 <span class="font-label-md text-label-md">ตั้งค่า</span>
 </a><button id="dash-logout" class="w-full flex items-center gap-sm text-error hover:bg-error-container/20 rounded-xl px-md py-sm transition-all">
@@ -194,14 +193,13 @@
 </nav>
 </div>
 <div class="flex items-center gap-sm">
-<a href="Notifications.html" class="p-2 hover:bg-surface-container-low rounded-full transition-all active:scale-95 relative">
+<button class="p-2 hover:bg-surface-container-low rounded-full transition-all active:scale-95">
 <span class="material-symbols-outlined text-outline">notifications</span>
-<span id="notif-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-</a>
+</button>
 <div class="flex items-center gap-sm cursor-pointer hover:bg-surface-container-low p-1 rounded-full transition-all">
 <div class="flex flex-col items-end hidden md:flex">
 <span id="dash-header-name" class="text-label-md font-bold text-on-surface">กำลังโหลด...</span>
-<span class="text-[10px] text-on-surface-variant/60"><span style="color: rgb(151, 66, 88); font-weight: 600; letter-spacing: 0.5px; text-align: right; text-transform: uppercase; background-color: rgba(252, 248, 255, 0.9);" class="">PTS Student</span></span>
+<span class="text-[10px] text-on-surface-variant/60"><span style="color: rgb(151, 66, 88); font-weight: 600; letter-spacing: 0.5px; text-align: right; text-transform: uppercase; background-color: rgba(252, 248, 255, 0.9);" class="">Executive Assistant</span></span>
 </div>
 <img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLuRlQEihIstMfcaCkBnQuwjKoebHnBkf6eAJ0qO6topKT4B7OI3sNS2gqSnhdbrI2mDONZaKH-Lmyt-xsMptOK2yFZ2EI4nPghjirtLlnFKqNapj9bM4TL7LcWwCmIX9HFT2paVcyon_bFYdvJ7A_ytAT2rOuhpQioENuNDvlC1Bz2gvMm-wnfQQckSMai9STrdwaKcpOHQjr03z1cMUZNCH_BbkigqMMYUB0ntPynWtz6jfVtISkgJn3cg">
 </div>
@@ -265,14 +263,38 @@
 <div>
 <div class="flex justify-between items-end mb-md">
 <h3 class="font-headline-sm text-headline-sm">ตารางเรียนที่กำลังจะมาถึง</h3>
-<a class="text-primary font-label-md text-label-md hover:underline" href="Schedule.html">ดูทั้งหมด</a>
 </div>
-<div id="dash-schedule" class="space-y-sm">
-<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow text-on-surface-variant">กำลังโหลดตารางเรียน...</div>
+<div class="space-y-sm">
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-primary" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="flex items-center gap-md">
+<div class="text-center min-w-[50px]">
+<p class="text-[12px] text-on-surface-variant uppercase">พฤ.</p>
+<p class="font-headline-sm text-headline-sm text-primary">15</p>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">Workshop: Time Management</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">10:00 - 12:00 น. | ผ่าน Zoom</p>
+</div>
+</div>
+<button class="text-primary border border-primary/20 px-md py-1 rounded-full text-label-md hover:bg-primary/5 transition-colors">เข้าห้องเรียน</button>
+</div>
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-secondary" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="flex items-center gap-md">
+<div class="text-center min-w-[50px]">
+<p class="text-[12px] text-on-surface-variant uppercase">ศ.</p>
+<p class="font-headline-sm text-headline-sm text-secondary">16</p>
+</div>
+<div>
+<p class="font-label-md text-label-md font-bold">Advanced Excel for Reports</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">13:30 - 15:30 น. | บทเรียนสด</p>
+</div>
+</div>
+<span class="text-on-surface-variant font-label-md text-label-md">รอดำเนินการ</span>
 </div>
 </div>
 </div>
-<!-- Sidebar News<!-- Sidebar News/Notifications (R-Side) -->
+</div>
+<!-- Sidebar News/Notifications (R-Side) -->
 <div class="space-y-lg"><div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
 <div class="p-md">
 <div class="flex justify-between items-center mb-sm">
@@ -280,7 +302,7 @@
 <span class="material-symbols-outlined text-[20px]">forum</span>
 Community Feed
 </h3>
-<span id="dash-community-badge" class="hidden bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold"></span>
+<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">3 New</span>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-md">ร่วมพูดคุยและแลกเปลี่ยนเทคนิคกับเพื่อนร่วมอาชีพในคอมมูนิตี้</p>
 <a href="Community.html" class="flex items-center justify-center gap-xs w-full bg-primary/5 text-primary py-2 rounded-xl font-bold text-label-md hover:bg-primary/10 transition-colors">
@@ -302,7 +324,7 @@ Community Feed
 <div class="relative z-10">
 <h4 class="font-headline-sm text-headline-sm mb-xs">ปลดล็อกศักยภาพสูงสุด</h4>
 <p class="font-body-sm text-body-sm opacity-90 mb-md">สมัครสมาชิก Pro เพื่อเข้าถึงคอร์สพิเศษมากกว่า 50 รายการ</p>
-<a href="Courses.html" class="inline-block bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูหลักสูตร</a>
+<button class="bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูรายละเอียด</button>
 </div>
 </div>
 </div>
@@ -310,19 +332,19 @@ Community Feed
 </div>
 <!-- Bottom Navigation (Mobile Only) -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/95 dark:bg-surface-dim/95 backdrop-blur-lg lg:hidden rounded-t-xl shadow-lg">
-<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform duration-200" href="DashbordU.html">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform duration-200" href="#">
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">home</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Courses.html">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
 <span class="material-symbols-outlined">play_circle</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Schedule.html">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
 <span class="material-symbols-outlined">event_note</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Notifications.html">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
 <span class="material-symbols-outlined">notifications</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Settings.html">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
 <span class="material-symbols-outlined">person</span>
 </a>
 </nav>
@@ -421,48 +443,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    
-    // notifications badge
-    try {
-      const n = await fetch('/api/notifications', { credentials: 'include' }).then(r => r.json());
-      if (n.success && n.unread > 0) {
-        const badge = document.getElementById('notif-badge');
-        if (badge) badge.classList.remove('hidden');
-      }
-    } catch {}
-
-    // schedules
-    const scheduleEl = document.getElementById('dash-schedule');
-    if (scheduleEl) {
-      try {
-        const sres = await fetch('/api/my/schedules', { credentials: 'include' });
-        const sdata = await sres.json();
-        if (!sres.ok || !sdata.success) throw new Error(sdata.message || 'โหลดตารางไม่สำเร็จ');
-        const upcoming = (sdata.data || []).slice(0, 3);
-        if (!upcoming.length) {
-          scheduleEl.innerHTML = '<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow text-on-surface-variant">ยังไม่มีตารางเรียน · <a class="text-primary font-bold" href="Schedule.html">ดูหน้าตาราง</a></div>';
-        } else {
-          scheduleEl.innerHTML = upcoming.map(item => {
-            const d = new Date(item.start_at);
-            const day = d.toLocaleDateString('th-TH', { weekday: 'short' });
-            const dateNum = d.getDate();
-            const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-            return `<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-primary">
-              <div class="flex items-center gap-md">
-                <div class="text-center min-w-[50px]"><p class="text-[12px] text-on-surface-variant uppercase">${day}</p><p class="font-headline-sm text-headline-sm text-primary">${dateNum}</p></div>
-                <div><p class="font-label-md text-label-md font-bold">${(item.title||'').replace(/</g,'&lt;')}</p>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">${time} | ${(item.location||item.delivery_mode||'').replace(/</g,'&lt;')}</p></div>
-              </div>
-              ${item.meeting_url ? `<a href="${item.meeting_url}" target="_blank" class="text-primary border border-primary/20 px-md py-1 rounded-full text-label-md">เข้าห้อง</a>` : '<span class="text-on-surface-variant text-label-md">รอลิงก์</span>'}
-            </div>`;
-          }).join('');
-        }
-      } catch (e) {
-        scheduleEl.innerHTML = `<div class="bg-error-container text-error p-md rounded-20px">${e.message}</div>`;
-      }
-    }
-
-const myCoursesEl = document.getElementById('dash-my-courses');
+    const myCoursesEl = document.getElementById('dash-my-courses');
     try {
         const response = await fetch('/api/my/courses', { credentials: 'include' });
         const payload = await response.json();

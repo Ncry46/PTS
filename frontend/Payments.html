@@ -4,16 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ชำระเงิน | PTS Learning</title>
-<link rel="stylesheet" href="/comp/site.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif}</style>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}</style>
 </head>
-<body class="pts-body text-on-surface">
+<body class="text-on-surface">
 <div id="app-navbar"></div>
-<main class="pts-main grid grid-cols-1 lg:grid-cols-2 gap-6">
+<main class="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
   <section class="bg-white rounded-2xl border border-pink-100 p-5">
     <h1 class="text-2xl font-bold text-primary mb-2">ชำระเงินคอร์ส</h1>
     <p class="text-sm text-on-surface-variant mb-4">โหมดจำลอง PromptPay — กดยืนยันเพื่อเปิดสิทธิ์เรียนทันที</p>
@@ -40,14 +39,7 @@ async function init() {
 
   const courses = await fetch('/api/courses', { credentials: 'include' }).then(r => r.json());
   const select = document.getElementById('course-select');
-  const courseList = courses.data || [];
-  select.innerHTML = courseList.map(c => `<option value="${c.course_id}" data-price="${Number(c.price||990)}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('');
-  const syncPrice = () => {
-    const opt = select.selectedOptions[0];
-    if (opt) document.getElementById('amount').value = opt.dataset.price || 990;
-  };
-  select.onchange = syncPrice;
-  syncPrice();
+  select.innerHTML = (courses.data || []).map(c => `<option value="${c.course_id}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('');
 
   await loadPayments();
 

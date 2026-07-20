@@ -2,324 +2,413 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>Community | PTS Learning</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="/comp/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script>
+<script id="tailwind-config">
 tailwind.config = {
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
-        primary: '#974258',
-        background: '#f7f4f8',
-        'on-surface': '#1a1930',
-        'on-surface-variant': '#544245',
-        'surface-container-low': '#f6f1ff',
-        'outline-variant': '#d9c1c4',
-        error: '#ba1a1a'
+        "surface-container-lowest": "#ffffff",
+        "on-primary-container": "#591128",
+        "primary": "#974258",
+        "on-surface-variant": "#544245",
+        "background": "#fcf8ff",
+        "on-surface": "#1a1930",
+        "surface-container-high": "#eae5ff",
+        "surface-container-low": "#f6f1ff",
+        "primary-container": "#d9778e",
+        "outline-variant": "#d9c1c4",
+        "error": "#ba1a1a",
+        "error-container": "#ffdad6",
+        "secondary": "#4c6548"
+      },
+      borderRadius: { "2xl": "24px", full: "9999px" },
+      spacing: {
+        xs: "4px", sm: "12px", md: "24px", lg: "48px", xl: "80px",
+        "container-max": "1200px", gutter: "24px", "margin-mobile": "16px", base: "8px"
+      },
+      fontFamily: {
+        "body-lg": ["IBM Plex Sans Thai"],
+        "body-md": ["IBM Plex Sans Thai"],
+        "body-sm": ["IBM Plex Sans Thai"],
+        "label-md": ["IBM Plex Sans Thai"],
+        "headline-xl": ["IBM Plex Sans Thai"],
+        "headline-md": ["IBM Plex Sans Thai"],
+        "headline-sm": ["IBM Plex Sans Thai"]
       }
     }
   }
 };
 </script>
+<style>
+  body { font-family: 'IBM Plex Sans Thai', sans-serif; padding-top: 80px; }
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+</style>
 </head>
-<body class="pts-body">
+<body class="bg-background text-on-surface">
 <div id="app-navbar"></div>
-<main class="pts-main">
-  <section class="pts-page-hero">
-    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-      <div>
-        <span class="pts-chip mb-3">PTS Community</span>
-        <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight mb-2">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
-        <p class="text-on-surface-variant max-w-2xl">แลกเปลี่ยนประสบการณ์ อ่านโพสต์ และเรียนรู้จากเพื่อนร่วมอาชีพ</p>
-      </div>
-      <div id="hero-actions" class="flex flex-wrap gap-2"></div>
-    </div>
-  </section>
+<main class="max-w-container-max mx-auto px-margin-mobile md:px-lg py-md grid grid-cols-1 lg:grid-cols-12 gap-gutter">
+    <div class="lg:col-span-8 flex flex-col gap-lg">
+        <section class="relative overflow-hidden rounded-2xl bg-surface-container-high p-xl text-on-surface shadow-sm border border-outline-variant/20">
+            <div class="relative z-10 max-w-lg">
+                <h1 class="font-headline-xl text-[32px] md:text-[40px] mb-md leading-tight text-primary">ร่วมเป็นส่วนหนึ่งของคอมมูนิตี้<br>ผู้ช่วยมืออาชีพ</h1>
+                <p class="font-body-lg text-[18px] text-on-surface-variant mb-lg leading-relaxed">
+                    พื้นที่แลกเปลี่ยนเทคนิคการทำงาน แชร์ประสบการณ์ และสร้างคอนเนคชันกับเพื่อนร่วมอาชีพจากทั่วประเทศ
+                </p>
+            </div>
+        </section>
 
-  <div id="guest-banner" class="pts-auth-banner hidden">
-    <div>
-      <strong>โหมดอ่านอย่างเดียว</strong>
-      <p class="text-sm mt-1">เข้าสู่ระบบเพื่อโพสต์ คอมเมนต์ และกดถูกใจ</p>
-    </div>
-    <div class="flex gap-2">
-      <a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a>
-      <a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>
-    </div>
-  </div>
+        <section id="composer-section" class="hidden bg-surface-container-lowest rounded-2xl p-md shadow-sm border border-outline-variant/30">
+            <h2 class="font-headline-sm text-[18px] mb-sm text-primary">สร้างโพสต์ใหม่</h2>
+            <textarea id="post-content" rows="3" maxlength="2000" placeholder="แชร์ประสบการณ์ หรือถามคำถามกับคอมมูนิตี้..."
+                class="w-full rounded-xl border border-outline-variant bg-white p-sm font-body-md text-[16px] outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-y"></textarea>
+            <div class="flex items-center justify-between mt-sm">
+                <span id="char-count" class="text-body-sm text-on-surface-variant text-[14px]">0/2000</span>
+                <button id="submit-post" type="button"
+                    class="px-lg py-sm bg-primary text-white rounded-full font-bold shadow-md hover:brightness-110 active:scale-95 transition-all disabled:opacity-50">
+                    โพสต์เลย
+                </button>
+            </div>
+            <p id="composer-error" class="hidden mt-sm text-error text-[14px]"></p>
+        </section>
 
-  <div class="pts-grid-2">
-    <div class="space-y-4">
-      <section id="composer-section" class="pts-card p-5 hidden">
-        <h2 class="font-bold text-primary mb-3">สร้างโพสต์ใหม่</h2>
-        <textarea id="post-content" rows="3" maxlength="2000" placeholder="แชร์ประสบการณ์ หรือถามคำถาม..."
-          class="w-full rounded-2xl border border-outline-variant bg-white p-4 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
-        <div class="flex items-center justify-between mt-3">
-          <span id="char-count" class="text-sm text-on-surface-variant">0/2000</span>
-          <button id="submit-post" type="button" class="pts-btn pts-btn-primary">โพสต์เลย</button>
+        <div class="flex flex-col gap-md">
+            <div class="flex justify-between items-end mb-xs">
+                <h2 class="font-headline-md text-[24px]">โพสต์ล่าสุด</h2>
+            </div>
+            <div id="post-container" class="flex flex-col gap-md"></div>
         </div>
-        <p id="composer-error" class="hidden mt-2 text-sm text-error"></p>
-      </section>
-
-      <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold">โพสต์ล่าสุด</h2>
-        <a id="liked-link" href="Liked.html" class="hidden text-sm font-bold text-primary hover:underline">โพสต์ที่ถูกใจ →</a>
-      </div>
-      <div id="post-container" class="space-y-4"></div>
     </div>
 
-    <aside class="space-y-4 lg:sticky lg:top-24">
-      <section id="side-cta" class="pts-card p-5"></section>
-      <section class="pts-card p-5">
-        <div class="flex items-center gap-2 mb-3">
-          <span class="material-symbols-outlined text-primary">trending_up</span>
-          <h3 class="font-bold">Trending Topics</h3>
+    <aside class="lg:col-span-4 flex flex-col gap-gutter">
+        <div class="sticky top-24 flex flex-col gap-gutter">
+            <section id="guest-cta" class="glass-card rounded-2xl p-md shadow-lg border-2 border-primary-container/30 relative overflow-hidden">
+                <h3 class="font-headline-sm text-[18px] text-primary mb-xs">เข้าร่วมพูดคุย</h3>
+                <p class="font-body-md text-on-surface mb-md">เข้าสู่ระบบเพื่อโพสต์ข้อความ กดไลก์ และแลกเปลี่ยนความคิดเห็นกับสมาชิกท่านอื่นๆ</p>
+                <div class="flex flex-col gap-sm">
+                    <a href="Login.html" class="block text-center w-full py-sm bg-primary text-white rounded-full font-bold shadow-md hover:brightness-110 active:scale-95 transition-all">เข้าสู่ระบบตอนนี้</a>
+                    <a href="Register.html" class="block text-center w-full py-sm border-2 border-primary text-primary rounded-full font-bold hover:bg-primary/5 active:scale-95 transition-all">ยังไม่มีบัญชี? สมัครสมาชิก</a>
+                </div>
+            </section>
+
+            <section id="member-cta" class="hidden glass-card rounded-2xl p-md shadow-lg border-2 border-primary-container/30">
+                <h3 class="font-headline-sm text-[18px] text-primary mb-xs">ยินดีต้อนรับกลับ</h3>
+                <p id="member-name" class="font-body-md text-on-surface mb-sm"></p>
+                <p class="font-body-sm text-on-surface-variant text-[14px]">คุณสามารถโพสต์และกดไลก์ได้แล้ว</p>
+            </section>
+
+            <section class="bg-surface-container-low rounded-2xl p-md">
+                <div class="flex items-center gap-xs mb-md">
+                    <span class="material-symbols-outlined text-primary">trending_up</span>
+                    <h3 class="font-headline-sm text-[18px]">Trending Topics</h3>
+                </div>
+                <ul id="trending-container" class="flex flex-col gap-sm"></ul>
+            </section>
         </div>
-        <ul id="trending-container" class="space-y-2"></ul>
-      </section>
     </aside>
-  </div>
 </main>
-<div class="pts-footer-note">© PTS Learning · Community</div>
 
 <script>
-let currentUser = null;
-const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const timeAgo = (dateString) => {
-  if (!dateString) return '';
-  const elapsed = Date.now() - new Date(dateString).getTime();
-  const m = 60 * 1000, h = 60 * m, d = 24 * h;
-  if (elapsed < m) return 'เมื่อครู่นี้';
-  if (elapsed < h) return Math.round(elapsed / m) + ' นาทีที่แล้ว';
-  if (elapsed < d) return Math.round(elapsed / h) + ' ชั่วโมงที่แล้ว';
-  return new Date(dateString).toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
-};
+document.addEventListener('DOMContentLoaded', async () => {
+    const postContainer = document.getElementById('post-container');
+    const trendingContainer = document.getElementById('trending-container');
+    const composerSection = document.getElementById('composer-section');
+    const guestCta = document.getElementById('guest-cta');
+    const memberCta = document.getElementById('member-cta');
+    const memberName = document.getElementById('member-name');
+    const postContent = document.getElementById('post-content');
+    const charCount = document.getElementById('char-count');
+    const submitPost = document.getElementById('submit-post');
+    const composerError = document.getElementById('composer-error');
 
-function requireAuth(actionLabel) {
-  if (currentUser) return true;
-  alert(`กรุณาเข้าสู่ระบบเพื่อ${actionLabel}`);
-  location.href = 'Login.html';
-  return false;
-}
+    let currentUser = null;
 
-function makePostCard(post) {
-  const liked = Number(post.liked_by_me) === 1;
-  const avatar = post.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author_name || 'U')}&background=F8BBD0&color=880E4F&size=128`;
-  return `
-    <article class="pts-card p-5" data-post-id="${post.post_id}">
-      <div class="flex items-center gap-3 mb-4">
-        <img class="w-11 h-11 rounded-full object-cover" src="${avatar}" alt="">
-        <div>
-          <p class="font-bold">${escapeHtml(post.author_name || 'ผู้ใช้งาน')}</p>
-          <p class="text-xs text-on-surface-variant">${timeAgo(post.created_at)}</p>
-        </div>
-      </div>
-      <p class="whitespace-pre-line text-on-surface-variant mb-4">${escapeHtml(post.content || '')}</p>
-      <div class="flex items-center gap-4 border-t border-outline-variant/30 pt-3 text-on-surface-variant">
-        <button type="button" class="like-btn inline-flex items-center gap-1 ${liked ? 'pts-like-active' : ''}" data-post-id="${post.post_id}" ${currentUser ? '' : 'title="เข้าสู่ระบบเพื่อกดถูกใจ"'}>
-          <span class="material-symbols-outlined text-[20px]">favorite</span>
-          <span class="like-count text-sm font-semibold">${post.like_count || 0}</span>
-        </button>
-        <button type="button" class="comment-toggle inline-flex items-center gap-1" data-post-id="${post.post_id}">
-          <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
-          <span class="comment-count text-sm font-semibold">${post.comment_count || 0}</span>
-        </button>
-        ${currentUser ? '' : '<span class="text-xs text-on-surface-variant ml-auto">อ่านได้อย่างเดียว</span>'}
-      </div>
-      <div class="comment-panel hidden mt-4 border-t border-outline-variant/30 pt-4" data-post-id="${post.post_id}">
-        <div class="comment-list space-y-2 mb-3"></div>
-        ${currentUser ? `
-          <div class="flex gap-2">
-            <input type="text" maxlength="1000" placeholder="เขียนคอมเมนต์..." class="comment-input flex-1 rounded-full border px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-            <button type="button" class="comment-submit pts-btn pts-btn-primary" data-post-id="${post.post_id}">ส่ง</button>
-          </div>` : `
-          <p class="text-sm text-on-surface-variant">เข้าสู่ระบบเพื่อคอมเมนต์ · <a class="text-primary font-bold" href="Login.html">เข้าสู่ระบบ</a></p>`}
-      </div>
-    </article>`;
-}
+    const timeAgo = (dateString) => {
+        if (!dateString) return 'ไม่ระบุเวลา';
+        const now = new Date();
+        const past = new Date(dateString);
+        const msPerMinute = 60 * 1000;
+        const msPerHour = msPerMinute * 60;
+        const msPerDay = msPerHour * 24;
+        const elapsed = now - past;
+        if (elapsed < msPerMinute) return 'เมื่อครู่นี้';
+        if (elapsed < msPerHour) return Math.round(elapsed / msPerMinute) + ' นาทีที่แล้ว';
+        if (elapsed < msPerDay) return Math.round(elapsed / msPerHour) + ' ชั่วโมงที่แล้ว';
+        return past.toLocaleDateString('th-TH', { day: 'numeric', month: 'short' });
+    };
 
-function renderAuthUi() {
-  const guestBanner = document.getElementById('guest-banner');
-  const composer = document.getElementById('composer-section');
-  const likedLink = document.getElementById('liked-link');
-  const side = document.getElementById('side-cta');
-  const hero = document.getElementById('hero-actions');
+    const formatPostCount = (count) => {
+        if (count >= 1000) return (count / 1000).toFixed(1).replace('.0', '') + 'k';
+        return count;
+    };
 
-  if (currentUser) {
-    guestBanner.classList.add('hidden');
-    composer.classList.remove('hidden');
-    likedLink.classList.remove('hidden');
-    hero.innerHTML = `<a class="pts-btn pts-btn-outline" href="Liked.html">โพสต์ที่ถูกใจ</a>`;
-    side.innerHTML = `
-      <h3 class="font-bold text-primary mb-1">สวัสดี คุณ ${escapeHtml(currentUser.name || '')}</h3>
-      <p class="text-sm text-on-surface-variant mb-3">โพสต์ คอมเมนต์ และกดถูกใจได้แล้ว</p>
-      <a class="pts-btn pts-btn-primary w-full" href="Liked.html">ไปหน้าถูกใจ</a>`;
-  } else {
-    guestBanner.classList.remove('hidden');
-    composer.classList.add('hidden');
-    likedLink.classList.add('hidden');
-    hero.innerHTML = `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a><a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>`;
-    side.innerHTML = `
-      <h3 class="font-bold text-primary mb-1">เข้าร่วมพูดคุย</h3>
-      <p class="text-sm text-on-surface-variant mb-3">ยังไม่ล็อกอิน: อ่านได้อย่างเดียว</p>
-      <a class="pts-btn pts-btn-primary w-full mb-2" href="Login.html">เข้าสู่ระบบ</a>
-      <a class="pts-btn pts-btn-outline w-full" href="Register.html">สมัครสมาชิก</a>`;
-  }
-}
+    const escapeHtml = (text) => String(text || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
 
-async function loadPosts() {
-  const box = document.getElementById('post-container');
-  box.innerHTML = '<div class="pts-empty pts-card">กำลังโหลดโพสต์...</div>';
-  const res = await fetch('/api/community', { credentials: 'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) throw new Error(data.message || 'โหลดไม่สำเร็จ');
-  if (!data.data.length) {
-    box.innerHTML = '<div class="pts-empty pts-card">ยังไม่มีโพสต์ในคอมมูนิตี้</div>';
-    return;
-  }
-  box.innerHTML = data.data.map(makePostCard).join('');
-}
+    const makePostCard = (post) => {
+        const avatarUrl = post.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author_name || 'U')}&background=F8BBD0&color=880E4F&size=128`;
+        return `
+            <article class="bg-surface-container-lowest rounded-2xl p-md shadow-sm border border-outline-variant/30 hover:shadow-md transition-all group" data-post-id="${post.post_id}">
+                <div class="flex items-center gap-sm mb-md">
+                    <img class="w-12 h-12 rounded-full object-cover ring-2 ring-primary/10" src="${avatarUrl}" alt="">
+                    <div class="flex flex-col">
+                        <span class="font-headline-sm text-[16px] leading-tight group-hover:text-primary transition-colors">${escapeHtml(post.author_name || 'ผู้ใช้งาน')}</span>
+                        <span class="font-label-md text-on-surface-variant opacity-70 text-[14px]">${timeAgo(post.created_at)}</span>
+                    </div>
+                </div>
+                <div class="mb-md">
+                    <p class="font-body-md text-on-surface-variant whitespace-pre-line text-[16px]">${escapeHtml(post.content || '')}</p>
+                </div>
+                <div class="flex items-center gap-md border-t border-outline-variant/20 pt-md text-on-surface-variant">
+                    <button type="button" class="like-btn flex items-center gap-xs hover:text-primary active:scale-95 duration-150" data-post-id="${post.post_id}">
+                        <span class="material-symbols-outlined text-[20px]">favorite</span>
+                        <span class="font-label-md like-count">${post.like_count || 0}</span>
+                    </button>
+                    <button type="button" class="comment-toggle flex items-center gap-xs hover:text-primary active:scale-95 duration-150" data-post-id="${post.post_id}">
+                        <span class="material-symbols-outlined text-[20px]">chat_bubble</span>
+                        <span class="font-label-md comment-count">${post.comment_count || 0}</span>
+                    </button>
+                </div>
+                <div class="comment-panel hidden mt-md border-t border-outline-variant/20 pt-md" data-post-id="${post.post_id}">
+                    <div class="comment-list flex flex-col gap-sm mb-sm"></div>
+                    <div class="flex gap-sm">
+                        <input type="text" maxlength="1000" placeholder="${currentUser ? 'เขียนคอมเมนต์...' : 'เข้าสู่ระบบเพื่อคอมเมนต์'}"
+                            class="comment-input flex-1 rounded-full border border-outline-variant px-md py-sm text-[14px] outline-none focus:ring-2 focus:ring-primary/20"
+                            ${currentUser ? '' : 'disabled'}>
+                        <button type="button" class="comment-submit px-md py-sm bg-primary text-white rounded-full text-[14px] font-bold disabled:opacity-50"
+                            data-post-id="${post.post_id}" ${currentUser ? '' : 'disabled'}>ส่ง</button>
+                    </div>
+                </div>
+            </article>
+        `;
+    };
 
-async function loadTrending() {
-  const el = document.getElementById('trending-container');
-  try {
-    const res = await fetch('/api/community/trending', { credentials: 'include' });
-    const data = await res.json();
-    if (!data.success || !data.data?.length) {
-      el.innerHTML = '<li class="text-sm text-on-surface-variant">ไม่มีแฮชแท็กยอดนิยม</li>';
-      return;
-    }
-    el.innerHTML = data.data.map(t => `
-      <li class="p-2 rounded-xl hover:bg-surface-container-low">
-        <span class="text-primary font-bold text-sm">${escapeHtml(t.tag_name)}</span>
-        <span class="block text-xs text-on-surface-variant">${t.post_count || 0} โพสต์</span>
-      </li>`).join('');
-  } catch {
-    el.innerHTML = '<li class="text-sm text-on-surface-variant">โหลดไม่สำเร็จ</li>';
-  }
-}
+    const makeTrendingItem = (tag) => `
+        <li>
+            <a class="block p-sm rounded-xl hover:bg-white transition-all cursor-pointer group" href="?tag=${encodeURIComponent(tag.tag_name)}">
+                <span class="text-primary font-bold text-[14px] block group-hover:underline">${escapeHtml(tag.tag_name)}</span>
+                <span class="text-on-surface-variant text-[14px]">${formatPostCount(tag.post_count)} โพสต์</span>
+            </a>
+        </li>
+    `;
 
-async function loadComments(postId, panel) {
-  const list = panel.querySelector('.comment-list');
-  list.innerHTML = '<div class="text-sm text-on-surface-variant">กำลังโหลด...</div>';
-  const res = await fetch(`/api/community/${postId}/comments`, { credentials: 'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    list.innerHTML = `<div class="text-sm text-error">${escapeHtml(data.message || 'โหลดคอมเมนต์ไม่สำเร็จ')}</div>`;
-    return;
-  }
-  if (!data.data.length) {
-    list.innerHTML = '<div class="text-sm text-on-surface-variant">ยังไม่มีคอมเมนต์</div>';
-    return;
-  }
-  list.innerHTML = data.data.map(c => `
-    <div class="bg-surface-container-low rounded-xl p-3">
-      <p class="text-sm font-bold">${escapeHtml(c.author_name || '')} <span class="font-normal text-xs text-on-surface-variant">${timeAgo(c.created_at)}</span></p>
-      <p class="text-sm text-on-surface-variant whitespace-pre-line mt-1">${escapeHtml(c.content || '')}</p>
-    </div>`).join('');
-}
+    const renderPostList = (posts) => {
+        if (!posts || !posts.length) {
+            postContainer.innerHTML = '<div class="rounded-[24px] bg-white p-md text-on-surface-variant text-center shadow-sm">ยังไม่มีการโพสต์ข้อความในขณะนี้</div>';
+            return;
+        }
+        postContainer.innerHTML = posts.map(makePostCard).join('');
+    };
 
-document.getElementById('post-content')?.addEventListener('input', (e) => {
-  document.getElementById('char-count').textContent = `${e.target.value.length}/2000`;
-});
+    const loadPosts = async () => {
+        try {
+            postContainer.innerHTML = '<div class="text-center p-md text-on-surface-variant">กำลังโหลดโพสต์ในคอมมูนิตี้...</div>';
+            const response = await fetch('/api/community', { credentials: 'include' });
+            const payload = await response.json();
+            if (!response.ok || !payload.success) throw new Error(payload.message || 'โหลดไม่สำเร็จ');
+            renderPostList(payload.data || []);
+        } catch (error) {
+            postContainer.innerHTML = `<div class="rounded-[24px] p-md text-error bg-error-container text-center shadow-sm">เชื่อมต่อหลังบ้านล้มเหลว: ${escapeHtml(error.message)}</div>`;
+        }
+    };
 
-document.getElementById('submit-post')?.addEventListener('click', async () => {
-  if (!requireAuth('โพสต์')) return;
-  const content = document.getElementById('post-content').value.trim();
-  const err = document.getElementById('composer-error');
-  err.classList.add('hidden');
-  if (!content) {
-    err.textContent = 'กรุณากรอกข้อความก่อนโพสต์';
-    err.classList.remove('hidden');
-    return;
-  }
-  const btn = document.getElementById('submit-post');
-  btn.disabled = true;
-  try {
-    const res = await fetch('/api/community', {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
+    const loadTrendingTopics = async () => {
+        try {
+            const response = await fetch('/api/community/trending', { credentials: 'include' });
+            const payload = await response.json();
+            if (payload.success && payload.data && payload.data.length > 0) {
+                trendingContainer.innerHTML = payload.data.map(makeTrendingItem).join('');
+            } else {
+                trendingContainer.innerHTML = '<li class="text-on-surface-variant text-[14px] p-sm">ไม่มีแฮชแท็กยอดนิยม</li>';
+            }
+        } catch (error) {
+            console.error('โหลด Trending ล้มเหลว:', error);
+            trendingContainer.innerHTML = '<li class="text-on-surface-variant text-[14px] p-sm">โหลดแฮชแท็กไม่สำเร็จ</li>';
+        }
+    };
+
+    const setupAuthUi = async () => {
+        try {
+            const response = await fetch('/api/users/me', { credentials: 'include' });
+            const status = await response.json();
+            if (status.loggedIn && status.user) {
+                currentUser = status.user;
+                composerSection.classList.remove('hidden');
+                guestCta.classList.add('hidden');
+                memberCta.classList.remove('hidden');
+                memberName.textContent = `คุณ ${status.user.name || ''}`;
+            }
+        } catch (error) {
+            console.error('ตรวจสถานะล็อกอินล้มเหลว:', error);
+        }
+    };
+
+    postContent.addEventListener('input', () => {
+        charCount.textContent = `${postContent.value.length}/2000`;
     });
-    const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.message || 'โพสต์ไม่สำเร็จ');
-    document.getElementById('post-content').value = '';
-    document.getElementById('char-count').textContent = '0/2000';
-    await loadPosts();
-  } catch (e) {
-    err.textContent = e.message;
-    err.classList.remove('hidden');
-  } finally {
-    btn.disabled = false;
-  }
+
+    submitPost.addEventListener('click', async () => {
+        const content = postContent.value.trim();
+        composerError.classList.add('hidden');
+        if (!content) {
+            composerError.textContent = 'กรุณากรอกข้อความก่อนโพสต์';
+            composerError.classList.remove('hidden');
+            return;
+        }
+
+        submitPost.disabled = true;
+        submitPost.textContent = 'กำลังโพสต์...';
+        try {
+            const response = await fetch('/api/community', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ content })
+            });
+            const result = await response.json();
+            if (!response.ok || !result.success) throw new Error(result.message || 'โพสต์ไม่สำเร็จ');
+            postContent.value = '';
+            charCount.textContent = '0/2000';
+            await loadPosts();
+        } catch (error) {
+            composerError.textContent = error.message;
+            composerError.classList.remove('hidden');
+        } finally {
+            submitPost.disabled = false;
+            submitPost.textContent = 'โพสต์เลย';
+        }
+    });
+
+    postContainer.addEventListener('click', async (e) => {
+        const likeBtn = e.target.closest('.like-btn');
+        const commentToggle = e.target.closest('.comment-toggle');
+        const commentSubmit = e.target.closest('.comment-submit');
+
+        if (likeBtn) {
+            if (!currentUser) {
+                alert('กรุณาเข้าสู่ระบบก่อนกดไลก์');
+                window.location.href = 'Login.html';
+                return;
+            }
+            const postId = likeBtn.getAttribute('data-post-id');
+            try {
+                const response = await fetch(`/api/community/${postId}/like`, {
+                    method: 'POST',
+                    credentials: 'include'
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'กดไลก์ไม่สำเร็จ');
+                const countEl = likeBtn.querySelector('.like-count');
+                if (countEl) countEl.textContent = result.like_count;
+                likeBtn.classList.toggle('text-primary', result.liked);
+            } catch (error) {
+                alert(error.message);
+            }
+            return;
+        }
+
+        if (commentToggle) {
+            const postId = commentToggle.getAttribute('data-post-id');
+            const panel = postContainer.querySelector(`.comment-panel[data-post-id="${postId}"]`);
+            if (!panel) return;
+            const opening = panel.classList.contains('hidden');
+            panel.classList.toggle('hidden');
+            if (opening) {
+                const list = panel.querySelector('.comment-list');
+                list.innerHTML = '<div class="text-[14px] text-on-surface-variant">กำลังโหลดคอมเมนต์...</div>';
+                try {
+                    const response = await fetch(`/api/community/${postId}/comments`, { credentials: 'include' });
+                    const result = await response.json();
+                    if (!response.ok || !result.success) throw new Error(result.message || 'โหลดคอมเมนต์ไม่สำเร็จ');
+                    if (!result.data.length) {
+                        list.innerHTML = '<div class="text-[14px] text-on-surface-variant">ยังไม่มีคอมเมนต์</div>';
+                    } else {
+                        list.innerHTML = result.data.map(c => `
+                            <div class="bg-surface-container-low rounded-xl p-sm">
+                                <div class="flex items-center gap-sm mb-xs">
+                                    <img class="w-8 h-8 rounded-full object-cover" src="${c.author_avatar || ''}" alt="">
+                                    <div>
+                                        <p class="text-[14px] font-bold">${escapeHtml(c.author_name || '')}</p>
+                                        <p class="text-[12px] text-on-surface-variant">${timeAgo(c.created_at)}</p>
+                                    </div>
+                                </div>
+                                <p class="text-[14px] text-on-surface-variant whitespace-pre-line">${escapeHtml(c.content || '')}</p>
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    list.innerHTML = `<div class="text-[14px] text-error">${escapeHtml(error.message)}</div>`;
+                }
+            }
+            return;
+        }
+
+        if (commentSubmit) {
+            if (!currentUser) {
+                alert('กรุณาเข้าสู่ระบบก่อนคอมเมนต์');
+                window.location.href = 'Login.html';
+                return;
+            }
+            const postId = commentSubmit.getAttribute('data-post-id');
+            const panel = postContainer.querySelector(`.comment-panel[data-post-id="${postId}"]`);
+            const input = panel.querySelector('.comment-input');
+            const content = (input.value || '').trim();
+            if (!content) return;
+
+            commentSubmit.disabled = true;
+            try {
+                const response = await fetch(`/api/community/${postId}/comments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify({ content })
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) throw new Error(result.message || 'คอมเมนต์ไม่สำเร็จ');
+                input.value = '';
+                const countEl = postContainer.querySelector(`.comment-toggle[data-post-id="${postId}"] .comment-count`);
+                if (countEl) countEl.textContent = Number(countEl.textContent || 0) + 1;
+                panel.classList.remove('hidden');
+                const list = panel.querySelector('.comment-list');
+                const response2 = await fetch(`/api/community/${postId}/comments`, { credentials: 'include' });
+                const result2 = await response2.json();
+                if (result2.success) {
+                    list.innerHTML = (result2.data || []).map(c => `
+                        <div class="bg-surface-container-low rounded-xl p-sm">
+                            <div class="flex items-center gap-sm mb-xs">
+                                <img class="w-8 h-8 rounded-full object-cover" src="${c.author_avatar || ''}" alt="">
+                                <div>
+                                    <p class="text-[14px] font-bold">${escapeHtml(c.author_name || '')}</p>
+                                    <p class="text-[12px] text-on-surface-variant">${timeAgo(c.created_at)}</p>
+                                </div>
+                            </div>
+                            <p class="text-[14px] text-on-surface-variant whitespace-pre-line">${escapeHtml(c.content || '')}</p>
+                        </div>
+                    `).join('') || '<div class="text-[14px] text-on-surface-variant">ยังไม่มีคอมเมนต์</div>';
+                }
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                commentSubmit.disabled = false;
+            }
+        }
+    });
+
+    await setupAuthUi();
+    await Promise.all([loadPosts(), loadTrendingTopics()]);
 });
-
-document.getElementById('post-container').addEventListener('click', async (e) => {
-  const likeBtn = e.target.closest('.like-btn');
-  const commentToggle = e.target.closest('.comment-toggle');
-  const commentSubmit = e.target.closest('.comment-submit');
-
-  if (likeBtn) {
-    if (!requireAuth('กดถูกใจ')) return;
-    const postId = likeBtn.dataset.postId;
-    const res = await fetch(`/api/community/${postId}/like`, { method: 'POST', credentials: 'include' });
-    const data = await res.json();
-    if (!res.ok || !data.success) return alert(data.message || 'กดถูกใจไม่สำเร็จ');
-    likeBtn.querySelector('.like-count').textContent = data.like_count;
-    likeBtn.classList.toggle('pts-like-active', !!data.liked);
-    return;
-  }
-
-  if (commentToggle) {
-    const postId = commentToggle.dataset.postId;
-    const panel = document.querySelector(`.comment-panel[data-post-id="${postId}"]`);
-    const opening = panel.classList.contains('hidden');
-    panel.classList.toggle('hidden');
-    if (opening) await loadComments(postId, panel);
-    return;
-  }
-
-  if (commentSubmit) {
-    if (!requireAuth('คอมเมนต์')) return;
-    const postId = commentSubmit.dataset.postId;
-    const panel = document.querySelector(`.comment-panel[data-post-id="${postId}"]`);
-    const input = panel.querySelector('.comment-input');
-    const content = (input.value || '').trim();
-    if (!content) return;
-    commentSubmit.disabled = true;
-    try {
-      const res = await fetch(`/api/community/${postId}/comments`, {
-        method: 'POST', credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error(data.message || 'คอมเมนต์ไม่สำเร็จ');
-      input.value = '';
-      const countEl = document.querySelector(`.comment-toggle[data-post-id="${postId}"] .comment-count`);
-      if (countEl) countEl.textContent = Number(countEl.textContent || 0) + 1;
-      await loadComments(postId, panel);
-    } catch (err) {
-      alert(err.message);
-    } finally {
-      commentSubmit.disabled = false;
-    }
-  }
-});
-
-(async () => {
-  try {
-    const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
-    currentUser = me.loggedIn ? me.user : null;
-    renderAuthUi();
-    await Promise.all([loadPosts(), loadTrending()]);
-  } catch (err) {
-    document.getElementById('post-container').innerHTML = `<div class="pts-card p-5 text-error">${escapeHtml(err.message)}</div>`;
-  }
-})();
 </script>
 <script src="/comp/navbar.js"></script>
 </body>
