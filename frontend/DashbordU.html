@@ -153,7 +153,7 @@
 
 <div class="flex min-h-screen">
 <!-- SideNavBar -->
-<aside class="h-screen w-72 hidden lg:flex flex-col sticky left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30">
+<aside class="h-screen w-72 hidden lg:flex flex-col sticky left-0 top-[68px] bg-surface-container-lowest border-r border-outline-variant/30" style="height:calc(100vh - 68px)">
 <div class="flex flex-col gap-base p-md h-full">
 <!-- Brand Anchor -->
 <div class="flex items-center gap-sm mb-lg px-xs">
@@ -203,35 +203,7 @@
 </div>
 </aside>
 <!-- Main Content Canvas -->
-<main class="flex-grow min-w-0 pb-xl lg:pb-md">
-<!-- Top Bar / Header -->
-<header class="bg-white sticky top-0 z-50 border-b border-outline-variant/10">
-<div class="flex justify-between items-center w-full px-margin-mobile md:px-lg py-sm max-w-container-max mx-auto h-16">
-<div class="flex items-center gap-xl">
-<div class="flex items-center gap-md">
-<div class="flex items-center gap-2"><img src="https://lh3.googleusercontent.com/aida/AP1WRLt-sz504jrNcvfWLeUda4incT1iEaU21RRGLbFll2RyAA6vU5MSNSaRKv9-8BxwZyT5eRXjf-PfbRss04k05K51TK15JrRGFGESsDYnmDobY0oH1UlvYQz9uYU86g3Mtd4l4tmi9HevjdHgKUPk7y4VoGkwVFnUanSfzvq2D8e9Wv4CxCLppw5EXE3dXVB3sGxp4JUfoizfO0fKr3WI5s6b3Bb7FPqR3IFpzekgPHVQXhX2xsdhY2q1Zfph" alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain"></div>
-</div>
-<nav class="hidden lg:flex items-center gap-md font-body-md text-body-md">
-<a class="text-on-surface-variant hover:text-primary transition-colors" href="Home.html">หน้าแรก</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors" href="Courses.html">คอร์สเรียน</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors" href="Community.html">คอมมูนิตี้</a>
-</nav>
-</div>
-<div class="flex items-center gap-sm">
-<a href="Notifications.html" class="p-2 hover:bg-surface-container-low rounded-full transition-all active:scale-95 relative">
-<span class="material-symbols-outlined text-outline">notifications</span>
-<span id="notif-badge" class="hidden absolute top-1 right-1 w-2 h-2 bg-primary rounded-full"></span>
-</a>
-<div class="flex items-center gap-sm cursor-pointer hover:bg-surface-container-low p-1 rounded-full transition-all">
-<div class="flex flex-col items-end hidden md:flex">
-<span id="dash-header-name" class="text-label-md font-bold text-on-surface">กำลังโหลด...</span>
-<span class="text-[10px] text-on-surface-variant/60"><span style="color: rgb(151, 66, 88); font-weight: 600; letter-spacing: 0.5px; text-align: right; text-transform: uppercase; background-color: rgba(252, 248, 255, 0.9);" class="">PTS Student</span></span>
-</div>
-<img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLuRlQEihIstMfcaCkBnQuwjKoebHnBkf6eAJ0qO6topKT4B7OI3sNS2gqSnhdbrI2mDONZaKH-Lmyt-xsMptOK2yFZ2EI4nPghjirtLlnFKqNapj9bM4TL7LcWwCmIX9HFT2paVcyon_bFYdvJ7A_ytAT2rOuhpQioENuNDvlC1Bz2gvMm-wnfQQckSMai9STrdwaKcpOHQjr03z1cMUZNCH_BbkigqMMYUB0ntPynWtz6jfVtISkgJn3cg">
-</div>
-</div>
-</div>
-</header>
+<main class="flex-grow min-w-0 pb-xl lg:pb-md" style="padding-top: calc(var(--pts-nav-h, 68px) + 8px);">
 <div class="px-margin-mobile md:px-lg py-md max-w-container-max mx-auto space-y-lg">
 <!-- Stats Overview (Asymmetric Layout) -->
 <section class="grid grid-cols-1 md:grid-cols-4 gap-md">

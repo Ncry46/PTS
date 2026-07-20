@@ -54,13 +54,14 @@ tailwind.config = {
     </div>
   </div>
 
-  <div id="hero-actions" class="flex flex-wrap gap-2 mb-5"></div>
-
-  <div class="flex flex-wrap gap-2 mb-6" id="filters">
-    <button data-filter="all" class="filter-btn pts-btn pts-btn-primary">ทั้งหมด</button>
-    <button data-filter="online" class="filter-btn pts-btn pts-btn-outline">Online</button>
-    <button data-filter="onsite" class="filter-btn pts-btn pts-btn-outline">Onsite</button>
-    <button data-filter="hybrid" class="filter-btn pts-btn pts-btn-outline">Hybrid</button>
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+    <div class="flex flex-wrap gap-2" id="filters">
+      <button data-filter="all" class="filter-btn pts-btn pts-btn-primary">ทั้งหมด</button>
+      <button data-filter="online" class="filter-btn pts-btn pts-btn-outline">Online</button>
+      <button data-filter="onsite" class="filter-btn pts-btn pts-btn-outline">Onsite</button>
+      <button data-filter="hybrid" class="filter-btn pts-btn pts-btn-outline">Hybrid</button>
+    </div>
+    <div id="hero-actions" class="flex flex-wrap gap-2"></div>
   </div>
 
   <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
@@ -304,6 +305,6 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
   }
 })();
 </script>
-<script src="navbar.js?v=20260720e"></script>
+<script src="navbar.js?v=20260720f"></script>
 </body>
 </html>
