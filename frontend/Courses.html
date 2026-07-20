@@ -128,9 +128,9 @@ function makeCourseCard(course) {
             <span>${hours} ชั่วโมง</span>
             <span>${sentenceCase(course.difficulty_level)}</span>
           </div>
-          <button type="button" class="course-detail-btn pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'} w-full" data-course-id="${course.course_id}">
+          <a href="CourseDetail.html?courseId=${course.course_id}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'} w-full">
             ${enrolled ? 'เข้าเรียน / รายละเอียด' : (currentUser ? 'ดูรายละเอียด / สมัครเรียน' : 'ดูรายละเอียด')}
-          </button>
+          </a>
         </div>
       </div>
     </article>`;

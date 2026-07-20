@@ -40,7 +40,14 @@ async function init() {
 
   const courses = await fetch('/api/courses', { credentials: 'include' }).then(r => r.json());
   const select = document.getElementById('course-select');
-  select.innerHTML = (courses.data || []).map(c => `<option value="${c.course_id}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('');
+  const courseList = courses.data || [];
+  select.innerHTML = courseList.map(c => `<option value="${c.course_id}" data-price="${Number(c.price||990)}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('');
+  const syncPrice = () => {
+    const opt = select.selectedOptions[0];
+    if (opt) document.getElementById('amount').value = opt.dataset.price || 990;
+  };
+  select.onchange = syncPrice;
+  syncPrice();
 
   await loadPayments();
 

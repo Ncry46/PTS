@@ -305,18 +305,22 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         if (!user) return;
 
         const courseId = parseInt(req.params.courseId, 10);
-        const amount = Number(req.body.amount != null ? req.body.amount : 990);
-        if (!courseId || Number.isNaN(amount) || amount < 0) {
-            return res.status(400).json({ success: false, message: 'ข้อมูลการชำระเงินไม่ถูกต้อง' });
+        if (!courseId) {
+            return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
         }
 
         try {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+            }
+
+            const amount = Number(req.body.amount != null ? req.body.amount : course.recordset[0].price || 990);
+            if (Number.isNaN(amount) || amount < 0) {
+                return res.status(400).json({ success: false, message: 'ข้อมูลการชำระเงินไม่ถูกต้อง' });
             }
 
             const paid = await pool.request()

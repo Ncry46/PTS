@@ -9,7 +9,14 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif}</style>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif}
+@media print {
+  #app-navbar, .pts-page-hero a, .pts-btn, .pts-footer-note { display:none !important; }
+  body { background:#fff !important; }
+  .pts-main { padding:0 !important; max-width:none !important; }
+  article { break-inside: avoid; border:2px solid #974258 !important; min-height: 70vh; }
+}
+</style>
 </head>
 <body class="pts-body text-on-surface">
 <div id="app-navbar"></div>

@@ -42,13 +42,13 @@ const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
   }
   box.innerHTML = data.data.map(c => `
     <article class="pts-card overflow-hidden">
-      <img class="w-full h-40 object-cover" src="${c.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" alt="">
+      <img class="w-full h-40 object-cover" src="${c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course'}" alt="">
       <div class="p-4">
         <p class="text-xs font-bold text-primary uppercase mb-1">${escapeHtml(c.delivery_mode||'')}</p>
         <h2 class="font-bold text-lg mb-1">${escapeHtml(c.course_name)}</h2>
         <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name||'-')}</p>
         <div class="flex flex-wrap gap-2">
-          ${Number(c.is_enrolled) ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>` : `<a class="pts-btn pts-btn-primary" href="Courses.html">สมัครเรียน</a>`}
+          ${Number(c.is_enrolled) ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>` : `<a class="pts-btn pts-btn-primary" href="CourseDetail.html?courseId=${c.course_id}">สมัครเรียน</a>`}
           <button class="unfav pts-btn pts-btn-outline" data-id="${c.course_id}">นำออกจากโปรด</button>
         </div>
       </div>

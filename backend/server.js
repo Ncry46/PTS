@@ -3,9 +3,10 @@ const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
-const { ensureLearningSchema, seedLessonsIfEmpty } = require('./ensureSchema');
+const { ensureLearningSchema, seedLessonsIfEmpty, createNotification } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
+const { createProfileRouter } = require('./profileRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -168,6 +169,23 @@ app.post('/api/users/register', async (req, res) => {
                 VALUES (@email, @fullName, @phone, @pass, 'student', 'Y')
             `);
 
+        const created = await pool.request()
+            .input('email', sql.VarChar, email)
+            .query(`SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email`);
+        if (created.recordset[0]) {
+            try {
+                await createNotification(
+                    pool,
+                    created.recordset[0].user_id,
+                    'ยินดีต้อนรับสู่ PTS Learning',
+                    'บัญชีของคุณพร้อมใช้งานแล้ว เริ่มเลือกหลักสูตรและเข้าร่วมคอมมูนิตี้ได้เลย',
+                    'Courses.html'
+                );
+            } catch (notifyErr) {
+                console.error('notify register:', notifyErr.message);
+            }
+        }
+
         res.json({ success: true, message: 'ลงทะเบียนสมาชิกสำเร็จแล้ว! กรุณาเข้าสู่ระบบ' });
     } catch (error) {
         console.error('❌ Register failed:', error.message);
@@ -314,6 +332,8 @@ app.get('/api/courses', async (req, res) => {
                     c.total_reviews, 
                     c.cover_image_url,
                     c.is_featured,
+                    c.price,
+                    c.description,
                     CASE
                         WHEN @userId IS NULL THEN 0
                         WHEN EXISTS (
@@ -853,6 +873,7 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 // เครื่อง Kiosk จริงให้ POST มาที่ endpoint นี้ด้วย payload เดียวกัน
 // -------------------------------------------------------------------------
 app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
+app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {
