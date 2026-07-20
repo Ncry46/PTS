@@ -385,6 +385,7 @@
                 const response = await fetch('/api/users/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
                     body: JSON.stringify({
                         email: document.getElementById('email').value,
                         password: document.getElementById('password').value
@@ -393,7 +394,7 @@
                 const result = await response.json();
                 if (result.success) {
                     alert('✨ ' + result.message);
-                    window.location.href = 'Home.html';
+                    window.location.href = 'DashbordU.html';
                 } else {
                     alert('❌ ล้มเหลว: ' + result.message);
                 }

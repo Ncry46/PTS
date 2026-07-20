@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ตารางเรียน | PTS Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}</style>
+</head>
+<body class="text-on-surface">
+<div id="app-navbar"></div>
+<main class="max-w-4xl mx-auto px-4 py-6">
+  <h1 class="text-3xl font-bold text-primary mb-2">ตารางเรียน</h1>
+  <p class="text-on-surface-variant mb-6">คลาสที่กำลังจะมาถึงของคอร์สที่คุณสมัครไว้</p>
+  <div id="schedule-list" class="space-y-3">กำลังโหลด...</div>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const fmt = (d) => new Date(d).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+
+async function load() {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+
+  const res = await fetch('/api/my/schedules', { credentials: 'include' });
+  const data = await res.json();
+  const el = document.getElementById('schedule-list');
+  if (!res.ok || !data.success) {
+    el.innerHTML = `<div class="bg-red-50 text-red-700 p-4 rounded-2xl">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
+    return;
+  }
+  if (!data.data.length) {
+    el.innerHTML = `<div class="bg-white p-6 rounded-2xl border text-on-surface-variant">ยังไม่มีตารางเรียนที่เกี่ยวข้อง<br><span class="text-sm">แอดมินสามารถเพิ่มตารางได้จากหน้า Admin</span></div>`;
+    return;
+  }
+  el.innerHTML = data.data.map(s => `
+    <article class="bg-white rounded-2xl border border-pink-100 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+      <div>
+        <p class="text-xs uppercase text-primary font-bold mb-1">${escapeHtml(s.delivery_mode || 'online')}</p>
+        <h2 class="font-bold text-lg">${escapeHtml(s.title)}</h2>
+        <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || 'ทั่วไป')} · ${fmt(s.start_at)} - ${fmt(s.end_at)}</p>
+        <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(s.location || 'ออนไลน์')}</p>
+      </div>
+      ${s.meeting_url ? `<a href="${escapeHtml(s.meeting_url)}" target="_blank" class="bg-primary text-white px-5 py-2 rounded-full font-bold text-center">เข้าห้องเรียน</a>` : '<span class="text-sm text-on-surface-variant">รอประกาศลิงก์</span>'}
+    </article>
+  `).join('');
+}
+load().catch(err => {
+  document.getElementById('schedule-list').innerHTML = `<div class="text-red-600">${escapeHtml(err.message)}</div>`;
+});
+</script>
+<script src="/comp/navbar.js"></script>
+</body>
+</html>

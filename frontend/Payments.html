@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ชำระเงิน | PTS Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}</style>
+</head>
+<body class="text-on-surface">
+<div id="app-navbar"></div>
+<main class="max-w-5xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <section class="bg-white rounded-2xl border border-pink-100 p-5">
+    <h1 class="text-2xl font-bold text-primary mb-2">ชำระเงินคอร์ส</h1>
+    <p class="text-sm text-on-surface-variant mb-4">โหมดจำลอง PromptPay — กดยืนยันเพื่อเปิดสิทธิ์เรียนทันที</p>
+    <label class="block text-sm mb-1">เลือกคอร์ส</label>
+    <select id="course-select" class="w-full border rounded-xl px-3 py-2 mb-3"></select>
+    <label class="block text-sm mb-1">จำนวนเงิน (บาท)</label>
+    <input id="amount" type="number" value="990" min="0" class="w-full border rounded-xl px-3 py-2 mb-4">
+    <button id="create-pay" class="w-full bg-primary text-white py-3 rounded-full font-bold">สร้างรายการชำระเงิน</button>
+    <p id="pay-msg" class="mt-3 text-sm text-on-surface-variant"></p>
+  </section>
+  <section class="bg-white rounded-2xl border border-pink-100 p-5">
+    <h2 class="text-xl font-bold mb-4">ประวัติการชำระเงิน</h2>
+    <div id="payment-list" class="space-y-3">กำลังโหลด...</div>
+  </section>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const params = new URLSearchParams(location.search);
+const presetCourseId = params.get('courseId');
+
+async function init() {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+
+  const courses = await fetch('/api/courses', { credentials: 'include' }).then(r => r.json());
+  const select = document.getElementById('course-select');
+  select.innerHTML = (courses.data || []).map(c => `<option value="${c.course_id}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('');
+
+  await loadPayments();
+
+  document.getElementById('create-pay').onclick = async () => {
+    const courseId = select.value;
+    const amount = Number(document.getElementById('amount').value || 0);
+    const msg = document.getElementById('pay-msg');
+    const res = await fetch(`/api/courses/${courseId}/pay`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ amount })
+    });
+    const data = await res.json();
+    msg.textContent = data.message || '';
+    msg.className = res.ok ? 'mt-3 text-sm text-primary font-semibold' : 'mt-3 text-sm text-red-600';
+    await loadPayments();
+  };
+}
+
+async function loadPayments() {
+  const res = await fetch('/api/my/payments', { credentials: 'include' });
+  const data = await res.json();
+  const el = document.getElementById('payment-list');
+  if (!res.ok || !data.success) {
+    el.innerHTML = `<div class="text-red-600">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
+    return;
+  }
+  if (!data.data.length) {
+    el.innerHTML = '<div class="text-on-surface-variant">ยังไม่มีรายการชำระเงิน</div>';
+    return;
+  }
+  el.innerHTML = data.data.map(p => `
+    <div class="border rounded-xl p-3">
+      <div class="flex justify-between gap-2">
+        <div>
+          <p class="font-bold">${escapeHtml(p.course_name)}</p>
+          <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} ${p.currency} · ${escapeHtml(p.status)}</p>
+          <p class="text-xs text-on-surface-variant">${escapeHtml(p.reference_code || '')}</p>
+        </div>
+        ${p.status === 'pending' ? `<button data-id="${p.payment_id}" class="confirm-pay bg-primary text-white px-3 py-2 rounded-full text-sm font-bold h-fit">ยืนยันชำระ</button>` : '<span class="text-green-700 text-sm font-bold">ชำระแล้ว</span>'}
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('.confirm-pay').forEach(btn => {
+    btn.onclick = async () => {
+      btn.disabled = true;
+      const r = await fetch(`/api/payments/${btn.dataset.id}/confirm`, { method: 'POST', credentials: 'include' });
+      const j = await r.json();
+      alert(j.message || (r.ok ? 'สำเร็จ' : 'ไม่สำเร็จ'));
+      await loadPayments();
+    };
+  });
+}
+
+init().catch(err => alert(err.message));
+</script>
+<script src="/comp/navbar.js"></script>
+</body>
+</html>

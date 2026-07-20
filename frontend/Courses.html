@@ -235,8 +235,8 @@
                   ${difficulty}
                 </div>
               </div>
-              <button class="w-full bg-surface-container-low text-primary hover:bg-primary hover:text-white py-sm rounded-full font-label-md transition-all active:scale-95 flex justify-center items-center gap-sm">
-                ดูรายละเอียด
+              <button type="button" data-course-id="${course.course_id}" class="course-detail-btn w-full bg-surface-container-low text-primary hover:bg-primary hover:text-white py-sm rounded-full font-label-md transition-all active:scale-95 flex justify-center items-center gap-sm">
+                ดูรายละเอียด / สมัครเรียน
                 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
               </button>
             </div>
@@ -266,13 +266,92 @@
       });
     };
 
+    let allCourses = [];
+
+    const openCourseModal = (course) => {
+      const existing = document.getElementById('course-modal');
+      if (existing) existing.remove();
+
+      const badge = getBadge((course.delivery_mode || '').toLowerCase());
+      const modal = document.createElement('div');
+      modal.id = 'course-modal';
+      modal.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40';
+      modal.innerHTML = `
+        <div class="bg-white rounded-[24px] max-w-lg w-full p-md shadow-xl relative">
+          <button type="button" id="close-course-modal" class="absolute top-3 right-3 p-2 rounded-full hover:bg-surface-container-low">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+          <img src="${course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" alt="" class="w-full h-40 object-cover rounded-2xl mb-md">
+          <span class="inline-block px-3 py-1 rounded-full text-[12px] font-bold mb-sm ${badge.classes}">${badge.label}</span>
+          <h3 class="font-headline-sm text-headline-sm mb-xs">${formatText(course.course_name)}</h3>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-sm">โดย ${formatText(course.instructor_name)}</p>
+          <p class="font-body-sm text-body-sm text-on-surface-variant mb-md">
+            ${Number(course.total_hours || 0).toFixed(1).replace('.0', '')} ชั่วโมง · ระดับ ${sentenceCase(course.difficulty_level)} · คะแนน ${Number(course.average_rating || 0).toFixed(1)}
+          </p>
+          <button type="button" id="enroll-course-btn" data-course-id="${course.course_id}"
+            class="w-full bg-primary text-white py-sm rounded-full font-bold hover:opacity-90 active:scale-95 transition-all">
+            สมัครเรียนคอร์สนี้
+          </button>
+          <a id="pay-course-link" href="Payments.html?courseId=${course.course_id}"
+            class="mt-sm block w-full text-center border border-primary text-primary py-sm rounded-full font-bold hover:bg-primary/5">
+            ชำระเงินแล้วสมัครเรียน
+          </a>
+          <p id="enroll-message" class="mt-sm text-center text-[14px] text-on-surface-variant"></p>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      modal.querySelector('#close-course-modal').onclick = () => modal.remove();
+      modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+
+      modal.querySelector('#enroll-course-btn').onclick = async (e) => {
+        const btn = e.currentTarget;
+        const msg = modal.querySelector('#enroll-message');
+        btn.disabled = true;
+        btn.textContent = 'กำลังสมัครเรียน...';
+        try {
+          const response = await fetch(`/api/courses/${course.course_id}/enroll`, {
+            method: 'POST',
+            credentials: 'include'
+          });
+          const result = await response.json();
+          if (response.status === 401) {
+            alert('กรุณาเข้าสู่ระบบก่อนสมัครเรียน');
+            window.location.href = 'Login.html';
+            return;
+          }
+          if (!response.ok || !result.success) throw new Error(result.message || 'สมัครเรียนไม่สำเร็จ');
+          msg.textContent = result.message;
+          msg.className = 'mt-sm text-center text-[14px] text-primary font-bold';
+          btn.textContent = result.already_enrolled ? 'สมัครไว้แล้ว' : 'สมัครเรียนสำเร็จ';
+          if (!result.already_enrolled) {
+            setTimeout(() => { window.location.href = 'DashbordU.html'; }, 800);
+          }
+        } catch (error) {
+          msg.textContent = error.message;
+          msg.className = 'mt-sm text-center text-[14px] text-error';
+          btn.disabled = false;
+          btn.textContent = 'สมัครเรียนคอร์สนี้';
+        }
+      };
+    };
+
     const renderCourseList = courses => {
+      allCourses = courses || [];
       if (!courses || !courses.length) {
         coursesGrid.innerHTML = '<div class="col-span-full rounded-[24px] bg-white p-md text-on-surface-variant shadow-sm">ไม่พบหลักสูตรในขณะนี้</div>';
         return;
       }
       coursesGrid.innerHTML = courses.map(makeCourseCard).join('');
     };
+
+    coursesGrid.addEventListener('click', (e) => {
+      const btn = e.target.closest('.course-detail-btn');
+      if (!btn) return;
+      const courseId = Number(btn.getAttribute('data-course-id'));
+      const course = allCourses.find(c => Number(c.course_id) === courseId);
+      if (course) openCourseModal(course);
+    });
 
     filterButtons.forEach(button => {
       button.addEventListener('click', () => {

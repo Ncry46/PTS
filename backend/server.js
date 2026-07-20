@@ -3,6 +3,9 @@ const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+const { ensureLearningSchema } = require('./ensureSchema');
+const { createLearningRouter } = require('./learningRoutes');
+const { createAdminRouter } = require('./adminRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -39,14 +42,28 @@ const dbConfig = {
 
 const poolPromise = new sql.ConnectionPool(dbConfig)
     .connect()
-    .then(pool => {
+    .then(async pool => {
         console.log('🔌 Connected to Microsoft SQL Server Successfully!');
+        try {
+            await ensureLearningSchema(pool);
+            console.log('📚 Learning schema ready');
+        } catch (schemaErr) {
+            console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
+        }
         return pool;
     })
     .catch(err => {
         console.error('❌ SQL Server Connection Failed: ', err);
         process.exit(1);
     });
+
+function requireLogin(req, res) {
+    if (!req.session || !req.session.user || !req.session.user.user_id) {
+        res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบก่อนใช้งาน' });
+        return null;
+    }
+    return req.session.user;
+}
 
 // 📦 ตัวเก็บข้อมูล Token สำหรับเช็ก OTP จริงผ่านเครือข่าย
 const smsTokenCache = new Map();
@@ -83,8 +100,11 @@ app.post('/api/users/login', async (req, res) => {
         const result = await pool.request()
             .input('email', sql.VarChar, email)
             .input('pass', sql.VarChar, password)
-            // 🌟 5. แก้ไข SQL ดึงคอลัมน์ Role และ FlagUse เพิ่มเติมเข้ามา
-            .query('SELECT email, full_name, Role, FlagUse FROM BD_PTS.dbo.users_main WHERE email = @email AND password_hash = @pass');
+            .query(`
+                SELECT user_id, email, full_name, Role, FlagUse, Url
+                FROM BD_PTS.dbo.users_main
+                WHERE email = @email AND password_hash = @pass
+            `);
 
         if (result.recordset.length > 0) {
             const userData = result.recordset[0];
@@ -96,14 +116,16 @@ app.post('/api/users/login', async (req, res) => {
 
             // 🌟 7. จัดเก็บข้อมูลลงในเซสชันของหลังบ้าน
             req.session.user = {
+                user_id: userData.user_id,
                 name: userData.full_name,
                 email: userData.email,
+                Url: userData.Url || null,
                 // แปลงสิทธิ์เป็นตัวพิมพ์เล็ก (เช่น admin / student) เพื่อให้ตรงกับโค้ด navbar.js
-                role: userData.Role ? userData.Role.toLowerCase() : 'student' 
+                role: userData.Role ? userData.Role.toLowerCase() : 'student'
             };
 
-            res.json({ 
-                success: true, 
+            res.json({
+                success: true,
                 message: `เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ${userData.full_name}`,
                 role: req.session.user.role
             });
@@ -112,6 +134,47 @@ app.post('/api/users/login', async (req, res) => {
         }
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// -------------------------------------------------------------------------
+// [API สมัครสมาชิก]
+// -------------------------------------------------------------------------
+app.post('/api/users/register', async (req, res) => {
+    const { full_name, email, phone, password } = req.body;
+
+    if (!full_name || !email || !password) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อ อีเมล และรหัสผ่านให้ครบ' });
+    }
+
+    try {
+        const pool = await poolPromise;
+
+        const existing = await pool.request()
+            .input('email', sql.VarChar, email)
+            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+
+        if (existing.recordset.length > 0) {
+            return res.status(400).json({ success: false, message: 'อีเมลนี้เคยลงทะเบียนในระบบไว้แล้ว' });
+        }
+
+        await pool.request()
+            .input('email', sql.VarChar, email)
+            .input('fullName', sql.NVarChar, full_name)
+            .input('phone', sql.VarChar, phone || '-')
+            .input('pass', sql.VarChar, password)
+            .query(`
+                INSERT INTO BD_PTS.dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse)
+                VALUES (@email, @fullName, @phone, @pass, 'student', 'Y')
+            `);
+
+        res.json({ success: true, message: 'ลงทะเบียนสมาชิกสำเร็จแล้ว! กรุณาเข้าสู่ระบบ' });
+    } catch (error) {
+        console.error('❌ Register failed:', error.message);
+        if (error.message && error.message.includes('UNIQUE')) {
+            return res.status(400).json({ success: false, message: 'อีเมลนี้เคยลงทะเบียนในระบบไว้แล้ว' });
+        }
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการลงทะเบียน: ' + error.message });
     }
 });
 
@@ -340,4 +403,421 @@ app.get('/api/community/trending', async (req, res) => {
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+// =========================================================================
+// ✍️ สร้างโพสต์คอมมูนิตี้ (ต้องล็อกอิน)
+// =========================================================================
+app.post('/api/community', async (req, res) => {
+    if (!req.session || !req.session.user || !req.session.user.user_id) {
+        return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบก่อนโพสต์' });
+    }
+
+    const content = (req.body.content || '').trim();
+    if (!content) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกข้อความก่อนโพสต์' });
+    }
+    if (content.length > 2000) {
+        return res.status(400).json({ success: false, message: 'ข้อความยาวเกิน 2000 ตัวอักษร' });
+    }
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('userId', sql.Int, req.session.user.user_id)
+            .input('content', sql.NVarChar, content)
+            .query(`
+                INSERT INTO BD_PTS.dbo.community_posts (user_id, content, flag_use, created_at)
+                OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.created_at
+                VALUES (@userId, @content, 1, GETDATE())
+            `);
+
+        const created = result.recordset[0];
+        res.json({
+            success: true,
+            message: 'โพสต์สำเร็จ',
+            data: {
+                post_id: created.post_id,
+                content: created.content,
+                created_at: created.created_at,
+                author_name: req.session.user.name,
+                author_avatar: req.session.user.Url || null,
+                like_count: 0,
+                comment_count: 0
+            }
+        });
+    } catch (error) {
+        console.error('❌ สร้างโพสต์ล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถสร้างโพสต์ได้: ' + error.message });
+    }
+});
+
+// =========================================================================
+// ❤️ กดไลก์โพสต์ (สลับ like/unlike)
+// =========================================================================
+app.post('/api/community/:postId/like', async (req, res) => {
+    if (!req.session || !req.session.user || !req.session.user.user_id) {
+        return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบก่อนกดไลก์' });
+    }
+
+    const postId = parseInt(req.params.postId, 10);
+    if (!postId) {
+        return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
+    }
+
+    try {
+        const pool = await poolPromise;
+        const userId = req.session.user.user_id;
+
+        const existing = await pool.request()
+            .input('postId', sql.Int, postId)
+            .input('userId', sql.Int, userId)
+            .query('SELECT COUNT(*) AS cnt FROM BD_PTS.dbo.post_likes WHERE post_id = @postId AND user_id = @userId');
+
+        let liked = false;
+        if (existing.recordset[0].cnt > 0) {
+            await pool.request()
+                .input('postId', sql.Int, postId)
+                .input('userId', sql.Int, userId)
+                .query('DELETE FROM BD_PTS.dbo.post_likes WHERE post_id = @postId AND user_id = @userId');
+            liked = false;
+        } else {
+            await pool.request()
+                .input('postId', sql.Int, postId)
+                .input('userId', sql.Int, userId)
+                .query('INSERT INTO BD_PTS.dbo.post_likes (post_id, user_id) VALUES (@postId, @userId)');
+            liked = true;
+        }
+
+        const countResult = await pool.request()
+            .input('postId', sql.Int, postId)
+            .query('SELECT COUNT(*) AS like_count FROM BD_PTS.dbo.post_likes WHERE post_id = @postId');
+
+        res.json({
+            success: true,
+            liked,
+            like_count: countResult.recordset[0].like_count
+        });
+    } catch (error) {
+        console.error('❌ กดไลก์ล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถกดไลก์ได้: ' + error.message });
+    }
+});
+
+// =========================================================================
+// 💬 คอมเมนต์โพสต์คอมมูนิตี้
+// =========================================================================
+app.get('/api/community/:postId/comments', async (req, res) => {
+    const postId = parseInt(req.params.postId, 10);
+    if (!postId) {
+        return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
+    }
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('postId', sql.Int, postId)
+            .query(`
+                SELECT
+                    c.comment_id,
+                    c.post_id,
+                    c.content,
+                    c.created_at,
+                    u.full_name AS author_name,
+                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar
+                FROM BD_PTS.dbo.post_comments c
+                INNER JOIN BD_PTS.dbo.users_main u ON c.user_id = u.user_id
+                WHERE c.post_id = @postId
+                ORDER BY c.created_at ASC
+            `);
+
+        res.json({ success: true, data: result.recordset });
+    } catch (error) {
+        console.error('❌ ดึงคอมเมนต์ล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถดึงคอมเมนต์ได้: ' + error.message });
+    }
+});
+
+app.post('/api/community/:postId/comments', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    const postId = parseInt(req.params.postId, 10);
+    const content = (req.body.content || '').trim();
+    if (!postId) {
+        return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
+    }
+    if (!content) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกคอมเมนต์' });
+    }
+    if (content.length > 1000) {
+        return res.status(400).json({ success: false, message: 'คอมเมนต์ยาวเกิน 1000 ตัวอักษร' });
+    }
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('postId', sql.Int, postId)
+            .input('userId', sql.Int, user.user_id)
+            .input('content', sql.NVarChar, content)
+            .query(`
+                INSERT INTO BD_PTS.dbo.post_comments (post_id, user_id, content, created_at)
+                OUTPUT INSERTED.comment_id, INSERTED.post_id, INSERTED.content, INSERTED.created_at
+                VALUES (@postId, @userId, @content, GETDATE())
+            `);
+
+        const created = result.recordset[0];
+        res.json({
+            success: true,
+            message: 'คอมเมนต์สำเร็จ',
+            data: {
+                ...created,
+                author_name: user.name,
+                author_avatar: user.Url || null
+            }
+        });
+    } catch (error) {
+        console.error('❌ เพิ่มคอมเมนต์ล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถคอมเมนต์ได้: ' + error.message });
+    }
+});
+
+// =========================================================================
+// 📘 สมัครเรียน / คอร์สของฉัน
+// =========================================================================
+app.post('/api/courses/:courseId/enroll', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    const courseId = parseInt(req.params.courseId, 10);
+    if (!courseId) {
+        return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+    }
+
+    try {
+        const pool = await poolPromise;
+
+        const courseCheck = await pool.request()
+            .input('courseId', sql.Int, courseId)
+            .query('SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId');
+
+        if (courseCheck.recordset.length === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบคอร์สนี้ในระบบ' });
+        }
+
+        const existing = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .input('courseId', sql.Int, courseId)
+            .query(`
+                SELECT enrollment_id FROM BD_PTS.dbo.course_enrollments
+                WHERE user_id = @userId AND course_id = @courseId
+            `);
+
+        if (existing.recordset.length > 0) {
+            return res.json({
+                success: true,
+                already_enrolled: true,
+                message: 'คุณสมัครคอร์สนี้ไว้แล้ว',
+                enrollment_id: existing.recordset[0].enrollment_id
+            });
+        }
+
+        const inserted = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .input('courseId', sql.Int, courseId)
+            .query(`
+                INSERT INTO BD_PTS.dbo.course_enrollments (user_id, course_id, progress_percent, status)
+                OUTPUT INSERTED.enrollment_id
+                VALUES (@userId, @courseId, 0, 'in_progress')
+            `);
+
+        res.json({
+            success: true,
+            already_enrolled: false,
+            message: `สมัครเรียน "${courseCheck.recordset[0].course_name}" สำเร็จ`,
+            enrollment_id: inserted.recordset[0].enrollment_id
+        });
+    } catch (error) {
+        console.error('❌ สมัครเรียนล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถสมัครเรียนได้: ' + error.message });
+    }
+});
+
+app.get('/api/my/courses', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .query(`
+                SELECT
+                    e.enrollment_id,
+                    e.progress_percent,
+                    e.status,
+                    e.enrolled_at,
+                    e.updated_at,
+                    c.course_id,
+                    c.course_name,
+                    c.instructor_name,
+                    c.delivery_mode,
+                    c.difficulty_level,
+                    c.total_hours,
+                    c.cover_image_url,
+                    c.average_rating
+                FROM BD_PTS.dbo.course_enrollments e
+                INNER JOIN BD_PTS.dbo.courses_main c ON e.course_id = c.course_id
+                WHERE e.user_id = @userId
+                ORDER BY e.updated_at DESC
+            `);
+
+        const courses = result.recordset;
+        const inProgress = courses.filter(c => c.status === 'in_progress');
+        const completed = courses.filter(c => c.status === 'completed');
+        const avgProgress = courses.length
+            ? Math.round(courses.reduce((sum, c) => sum + Number(c.progress_percent || 0), 0) / courses.length)
+            : 0;
+        const totalHours = courses.reduce((sum, c) => sum + Number(c.total_hours || 0), 0);
+
+        res.json({
+            success: true,
+            data: courses,
+            summary: {
+                total: courses.length,
+                in_progress: inProgress.length,
+                completed: completed.length,
+                average_progress: avgProgress,
+                total_hours: totalHours
+            }
+        });
+    } catch (error) {
+        console.error('❌ ดึงคอร์สของฉันล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถดึงคอร์สของฉันได้: ' + error.message });
+    }
+});
+
+app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    const courseId = parseInt(req.params.courseId, 10);
+    let progress = parseInt(req.body.progress_percent, 10);
+    if (!courseId || Number.isNaN(progress)) {
+        return res.status(400).json({ success: false, message: 'ข้อมูลความคืบหน้าไม่ถูกต้อง' });
+    }
+    progress = Math.max(0, Math.min(100, progress));
+    const status = progress >= 100 ? 'completed' : 'in_progress';
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .input('courseId', sql.Int, courseId)
+            .input('progress', sql.Int, progress)
+            .input('status', sql.VarChar, status)
+            .query(`
+                UPDATE BD_PTS.dbo.course_enrollments
+                SET progress_percent = @progress,
+                    status = @status,
+                    updated_at = GETDATE()
+                WHERE user_id = @userId AND course_id = @courseId;
+
+                SELECT @@ROWCOUNT AS affected;
+            `);
+
+        if (!result.recordset[0] || result.recordset[0].affected === 0) {
+            return res.status(404).json({ success: false, message: 'ยังไม่ได้สมัครคอร์สนี้' });
+        }
+
+        res.json({ success: true, message: 'อัปเดตความคืบหน้าแล้ว', progress_percent: progress, status });
+    } catch (error) {
+        console.error('❌ อัปเดตความคืบหน้าล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// -------------------------------------------------------------------------
+// 📸 Kiosk จำลอง: หน้า frontend/kiosk.html เป็นตัวทดสอบเท่านั้น
+// เครื่อง Kiosk จริงให้ POST มาที่ endpoint นี้ด้วย payload เดียวกัน
+// -------------------------------------------------------------------------
+app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
+app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
+
+app.post('/api/attendance/scan', async (req, res) => {
+    const { employee_id, kiosk_device_id } = req.body;
+
+    if (!employee_id || !kiosk_device_id) {
+        return res.status(400).json({ success: false, message: 'ข้อมูลไม่ครบถ้วน' });
+    }
+
+    try {
+        const pool = await poolPromise;
+        const now = new Date();
+        const tzoffset = now.getTimezoneOffset() * 60000;
+        const localISOTime = new Date(now.getTime() - tzoffset).toISOString().slice(0, 19).replace('T', ' ');
+        const currentDateOnly = localISOTime.split(' ')[0];
+
+        const userResult = await pool.request()
+            .input('email', sql.VarChar, employee_id)
+            .query(`
+                SELECT full_name, email, Role
+                FROM BD_PTS.dbo.users_main
+                WHERE email = @email
+            `);
+
+        if (userResult.recordset.length === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบข้อมูลสมาชิกคนนี้ในระบบ' });
+        }
+
+        const empInfo = userResult.recordset[0];
+
+        const checkResult = await pool.request()
+            .input('email', sql.VarChar, employee_id)
+            .input('localDate', sql.VarChar, currentDateOnly)
+            .query(`
+                SELECT TOP 1 scan_type
+                FROM BD_PTS.dbo.attendance_logs
+                WHERE employee_id = @email AND CAST(scan_timestamp AS DATE) = CAST(@localDate AS DATE)
+                ORDER BY log_id DESC
+            `);
+
+        let scan_type = 'IN';
+        if (checkResult.recordset.length > 0 && checkResult.recordset[0].scan_type === 'IN') {
+            scan_type = 'OUT';
+        }
+
+        let status = 'NORMAL';
+        if (scan_type === 'IN' && now > new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 30, 0)) {
+            status = 'LATE';
+        }
+
+        await pool.request()
+            .input('email', sql.VarChar, employee_id)
+            .input('scanTime', sql.DateTime, localISOTime)
+            .input('scanType', sql.VarChar, scan_type)
+            .input('kioskId', sql.VarChar, kiosk_device_id)
+            .input('status', sql.VarChar, status)
+            .query(`
+                INSERT INTO BD_PTS.dbo.attendance_logs (employee_id, scan_timestamp, scan_type, kiosk_device_id, status)
+                VALUES (@email, @scanTime, @scanType, @kioskId, @status)
+            `);
+
+        res.json({
+            success: true,
+            message: 'บันทึกเวลาสำเร็จ',
+            data: {
+                employee_name: empInfo.full_name,
+                employee_code: empInfo.email,
+                department: empInfo.Role || 'student',
+                scan_time: now.toLocaleTimeString('th-TH'),
+                scan_type: scan_type === 'IN' ? 'เข้างาน' : 'ออกงาน',
+                status: status === 'LATE' ? 'มาสาย' : 'ปกติ'
+            }
+        });
+    } catch (error) {
+        console.error('❌ Attendance scan failed:', error.message);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในระบบฐานข้อมูลหลังบ้าน' });
+    }
+});
+
 app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));

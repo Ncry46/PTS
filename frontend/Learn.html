@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เรียนบทเรียน | PTS Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}</style>
+</head>
+<body class="text-on-surface">
+<div id="app-navbar"></div>
+<main class="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-12 gap-6">
+  <aside class="lg:col-span-4 bg-white rounded-2xl border border-pink-100 p-4 h-fit">
+    <h1 id="course-title" class="text-xl font-bold text-primary mb-3">กำลังโหลด...</h1>
+    <div id="lesson-list" class="space-y-2"></div>
+  </aside>
+  <section class="lg:col-span-8 bg-white rounded-2xl border border-pink-100 p-5 min-h-[480px]">
+    <div id="lesson-view" class="text-on-surface-variant">เลือกบทเรียนจากด้านซ้าย</div>
+  </section>
+</main>
+<script>
+const params = new URLSearchParams(location.search);
+const courseId = params.get('courseId');
+const focusLessonId = params.get('lessonId');
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+async function loadCourseLessons() {
+  if (!courseId) {
+    document.getElementById('course-title').textContent = 'ไม่พบรหัสคอร์ส';
+    return;
+  }
+  const res = await fetch(`/api/courses/${courseId}/lessons`, { credentials: 'include' });
+  const data = await res.json();
+  if (res.status === 401) return location.href = 'Login.html';
+  if (!res.ok || !data.success) throw new Error(data.message || 'โหลดบทเรียนไม่สำเร็จ');
+  if (!data.enrolled) {
+    document.getElementById('course-title').textContent = data.course.course_name;
+    document.getElementById('lesson-view').innerHTML = `<p class="mb-4">คุณยังไม่ได้สมัครคอร์สนี้</p><a class="inline-block bg-primary text-white px-5 py-2 rounded-full" href="Courses.html">ไปสมัครเรียน</a>`;
+    return;
+  }
+  document.getElementById('course-title').textContent = data.course.course_name;
+  const list = document.getElementById('lesson-list');
+  list.innerHTML = data.data.map(l => `
+    <button data-id="${l.lesson_id}" class="lesson-item w-full text-left p-3 rounded-xl border ${Number(l.completed) ? 'border-green-200 bg-green-50' : 'border-gray-100 hover:bg-pink-50'}">
+      <div class="font-semibold text-sm">${escapeHtml(l.title)}</div>
+      <div class="text-xs text-on-surface-variant mt-1">${l.duration_minutes || 0} นาที ${Number(l.completed) ? '· เรียนจบแล้ว' : ''}</div>
+    </button>
+  `).join('');
+
+  list.onclick = (e) => {
+    const btn = e.target.closest('.lesson-item');
+    if (!btn) return;
+    openLesson(btn.dataset.id);
+  };
+
+  const first = focusLessonId || (data.data[0] && data.data[0].lesson_id);
+  if (first) openLesson(first);
+}
+
+async function openLesson(lessonId) {
+  const view = document.getElementById('lesson-view');
+  view.innerHTML = 'กำลังโหลดบทเรียน...';
+  const res = await fetch(`/api/lessons/${lessonId}`, { credentials: 'include' });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    view.innerHTML = `<p class="text-red-600">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</p>`;
+    return;
+  }
+  const lesson = data.data;
+  const video = lesson.video_url
+    ? `<div class="aspect-video mb-4 rounded-xl overflow-hidden bg-black"><iframe class="w-full h-full" src="${escapeHtml(lesson.video_url)}" allowfullscreen></iframe></div>`
+    : '';
+  view.innerHTML = `
+    <h2 class="text-2xl font-bold mb-2">${escapeHtml(lesson.title)}</h2>
+    <p class="text-sm text-on-surface-variant mb-4">${lesson.duration_minutes || 0} นาที · ${escapeHtml(lesson.course_name || '')}</p>
+    ${video}
+    <div class="prose max-w-none text-on-surface-variant leading-relaxed mb-6">${lesson.content_html || '<p>ยังไม่มีเนื้อหา</p>'}</div>
+    <button id="complete-btn" class="bg-primary text-white px-6 py-3 rounded-full font-bold ${Number(lesson.completed) ? 'opacity-60' : ''}">
+      ${Number(lesson.completed) ? 'เรียนจบบทนี้แล้ว' : 'ทำเครื่องหมายว่าเรียนจบ'}
+    </button>
+    <p id="complete-msg" class="mt-3 text-sm text-on-surface-variant"></p>
+  `;
+  document.getElementById('complete-btn').onclick = async () => {
+    const r = await fetch(`/api/lessons/${lessonId}/complete`, { method: 'POST', credentials: 'include' });
+    const j = await r.json();
+    const msg = document.getElementById('complete-msg');
+    if (!r.ok || !j.success) { msg.textContent = j.message || 'บันทึกไม่สำเร็จ'; msg.className='mt-3 text-sm text-red-600'; return; }
+    msg.textContent = `บันทึกแล้ว ความคืบหน้าคอร์ส ${j.progress}% (${j.completed}/${j.total} บท)`;
+    msg.className = 'mt-3 text-sm text-primary font-semibold';
+    loadCourseLessons();
+  };
+}
+
+loadCourseLessons().catch(err => {
+  document.getElementById('lesson-view').innerHTML = `<p class="text-red-600">${escapeHtml(err.message)}</p>`;
+});
+</script>
+<script src="/comp/navbar.js"></script>
+</body>
+</html>

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | PTS Learning</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
+<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}.tab-btn.active{background:#974258;color:#fff}</style>
+</head>
+<body class="text-on-surface">
+<div id="app-navbar"></div>
+<main class="max-w-6xl mx-auto px-4 py-6">
+  <h1 class="text-3xl font-bold text-primary mb-2">แผงควบคุมแอดมิน</h1>
+  <p class="text-on-surface-variant mb-4">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ และการชำระเงิน</p>
+  <div id="stats" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6"></div>
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button class="tab-btn active px-4 py-2 rounded-full border text-sm font-bold" data-tab="courses">คอร์ส</button>
+    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="lessons">บทเรียน</button>
+    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="schedules">ตารางเรียน</button>
+    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="users">ผู้ใช้</button>
+    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="posts">โพสต์</button>
+    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="payments">ชำระเงิน</button>
+  </div>
+  <section id="panel" class="bg-white rounded-2xl border border-pink-100 p-5"></section>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let coursesCache = [];
+
+async function api(url, options = {}) {
+  const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { location.href = 'Login.html'; throw new Error('unauthorized'); }
+  if (res.status === 403) { alert(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
+  if (!res.ok || data.success === false) throw new Error(data.message || 'คำขอล้มเหลว');
+  return data;
+}
+
+async function loadStats() {
+  const { data } = await api('/api/admin/stats');
+  document.getElementById('stats').innerHTML = [
+    ['ผู้ใช้', data.users_count],
+    ['คอร์ส', data.courses_count],
+    ['การสมัครเรียน', data.enrollments_count],
+    ['โพสต์', data.posts_count],
+    ['ชำระแล้ว', data.paid_count],
+    ['รายได้ (บาท)', Number(data.revenue || 0).toLocaleString('th-TH')]
+  ].map(([label, value]) => `
+    <div class="bg-white rounded-2xl border p-3 text-center">
+      <p class="text-xs text-on-surface-variant">${label}</p>
+      <p class="text-xl font-bold text-primary">${value}</p>
+    </div>
+  `).join('');
+}
+
+async function renderCourses() {
+  const { data } = await api('/api/admin/courses');
+  coursesCache = data;
+  document.getElementById('panel').innerHTML = `
+    <h2 class="font-bold text-lg mb-3">สร้างคอร์สใหม่</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อคอร์ส">
+      <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
+      <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      <input id="c-hours" type="number" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง" value="4">
+      <input id="c-cover" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="URL รูปปก">
+    </div>
+    <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-6">สร้างคอร์ส</button>
+    <div class="space-y-2">${data.map(c => `
+      <div class="border rounded-xl p-3 flex justify-between gap-3 items-start">
+        <div>
+          <p class="font-bold">${escapeHtml(c.course_name)}</p>
+          <p class="text-sm text-on-surface-variant">#${c.course_id} · ${escapeHtml(c.delivery_mode)} · ${escapeHtml(c.instructor_name || '-')}</p>
+        </div>
+        <button class="text-sm text-primary font-bold feature-btn" data-id="${c.course_id}" data-featured="${c.is_featured ? 0 : 1}">${c.is_featured ? 'เลิกแนะนำ' : 'ตั้งแนะนำ'}</button>
+      </div>`).join('') || '<p>ยังไม่มีคอร์ส</p>'}
+    </div>`;
+
+  document.getElementById('create-course').onclick = async () => {
+    await api('/api/admin/courses', {
+      method: 'POST',
+      body: JSON.stringify({
+        course_name: document.getElementById('c-name').value,
+        instructor_name: document.getElementById('c-instructor').value,
+        delivery_mode: document.getElementById('c-mode').value,
+        total_hours: Number(document.getElementById('c-hours').value || 1),
+        cover_image_url: document.getElementById('c-cover').value,
+        is_featured: false
+      })
+    });
+    alert('สร้างคอร์สสำเร็จ');
+    await loadStats();
+    renderCourses();
+  };
+
+  document.querySelectorAll('.feature-btn').forEach(btn => {
+    btn.onclick = async () => {
+      await api(`/api/admin/courses/${btn.dataset.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_featured: btn.dataset.featured === '1' })
+      });
+      renderCourses();
+    };
+  });
+}
+
+async function renderLessons() {
+  if (!coursesCache.length) {
+    const { data } = await api('/api/admin/courses');
+    coursesCache = data;
+  }
+  document.getElementById('panel').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <select id="l-course" class="border rounded-xl px-3 py-2">${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
+      <input id="l-title" class="border rounded-xl px-3 py-2" placeholder="ชื่อบทเรียน">
+      <input id="l-video" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="Video embed URL (เช่น YouTube embed)">
+      <textarea id="l-content" class="border rounded-xl px-3 py-2 md:col-span-2" rows="4" placeholder="เนื้อหา HTML/ข้อความ"></textarea>
+      <input id="l-sort" type="number" class="border rounded-xl px-3 py-2" value="1" placeholder="ลำดับ">
+      <input id="l-duration" type="number" class="border rounded-xl px-3 py-2" value="15" placeholder="นาที">
+    </div>
+    <button id="add-lesson" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มบทเรียน</button>
+    <div id="lesson-admin-list" class="space-y-2 text-sm text-on-surface-variant">เลือกคอร์สแล้วกดโหลด...</div>
+  `;
+
+  const loadLessons = async () => {
+    const courseId = document.getElementById('l-course').value;
+    const { data } = await api(`/api/admin/courses/${courseId}/lessons`);
+    document.getElementById('lesson-admin-list').innerHTML = data.map(l => `
+      <div class="border rounded-xl p-3 flex justify-between gap-2 ${l.flag_use ? '' : 'opacity-50'}">
+        <div><p class="font-bold">${escapeHtml(l.title)}</p><p class="text-xs">#${l.lesson_id} · ลำดับ ${l.sort_order} · ${l.duration_minutes} นาที</p></div>
+        ${l.flag_use ? `<button class="del-lesson text-red-600 font-bold" data-id="${l.lesson_id}">ปิดใช้</button>` : '<span>ปิดแล้ว</span>'}
+      </div>`).join('') || '<p>ยังไม่มีบทเรียน</p>';
+    document.querySelectorAll('.del-lesson').forEach(btn => {
+      btn.onclick = async () => { await api(`/api/admin/lessons/${btn.dataset.id}`, { method: 'DELETE' }); loadLessons(); };
+    });
+  };
+
+  document.getElementById('l-course').onchange = loadLessons;
+  document.getElementById('add-lesson').onclick = async () => {
+    const courseId = document.getElementById('l-course').value;
+    await api(`/api/admin/courses/${courseId}/lessons`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: document.getElementById('l-title').value,
+        content_html: document.getElementById('l-content').value,
+        video_url: document.getElementById('l-video').value,
+        sort_order: Number(document.getElementById('l-sort').value || 1),
+        duration_minutes: Number(document.getElementById('l-duration').value || 15)
+      })
+    });
+    alert('เพิ่มบทเรียนแล้ว');
+    loadLessons();
+  };
+  if (coursesCache.length) loadLessons();
+}
+
+async function renderSchedules() {
+  if (!coursesCache.length) {
+    const { data } = await api('/api/admin/courses');
+    coursesCache = data;
+  }
+  const { data } = await api('/api/admin/schedules');
+  const now = new Date();
+  const start = new Date(now.getTime() + 86400000); start.setMinutes(0,0,0);
+  const end = new Date(start.getTime() + 2*3600000);
+  document.getElementById('panel').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <input id="s-title" class="border rounded-xl px-3 py-2" placeholder="หัวข้อคลาส">
+      <select id="s-course" class="border rounded-xl px-3 py-2"><option value="">ไม่ผูกคอร์ส</option>${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
+      <input id="s-start" type="datetime-local" class="border rounded-xl px-3 py-2" value="${start.toISOString().slice(0,16)}">
+      <input id="s-end" type="datetime-local" class="border rounded-xl px-3 py-2" value="${end.toISOString().slice(0,16)}">
+      <input id="s-location" class="border rounded-xl px-3 py-2" placeholder="สถานที่">
+      <input id="s-meeting" class="border rounded-xl px-3 py-2" placeholder="Meeting URL">
+      <select id="s-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+    </div>
+    <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มตาราง</button>
+    <div class="space-y-2">${data.map(s => `
+      <div class="border rounded-xl p-3 flex justify-between gap-2">
+        <div>
+          <p class="font-bold">${escapeHtml(s.title)}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')}</p>
+        </div>
+        <button class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
+      </div>`).join('') || '<p>ยังไม่มีตาราง</p>'}
+    </div>`;
+
+  document.getElementById('add-schedule').onclick = async () => {
+    await api('/api/admin/schedules', {
+      method: 'POST',
+      body: JSON.stringify({
+        title: document.getElementById('s-title').value,
+        course_id: document.getElementById('s-course').value || null,
+        start_at: document.getElementById('s-start').value,
+        end_at: document.getElementById('s-end').value,
+        location: document.getElementById('s-location').value,
+        meeting_url: document.getElementById('s-meeting').value,
+        delivery_mode: document.getElementById('s-mode').value
+      })
+    });
+    alert('เพิ่มตารางแล้ว');
+    renderSchedules();
+  };
+  document.querySelectorAll('.del-schedule').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/schedules/${btn.dataset.id}`, { method: 'DELETE' }); renderSchedules(); };
+  });
+}
+
+async function renderUsers() {
+  const { data } = await api('/api/admin/users');
+  document.getElementById('panel').innerHTML = `
+    <div class="space-y-2">${data.map(u => `
+      <div class="border rounded-xl p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
+          <p class="font-bold">${escapeHtml(u.full_name || '-')}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(u.email)} · ${escapeHtml(u.Role || 'student')} · Flag ${escapeHtml(u.FlagUse || '-')}</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="student">student</button>
+          <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="admin">admin</button>
+          <button class="set-flag border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-flag="Y">เปิดใช้</button>
+          <button class="set-flag border px-3 py-1 rounded-full text-sm text-red-600" data-id="${u.user_id}" data-flag="N">ระงับ</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  document.querySelectorAll('.set-role').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/users/${btn.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ role: btn.dataset.role }) }); renderUsers(); };
+  });
+  document.querySelectorAll('.set-flag').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/users/${btn.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ flag_use: btn.dataset.flag }) }); renderUsers(); };
+  });
+}
+
+async function renderPosts() {
+  const { data } = await api('/api/admin/posts');
+  document.getElementById('panel').innerHTML = `
+    <div class="space-y-2">${data.map(p => `
+      <div class="border rounded-xl p-3 ${p.flag_use ? '' : 'opacity-50'}">
+        <div class="flex justify-between gap-2">
+          <div>
+            <p class="font-bold">${escapeHtml(p.author_name)} <span class="text-xs font-normal text-on-surface-variant">${escapeHtml(p.email)}</span></p>
+            <p class="text-sm whitespace-pre-line mt-1">${escapeHtml(p.content)}</p>
+          </div>
+          ${p.flag_use ? `<button class="hide-post text-red-600 font-bold h-fit" data-id="${p.post_id}">ซ่อน</button>` : '<span class="text-xs">ซ่อนแล้ว</span>'}
+        </div>
+      </div>`).join('') || '<p>ไม่มีโพสต์</p>'}
+    </div>`;
+  document.querySelectorAll('.hide-post').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/posts/${btn.dataset.id}`, { method: 'DELETE' }); renderPosts(); };
+  });
+}
+
+async function renderPayments() {
+  const { data } = await api('/api/admin/payments');
+  document.getElementById('panel').innerHTML = `
+    <div class="space-y-2">${data.map(p => `
+      <div class="border rounded-xl p-3">
+        <p class="font-bold">${escapeHtml(p.full_name)} · ${escapeHtml(p.course_name)}</p>
+        <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} บาท · ${escapeHtml(p.status)} · ${escapeHtml(p.reference_code || '')}</p>
+      </div>`).join('') || '<p>ยังไม่มีรายการชำระเงิน</p>'}
+    </div>`;
+}
+
+const tabs = {
+  courses: renderCourses,
+  lessons: renderLessons,
+  schedules: renderSchedules,
+  users: renderUsers,
+  posts: renderPosts,
+  payments: renderPayments
+};
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    tabs[btn.dataset.tab]();
+  };
+});
+
+(async () => {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+  if ((me.user.role || '').toLowerCase() !== 'admin') {
+    alert('หน้านี้สำหรับแอดมินเท่านั้น');
+    return location.href = 'Home.html';
+  }
+  await loadStats();
+  await renderCourses();
+})().catch(err => console.error(err));
+</script>
+<script src="/comp/navbar.js"></script>
+</body>
+</html>

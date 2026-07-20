@@ -16,7 +16,11 @@
 <body>
 
 <div class="kiosk-box">
-    <h2>📸 ตู้สแกนลงเวลาเข้า-ออกงาน</h2>
+    <p style="background:#fff3cd;color:#856404;padding:10px;border-radius:8px;margin-bottom:12px;font-size:14px;">
+        ตัวจำลองสำหรับทดสอบ API เท่านั้น — ตอนใช้งานจริงจะใช้เครื่อง Kiosk ของจริง<br>
+        โดยเครื่องจริงจะเรียก <code>POST /api/attendance/scan</code> ด้วยรูปแบบเดียวกัน
+    </p>
+    <h2>📸 ตู้สแกนลงเวลาเข้า-ออกงาน (Simulator)</h2>
     <div id="reader"></div>
     <div id="scan-result" class="result"></div>
 </div>
@@ -30,7 +34,7 @@
         const resultDiv = document.getElementById('scan-result');
         
         try {
-            const response = await fetch('http://localhost:3000/api/attendance/scan', {
+            const response = await fetch('/api/attendance/scan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
