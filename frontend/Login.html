@@ -386,13 +386,12 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert('✨ ' + result.message);
                     window.location.href = 'DashbordU.html';
                 } else {
-                    alert('❌ ล้มเหลว: ' + result.message);
+                    alert(result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
                 }
             } catch (err) {
-                alert('❌ ไม่สามารถติดต่อเซิร์ฟเวอร์หลักได้');
+                alert('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้');
             } finally {
                 submitBtn.innerHTML = `เข้าสู่ระบบ <span class="material-symbols-outlined text-[20px]">login</span>`;
                 submitBtn.disabled = false;
