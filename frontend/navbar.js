@@ -274,8 +274,6 @@
           <a href="Home.html">หน้าแรก</a>
           ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
-          <a href="DashbordU.html">แดชบอร์ด</a>
-          <a href="Schedule.html">ตารางเรียน</a>
           <a href="Certificates.html">ใบประกาศ</a>
           <a href="Favorites.html">คอร์สโปรด</a>
           <a href="Settings.html">ตั้งค่า</a>
