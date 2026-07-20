@@ -2,7 +2,7 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>เข้าสู่ระบบ | PTS Learning</title>
-<link rel="stylesheet" href="/comp/site.css">
+<link rel="stylesheet" href="/comp/site.css?v=20260720">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
@@ -114,7 +114,20 @@
     </style>
 </head>
 <body class="pts-body min-h-screen flex flex-col relative overflow-x-hidden">
-<div id="app-navbar"></div>
+<div id="app-navbar">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid rgba(151,66,88,.18);">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
+        <span style="width:40px;height:40px;border-radius:12px;background:#974258;color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800;">PTS</span>
+        PTS Learning
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
 <div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-fixed opacity-20 blur-[120px] rounded-full -z-10"></div>
 <div class="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-fixed opacity-30 blur-[100px] rounded-full -z-10"></div>
 <main class="w-full max-w-container-max mx-auto flex items-center justify-center px-margin-mobile md:px-lg py-lg" style="padding-top: calc(var(--pts-nav-h) + 32px); padding-bottom: 48px;">
@@ -386,5 +399,5 @@
             }
         });
 </script>
-<script src="/comp/navbar.js"></script>
+<script src="/comp/navbar.js?v=20260720"></script>
 </body></html>

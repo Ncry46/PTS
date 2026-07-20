@@ -54,12 +54,19 @@ a { color: inherit; }
 .pts-nav {
   position: fixed;
   inset: 0 0 auto 0;
-  z-index: 50;
+  z-index: 99999;
   height: var(--pts-nav-h);
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.98);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--pts-border);
   box-shadow: var(--pts-shadow-sm);
+}
+
+#app-navbar {
+  display: block !important;
+  min-height: var(--pts-nav-h);
+  position: relative;
+  z-index: 99999;
 }
 
 .pts-nav__inner {
