@@ -52,7 +52,7 @@ async function api(url, options = {}) {
   const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) { location.href = 'Login.html'; throw new Error('unauthorized'); }
-  if (res.status === 403) { alert(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
+  if (res.status === 403) { console.error(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
   if (!res.ok || data.success === false) throw new Error(data.message || 'คำขอล้มเหลว');
   return data;
 }
@@ -109,7 +109,6 @@ async function renderCourses() {
         is_featured: false
       })
     });
-    alert('สร้างคอร์สสำเร็จ');
     await loadStats();
     renderCourses();
   };
@@ -169,7 +168,6 @@ async function renderLessons() {
         duration_minutes: Number(document.getElementById('l-duration').value || 15)
       })
     });
-    alert('เพิ่มบทเรียนแล้ว');
     loadLessons();
   };
   if (coursesCache.length) loadLessons();
@@ -218,7 +216,6 @@ async function renderSchedules() {
         delivery_mode: document.getElementById('s-mode').value
       })
     });
-    alert('เพิ่มตารางแล้ว');
     renderSchedules();
   };
   document.querySelectorAll('.del-schedule').forEach(btn => {
@@ -399,7 +396,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
   if ((me.user.role || '').toLowerCase() !== 'admin') {
-    alert('หน้านี้สำหรับแอดมินเท่านั้น');
     return location.href = 'Home.html';
   }
   await loadStats();

@@ -82,7 +82,6 @@ const getBadge = (mode) => {
 
 function requireAuth(label) {
   if (currentUser) return true;
-  alert(`กรุณาเข้าสู่ระบบเพื่อ${label}`);
   location.href = 'Login.html';
   return false;
 }
@@ -202,7 +201,7 @@ function openCourseModal(course) {
     favBtn.onclick = async () => {
       const res = await fetch(`/api/courses/${course.course_id}/favorite`, { method: 'POST', credentials: 'include' });
       const data = await res.json();
-      if (!res.ok || !data.success) return alert(data.message || 'ไม่สำเร็จ');
+      if (!res.ok || !data.success) { console.error(data.message || 'ไม่สำเร็จ'); return; }
       course.is_favorited = data.favorited ? 1 : 0;
       favBtn.textContent = data.favorited ? 'นำออกจากคอร์สโปรด' : 'บันทึกเป็นคอร์สโปรด';
       renderCourses(allCourses);
@@ -251,7 +250,7 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
     const id = Number(fav.dataset.courseId);
     const res = await fetch(`/api/courses/${id}/favorite`, { method: 'POST', credentials: 'include' });
     const data = await res.json();
-    if (!res.ok || !data.success) return alert(data.message || 'ไม่สำเร็จ');
+    if (!res.ok || !data.success) { console.error(data.message || 'ไม่สำเร็จ'); return; }
     const course = allCourses.find(c => Number(c.course_id) === id);
     if (course) course.is_favorited = data.favorited ? 1 : 0;
     renderCourses(allCourses);

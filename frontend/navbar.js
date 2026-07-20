@@ -310,7 +310,6 @@
   }
 
   async function logout() {
-    if (!confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) return;
     try {
       const response = await fetch('/api/users/logout', {
         method: 'POST',
@@ -319,7 +318,8 @@
       const result = await response.json();
       if (result.success) window.location.href = 'Home.html';
     } catch (error) {
-      alert('เกิดข้อผิดพลาดในการออกจากระบบ');
+      console.error('logout error:', error);
+      window.location.href = 'Home.html';
     }
   }
 

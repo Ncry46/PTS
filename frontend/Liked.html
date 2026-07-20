@@ -75,7 +75,7 @@ const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
     if (!btn) return;
     const r = await fetch(`/api/community/${btn.dataset.id}/like`, { method:'POST', credentials:'include' });
     const j = await r.json();
-    if (!r.ok || !j.success) return alert(j.message||'ไม่สำเร็จ');
+    if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
     btn.closest('article').remove();
     if (!box.children.length) {
       box.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ</div>`;

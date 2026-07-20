@@ -109,7 +109,6 @@ const timeAgo = (dateString) => {
 
 function requireAuth(actionLabel) {
   if (currentUser) return true;
-  alert(`กรุณาเข้าสู่ระบบเพื่อ${actionLabel}`);
   location.href = 'Login.html';
   return false;
 }
@@ -274,7 +273,7 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
     const postId = likeBtn.dataset.postId;
     const res = await fetch(`/api/community/${postId}/like`, { method: 'POST', credentials: 'include' });
     const data = await res.json();
-    if (!res.ok || !data.success) return alert(data.message || 'กดถูกใจไม่สำเร็จ');
+    if (!res.ok || !data.success) { console.error(data.message || 'กดถูกใจไม่สำเร็จ'); return; }
     likeBtn.querySelector('.like-count').textContent = data.like_count;
     likeBtn.classList.toggle('pts-like-active', !!data.liked);
     return;
@@ -310,7 +309,13 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
       if (countEl) countEl.textContent = Number(countEl.textContent || 0) + 1;
       await loadComments(postId, panel);
     } catch (err) {
-      alert(err.message);
+      const errEl = panel.querySelector('.comment-error') || (() => {
+        const el = document.createElement('p');
+        el.className = 'comment-error text-sm text-error mt-2';
+        panel.appendChild(el);
+        return el;
+      })();
+      errEl.textContent = err.message;
     } finally {
       commentSubmit.disabled = false;
     }

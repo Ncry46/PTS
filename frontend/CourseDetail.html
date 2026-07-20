@@ -79,13 +79,13 @@ const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
   document.getElementById('enroll')?.addEventListener('click', async () => {
     const r = await fetch(`/api/courses/${courseId}/enroll`, { method:'POST', credentials:'include' });
     const j = await r.json();
-    alert(j.message || (r.ok ? 'สำเร็จ' : 'ไม่สำเร็จ'));
-    if (r.ok) location.href = `Learn.html?courseId=${courseId}`;
+    if (!r.ok) { console.error(j.message || 'สมัครเรียนไม่สำเร็จ'); return; }
+    location.href = `Learn.html?courseId=${courseId}`;
   });
   document.getElementById('fav')?.addEventListener('click', async () => {
     const r = await fetch(`/api/courses/${courseId}/favorite`, { method:'POST', credentials:'include' });
     const j = await r.json();
-    alert(j.message || '');
+    if (!r.ok) console.error(j.message || 'บันทึกโปรดไม่สำเร็จ');
     location.reload();
   });
 })();

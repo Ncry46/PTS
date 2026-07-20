@@ -191,6 +191,7 @@
 </div>
 <div class="pt-base space-y-md">
 <button class="w-full bg-primary text-white rounded-full font-label-md text-label-md font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center py-3" type="submit">สมัครสมาชิก</button>
+<p id="register-msg" class="text-sm text-center text-error hidden"></p>
 <div class="relative py-base flex items-center justify-center">
 <div class="w-full border-t border-outline-variant"></div>
 <span class="absolute bg-white px-md font-label-md text-label-md text-outline">หรือ</span>
@@ -237,16 +238,22 @@
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirm-password').value;
             const tosChecked = document.getElementById('tos').checked;
+            const msgEl = document.getElementById('register-msg');
+            const showMsg = (text) => {
+                if (msgEl) { msgEl.textContent = text; msgEl.classList.remove('hidden'); }
+                else console.error(text);
+            };
+            if (msgEl) { msgEl.textContent = ''; msgEl.classList.add('hidden'); }
 
             // 1. ตรวจสอบรหัสผ่านตรงกันไหม
             if (password !== confirmPassword) {
-                alert('❌ ล้มเหลว: รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
+                showMsg('รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน กรุณาตรวจสอบอีกครั้ง');
                 return;
             }
 
             // 2. ตรวจสอบการกดยอมรับเงื่อนไข
             if (!tosChecked) {
-                alert('❌ กรุณากดเลือกยอมรับเงื่อนไขการใช้งานก่อนสมัครสมาชิก');
+                showMsg('กรุณากดเลือกยอมรับเงื่อนไขการใช้งานก่อนสมัครสมาชิก');
                 return;
             }
 
@@ -275,15 +282,13 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('✨ สำเร็จ: ' + result.message);
-                    form.reset(); // ล้างฟอร์มเคลียร์ข้อมูลช่องกรอกทั้งหมด
-                    window.location.href = 'Login.html'; // พากลับไปหน้าเข้าสู่ระบบเมื่อสำเร็จ
+                    window.location.href = 'Login.html';
                 } else {
-                    alert('❌ ล้มเหลว: ' + result.message);
+                    showMsg(result.message || 'สมัครสมาชิกไม่สำเร็จ');
                 }
             } catch (err) {
                 console.error(err);
-                alert('❌ เกิดข้อผิดพลาด: ไม่สามารถติดต่อระบบหลังบ้านได้ (ตรวจสอบว่ารัน node server.js อยู่หรือเปล่า)');
+                showMsg('ไม่สามารถติดต่อระบบหลังบ้านได้');
             } finally {
                 btn.innerText = originalText;
                 btn.disabled = false;

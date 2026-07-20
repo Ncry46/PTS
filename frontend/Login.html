@@ -180,6 +180,7 @@
                                 เข้าสู่ระบบ
                                 <span class="material-symbols-outlined text-[20px]">login</span>
 </button>
+<p id="login-msg" class="text-sm text-center text-error hidden"></p>
 </div>
 </form>
 <p class="mt-lg text-center font-body-sm text-body-sm text-on-surface-variant">
@@ -231,6 +232,7 @@
             <button onclick="closeResetModal()" class="w-1/2 py-3 rounded-full border border-outline-variant text-on-surface-variant font-bold hover:bg-surface-container-low active:scale-[0.98] transition-all text-[14px]">ยกเลิก</button>
             <button onclick="submitVerifyAndReset()" id="confirm-reset-btn" disabled class="w-1/2 py-3 rounded-full bg-slate-400 text-white font-bold cursor-not-allowed active:scale-[0.98] transition-all text-[14px]">ยืนยันเปลี่ยนรหัส</button>
         </div>
+        <p id="reset-msg" class="text-sm text-center text-error hidden"></p>
     </div>
 </div>
 
@@ -285,6 +287,7 @@
             document.getElementById('otp-verification-zone').classList.add('opacity-40', 'pointer-events-none');
             document.getElementById('confirm-reset-btn').disabled = true;
             document.getElementById('confirm-reset-btn').className = "w-1/2 py-3 rounded-full bg-slate-400 text-white font-bold cursor-not-allowed active:scale-[0.98] transition-all text-[14px]";
+            clearResetMsg();
         }
         window.openResetModal = openResetModal;
         window.closeResetModal = closeResetModal;
@@ -293,13 +296,27 @@
             openResetModal();
         });
 
+        function showResetMsg(text, isError = true) {
+            const el = document.getElementById('reset-msg');
+            if (!el) return;
+            el.textContent = text;
+            el.classList.toggle('text-error', isError);
+            el.classList.toggle('text-primary', !isError);
+            el.classList.remove('hidden');
+        }
+        function clearResetMsg() {
+            const el = document.getElementById('reset-msg');
+            if (el) { el.textContent = ''; el.classList.add('hidden'); }
+        }
+
         // 📧 สเต็ปที่ 1: ขอรหัส OTP ทางอีเมล
         async function requestRealOTP() {
             const email = document.getElementById('reset-email').value.trim();
             const otpBtn = document.getElementById('otp-btn');
+            clearResetMsg();
 
             if (!email) {
-                alert('กรุณากรอกอีเมลในระบบก่อนครับ');
+                showResetMsg('กรุณากรอกอีเมลในระบบก่อนครับ');
                 return;
             }
 
@@ -316,18 +333,18 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(result.message || 'ส่งรหัส OTP ไปที่อีเมลแล้ว');
                     document.getElementById('otp-verification-zone').classList.remove('opacity-40', 'pointer-events-none');
                     const confirmBtn = document.getElementById('confirm-reset-btn');
                     confirmBtn.disabled = false;
                     confirmBtn.className = "w-1/2 py-3 rounded-full bg-[#C85D7A] text-white font-bold hover:opacity-90 active:scale-[0.98] transition-all text-[14px]";
                     otpBtn.innerText = 'ส่งอีกครั้ง';
                 } else {
-                    alert(result.message || 'ส่ง OTP ไม่สำเร็จ');
+                    showResetMsg(result.message || 'ส่ง OTP ไม่สำเร็จ');
                     otpBtn.innerText = 'ขอรหัส OTP';
                 }
             } catch (err) {
-                alert('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ: ' + err.message);
+                console.error(err);
+                showResetMsg('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ');
                 otpBtn.innerText = 'ขอรหัส OTP';
             } finally {
                 otpBtn.disabled = false;
@@ -341,9 +358,10 @@
                 otp: document.getElementById('reset-otp').value.trim(),
                 new_password: document.getElementById('reset-new-password').value
             };
+            clearResetMsg();
 
             if (!payload.otp || !payload.new_password) {
-                alert('กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่');
+                showResetMsg('กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่');
                 return;
             }
 
@@ -356,13 +374,13 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert(result.message);
                     closeResetModal();
                 } else {
-                    alert(result.message || 'ยืนยันไม่สำเร็จ');
+                    showResetMsg(result.message || 'ยืนยันไม่สำเร็จ');
                 }
             } catch (err) {
-                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
+                console.error(err);
+                showResetMsg('เกิดข้อผิดพลาดในการเชื่อมต่อ');
             }
         }
 
@@ -371,6 +389,8 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const submitBtn = document.getElementById('submit-btn');
+            const loginMsg = document.getElementById('login-msg');
+            if (loginMsg) { loginMsg.textContent = ''; loginMsg.classList.add('hidden'); }
             submitBtn.innerText = 'กำลังตรวจสอบข้อมูล...';
             submitBtn.disabled = true;
 
@@ -388,10 +408,19 @@
                 if (result.success) {
                     window.location.href = 'DashbordU.html';
                 } else {
-                    alert(result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+                    if (loginMsg) {
+                        loginMsg.textContent = result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+                        loginMsg.classList.remove('hidden');
+                    } else {
+                        console.error(result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+                    }
                 }
             } catch (err) {
-                alert('ไม่สามารถติดต่อเซิร์ฟเวอร์ได้');
+                console.error(err);
+                if (loginMsg) {
+                    loginMsg.textContent = 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้';
+                    loginMsg.classList.remove('hidden');
+                }
             } finally {
                 submitBtn.innerHTML = `เข้าสู่ระบบ <span class="material-symbols-outlined text-[20px]">login</span>`;
                 submitBtn.disabled = false;

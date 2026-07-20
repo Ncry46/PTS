@@ -115,13 +115,13 @@ async function loadPayments() {
       btn.disabled = true;
       const r = await fetch(`/api/payments/${btn.dataset.id}/confirm`, { method: 'POST', credentials: 'include' });
       const j = await r.json();
-      alert(j.message || (r.ok ? 'สำเร็จ' : 'ไม่สำเร็จ'));
+      if (!r.ok) console.error(j.message || 'ยืนยันชำระไม่สำเร็จ');
       await loadPayments();
     };
   });
 }
 
-init().catch(err => alert(err.message));
+init().catch(err => console.error(err));
 </script>
 <!-- PTS-NAV-INLINE-BOOT -->
 <script>

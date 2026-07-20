@@ -407,7 +407,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logoutBtn = document.getElementById('dash-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
-            if (!confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) return;
             try {
                 await fetch('/api/users/logout', { method: 'POST', credentials: 'include' });
             } catch (error) {
@@ -547,7 +546,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
             if (!response.ok || !result.success) throw new Error(result.message || 'อัปเดตไม่สำเร็จ');
             window.location.reload();
         } catch (error) {
-            alert(error.message);
+            console.error(error);
             btn.disabled = false;
         }
     });

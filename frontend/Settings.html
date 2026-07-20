@@ -62,7 +62,7 @@
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
   const profile = await fetch('/api/profile', { credentials: 'include' }).then(r => r.json());
-  if (!profile.success) return alert(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ');
+  if (!profile.success) { console.error(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ'); return location.href = 'Login.html'; }
   document.getElementById('full_name').value = profile.data.full_name || '';
   document.getElementById('email').value = profile.data.email || '';
   document.getElementById('phone').value = profile.data.phone || '';
