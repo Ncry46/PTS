@@ -187,7 +187,7 @@
 <form class="space-y-md" id="login-form">
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="email">อีเมล</label>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
 <input class="w-full pl-12 pr-4 py-3.5 rounded-[12px] border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="email" placeholder="example@email.com" type="email" required>
 </div>
@@ -197,10 +197,10 @@
 <label class="font-label-md text-label-md text-on-surface-variant" for="password">รหัสผ่าน</label>
 <button type="button" id="forgot-password-btn" class="font-label-md text-label-md text-primary hover:underline transition-all cursor-pointer bg-transparent border-0 p-0">ลืมรหัสผ่าน?</button>
 </div>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
 <input class="w-full pl-12 pr-12 py-3.5 rounded-[12px] border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="password" placeholder="••••••••" type="password" required>
-<button class="pts-pw-toggle absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+<button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
 <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
 </button>
 </div>
@@ -280,9 +280,10 @@
             });
         });
 
-        // 3. ปรับเอฟเฟกต์ยุบตัวของปุ่ม (ของเดิม)
+        // 3. ปรับเอฟเฟกต์ยุบตัวของปุ่ม (ของเดิม) — ข้ามปุ่มตาดูรหัสผ่าน
         const buttons = document.querySelectorAll('button');
         buttons.forEach(btn => {
+            if (btn.matches('[data-pts-pw-toggle], .pts-pw-toggle')) return;
             btn.addEventListener('mousedown', () => btn.style.transform = 'scale(0.97)');
             btn.addEventListener('mouseup', () => btn.style.transform = 'scale(1)');
             btn.addEventListener('mouseleave', () => btn.style.transform = 'scale(1)');
@@ -462,6 +463,6 @@
   }
 })();
 </script>
-<script src="password-toggle.js?v=20260720d"></script>
+<script src="password-toggle.js?v=20260720e"></script>
 <script src="navbar.js?v=20260720i"></script>
 </body></html>

@@ -180,41 +180,41 @@
 <form class="space-y-base" id="register-form">
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="fullname">ชื่อ-นามสกุล</label>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">person</span>
 <input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="fullname" placeholder="พิมพ์ชื่อและนามสกุลของคุณ" type="text" required>
 </div>
 </div>
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="email">อีเมล</label>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
 <input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="email" placeholder="example@email.com" type="email" required>
 </div>
 </div>
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="phone">เบอร์โทรศัพท์</label>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">call</span>
 <input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="phone" placeholder="08x-xxx-xxxx" type="tel">
 </div>
 </div>
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="password">รหัสผ่าน</label>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
 <input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="password" placeholder="••••••••" type="password" required>
-<button class="pts-pw-toggle absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+<button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
 <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
 </button>
 </div>
 </div>
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="confirm-password">ยืนยันรหัสผ่าน</label>
-<div class="relative group">
+<div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock_reset</span>
 <input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="confirm-password" placeholder="••••••••" type="password" required>
-<button class="pts-pw-toggle absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors hidden" type="button" id="toggle-confirm-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+<button class="pts-pw-toggle hidden" type="button" id="toggle-confirm-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
 <span class="material-symbols-outlined" id="confirm-password-icon" aria-hidden="true">visibility</span>
 </button>
 </div>
@@ -338,6 +338,6 @@
   }
 })();
 </script>
-<script src="password-toggle.js?v=20260720d"></script>
+<script src="password-toggle.js?v=20260720e"></script>
 <script src="navbar.js?v=20260720i"></script>
 </body></html>

@@ -85,6 +85,9 @@
     function sync() {
       var hasValue = input.value.length > 0;
       btn.classList.toggle('hidden', !hasValue);
+      btn.style.transform = '';
+      btn.style.top = '';
+      btn.style.bottom = '';
       if (!hasValue) {
         input.type = 'password';
         if (icon) icon.textContent = ICON_SHOW;
@@ -94,6 +97,7 @@
     btn.addEventListener('click', function (e) {
       e.preventDefault();
       e.stopPropagation();
+      btn.style.transform = '';
       if (!input.value.length) return;
       if (input.type === 'password') {
         input.type = 'text';

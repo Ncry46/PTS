@@ -600,26 +600,48 @@ input.pts-pw-input::-ms-clear {
   padding-right: 2.75rem;
 }
 .pts-pw-toggle {
-  position: absolute;
-  right: 0.85rem;
-  top: 50%;
-  transform: translateY(-50%);
+  position: absolute !important;
+  right: 0.85rem !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  left: auto !important;
+  width: 2rem;
+  height: 2rem;
+  margin: auto 0 !important;
+  transform: none !important;
   z-index: 2;
-  display: inline-flex;
+  display: inline-flex !important;
   align-items: center;
   justify-content: center;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
+  padding: 0 !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
   color: var(--pts-muted);
   cursor: pointer;
   line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
 }
-.pts-pw-toggle:hover { color: var(--pts-text); }
+.pts-pw-toggle:hover,
+.pts-pw-toggle:focus,
+.pts-pw-toggle:active,
+.pts-pw-toggle:focus-visible {
+  color: var(--pts-text);
+  outline: none !important;
+  box-shadow: none !important;
+  border: 0 !important;
+  transform: none !important;
+}
+.pts-pw-toggle.hidden {
+  display: none !important;
+}
 .pts-pw-toggle .material-symbols-outlined {
   font-size: 22px;
   line-height: 1;
+  display: block;
   font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
 }
 
