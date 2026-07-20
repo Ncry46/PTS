@@ -2,7 +2,6 @@
         <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="/comp/site.css">
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
                 tailwind.config = {
@@ -102,7 +101,7 @@
                         },
                 }
                 }catch(_e){}</script></head>
-<body class="pts-body bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed" data-mode="connect">
+<body class="bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed" data-mode="connect">
 <!-- TopNavBar -->
 <div id="app-navbar"></div>
 
@@ -535,9 +534,9 @@
 <p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ เพื่อความก้าวหน้าในสายงานอย่างยั่งยืน</p>
 </div>
 <div class="flex flex-wrap justify-center gap-md">
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">เกี่ยวกับเรา</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">นโยบายความเป็นส่วนตัว</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">ติดต่อเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">เกี่ยวกับเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">นโยบายความเป็นส่วนตัว</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">ติดต่อเรา</a>
 <a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">LINE OA Support</a>
 </div>
 <div class="flex gap-sm">
@@ -568,24 +567,6 @@
 </button>
 </div>
 
-<script>
-// dynamic featured courses strip if container exists later
-document.addEventListener('DOMContentLoaded', async () => {
-  const grid = document.querySelector('[data-home-courses]') || document.getElementById('home-courses');
-  if (!grid) return;
-  try {
-    const res = await fetch('/api/courses', { credentials:'include' });
-    const data = await res.json();
-    if (!data.success) return;
-    grid.innerHTML = (data.data||[]).slice(0,3).map(c => `
-      <a href="CourseDetail.html?courseId=${c.course_id}" class="block bg-white rounded-2xl overflow-hidden shadow-sm border border-outline-variant/20 hover:shadow-md transition">
-        <img class="w-full h-40 object-cover" src="${c.cover_image_url||'https://placehold.co/640x400/f8e8ec/974258?text=PTS'}" alt="">
-        <div class="p-4"><h3 class="font-bold mb-1">${(c.course_name||'').replace(/</g,'&lt;')}</h3>
-        <p class="text-sm text-on-surface-variant">${Number(c.price||0).toLocaleString('th-TH')} บาท</p></div>
-      </a>`).join('');
-  } catch {}
-});
-</script>
 <script src="/comp/navbar.js"></script>
 </body>
 </html>
