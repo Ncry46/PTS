@@ -243,8 +243,6 @@
           <div class="pts-topnav__links">
             <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
             ${coursesMegaHtml()}
-            <a class="pts-topnav__link" href="DashbordU.html">แดชบอร์ด</a>
-            <a class="pts-topnav__link" href="Schedule.html">ตารางเรียน</a>
             <a class="pts-topnav__link" href="Community.html">คอมมูนิตี้</a>
             ${isAdmin ? '<a class="pts-topnav__link" href="Admin.html">Admin</a>' : ''}
           </div>
