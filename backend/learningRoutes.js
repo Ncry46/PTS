@@ -1,6 +1,5 @@
 const express = require('express');
 const sql = require('mssql');
-const { seedLessonsIfEmpty } = require('./ensureSchema');
 
 function createLearningRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -78,8 +77,6 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
             }
-
-            await seedLessonsIfEmpty(pool, courseId, course.recordset[0].course_name);
 
             const enrolled = await ensureEnrolled(pool, user.user_id, courseId);
             const lessons = await pool.request()
@@ -218,12 +215,10 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     FROM BD_PTS.dbo.class_schedules s
                     LEFT JOIN BD_PTS.dbo.courses_main c ON c.course_id = s.course_id
                     WHERE s.flag_use = 1
-                      AND (
-                        s.course_id IS NULL
-                        OR EXISTS (
+                      AND s.course_id IS NOT NULL
+                      AND EXISTS (
                             SELECT 1 FROM BD_PTS.dbo.course_enrollments e
                             WHERE e.user_id = @userId AND e.course_id = s.course_id
-                        )
                       )
                     ORDER BY s.start_at ASC
                 `);
@@ -341,7 +336,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     INSERT INTO BD_PTS.dbo.payments
                     (user_id, course_id, amount, currency, status, method, reference_code)
                     OUTPUT INSERTED.payment_id, INSERTED.reference_code, INSERTED.amount, INSERTED.status
-                    VALUES (@userId, @courseId, @amount, 'THB', 'pending', 'promptpay_mock', @reference)
+                    VALUES (@userId, @courseId, @amount, 'THB', 'pending', 'promptpay', @reference)
                 `);
 
             res.json({
@@ -397,8 +392,6 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         VALUES (@userId, @courseId, 0, 'in_progress')
                     `);
             }
-
-            await seedLessonsIfEmpty(pool, row.course_id, '');
 
             res.json({ success: true, message: 'ยืนยันชำระเงินสำเร็จ และเปิดสิทธิ์เรียนแล้ว' });
         } catch (error) {

@@ -217,161 +217,35 @@
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
 <div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
 <div class="text-left">
-<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำยอดนิยม</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">คัดสรรคอร์สที่ PA มือโปรเลือกเรียนมากที่สุด</p>
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำ</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ข้อมูลจากระบบจริง อัปเดตตามคอร์สในฐานข้อมูล</p>
 </div>
-<button class="flex items-center gap-sm text-primary font-bold group">
+<a href="Courses.html" class="flex items-center gap-sm text-primary font-bold group">
                 ดูทั้งหมด
                 <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
+</a>
 </div>
-<!-- Filter Bar -->
-<div class="flex flex-wrap gap-sm mb-lg">
-<button class="px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
-<button class="px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
-<button class="px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
-<button class="px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
-</div>
-</div>
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-3 gap-md">
-<!-- Course Card 1 - Online -->
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group">
-<div class="relative h-48 overflow-hidden">
-<img alt="Course Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoE_X4kYMkw_iYwgRzwBkG9Oa33uRz2rijqQNaApCZDsw_bEdcAcNx_SapIwAfI5WohfB-c6jGR6so7GWLYxgx2JivmI-UZmfqzMlTBjN5qxDgWf9cF-zrFXqRj_yMa8R8sLnphyBMkIhBYYS0apFEXHuhxA0KPCtto_MuC_I9fK0Y1L2SAxHonjK0rqT1Z-XThwiPZ0355LxthVeVNLl6LEpV6AnOg6EEsmyYBCNcWEfTjsu4BbeW3g">
-<div class="absolute top-4 left-4 flex gap-xs">
-<div class="bg-primary text-white px-3 py-1 rounded-full font-label-md text-label-md">ยอดนิยม</div>
-<div class="bg-tertiary text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-<span class="w-2 h-2 rounded-full bg-white"></span> Online
+<div class="flex flex-wrap gap-sm mb-lg" id="home-course-filters">
+<button type="button" data-mode="" class="home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
+<button type="button" data-mode="online" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
+<button type="button" data-mode="onsite" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
+<button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
 </div>
 </div>
-</div>
-<div class="p-md">
-<div class="flex items-center gap-xs mb-sm">
-<span class="material-symbols-outlined text-sm text-primary">person</span>
-<span class="font-label-md text-label-md text-on-surface-variant">อ.วิภาวดี สมิธ</span>
-<span class="mx-2 text-outline-variant">|</span>
-<span class="material-symbols-outlined text-sm text-primary">schedule</span>
-<span class="font-label-md text-label-md text-on-surface-variant">12 ชม.</span>
-</div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">ทักษะการจัดการตารางงานขั้นเทพสำหรับ PA</h4>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-primary font-bold text-headline-sm">฿2,900</span>
-<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">รายละเอียด</button>
-</div>
-</div>
-</div>
-<!-- Course Card 2 - Onsite -->
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group">
-<div class="relative h-48 overflow-hidden">
-<img alt="Course Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4O1r-aydnJrPx7HOipnmPoKfAo6a8Pqr2QXXC_IBbDwwSRxocwMMFQ43AQNufqlTNxpxsOx4emP6jvNJokbFCWU7bYqVsAK_v0AnA-relHFlLjzWMXaUsVKFxZGayQqgyHu9UeYo-6s6qZ7WgjV7RYUfp8tNS3uqK1dc-n5FBKfWw54olMYJMwIXX_jkB8SWAqVDYX_t7A-Iglh1y52ozXxiGk1trf1Q8iIBnYOvAu8p5Q8reZyL8Qg">
-<div class="absolute top-4 left-4">
-<div class="bg-[#f59e0b] text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-<span class="w-2 h-2 rounded-full bg-white"></span> Onsite
-</div>
-</div>
-</div>
-<div class="p-md">
-<div class="flex items-center gap-xs mb-sm">
-<span class="material-symbols-outlined text-sm text-primary">person</span>
-<span class="font-label-md text-label-md text-on-surface-variant">Mr. James Wilson</span>
-<span class="mx-2 text-outline-variant">|</span>
-<span class="material-symbols-outlined text-sm text-primary">schedule</span>
-<span class="font-label-md text-label-md text-on-surface-variant">15 ชม.</span>
-</div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">ภาษาอังกฤษเพื่อการสื่อสารธุรกิจระดับสากล</h4>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-primary font-bold text-headline-sm">฿3,500</span>
-<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">รายละเอียด</button>
-</div>
-</div>
-</div>
-<!-- Course Card 3 - Hybrid -->
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group">
-<div class="relative h-48 overflow-hidden">
-<img alt="Course Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbpCLw_9AriY1-iGCcA2nCyy4Hv6DWP7K1IikaIhtn7dEt6p9gZ19xpYlI57fEmoRsWhpoiTixDKwsoqhJiBg2gYBVlV4OkyLhERYw5U__wrsj4EAbcvTvWhuL2BoSmIdjuRGhfIs0TbnO7E6FPJ827S8t5h1cl5ufI9JjHM2fUkY8OWeZ2XxsHDj-DU_xmW0l_5y7jb8XBRnjMRBKzG9GH5uQWHyH0RhxauqdfmFrsVHDjN-XRc2dVA">
-<div class="absolute top-4 left-4">
-<div class="bg-secondary text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-<span class="w-2 h-2 rounded-full bg-white"></span> Hybrid
-</div>
-</div>
-</div>
-<div class="p-md">
-<div class="flex items-center gap-xs mb-sm">
-<span class="material-symbols-outlined text-sm text-primary">person</span>
-<span class="font-label-md text-label-md text-on-surface-variant">คุณธนพล ดิจิทัล</span>
-<span class="mx-2 text-outline-variant">|</span>
-<span class="material-symbols-outlined text-sm text-primary">schedule</span>
-<span class="font-label-md text-label-md text-on-surface-variant">8 ชม.</span>
-</div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">Advanced AI Tools สำหรับงานเลขาฯ</h4>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-primary font-bold text-headline-sm">฿4,200</span>
-<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">รายละเอียด</button>
-</div>
-</div>
-</div>
+<div id="home-courses" class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-3 gap-md">
+  <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
 </div>
 </section>
-<!-- Upcoming Courses Section -->
+<!-- Upcoming Schedules Section -->
 <section class="py-xl bg-surface">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
 <div class="flex items-center gap-md mb-base">
-<h2 class="font-headline-lg text-headline-lg text-on-background">หลักสูตรที่กำลังจะเปิดเร็วๆ นี้</h2>
-<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[12px] font-bold">เปิดรับสมัคร</span>
+<h2 class="font-headline-lg text-headline-lg text-on-background">ตารางเรียนที่กำลังจะถึง</h2>
 </div>
-<p class="font-body-md text-body-md text-on-surface-variant">จองที่นั่งก่อนใคร พร้อมรับส่วนลด Early Bird พิเศษเฉพาะคุณ</p>
+<p class="font-body-md text-body-md text-on-surface-variant">ดึงจากตารางเรียนจริงในระบบ</p>
 </div>
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg space-y-md">
-<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
-<div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
-<div class="bg-primary-fixed p-4 rounded-2xl text-primary text-center min-w-[100px]">
-<p class="font-label-md text-label-md uppercase">ธันวาคม</p>
-<p class="font-headline-lg text-headline-lg">15</p>
-</div>
-<div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface">Professional Protocol &amp; Etiquette 2025</h4>
-<div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-primary">groups</span> เหลือเพียง 5 ที่นั่ง
-                            </span>
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-primary">location_on</span> โรงแรมสยามเคมพินสกี้ (Onsite)
-                            </span>
-</div>
-</div>
-</div>
-<div class="flex gap-sm w-full md:w-auto">
-<button class="flex-1 md:flex-none px-md py-3 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-lg shadow-primary/20">ลงทะเบียนล่วงหน้า</button>
-<button class="p-3 border border-outline-variant rounded-full text-on-surface-variant hover:bg-surface-variant transition-colors">
-<span class="material-symbols-outlined">calendar_add_on</span>
-</button>
-</div>
-</div>
-<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
-<div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
-<div class="bg-secondary-fixed p-4 rounded-2xl text-secondary text-center min-w-[100px]">
-<p class="font-label-md text-label-md uppercase">มกราคม</p>
-<p class="font-headline-lg text-headline-lg">10</p>
-</div>
-<div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface">Executive Mindset for Modern Secretary</h4>
-<div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-secondary">groups</span> เหลือเพียง 12 ที่นั่ง
-                            </span>
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-secondary">videocam</span> Online (Zoom Live)
-                            </span>
-</div>
-</div>
-</div>
-<div class="flex gap-sm w-full md:w-auto">
-<button class="flex-1 md:flex-none px-md py-3 bg-secondary text-on-secondary rounded-full font-label-md text-label-md shadow-lg shadow-secondary/20">ลงทะเบียนล่วงหน้า</button>
-<button class="p-3 border border-outline-variant rounded-full text-on-surface-variant hover:bg-surface-variant transition-colors">
-<span class="material-symbols-outlined">calendar_add_on</span>
-</button>
-</div>
-</div>
+<div id="home-schedules" class="max-w-container-max mx-auto px-margin-mobile md:px-lg space-y-md">
+  <div class="text-on-surface-variant py-6 text-center">กำลังโหลดตาราง...</div>
 </div>
 </section>
 <!-- Learning Steps (How to Start) -->
@@ -569,21 +443,119 @@
 </div>
 
 <script>
-// dynamic featured courses strip if container exists later
 document.addEventListener('DOMContentLoaded', async () => {
-  const grid = document.querySelector('[data-home-courses]') || document.getElementById('home-courses');
-  if (!grid) return;
+  const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const grid = document.getElementById('home-courses');
+  const scheduleEl = document.getElementById('home-schedules');
+  let allCourses = [];
+  let activeMode = '';
+
+  const modeBadge = (mode) => {
+    const m = String(mode || 'online').toLowerCase();
+    if (m === 'onsite') return 'bg-[#f59e0b]';
+    if (m === 'hybrid') return 'bg-secondary';
+    return 'bg-tertiary';
+  };
+
+  const renderCourses = () => {
+    if (!grid) return;
+    const list = allCourses.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
+    if (!list.length) {
+      grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">ยังไม่มีหลักสูตรในระบบ · <a class="text-primary font-bold" href="Courses.html">ดูหน้าหลักสูตร</a></div>';
+      return;
+    }
+    grid.innerHTML = list.map(c => {
+      const mode = String(c.delivery_mode || 'online');
+      const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
+      const price = Number(c.price || 0).toLocaleString('th-TH');
+      const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
+      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group block">
+        <div class="relative h-48 overflow-hidden">
+          <img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${img}">
+          <div class="absolute top-4 left-4">
+            <div class="${modeBadge(mode)} text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
+              <span class="w-2 h-2 rounded-full bg-white"></span> ${escapeHtml(mode)}
+            </div>
+          </div>
+        </div>
+        <div class="p-md">
+          <div class="flex items-center gap-xs mb-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm text-primary">person</span>
+            <span class="font-label-md text-label-md">${escapeHtml(c.instructor_name || '-')}</span>
+            <span class="mx-2 text-outline-variant">|</span>
+            <span class="material-symbols-outlined text-sm text-primary">schedule</span>
+            <span class="font-label-md text-label-md">${escapeHtml(hours)}</span>
+          </div>
+          <h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">${escapeHtml(c.course_name)}</h4>
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-primary font-bold text-headline-sm">฿${price}</span>
+            <span class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md">รายละเอียด</span>
+          </div>
+        </div>
+      </a>`;
+    }).join('');
+  };
+
+  document.querySelectorAll('.home-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMode = btn.dataset.mode || '';
+      document.querySelectorAll('.home-filter').forEach(b => {
+        b.className = 'home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md';
+      });
+      btn.className = 'home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm';
+      renderCourses();
+    });
+  });
+
   try {
-    const res = await fetch('/api/courses', { credentials:'include' });
+    const res = await fetch('/api/courses', { credentials: 'include' });
     const data = await res.json();
-    if (!data.success) return;
-    grid.innerHTML = (data.data||[]).slice(0,3).map(c => `
-      <a href="CourseDetail.html?courseId=${c.course_id}" class="block bg-white rounded-2xl overflow-hidden shadow-sm border border-outline-variant/20 hover:shadow-md transition">
-        <img class="w-full h-40 object-cover" src="${c.cover_image_url||'https://placehold.co/640x400/f8e8ec/974258?text=PTS'}" alt="">
-        <div class="p-4"><h3 class="font-bold mb-1">${(c.course_name||'').replace(/</g,'&lt;')}</h3>
-        <p class="text-sm text-on-surface-variant">${Number(c.price||0).toLocaleString('th-TH')} บาท</p></div>
-      </a>`).join('');
-  } catch {}
+    allCourses = data.success ? (data.data || []) : [];
+    renderCourses();
+  } catch {
+    if (grid) grid.innerHTML = '<div class="col-span-full text-center text-error py-8">โหลดหลักสูตรไม่สำเร็จ</div>';
+  }
+
+  if (scheduleEl) {
+    try {
+      const sres = await fetch('/api/schedules', { credentials: 'include' });
+      const sdata = await sres.json();
+      const items = (sdata.data || []).slice(0, 4);
+      if (!items.length) {
+        scheduleEl.innerHTML = '<div class="text-on-surface-variant py-6 text-center">ยังไม่มีตารางเรียนที่กำลังจะถึง · <a class="text-primary font-bold" href="Schedule.html">ดูหน้าตาราง</a></div>';
+      } else {
+        scheduleEl.innerHTML = items.map(item => {
+          const d = new Date(item.start_at);
+          const month = d.toLocaleDateString('th-TH', { month: 'short' });
+          const day = d.getDate();
+          const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+          const href = item.course_id ? `CourseDetail.html?courseId=${item.course_id}` : 'Schedule.html';
+          return `<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
+            <div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
+              <div class="bg-primary-fixed p-4 rounded-2xl text-primary text-center min-w-[100px]">
+                <p class="font-label-md text-label-md uppercase">${escapeHtml(month)}</p>
+                <p class="font-headline-lg text-headline-lg">${day}</p>
+              </div>
+              <div>
+                <h4 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(item.title)}</h4>
+                <div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
+                  <span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
+                    <span class="material-symbols-outlined text-sm text-primary">schedule</span> ${escapeHtml(time)}
+                  </span>
+                  <span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
+                    <span class="material-symbols-outlined text-sm text-primary">location_on</span> ${escapeHtml(item.location || item.delivery_mode || '-')}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <a href="${href}" class="px-md py-3 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-lg shadow-primary/20">ดูรายละเอียด</a>
+          </div>`;
+        }).join('');
+      }
+    } catch {
+      scheduleEl.innerHTML = '<div class="text-error py-6 text-center">โหลดตารางไม่สำเร็จ</div>';
+    }
+  }
 });
 </script>
 <script src="/comp/navbar.js"></script>

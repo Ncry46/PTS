@@ -202,35 +202,29 @@
 <p class="absolute bottom-md text-center w-full font-body-sm text-body-sm text-on-surface-variant opacity-60">© 2024 Personal Assistant Academy. All Rights Reserved.</p>
 </main>
 
-<!-- 📦 กล่องป๊อปอัปกู้คืนรหัสผ่านด้วยระบบ SMS OTP (ธีมชมพู/ขาว พรีเมียมแมตช์หน้าหลัก) -->
+<!-- 📦 กล่องป๊อปอัปกู้คืนรหัสผ่านด้วย Email OTP -->
 <div id="reset-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-6">
     <div class="bg-white rounded-[32px] p-6 w-full max-w-[420px] shadow-2xl border border-outline-variant/30 space-y-4">
         <div class="text-center">
-            <h3 class="font-headline-sm text-[22px] font-bold text-primary">กู้คืนรหัสผ่านด้วย SMS OTP</h3>
-            <p class="font-body-sm text-[14px] text-on-surface-variant mt-1">ยืนยันรหัสความปลอดภัยที่ส่งตรงเข้ามือถือคุณ</p>
+            <h3 class="font-headline-sm text-[22px] font-bold text-primary">กู้คืนรหัสผ่านด้วย Email OTP</h3>
+            <p class="font-body-sm text-[14px] text-on-surface-variant mt-1">ระบบจะส่งรหัส 6 หลักไปที่อีเมลบัญชีของคุณ</p>
         </div>
         <div class="space-y-4">
             <div class="space-y-1">
                 <label class="text-[14px] font-medium text-on-surface-variant">อีเมลในระบบ</label>
-                <input type="email" id="reset-email" placeholder="example@email.com" class="w-full px-4 py-3 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary text-[15px] outline-none transition-all">
-            </div>
-            <div class="space-y-1">
-                <label class="text-[14px] font-medium text-on-surface-variant">เบอร์โทรศัพท์มือถือ</label>
                 <div class="flex gap-2">
-                    <input type="text" id="reset-phone" placeholder="08x-xxx-xxxx" class="w-full px-4 py-3 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary text-[15px] outline-none transition-all">
+                    <input type="email" id="reset-email" placeholder="example@email.com" class="w-full px-4 py-3 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary text-[15px] outline-none transition-all">
                     <button type="button" onclick="requestRealOTP()" id="otp-btn" class="px-4 bg-primary text-white rounded-[12px] text-[13px] font-bold hover:opacity-90 active:scale-95 transition-all whitespace-nowrap">ขอรหัส OTP</button>
                 </div>
             </div>
-            
-            <!-- โซนกรอก OTP และรหัสใหม่ (จะเปิดสิทธิ์เมื่อส่ง SMS ผ่าน) -->
+
             <div class="space-y-4 opacity-40 pointer-events-none transition-all duration-300" id="otp-verification-zone">
                 <div class="w-full border-t border-dashed border-outline-variant/60 my-2"></div>
                 <div class="space-y-1">
                     <label class="text-[14px] font-bold text-primary flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[18px]">sms</span> รหัส OTP 6 หลัก
+                        <span class="material-symbols-outlined text-[18px]">mail</span> รหัส OTP 6 หลักจากอีเมล
                     </label>
-                    <input type="text" id="reset-otp" placeholder="••••••" maxlength="6" class="w-full px-4 py-3 border-2 border-primary/30 rounded-[12px] outline-none focus:border-primary text-center font-bold text-[18px] tracking-[0.3em] bg-surface-container-low">
-                    <input type="hidden" id="reset-token"> <!-- ซ่อน Token ยืนยันฝั่ง SMS -->
+                    <input type="text" id="reset-otp" placeholder="••••••" maxlength="6" inputmode="numeric" class="w-full px-4 py-3 border-2 border-primary/30 rounded-[12px] outline-none focus:border-primary text-center font-bold text-[18px] tracking-[0.3em] bg-surface-container-low">
                 </div>
                 <div class="space-y-1">
                     <label class="text-[14px] font-medium text-on-surface-variant">ตั้งรหัสผ่านใหม่</label>
@@ -238,7 +232,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="flex gap-3 pt-2">
             <button onclick="closeResetModal()" class="w-1/2 py-3 rounded-full border border-outline-variant text-on-surface-variant font-bold hover:bg-surface-container-low active:scale-[0.98] transition-all text-[14px]">ยกเลิก</button>
             <button onclick="submitVerifyAndReset()" id="confirm-reset-btn" disabled class="w-1/2 py-3 rounded-full bg-slate-400 text-white font-bold cursor-not-allowed active:scale-[0.98] transition-all text-[14px]">ยืนยันเปลี่ยนรหัส</button>
@@ -293,14 +287,13 @@
             document.getElementById('confirm-reset-btn').className = "w-1/2 py-3 rounded-full bg-slate-400 text-white font-bold cursor-not-allowed active:scale-[0.98] transition-all text-[14px]";
         }
 
-        // 📲 สเต็ปที่ 1: ยิงขอรหัส OTP จริง (ปรับ Path เป็นแบบ Relative เพื่อแก้บั๊ก JSON HTML)
+        // 📧 สเต็ปที่ 1: ขอรหัส OTP ทางอีเมล
         async function requestRealOTP() {
-            const email = document.getElementById('reset-email').value;
-            const phone = document.getElementById('reset-phone').value;
+            const email = document.getElementById('reset-email').value.trim();
             const otpBtn = document.getElementById('otp-btn');
 
-            if (!email || !phone) {
-                alert('❌ กรุณากรอกอีเมลและเบอร์โทรศัพท์ให้ครบถ้วนก่อนครับ');
+            if (!email) {
+                alert('กรุณากรอกอีเมลในระบบก่อนครับ');
                 return;
             }
 
@@ -308,54 +301,47 @@
             otpBtn.disabled = true;
 
             try {
-                // 💡 แก้บั๊กตรงนี้: เปลี่ยนมาเรียกใช้ URL ตรงแบบไม่มี http://localhost ป้องกันเบราว์เซอร์สับสนโฟลเดอร์ Static
                 const response = await fetch('/api/users/request-otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, phone })
+                    body: JSON.stringify({ email })
                 });
-                
+
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('📲 สำเร็จ: รหัส OTP ของจริงกำลังส่งเข้ามือถือคุณแล้ว!');
-                    document.getElementById('reset-token').value = result.token; // เก็บ Token
-                    
-                    // ปลดล็อกฟอร์มให้กรอกเลข 6 หลัก
+                    alert(result.message || 'ส่งรหัส OTP ไปที่อีเมลแล้ว');
                     document.getElementById('otp-verification-zone').classList.remove('opacity-40', 'pointer-events-none');
                     const confirmBtn = document.getElementById('confirm-reset-btn');
                     confirmBtn.disabled = false;
                     confirmBtn.className = "w-1/2 py-3 rounded-full bg-[#C85D7A] text-white font-bold hover:opacity-90 active:scale-[0.98] transition-all text-[14px]";
                     otpBtn.innerText = 'ส่งอีกครั้ง';
                 } else {
-                    alert('❌ ล้มเหลว: ' + result.message);
+                    alert(result.message || 'ส่ง OTP ไม่สำเร็จ');
                     otpBtn.innerText = 'ขอรหัส OTP';
                 }
             } catch (err) {
-                alert('❌ ระบบตรวจพบบั๊ก: ' + err.message + ' (เช็กว่ารัน Node อยู่ในโฟลเดอร์ backend ไหม)');
+                alert('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ: ' + err.message);
                 otpBtn.innerText = 'ขอรหัส OTP';
             } finally {
                 otpBtn.disabled = false;
             }
         }
 
-        // 🔐 สเต็ปที่ 2: ตรวจ OTP จริงและ UPDATE รหัสผ่านใหม่ลง SQL Server
+        // 🔐 สเต็ปที่ 2: ตรวจ OTP จากอีเมลแล้วตั้งรหัสผ่านใหม่
         async function submitVerifyAndReset() {
             const payload = {
-                email: document.getElementById('reset-email').value,
-                phone: document.getElementById('reset-phone').value,
-                token: document.getElementById('reset-token').value,
-                otp: document.getElementById('reset-otp').value,
+                email: document.getElementById('reset-email').value.trim(),
+                otp: document.getElementById('reset-otp').value.trim(),
                 new_password: document.getElementById('reset-new-password').value
             };
 
             if (!payload.otp || !payload.new_password) {
-                alert('❌ กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่ด้วยครับ');
+                alert('กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่');
                 return;
             }
 
             try {
-                // 💡 เปลี่ยน URL เป็นแบบสากล
                 const response = await fetch('/api/users/verify-otp-reset', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -364,13 +350,13 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    alert('✨ เรียบร้อย: ' + result.message);
+                    alert(result.message);
                     closeResetModal();
                 } else {
-                    alert('❌ ข้อผิดพลาด: ' + result.message);
+                    alert(result.message || 'ยืนยันไม่สำเร็จ');
                 }
             } catch (err) {
-                alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
+                alert('เกิดข้อผิดพลาดในการเชื่อมต่อ');
             }
         }
 

@@ -1,6 +1,6 @@
 const express = require('express');
 const sql = require('mssql');
-const { createNotification } = require('./ensureSchema');
+const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
 
 function createProfileRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -56,27 +56,68 @@ function createProfileRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    // ขอ OTP ทางอีเมลเพื่อเปลี่ยนรหัสผ่าน (ผู้ใช้ที่ล็อกอินแล้ว)
+    router.post('/profile/password/request-otp', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .query(`SELECT email FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
+            if (!result.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            }
+            const email = result.recordset[0].email;
+            const issued = await issueEmailOtp(email, 'change_password');
+            res.json({
+                success: true,
+                message: `ส่งรหัส OTP ไปที่อีเมล ${issued.masked} แล้ว (หมดอายุใน 5 นาที)`,
+                masked_email: issued.masked,
+                expires_in_seconds: issued.expires_in_seconds
+            });
+        } catch (error) {
+            console.error('❌ change-password request OTP:', error.message);
+            const status = error.code === 'SMTP_NOT_CONFIGURED' ? 503 : 500;
+            res.status(status).json({ success: false, message: error.message });
+        }
+    });
+
+    // เปลี่ยนรหัสผ่าน: ตรวจ OTP จากอีเมล + รหัสผ่านปัจจุบัน
     router.put('/profile/password', async (req, res) => {
         const user = requireLogin(req, res);
         if (!user) return;
-        const { current_password, new_password } = req.body;
-        if (!current_password || !new_password || String(new_password).length < 4) {
-            return res.status(400).json({ success: false, message: 'กรุณากรอกรหัสผ่านใหม่ให้ถูกต้อง' });
+        const { current_password, new_password, otp } = req.body;
+        if (!current_password || !new_password || !otp || String(new_password).length < 4) {
+            return res.status(400).json({
+                success: false,
+                message: 'กรุณากรอกรหัสผ่านปัจจุบัน รหัสผ่านใหม่ และรหัส OTP จากอีเมล'
+            });
         }
         try {
             const pool = await poolPromise;
-            const check = await pool.request()
+            const profile = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .input('pass', sql.VarChar, current_password)
-                .query(`SELECT user_id FROM BD_PTS.dbo.users_main WHERE user_id = @userId AND password_hash = @pass`);
-            if (!check.recordset.length) {
+                .query(`SELECT email, password_hash FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
+            if (!profile.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            }
+
+            const row = profile.recordset[0];
+            if (String(row.password_hash) !== String(current_password)) {
                 return res.status(400).json({ success: false, message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
             }
+
+            const checked = verifyEmailOtp(row.email, otp, 'change_password');
+            if (!checked.ok) {
+                return res.status(400).json({ success: false, message: checked.message });
+            }
+
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('pass', sql.VarChar, new_password)
                 .query(`UPDATE BD_PTS.dbo.users_main SET password_hash = @pass WHERE user_id = @userId`);
-            res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ' });
+            res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ (ยืนยันด้วย OTP จากอีเมลแล้ว)' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

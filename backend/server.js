@@ -3,10 +3,11 @@ const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
-const { ensureLearningSchema, seedLessonsIfEmpty, createNotification } = require('./ensureSchema');
+const { ensureLearningSchema, createNotification } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createProfileRouter } = require('./profileRoutes');
+const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
 
 const app = express();
 const PORT = 3000;
@@ -65,9 +66,6 @@ function requireLogin(req, res) {
     }
     return req.session.user;
 }
-
-// 📦 ตัวเก็บข้อมูล Token สำหรับเช็ก OTP จริงผ่านเครือข่าย
-const smsTokenCache = new Map();
 
 // 🎯 ตั้งหน้าแรกสุด
 app.get('/', (req, res) => {
@@ -197,117 +195,76 @@ app.post('/api/users/register', async (req, res) => {
 });
 
 // -------------------------------------------------------------------------
-// 📲 [API ส่งจริง] 1/2: ตรวจอีเมล และสั่ง Thaibulksms ยิง SMS เข้ามือถือจริง
+// 📧 ลืมรหัสผ่าน: ส่ง OTP ทางอีเมล
 // -------------------------------------------------------------------------
 app.post('/api/users/request-otp', async (req, res) => {
-    const { email, phone } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
+    }
 
     try {
         const pool = await poolPromise;
-        // 1. ตรวจสอบข้อมูลอีเมลในระบบก่อน
         const userCheck = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+            .query('SELECT user_id, email FROM BD_PTS.dbo.users_main WHERE email = @email');
 
         if (userCheck.recordset.length === 0) {
-            return res.status(404).json({ success: false, message: 'ไม่พบข้อมูลผู้ใช้งานที่ตรงกับอีเมลนี้ในระบบ' });
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งานที่ตรงกับอีเมลนี้' });
         }
 
-        // 🔑 ใช้คีย์จริงของคุณที่ผูกไว้กับหน้าเว็บ Thaibulksms
-        const APP_KEY = 'NImQmVKGGJGNQY0CeoTuoDnMFcQVWm';
-        const APP_SECRET = 'mRt76fWfedjje9tmydEUN7NXN3kCVe';
-        const authKey = Buffer.from(`${APP_KEY}:${APP_SECRET}`).toString('base64');
-
-        console.log(`📡 Sending actual SMS via Thaibulksms API to: ${phone}`);
-
-        // 📲 2. ยิงตรงหา Server ของ Thaibulksms โดยตรงเพื่อส่งข้อความเข้าเบอร์มือถือจริง
-        const smsResponse = await fetch('https://api.thaibulksms.com/v2/otp/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${authKey}`
-            },
-            body: JSON.stringify({
-                key: APP_KEY,
-                phone: phone, 
-                digit: 6,
-                expire: 300   // รหัสมีอายุ 5 นาที
-            })
+        const issued = await issueEmailOtp(userCheck.recordset[0].email, 'reset');
+        res.json({
+            success: true,
+            message: `ส่งรหัส OTP ไปที่อีเมล ${issued.masked} แล้ว (หมดอายุใน 5 นาที)`,
+            masked_email: issued.masked,
+            expires_in_seconds: issued.expires_in_seconds
         });
-
-        const smsData = await smsResponse.json();
-
-        if (smsData && (smsData.token || (smsData.data && smsData.data.token))) {
-            const activeToken = smsData.token || smsData.data.token;
-            smsTokenCache.set(email, activeToken); // บันทึกไว้สอบด่านสอง
-            
-            res.json({ 
-                success: true, 
-                message: 'รหัส OTP ถูกส่งไปยังเบอร์มือถือจริงของคุณแล้ว!',
-                token: activeToken 
-            });
-        } else {
-            console.error("❌ Gateway Error Detail:", smsData);
-            const errorMsg = smsData.errors ? smsData.errors[0].description : 'พารามิเตอร์ของระบบ API ไม่ถูกต้อง หรือเครดิต SMS หมด';
-            res.status(400).json({ success: false, message: 'SMS Gateway ปฏิเสธการส่ง: ' + errorMsg });
-        }
-
     } catch (error) {
-        console.error("❌ Network Error:", error.message);
-        res.status(500).json({ success: false, message: 'ระบบเครือข่ายหลังบ้านขัดข้อง: ' + error.message });
+        console.error('❌ request email OTP:', error.message);
+        const status = error.code === 'SMTP_NOT_CONFIGURED' ? 503 : 500;
+        res.status(status).json({ success: false, message: error.message });
     }
 });
 
 // -------------------------------------------------------------------------
-// 🔐 [API ส่งจริง] 2/2: ตรวจสอบ OTP ผ่าน Gateway และสั่งอัปเดตรหัสผ่านใหม่ลง SQL Server
+// 🔐 ลืมรหัสผ่าน: ยืนยัน OTP จากอีเมล แล้วตั้งรหัสผ่านใหม่
 // -------------------------------------------------------------------------
 app.post('/api/users/verify-otp-reset', async (req, res) => {
-    const { email, phone, token, otp, new_password } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const otp = String(req.body.otp || '').trim();
+    const newPassword = String(req.body.new_password || '');
+
+    if (!email || !otp || !newPassword) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล รหัส OTP และรหัสผ่านใหม่' });
+    }
+    if (newPassword.length < 4) {
+        return res.status(400).json({ success: false, message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร' });
+    }
 
     try {
-        const APP_KEY = 'NImQmVKGGJGNQY0CeoTuoDnMFcQVWm';
-        const APP_SECRET = 'mRt76fWfedjje9tmydEUN7NXN3kCVe';
-        const authKey = Buffer.from(`${APP_KEY}:${APP_SECRET}`).toString('base64');
-
-        const savedToken = smsTokenCache.get(email);
-        const tokenToVerify = token || savedToken;
-
-        if (!tokenToVerify) {
-            return res.status(400).json({ success: false, message: 'ไม่พบรหัสอ้างอิง Token กรุณากดขอ OTP ใหม่อีกครั้ง' });
+        const checked = verifyEmailOtp(email, otp, 'reset');
+        if (!checked.ok) {
+            return res.status(400).json({ success: false, message: checked.message });
         }
 
-        // ส่งให้ Thaibulksms ตรวจความถูกต้องของตัวเลข
-        const verifyResponse = await fetch('https://api.thaibulksms.com/v2/otp/verify', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${authKey}`
-            },
-            body: JSON.stringify({
-                token: tokenToVerify,
-                pin: otp
-            })
-        });
-
-        const verifyData = await verifyResponse.json();
-
-        if (verifyData.status === 'success' && verifyData.code === 200) {
-            const pool = await poolPromise;
-            // ทำการ UPDATE รหัสผ่านจริงลงฐานข้อมูล
-            await pool.request()
-                .input('email', sql.VarChar, email)
-                .input('phone', sql.VarChar, phone)
-                .input('newPass', sql.VarChar, new_password)
-                .query('UPDATE BD_PTS.dbo.users_main SET password_hash = @newPass WHERE email = @email');
-
-            smsTokenCache.delete(email); // ลบ Token ทิ้งป้องกันการส่งซ้ำ
-            res.json({ success: true, message: 'ยืนยันรหัส OTP ถูกต้อง และอัปเดตรหัสผ่านใหม่ลงระบบสำเร็จแล้ว!' });
-        } else {
-            res.status(400).json({ success: false, message: 'รหัส OTP ไม่ถูกต้อง หรือหมดเวลาการใช้งานแล้ว' });
+        const pool = await poolPromise;
+        const userCheck = await pool.request()
+            .input('email', sql.VarChar, email)
+            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+        if (!userCheck.recordset.length) {
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งาน' });
         }
 
+        await pool.request()
+            .input('email', sql.VarChar, email)
+            .input('newPass', sql.VarChar, newPassword)
+            .query('UPDATE BD_PTS.dbo.users_main SET password_hash = @newPass WHERE email = @email');
+
+        res.json({ success: true, message: 'ยืนยัน OTP สำเร็จ และตั้งรหัสผ่านใหม่เรียบร้อยแล้ว' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดภายในระบบฐานข้อมูลหลังบ้าน' });
+        console.error('❌ verify email OTP reset:', error.message);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน' });
     }
 });
 // -------------------------------------------------------------------------
@@ -759,8 +716,6 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
                 OUTPUT INSERTED.enrollment_id
                 VALUES (@userId, @courseId, 0, 'in_progress')
             `);
-
-        await seedLessonsIfEmpty(pool, courseId, courseCheck.recordset[0].course_name);
 
         res.json({
             success: true,

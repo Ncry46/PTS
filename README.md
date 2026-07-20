@@ -32,8 +32,28 @@ npm start
 | Community / Liked | คอมมูนิตี้ |
 | Favorites | คอร์สโปรด |
 | Schedule | ตารางเรียน |
-| Payments | ชำระเงิน (โหมดจำลอง) |
+| Payments | ชำระเงิน PromptPay (ยืนยันในระบบตามบัญชีผู้ใช้) |
 | Certificates | ใบประกาศ |
 | Settings / Notifications | โปรไฟล์และการแจ้งเตือน |
 | Admin | แผงแอดมิน |
 | kiosk | ตัวจำลอง API สำหรับเครื่องจริง |
+
+## ลืมรหัสผ่าน / เปลี่ยนรหัสผ่าน (Email OTP)
+
+ระบบส่ง OTP 6 หลักทางอีเมล (หมดอายุ 5 นาที)
+
+ตั้งค่า SMTP ก่อนใช้งานจริง:
+
+```bash
+export SMTP_HOST=smtp.gmail.com
+export SMTP_PORT=587
+export SMTP_USER=your@gmail.com
+export SMTP_PASS=your-app-password
+export MAIL_FROM="PTS Learning <your@gmail.com>"
+```
+
+ถ้ายังไม่ตั้ง SMTP เซิร์ฟเวอร์จะพิมพ์ OTP ลง console เพื่อทดสอบในเครื่อง  
+ตั้ง `EMAIL_OTP_REQUIRE_SMTP=true` หากต้องการบังคับให้ส่งอีเมลจริงเท่านั้น
+
+- ลืมรหัสผ่าน: หน้า `Login.html` → ลืมรหัสผ่าน
+- เปลี่ยนรหัสผ่าน: หน้า `Settings.html` → ส่ง OTP ไปอีเมล แล้วยืนยันพร้อมรหัสผ่านปัจจุบัน

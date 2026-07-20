@@ -1,6 +1,5 @@
 const express = require('express');
 const sql = require('mssql');
-const { seedLessonsIfEmpty } = require('./ensureSchema');
 
 function createAdminRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -124,7 +123,6 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 `);
 
             const created = result.recordset[0];
-            await seedLessonsIfEmpty(pool, created.course_id, created.course_name);
             res.json({ success: true, message: 'สร้างคอร์สสำเร็จ', data: created });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

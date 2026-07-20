@@ -44,6 +44,11 @@ async function loadCourseLessons() {
   }
   document.getElementById('course-title').textContent = data.course.course_name;
   const list = document.getElementById('lesson-list');
+  if (!data.data.length) {
+    list.innerHTML = '<p class="text-sm text-on-surface-variant p-2">ยังไม่มีบทเรียนในคอร์สนี้ รอแอดมินเพิ่มเนื้อหา</p>';
+    document.getElementById('lesson-view').innerHTML = '<p class="text-on-surface-variant">ยังไม่มีบทเรียนให้เรียน</p>';
+    return;
+  }
   list.innerHTML = data.data.map(l => `
     <button data-id="${l.lesson_id}" class="lesson-item w-full text-left p-3 rounded-xl border ${Number(l.completed) ? 'border-green-200 bg-green-50' : 'border-gray-100 hover:bg-pink-50'}">
       <div class="font-semibold text-sm">${escapeHtml(l.title)}</div>

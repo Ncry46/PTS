@@ -28,9 +28,16 @@
   </section>
   <section class="pts-card p-5 space-y-3">
     <h2 class="font-bold text-lg">เปลี่ยนรหัสผ่าน</h2>
+    <p class="text-sm text-on-surface-variant">ระบบจะส่งรหัส OTP ไปที่อีเมลบัญชีของคุณเพื่อยืนยันก่อนเปลี่ยนรหัสผ่าน</p>
     <label class="block text-sm">รหัสผ่านปัจจุบัน<input id="current_password" type="password" class="mt-1 w-full border rounded-xl px-3 py-2"></label>
     <label class="block text-sm">รหัสผ่านใหม่<input id="new_password" type="password" class="mt-1 w-full border rounded-xl px-3 py-2"></label>
-    <button id="save-password" class="pts-btn pts-btn-outline">เปลี่ยนรหัสผ่าน</button>
+    <div class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end">
+      <label class="block text-sm flex-1">รหัส OTP จากอีเมล
+        <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="mt-1 w-full border rounded-xl px-3 py-2 tracking-widest text-center font-bold" placeholder="••••••">
+      </label>
+      <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap">ส่ง OTP ไปอีเมล</button>
+    </div>
+    <button id="save-password" class="pts-btn pts-btn-primary">ยืนยันเปลี่ยนรหัสผ่าน</button>
     <p id="password-msg" class="text-sm text-on-surface-variant"></p>
   </section>
 </main>
@@ -62,13 +69,35 @@ document.getElementById('save-profile').onclick = async () => {
   msg.className = res.ok ? 'text-sm text-primary font-semibold' : 'text-sm text-error';
 };
 
+document.getElementById('request-password-otp').onclick = async () => {
+  const btn = document.getElementById('request-password-otp');
+  const msg = document.getElementById('password-msg');
+  btn.disabled = true;
+  btn.textContent = 'กำลังส่ง...';
+  try {
+    const res = await fetch('/api/profile/password/request-otp', {
+      method: 'POST', credentials: 'include'
+    });
+    const data = await res.json();
+    msg.textContent = data.message || '';
+    msg.className = res.ok ? 'text-sm text-primary font-semibold' : 'text-sm text-error';
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'text-sm text-error';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ส่ง OTP ไปอีเมล';
+  }
+};
+
 document.getElementById('save-password').onclick = async () => {
   const res = await fetch('/api/profile/password', {
     method: 'PUT', credentials: 'include',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       current_password: document.getElementById('current_password').value,
-      new_password: document.getElementById('new_password').value
+      new_password: document.getElementById('new_password').value,
+      otp: document.getElementById('password_otp').value
     })
   });
   const data = await res.json();
@@ -78,6 +107,7 @@ document.getElementById('save-password').onclick = async () => {
   if (res.ok) {
     document.getElementById('current_password').value = '';
     document.getElementById('new_password').value = '';
+    document.getElementById('password_otp').value = '';
   }
 };
 </script>

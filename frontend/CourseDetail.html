@@ -41,7 +41,7 @@ const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
         <span class="pts-chip mb-3">${escapeHtml(c.delivery_mode || 'course')}</span>
         <h1 class="text-3xl font-bold text-primary mb-2">${escapeHtml(c.course_name)}</h1>
         <p class="text-sm text-on-surface-variant mb-3">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.difficulty_level||'-')}</p>
-        <p class="text-on-surface-variant mb-4 leading-relaxed">${escapeHtml(c.description || 'หลักสูตรพัฒนาทักษะ PA จาก PTS Academy')}</p>
+        <p class="text-on-surface-variant mb-4 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายคอร์ส')}</p>
         <p class="text-2xl font-bold mb-4">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ฟรี / ตามแพ็กเกจ'}</p>
         <div class="flex flex-wrap gap-2 mb-6">
           ${!loggedIn ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>` : enrolled

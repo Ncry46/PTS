@@ -16,11 +16,11 @@
 <main class="pts-main grid grid-cols-1 lg:grid-cols-2 gap-6">
   <section class="bg-white rounded-2xl border border-pink-100 p-5">
     <h1 class="text-2xl font-bold text-primary mb-2">ชำระเงินคอร์ส</h1>
-    <p class="text-sm text-on-surface-variant mb-4">โหมดจำลอง PromptPay — กดยืนยันเพื่อเปิดสิทธิ์เรียนทันที</p>
+    <p class="text-sm text-on-surface-variant mb-4">ชำระผ่าน PromptPay — กดยืนยันเมื่อโอนแล้ว เพื่อเปิดสิทธิ์เรียน (บันทึกตามบัญชีของคุณ)</p>
     <label class="block text-sm mb-1">เลือกคอร์ส</label>
     <select id="course-select" class="w-full border rounded-xl px-3 py-2 mb-3"></select>
     <label class="block text-sm mb-1">จำนวนเงิน (บาท)</label>
-    <input id="amount" type="number" value="990" min="0" class="w-full border rounded-xl px-3 py-2 mb-4">
+    <input id="amount" type="number" value="0" min="0" class="w-full border rounded-xl px-3 py-2 mb-4">
     <button id="create-pay" class="w-full bg-primary text-white py-3 rounded-full font-bold">สร้างรายการชำระเงิน</button>
     <p id="pay-msg" class="mt-3 text-sm text-on-surface-variant"></p>
   </section>
@@ -41,10 +41,12 @@ async function init() {
   const courses = await fetch('/api/courses', { credentials: 'include' }).then(r => r.json());
   const select = document.getElementById('course-select');
   const courseList = courses.data || [];
-  select.innerHTML = courseList.map(c => `<option value="${c.course_id}" data-price="${Number(c.price||990)}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('');
+  select.innerHTML = courseList.length
+    ? courseList.map(c => `<option value="${c.course_id}" data-price="${Number(c.price||0)}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('')
+    : '<option value="">ยังไม่มีคอร์ส</option>';
   const syncPrice = () => {
     const opt = select.selectedOptions[0];
-    if (opt) document.getElementById('amount').value = opt.dataset.price || 990;
+    if (opt) document.getElementById('amount').value = opt.dataset.price || 0;
   };
   select.onchange = syncPrice;
   syncPrice();
