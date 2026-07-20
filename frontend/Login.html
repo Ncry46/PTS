@@ -148,7 +148,7 @@
 <div class="space-y-xs">
 <div class="flex justify-between items-center">
 <label class="font-label-md text-label-md text-on-surface-variant" for="password">รหัสผ่าน</label>
-<a class="font-label-md text-label-md text-primary hover:underline transition-all cursor-pointer" onclick="openResetModal()">ลืมรหัสผ่าน?</a>
+<button type="button" id="forgot-password-btn" class="font-label-md text-label-md text-primary hover:underline transition-all cursor-pointer bg-transparent border-0 p-0">ลืมรหัสผ่าน?</button>
 </div>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
@@ -260,13 +260,25 @@
         });
 
         // 📦 ควบคุมการเปิด-ปิด กล่องป๊อปอัป OTP
-        function openResetModal() { document.getElementById('reset-modal').style.display = 'flex'; }
-        function closeResetModal() { 
-            document.getElementById('reset-modal').style.display = 'none'; 
+        function openResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+        }
+        function closeResetModal() {
+            const modal = document.getElementById('reset-modal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
             document.getElementById('otp-verification-zone').classList.add('opacity-40', 'pointer-events-none');
             document.getElementById('confirm-reset-btn').disabled = true;
             document.getElementById('confirm-reset-btn').className = "w-1/2 py-3 rounded-full bg-slate-400 text-white font-bold cursor-not-allowed active:scale-[0.98] transition-all text-[14px]";
         }
+        window.openResetModal = openResetModal;
+        window.closeResetModal = closeResetModal;
+        document.getElementById('forgot-password-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            openResetModal();
+        });
 
         // 📧 สเต็ปที่ 1: ขอรหัส OTP ทางอีเมล
         async function requestRealOTP() {

@@ -85,6 +85,15 @@ a { color: inherit; }
   flex-shrink: 0;
 }
 
+.pts-brand__logo {
+  height: 40px;
+  width: auto;
+  max-width: 140px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+
 .pts-brand__mark {
   width: 36px;
   height: 36px;

@@ -7,20 +7,12 @@ function escapeAttr(t) {
 function brandHtml() {
     return `
       <a class="pts-brand" href="Home.html" aria-label="PTS Learning">
-        <span class="pts-brand__mark">PTS</span>
+        <img class="pts-brand__logo" src="${PTS_LOGO}" alt="PTS Learning">
         <span class="pts-brand__text">
           <span class="pts-brand__name">PTS Learning</span>
           <span class="pts-brand__tag">Personal Assistant Academy</span>
         </span>
       </a>`;
-}
-
-function courseLinks() {
-    return `
-      <a class="pts-nav__link" href="Courses.html">หลักสูตร</a>
-      <a class="pts-nav__link" href="Courses.html?filter=online">Online</a>
-      <a class="pts-nav__link" href="Courses.html?filter=onsite">Onsite</a>
-      <a class="pts-nav__link" href="Courses.html?filter=hybrid">Hybrid</a>`;
 }
 
 function mobileBlock(extra = '') {
@@ -45,35 +37,42 @@ function bindMobileToggle() {
     }, 0);
 }
 
+function renderGuestNavbar(container) {
+    container.innerHTML = `
+      <nav class="pts-nav" aria-label="เมนูหลัก">
+        <div class="pts-nav__inner">
+          ${brandHtml()}
+          <div class="pts-nav__links">
+            <a class="pts-nav__link" href="Home.html">หน้าแรก</a>
+            <a class="pts-nav__link" href="Courses.html">หลักสูตร</a>
+            <a class="pts-nav__link" href="Community.html">คอมมูนิตี้</a>
+          </div>
+          <div class="pts-nav__actions">
+            <a class="pts-btn pts-btn-outline pts-nav__hide-mobile" href="Login.html">เข้าสู่ระบบ</a>
+            <a class="pts-btn pts-btn-primary pts-nav__hide-mobile" href="Register.html">สมัครสมาชิก</a>
+            <button type="button" id="mobile-menu-btn" class="pts-nav__icon pts-nav__burger" aria-label="เมนู">
+              <span class="material-symbols-outlined">menu</span>
+            </button>
+          </div>
+        </div>
+        ${mobileBlock()}
+      </nav>`;
+    bindMobileToggle();
+}
+
 async function checkUserAndRenderNavbar() {
     const container = document.getElementById('app-navbar');
     if (!container) return;
+
+    // แสดงหัวทันที กันหน้าว่างตอน API ช้า/พัง
+    renderGuestNavbar(container);
 
     try {
         const response = await fetch('/api/users/me', { credentials: 'include' });
         const status = await response.json();
 
         if (!status.loggedIn) {
-            container.innerHTML = `
-              <nav class="pts-nav">
-                <div class="pts-nav__inner">
-                  ${brandHtml()}
-                  <div class="pts-nav__links">
-                    <a class="pts-nav__link" href="Home.html">หน้าแรก</a>
-                    <a class="pts-nav__link" href="Courses.html">หลักสูตร</a>
-                    <a class="pts-nav__link" href="Community.html">คอมมูนิตี้</a>
-                  </div>
-                  <div class="pts-nav__actions">
-                    <a class="pts-btn pts-btn-outline pts-nav__hide-mobile" href="Login.html">เข้าสู่ระบบ</a>
-                    <a class="pts-btn pts-btn-primary pts-nav__hide-mobile" href="Register.html">สมัครสมาชิก</a>
-                    <button type="button" id="mobile-menu-btn" class="pts-nav__icon pts-nav__burger" aria-label="เมนู">
-                      <span class="material-symbols-outlined">menu</span>
-                    </button>
-                  </div>
-                </div>
-                ${mobileBlock()}
-              </nav>`;
-            bindMobileToggle();
+            renderGuestNavbar(container);
             return;
         }
 
@@ -103,7 +102,7 @@ async function checkUserAndRenderNavbar() {
           <button type="button" onclick="logout()" style="display:block;width:100%;text-align:left;padding:11px 8px;border:none;background:transparent;font:inherit;color:#ba1a1a;font-weight:600;cursor:pointer">ออกจากระบบ</button>`;
 
         container.innerHTML = `
-          <nav class="pts-nav">
+          <nav class="pts-nav" aria-label="เมนูหลัก">
             <div class="pts-nav__inner">
               ${brandHtml()}
               <div class="pts-nav__links">
@@ -149,6 +148,7 @@ async function checkUserAndRenderNavbar() {
         bindMobileToggle();
     } catch (error) {
         console.error('navbar error:', error);
+        renderGuestNavbar(container);
     }
 }
 
