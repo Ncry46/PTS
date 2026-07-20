@@ -1,228 +1,563 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PTS Learning | Personal Assistant Academy</title>
-<link rel="stylesheet" href="/comp/site.css">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-</head>
-<body class="pts-body">
+<!DOCTYPE html><html lang="th" style="">
+        <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+        <link rel="stylesheet" href="/comp/site.css">
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <script id="tailwind-config">try{
+                tailwind.config = {
+                        darkMode: "class",
+                        theme: {
+                        extend: {
+                        "colors": {
+                                "surface-container-lowest": "#ffffff",
+                                "on-primary-container": "#591128",
+                                "secondary-fixed-dim": "#b3ceab",
+                                "primary-fixed-dim": "#ffb1c1",
+                                "on-secondary": "#ffffff",
+                                "on-background": "#1a1930",
+                                "tertiary-container": "#55a56b",
+                                "inverse-surface": "#302e46",
+                                "on-secondary-container": "#526b4d",
+                                "surface-container-low": "#f6f1ff",
+                                "primary": "#974258",
+                                "on-primary-fixed-variant": "#7a2b41",
+                                "secondary": "#4c6548",
+                                "primary-container": "#d9778e",
+                                "tertiary": "#166c39",
+                                "surface-container-highest": "#e3dfff",
+                                "on-tertiary-container": "#003617",
+                                "on-secondary-fixed-variant": "#354d31",
+                                "inverse-on-surface": "#f3eeff",
+                                "surface-container-high": "#eae5ff",
+                                "on-primary-fixed": "#3f0017",
+                                "primary-fixed": "#ffd9df",
+                                "tertiary-fixed": "#a2f5b4",
+                                "on-error": "#ffffff",
+                                "on-surface-variant": "#544245",
+                                "surface-variant": "#e3dfff",
+                                "on-secondary-fixed": "#0a2009",
+                                "surface-tint": "#974258",
+                                "surface-dim": "#dbd6f6",
+                                "on-primary": "#ffffff",
+                                "surface-bright": "#fcf8ff",
+                                "outline": "#867275",
+                                "background": "#fcf8ff",
+                                "surface-container": "#f0ebff",
+                                "surface": "#fcf8ff",
+                                "error": "#ba1a1a",
+                                "on-tertiary": "#ffffff",
+                                "on-tertiary-fixed-variant": "#005227",
+                                "on-surface": "#1a1930",
+                                "on-error-container": "#93000a",
+                                "inverse-primary": "#ffb1c1",
+                                "outline-variant": "#d9c1c4",
+                                "on-tertiary-fixed": "#00210c",
+                                "error-container": "#ffdad6",
+                                "secondary-container": "#ceeac5",
+                                "tertiary-fixed-dim": "#87d899",
+                                "secondary-fixed": "#ceeac5"
+                        },
+                        "borderRadius": {
+                                "DEFAULT": "0.25rem",
+                                "lg": "0.5rem",
+                                "xl": "0.75rem",
+                                "2xl": "24px",
+                                "full": "9999px"
+                        },
+                        "spacing": {
+                                "xs": "4px",
+                                "xl": "80px",
+                                "container-max": "1200px",
+                                "lg": "48px",
+                                "sm": "12px",
+                                "md": "24px",
+                                "gutter": "24px",
+                                "margin-mobile": "16px",
+                                "base": "8px"
+                        },
+                        "fontFamily": {
+                                "body-lg": ["IBM Plex Sans Thai"],
+                                "body-sm": ["IBM Plex Sans Thai"],
+                                "body-md": ["IBM Plex Sans Thai"],
+                                "label-md": ["IBM Plex Sans Thai"],
+                                "headline-md": ["IBM Plex Sans Thai"],
+                                "headline-xl": ["IBM Plex Sans Thai"],
+                                "headline-lg": ["IBM Plex Sans Thai"],
+                                "headline-lg-mobile": ["IBM Plex Sans Thai"],
+                                "headline-sm": ["IBM Plex Sans Thai"]
+                        },
+                        "fontSize": {
+                                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                                "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                                "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                                "headline-md": ["24px", {"lineHeight": "34px", "fontWeight": "600"}],
+                                "headline-xl": ["40px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                                "headline-lg": ["32px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                                "headline-lg-mobile": ["28px", {"lineHeight": "38px", "fontWeight": "600"}],
+                                "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                        }
+                        },
+                        },
+                }
+                }catch(_e){}</script></head>
+<body class="pts-body bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed" data-mode="connect">
+<!-- TopNavBar -->
 <div id="app-navbar"></div>
 
-<main class="pts-main--flush" style="flex:1 0 auto;width:100%;padding:0">
-  <!-- Hero: brand first, one composition -->
-  <section class="fs-hero">
-    <div class="fs-hero__inner">
-      <div>
-        <p class="fs-hero__brand">PTS Learning</p>
-        <h1>ยกระดับทักษะ <span>Personal Assistant</span> สู่มาตรฐานมืออาชีพ</h1>
-        <p class="fs-hero__lead">เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ</p>
-        <div class="fs-hero__actions">
-          <a class="pts-btn pts-btn-light" href="Courses.html">ดูหลักสูตรทั้งหมด</a>
-          <a class="pts-btn pts-btn-outline" style="border-color:rgba(255,255,255,.45);color:#fff;background:transparent" href="Register.html">สมัครสมาชิก</a>
-        </div>
-      </div>
-      <div class="fs-hero__visual">
-        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1200&q=80" alt="Personal Assistant professional">
-      </div>
-    </div>
-  </section>
+<main>
+<!-- Hero Section -->
+<section class="relative overflow-hidden pt-[calc(var(--pts-nav-h)+32px)] pb-lg md:pb-xl">
+<div class="absolute inset-0 -z-10 bg-[radial-gradient(900px_420px_at_15%_0%,rgba(151,66,88,0.16),transparent_55%),radial-gradient(700px_360px_at_100%_10%,rgba(61,90,76,0.10),transparent_50%),linear-gradient(180deg,#faf7f8,#f3f0f1)]"></div>
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-2 items-center gap-lg">
+<div class="space-y-md animate-[pts-fade-up_.6s_ease_both]">
+<p class="font-[family-name:var(--pts-display)] text-[13px] font-bold tracking-[0.22em] uppercase text-primary">PTS Learning</p>
+<h1 class="font-headline-xl text-headline-xl text-on-surface md:text-[52px] md:leading-[1.12]">ยกระดับทักษะ <span class="text-primary">Personal Assistant</span> สู่มาตรฐานมืออาชีพ</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ</p>
+<div class="flex flex-wrap gap-md pt-sm">
+<button class="px-xl py-4 bg-primary text-on-primary rounded-full font-headline-sm text-headline-sm hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20" onclick="location.href='Courses.html'">ดูหลักสูตร</button>
+<button class="px-xl py-4 bg-white text-primary rounded-full font-headline-sm text-headline-sm border border-primary/25 hover:bg-primary/5 active:scale-95 transition-all" onclick="location.href='Register.html'">สมัครสมาชิก</button>
+</div>
+</div>
+<div class="relative">
+<div class="absolute -top-10 -left-10 w-48 h-48 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="relative z-10 rounded-2xl overflow-hidden soft-shadow rotate-2 hover:rotate-0 transition-transform duration-500">
+<img alt="Professional Woman" class="w-full h-[500px] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1bLgj4_cdFQwufD7fHr7mIzwwLX1eg6KHtRGNWkUYTSFBNEzOkfgN5Bpvqx4pzCO1HDdnOeKyf9kSglaEJZ0oilzaKD-actnGqN9yHVSPnMsVEePg6HbyhjRFyukb2cFtg15dFQG8pw7GhjRJ6qCiFxBqsOU9FtRQjAWKZJHfKjZIdK__xUHPQGyylmAfalj9Psv-EiJd16IvIbdHQRwdmdkZQgSL50gh22cqBbgCWExhU_x5NFwAg">
+</div>
+<div class="absolute -bottom-6 -right-6 bg-surface-bright p-md rounded-2xl soft-shadow z-20 flex items-center gap-sm border border-outline-variant/30">
+<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-on-tertiary">check_circle</span>
+</div>
+<div>
+<p class="font-headline-sm text-headline-sm text-primary">Certified</p>
+<p class="font-label-md text-label-md text-on-surface-variant">หลักสูตรรับรองวิชาชีพ</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Choose Learning Type Section -->
+<section class="py-xl bg-surface">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl">เลือกประเภทการเรียน</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Card 1: Online -->
+<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+<div class="w-16 h-16 bg-tertiary-container/10 rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-tertiary text-[32px]">laptop_mac</span>
+</div>
+<div class="flex items-center gap-xs mb-sm">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<span class="font-headline-sm text-headline-sm text-tertiary">Online</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา ดูวิดีโอและ Live ผ่านระบบ</p>
 
-  <!-- Learning modes -->
-  <section class="fs-section">
-    <div class="fs-container">
-      <div class="fs-section-head">
-        <div>
-          <h2>เลือกประเภทการเรียน</h2>
-          <p>รูปแบบที่เหมาะกับไลฟ์สไตล์และการทำงานของคุณ</p>
-        </div>
-      </div>
-      <div class="fs-grid">
-        <a class="fs-mode" href="Courses.html?filter=online">
-          <div class="fs-mode__icon"><span class="material-symbols-outlined">laptop_mac</span></div>
-          <h3>Online</h3>
-          <p>เรียนผ่านเว็บได้ทุกที่ทุกเวลา พร้อมติดตามความคืบหน้า</p>
-        </a>
-        <a class="fs-mode" href="Courses.html?filter=onsite">
-          <div class="fs-mode__icon"><span class="material-symbols-outlined">location_on</span></div>
-          <h3>Onsite</h3>
-          <p>เรียนที่ PTS Academy พร้อมฝึกปฏิบัติและเช็กอินเข้าเรียน</p>
-        </a>
-        <a class="fs-mode" href="Courses.html?filter=hybrid">
-          <div class="fs-mode__icon"><span class="material-symbols-outlined">devices</span></div>
-          <h3>Hybrid</h3>
-          <p>ผสมผสานออนไลน์และออนไซต์ในหลักสูตรเดียว</p>
-        </a>
-      </div>
-    </div>
-  </section>
+</div>
+<!-- Card 2: Onsite -->
+<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+<div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-primary text-[32px]">business</span>
+</div>
+<div class="flex items-center gap-xs mb-sm">
+<span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span>
+<span class="font-headline-sm text-headline-sm text-[#f59e0b]">Onsite</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">เรียนที่ PTS Academy เช็กอินและเช็กเอาต์ผ่าน QR Code ได้รับใบประกาศเมื่อเรียนครบ</p>
 
-  <!-- Featured courses from API -->
-  <section class="fs-section fs-section--muted">
-    <div class="fs-container">
-      <div class="fs-section-head">
-        <div>
-          <h2>หลักสูตรแนะนำ</h2>
-          <p>คอร์สจากระบบจริง อัปเดตตามฐานข้อมูล PTS</p>
-        </div>
-        <a class="pts-btn pts-btn-outline" href="Courses.html">ดูทั้งหมด</a>
-      </div>
-      <div class="fs-cat-row" id="home-filters">
-        <button type="button" class="fs-cat is-active" data-mode="">ทั้งหมด</button>
-        <button type="button" class="fs-cat" data-mode="online">Online</button>
-        <button type="button" class="fs-cat" data-mode="onsite">Onsite</button>
-        <button type="button" class="fs-cat" data-mode="hybrid">Hybrid</button>
-      </div>
-      <div id="home-courses" class="fs-grid" style="margin-top:20px">
-        <div class="pts-empty" style="grid-column:1/-1">กำลังโหลดหลักสูตร...</div>
-      </div>
-    </div>
-  </section>
+</div>
+<!-- Card 3: Hybrid -->
+<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+<div class="w-16 h-16 bg-secondary-container/20 rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-secondary text-[32px]">sync_alt</span>
+</div>
+<div class="flex items-center gap-xs mb-sm">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="font-headline-sm text-headline-sm text-secondary">Hybrid</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">เรียนออนไลน์ควบคู่กับการเข้าเรียนที่สถานที่จริง มีทั้งวิดีโอ บทเรียน และกิจกรรมภาคปฏิบัติ</p>
 
-  <!-- Upcoming schedules -->
-  <section class="fs-section">
-    <div class="fs-container">
-      <div class="fs-section-head">
-        <div>
-          <h2>ตารางเรียนที่กำลังจะถึง</h2>
-          <p>ดึงจากตารางเรียนจริงในระบบ</p>
-        </div>
-        <a class="pts-btn pts-btn-ghost" href="Schedule.html">ดูตารางทั้งหมด</a>
-      </div>
-      <div id="home-schedules" class="space-y-3" style="display:grid;gap:14px">
-        <div class="pts-empty">กำลังโหลดตาราง...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Final CTA -->
-  <section class="fs-cta">
-    <div>
-      <h2>พร้อมเริ่มเส้นทาง PA มืออาชีพหรือยัง?</h2>
-      <p>สมัครสมาชิกวันนี้ แล้วเลือกหลักสูตรที่ใช่สำหรับคุณ</p>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px">
-      <a class="pts-btn pts-btn-light" href="Register.html">สมัครสมาชิก</a>
-      <a class="pts-btn pts-btn-outline" style="border-color:rgba(255,255,255,.4);color:#fff;background:transparent" href="Courses.html">ดูหลักสูตร</a>
-    </div>
-  </section>
+</div>
+</div>
+</div>
+</section>
+<!-- Why Choose PTS Learning Section -->
+<section class="py-xl bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl">ทำไมต้องเลือก PTS Learning</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
+<div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined text-primary">diversity_3</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">รองรับ Online, Onsite และ Hybrid</h3>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-secondary-container/5 transition-colors">
+<div class="w-14 h-14 bg-secondary-container rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined text-secondary">database</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">เรียนผ่านระบบเดียว</h3>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-tertiary-container/5 transition-colors">
+<div class="w-14 h-14 bg-tertiary-container text-white rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">ติดตามความก้าวหน้าการเรียน</h3>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
+<div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined text-primary">verified</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">รับใบประกาศอัตโนมัติเมื่อผ่านเงื่อนไข</h3>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured Courses (Recommended) -->
+<section class="py-xl bg-[#FAFAFA]">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
+<div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
+<div class="text-left">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำ</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ข้อมูลจากระบบจริง อัปเดตตามคอร์สในฐานข้อมูล</p>
+</div>
+<a href="Courses.html" class="flex items-center gap-sm text-primary font-bold group">
+                ดูทั้งหมด
+                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<div class="flex flex-wrap gap-sm mb-lg" id="home-course-filters">
+<button type="button" data-mode="" class="home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
+<button type="button" data-mode="online" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
+<button type="button" data-mode="onsite" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
+<button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
+</div>
+</div>
+<div id="home-courses" class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-3 gap-md">
+  <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
+</div>
+</section>
+<!-- Upcoming Schedules Section -->
+<section class="py-xl bg-surface">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
+<div class="flex items-center gap-md mb-base">
+<h2 class="font-headline-lg text-headline-lg text-on-background">ตารางเรียนที่กำลังจะถึง</h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">ดึงจากตารางเรียนจริงในระบบ</p>
+</div>
+<div id="home-schedules" class="max-w-container-max mx-auto px-margin-mobile md:px-lg space-y-md">
+  <div class="text-on-surface-variant py-6 text-center">กำลังโหลดตาราง...</div>
+</div>
+</section>
+<!-- Learning Steps (How to Start) -->
+<section class="py-xl bg-surface">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-background">เริ่มต้นเรียนได้ 3 รูปแบบ</h2>
+</div>
+<div class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">1</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">เลือกหลักสูตร</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">เลือกวิชาที่คุณสนใจ</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">2</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">ลงทะเบียน</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ชำระเงินผ่านระบบ QR Code</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">3</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">Online / Onsite / Hybrid</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">เข้าเรียนตามรูปแบบที่เลือก</p>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">4</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">เรียนจบ</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ผ่านเกณฑ์แบบทดสอบ</p>
+</div>
+<!-- Step 5 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">5</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">รับใบประกาศ</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ขอรับใบเซอร์ฯ ดิจิทัลได้ทันที</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials -->
+<section class="py-xl bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">เสียงจากผู้เรียนของเรา</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ความประทับใจจริงจากศิษย์เก่า PTS Learning</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
+<div class="flex gap-xs mb-md">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"เนื้อหาเข้าใจง่ายมากค่ะ นำไปปรับใช้กับการทำงานจริงได้ทันที โดยเฉพาะเรื่องการจัดตารางงานที่เคยเป็นจุดอ่อน ตอนนี้ทำงานได้เป็นระบบขึ้นมาก"</p>
+<div class="flex items-center gap-sm">
+<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-t9bUuCZPS8uXr-TWSmidD9sEyP8awhLxcxOvGCt7LtTpwAyU6rAY4FMlyzpCaBt5Szxq_rx8QrGYwmEXOqiSMyZvrC1UCcBGEGBIxsvd4NnPNQuy2aez2u5T_7X2yl-9UlYa8aX6jil8ErQGoKR9K2XWCk13Z2rpf7cNUQKnIEXoyGuwKumYSxrcRXDsg69Elgsb77tcqvMISdMeYj_G-ZlU2sEXMjvhfawBexuxv3VveUmHgTdJeA">
+<div>
+<p class="font-label-md text-label-md font-bold">คุณแพรววา</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Personal Assistant @ Tech Startup</p>
+</div>
+</div>
+</div>
+<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
+<div class="flex gap-xs mb-md">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"ชอบระบบตารางเรียนมากค่ะ ทำให้คนทำงานประจำอย่างเราจัดเวลาเรียนได้เอง ไม่กดดัน แถมใบเซอร์ฯ ยังช่วยให้ได้ปรับตำแหน่งด้วยค่ะ"</p>
+<div class="flex items-center gap-sm">
+<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxbws15uj-fkCaFv6ZWYGvYgp68J0dauCLb-Pux4LNfs_MBDCk9g_176-lMyqVI4NY6eGXvZ_HCSBhZW5mg-eDhTr7vUF3O7Rh8CgGTpjyOesTk9Q5vxdkZrwnrzoEFcbkmH_BEJX9DyrHhyAJrAwfcTFV88ZV2qGv0aEKbYCShZPK6ok-0OjH1o8FR7XWaJuwqnafvLQbin7jxLwOjOJduuRbJ0DjSFs8cy7fILfbGSWdC1lOArecDA">
+<div>
+<p class="font-label-md text-label-md font-bold">คุณมินตรา</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Executive Secretary</p>
+</div>
+</div>
+</div>
+<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
+<div class="flex gap-xs mb-md">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"ความรู้ที่ได้จากคอร์ส Digital Tools ช่วยประหยัดเวลาทำงานได้เยอะมากค่ะ ระบบเว็บก็ใช้งานง่าย ลื่นไหลมาก แนะนำเลยค่ะ"</p>
+<div class="flex items-center gap-sm">
+<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2CSIg4SXi-ZVHfhgpezFcUa2tM_LG2RTz_t1-rEh7S6nYVKc9lzNE5DHVdV7pUrdwk5Zaj9f9dMC6wtPgMTNQYEY6gFFWbVa5Uoh94JYu6YwEAYZ_kSgnPH4imKG9WsqpW_3k4BG7P-dLk4qdF92dvXFhIXOm_OP3fJ4D4zZx4ZfvsgpBZvQAVPZMU7t1wIJV1khHZ7S-nu7cShoTkjohP0TCLi5oVWf-6KdInNLAKaTbBuxL0n4IRQ">
+<div>
+<p class="font-label-md text-label-md font-bold">คุณรินรดา</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Virtual Assistant (Freelance)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="py-xl bg-surface">
+<div class="max-w-2xl mx-auto px-margin-mobile md:px-lg">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">คำถามที่พบบ่อย (FAQ)</h2>
+</div>
+<div class="space-y-sm">
+<details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
+<summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
+<span class="font-headline-sm text-headline-sm text-on-surface">คอร์สเรียนมีอายุการใช้งานกี่วัน?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+                        คุณสามารถเข้าเรียนได้ตลอดชีพ (Lifetime Access) ไม่มีวันหมดอายุ เพื่อให้คุณได้กลับมาทบทวนความรู้ได้เสมอ
+                    </div>
+</details>
+<details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
+<summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
+<span class="font-headline-sm text-headline-sm text-on-surface">มีการสอบเพื่อรับใบประกาศหรือไม่?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+                        ใช่ค่ะ ในแต่ละหลักสูตรจะมีแบบทดสอบหลังเรียนจบ คุณต้องทำคะแนนให้ผ่านเกณฑ์ที่กำหนดเพื่อขอรับใบประกาศนียบัตรดิจิทัล
+                    </div>
+</details>
+<details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
+<summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
+<span class="font-headline-sm text-headline-sm text-on-surface">สามารถขอใบกำกับภาษีได้ไหม?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+                        ได้ค่ะ ท่านสามารถระบุข้อมูลการขอใบกำกับภาษีได้ในขั้นตอนการชำระเงิน หรือติดต่อทีมงาน Support ผ่าน Line OA
+                    </div>
+</details>
+</div>
+</div>
+</section>
+<!-- Final CTA Section -->
+<section class="py-xl max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
+<div class="bg-primary text-on-primary rounded-2xl p-lg md:p-xl flex flex-col md:flex-row items-center justify-between gap-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+<div class="relative z-10 text-center md:text-left space-y-sm">
+<h2 class="font-headline-lg text-headline-lg">พร้อมยกระดับอาชีพของคุณแล้วหรือยัง?</h2>
+<p class="font-body-lg text-body-lg text-white/80">เริ่มเรียนรู้วันนี้เพื่อก้าวสู่การเป็นมืออาชีพที่ใครๆ ก็ต้องการตัว</p>
+</div>
+<div class="relative z-10">
+<button class="px-xl py-4 bg-white text-primary rounded-full font-headline-sm text-headline-sm hover:bg-surface-bright active:scale-95 transition-all shadow-xl" onclick="location.href='Courses.html'">สมัครเรียนตอนนี้</button>
+</div>
+</div>
+</section>
 </main>
-
-<footer class="fs-footer">
-  <div class="fs-footer__inner">
-    <div>
-      <div class="pts-brand" style="margin-bottom:10px">
-        <span class="pts-brand__mark">PTS</span>
-        <span class="pts-brand__text">
-          <span class="pts-brand__name" style="color:#fff">PTS Learning</span>
-          <span class="pts-brand__tag" style="color:rgba(255,255,255,.65)">Personal Assistant Academy</span>
-        </span>
-      </div>
-      <p style="max-width:280px;font-size:14px;line-height:1.5;margin:0">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ</p>
-    </div>
-    <div style="display:flex;flex-wrap:wrap;gap:16px">
-      <a href="Courses.html">หลักสูตร</a>
-      <a href="Community.html">คอมมูนิตี้</a>
-      <a href="Legal.html">นโยบาย</a>
-      <a href="Login.html">เข้าสู่ระบบ</a>
-    </div>
-  </div>
-  <div class="fs-footer__copy">© PTS Learning. All Rights Reserved.</div>
+<!-- Footer -->
+<footer class="bg-surface-container-highest w-full py-lg mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-lg gap-md max-w-container-max mx-auto">
+<div class="space-y-sm text-center md:text-left">
+<img alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain mx-auto md:mx-0" src="https://lh3.googleusercontent.com/aida/AP1WRLuMaoVMkkHPOqMuezhx_admymCweA1objiv0OHkPk-lTEzaUuVOlfWWBzt6yMdTNnZqQKzwO1q6jfoIdrhA_MQbNDdQvtgUzkqwMzriL4RqAW25IS6Kog1IFRW-TPC7jBiZb5CpAYL_V06l4Xekg0kGPa_LoMJwbVOmGSgp4FsJkui_aupBGRggcJ-Z2bc784Hf3Rz-g401nq9ei08h0a64KIgoSi5j1LwgO5ZBAIf0vHREbfvD0R5v2sc">
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ เพื่อความก้าวหน้าในสายงานอย่างยั่งยืน</p>
+</div>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">เกี่ยวกับเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">นโยบายความเป็นส่วนตัว</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">ติดต่อเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">LINE OA Support</a>
+</div>
+<div class="flex gap-sm">
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary">public</span>
+</div>
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary">mail</span>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mt-lg pt-md border-t border-outline-variant/30 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant/70">© 2024 PTS Learning. All Rights Reserved.</p>
+</div>
 </footer>
+<!-- BottomNavBar for Mobile -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/95 backdrop-blur-lg lg:hidden rounded-t-xl shadow-lg">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-1">
+<span class="material-symbols-outlined">play_circle</span>
+<span class="text-[10px] font-label-md">เรียน</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-1">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-[10px] font-label-md">ปฏิทิน</span>
+</button>
+</div>
 
 <script>
-const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-let allCourses = [];
-let activeMode = '';
-
-function modeLabel(mode) {
-  const m = String(mode || 'online').toLowerCase();
-  if (m === 'onsite') return 'Onsite';
-  if (m === 'hybrid') return 'Hybrid';
-  return 'Online';
-}
-
-function renderCourses() {
+document.addEventListener('DOMContentLoaded', async () => {
+  const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const grid = document.getElementById('home-courses');
-  const list = allCourses
-    .filter(c => !activeMode || String(c.delivery_mode || '').toLowerCase() === activeMode)
-    .slice(0, 6);
+  const scheduleEl = document.getElementById('home-schedules');
+  let allCourses = [];
+  let activeMode = '';
 
-  if (!list.length) {
-    grid.innerHTML = '<div class="pts-empty" style="grid-column:1/-1">ยังไม่มีหลักสูตรในระบบ · <a class="pts-btn pts-btn-primary" style="margin-top:12px" href="Courses.html">ไปหน้าหลักสูตร</a></div>';
-    return;
-  }
+  const modeBadge = (mode) => {
+    const m = String(mode || 'online').toLowerCase();
+    if (m === 'onsite') return 'bg-[#f59e0b]';
+    if (m === 'hybrid') return 'bg-secondary';
+    return 'bg-tertiary';
+  };
 
-  grid.innerHTML = list.map(c => {
-    const price = Number(c.price || 0);
-    const img = c.cover_image_url || 'https://placehold.co/640x400/f6e6ea/974258?text=PTS';
-    return `<a class="fs-course-card" href="CourseDetail.html?courseId=${c.course_id}">
-      <div class="fs-course-card__media">
-        <img src="${img}" alt="">
-        <span class="fs-course-card__badge pts-chip">${escapeHtml(modeLabel(c.delivery_mode))}</span>
-      </div>
-      <div class="fs-course-card__body">
-        <h3 class="fs-course-card__title">${escapeHtml(c.course_name || '')}</h3>
-        <p class="fs-course-card__meta">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours || 0)} ชม.</p>
-        <div class="fs-course-card__footer">
-          <span class="fs-course-card__price">${price ? '฿' + price.toLocaleString('th-TH') : 'สอบถามราคา'}</span>
-          <span class="pts-btn pts-btn-outline" style="padding:8px 14px;font-size:13px">รายละเอียด</span>
+  const renderCourses = () => {
+    if (!grid) return;
+    const list = allCourses.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
+    if (!list.length) {
+      grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">ยังไม่มีหลักสูตรในระบบ · <a class="text-primary font-bold" href="Courses.html">ดูหน้าหลักสูตร</a></div>';
+      return;
+    }
+    grid.innerHTML = list.map(c => {
+      const mode = String(c.delivery_mode || 'online');
+      const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
+      const price = Number(c.price || 0).toLocaleString('th-TH');
+      const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
+      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group block">
+        <div class="relative h-48 overflow-hidden">
+          <img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${img}">
+          <div class="absolute top-4 left-4">
+            <div class="${modeBadge(mode)} text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
+              <span class="w-2 h-2 rounded-full bg-white"></span> ${escapeHtml(mode)}
+            </div>
+          </div>
         </div>
-      </div>
-    </a>`;
-  }).join('');
-}
+        <div class="p-md">
+          <div class="flex items-center gap-xs mb-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm text-primary">person</span>
+            <span class="font-label-md text-label-md">${escapeHtml(c.instructor_name || '-')}</span>
+            <span class="mx-2 text-outline-variant">|</span>
+            <span class="material-symbols-outlined text-sm text-primary">schedule</span>
+            <span class="font-label-md text-label-md">${escapeHtml(hours)}</span>
+          </div>
+          <h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">${escapeHtml(c.course_name)}</h4>
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-primary font-bold text-headline-sm">฿${price}</span>
+            <span class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md">รายละเอียด</span>
+          </div>
+        </div>
+      </a>`;
+    }).join('');
+  };
 
-document.querySelectorAll('#home-filters .fs-cat').forEach(btn => {
-  btn.addEventListener('click', () => {
-    activeMode = btn.dataset.mode || '';
-    document.querySelectorAll('#home-filters .fs-cat').forEach(b => b.classList.remove('is-active'));
-    btn.classList.add('is-active');
-    renderCourses();
+  document.querySelectorAll('.home-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMode = btn.dataset.mode || '';
+      document.querySelectorAll('.home-filter').forEach(b => {
+        b.className = 'home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md';
+      });
+      btn.className = 'home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm';
+      renderCourses();
+    });
   });
-});
 
-(async () => {
   try {
     const res = await fetch('/api/courses', { credentials: 'include' });
     const data = await res.json();
     allCourses = data.success ? (data.data || []) : [];
     renderCourses();
   } catch {
-    document.getElementById('home-courses').innerHTML = '<div class="pts-empty pts-msg--err" style="grid-column:1/-1">โหลดหลักสูตรไม่สำเร็จ</div>';
+    if (grid) grid.innerHTML = '<div class="col-span-full text-center text-error py-8">โหลดหลักสูตรไม่สำเร็จ</div>';
   }
 
-  const scheduleEl = document.getElementById('home-schedules');
-  try {
-    const sres = await fetch('/api/schedules', { credentials: 'include' });
-    const sdata = await sres.json();
-    const items = (sdata.data || []).slice(0, 4);
-    if (!items.length) {
-      scheduleEl.innerHTML = '<div class="pts-empty">ยังไม่มีตารางเรียนที่กำลังจะถึง</div>';
-    } else {
-      scheduleEl.innerHTML = items.map(item => {
-        const d = new Date(item.start_at);
-        const month = d.toLocaleDateString('th-TH', { month: 'short' });
-        const day = d.getDate();
-        const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-        const href = item.course_id ? `CourseDetail.html?courseId=${item.course_id}` : 'Schedule.html';
-        return `<article class="pts-row">
-          <div style="display:flex;gap:14px;align-items:flex-start">
-            <div class="pts-date-badge"><span style="font-size:11px;font-weight:700;text-transform:uppercase">${escapeHtml(month)}</span><strong>${day}</strong></div>
-            <div>
-              <h3 style="margin:0 0 4px;font-size:17px;font-weight:700">${escapeHtml(item.title)}</h3>
-              <p class="fs-course-card__meta" style="margin:0">${escapeHtml(time)} · ${escapeHtml(item.location || item.delivery_mode || '-')}</p>
+  if (scheduleEl) {
+    try {
+      const sres = await fetch('/api/schedules', { credentials: 'include' });
+      const sdata = await sres.json();
+      const items = (sdata.data || []).slice(0, 4);
+      if (!items.length) {
+        scheduleEl.innerHTML = '<div class="text-on-surface-variant py-6 text-center">ยังไม่มีตารางเรียนที่กำลังจะถึง · <a class="text-primary font-bold" href="Schedule.html">ดูหน้าตาราง</a></div>';
+      } else {
+        scheduleEl.innerHTML = items.map(item => {
+          const d = new Date(item.start_at);
+          const month = d.toLocaleDateString('th-TH', { month: 'short' });
+          const day = d.getDate();
+          const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+          const href = item.course_id ? `CourseDetail.html?courseId=${item.course_id}` : 'Schedule.html';
+          return `<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
+            <div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
+              <div class="bg-primary-fixed p-4 rounded-2xl text-primary text-center min-w-[100px]">
+                <p class="font-label-md text-label-md uppercase">${escapeHtml(month)}</p>
+                <p class="font-headline-lg text-headline-lg">${day}</p>
+              </div>
+              <div>
+                <h4 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(item.title)}</h4>
+                <div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
+                  <span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
+                    <span class="material-symbols-outlined text-sm text-primary">schedule</span> ${escapeHtml(time)}
+                  </span>
+                  <span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
+                    <span class="material-symbols-outlined text-sm text-primary">location_on</span> ${escapeHtml(item.location || item.delivery_mode || '-')}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-          <a class="pts-btn pts-btn-primary" href="${href}">ดูรายละเอียด</a>
-        </article>`;
-      }).join('');
+            <a href="${href}" class="px-md py-3 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-lg shadow-primary/20">ดูรายละเอียด</a>
+          </div>`;
+        }).join('');
+      }
+    } catch {
+      scheduleEl.innerHTML = '<div class="text-error py-6 text-center">โหลดตารางไม่สำเร็จ</div>';
     }
-  } catch {
-    scheduleEl.innerHTML = '<div class="pts-empty pts-msg--err">โหลดตารางไม่สำเร็จ</div>';
   }
-})();
+});
 </script>
 <script src="/comp/navbar.js"></script>
 </body>

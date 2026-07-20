@@ -4,68 +4,81 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>หลักสูตร | PTS Learning</title>
-<link rel="stylesheet" href="/comp/site.css">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="/comp/site.css">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        primary: '#974258',
+        'on-surface': '#1a1930',
+        'on-surface-variant': '#544245',
+        'outline-variant': '#d9c1c4',
+        'secondary-container': '#ceeac5',
+        'on-secondary-container': '#526b4d',
+        error: '#ba1a1a'
+      }
+    }
+  }
+};
+</script>
 </head>
 <body class="pts-body">
 <div id="app-navbar"></div>
 <main class="pts-main pts-main--wide">
   <section class="pts-page-hero">
-    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:end;justify-content:space-between">
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
       <div>
-        <span class="pts-chip mb-3" style="margin-bottom:12px">PTS Courses</span>
-        <h1 class="pts-display" style="margin:0 0 8px;font-size:clamp(28px,4vw,40px);font-weight:800;color:var(--pts-primary)">หลักสูตรทั้งหมด</h1>
-        <p id="hero-sub" style="margin:0;color:var(--pts-muted);max-width:36rem">เลือก Online / Onsite / Hybrid ที่เหมาะกับเป้าหมายของคุณ</p>
+        <span class="pts-chip mb-3">PTS Courses</span>
+        <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">หลักสูตรแนะนำสำหรับคุณ</h1>
+        <p id="hero-sub" class="text-on-surface-variant max-w-2xl">เลือกหลักสูตร Online / Onsite / Hybrid ที่เหมาะกับเป้าหมายของคุณ</p>
       </div>
-      <div id="hero-actions" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+      <div id="hero-actions" class="flex flex-wrap gap-2"></div>
     </div>
   </section>
 
   <div id="guest-banner" class="pts-auth-banner hidden">
     <div>
       <strong>โหมดดูหลักสูตรอย่างเดียว</strong>
-      <p style="margin:4px 0 0;font-size:14px">เข้าสู่ระบบเพื่อสมัครเรียน บันทึกโปรด และเข้าเรียน</p>
+      <p class="text-sm mt-1">เข้าสู่ระบบเพื่อสมัครเรียน บันทึกคอร์สโปรด และเข้าเรียน</p>
     </div>
-    <div style="display:flex;gap:8px">
+    <div class="flex gap-2">
       <a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a>
       <a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>
     </div>
   </div>
 
-  <div class="fs-cat-row" id="filters" style="margin-bottom:22px">
-    <button type="button" data-filter="all" class="fs-cat is-active">ทั้งหมด</button>
-    <button type="button" data-filter="online" class="fs-cat">Online</button>
-    <button type="button" data-filter="onsite" class="fs-cat">Onsite</button>
-    <button type="button" data-filter="hybrid" class="fs-cat">Hybrid</button>
+  <div class="flex flex-wrap gap-2 mb-6" id="filters">
+    <button data-filter="all" class="filter-btn pts-btn pts-btn-primary">ทั้งหมด</button>
+    <button data-filter="online" class="filter-btn pts-btn pts-btn-outline">Online</button>
+    <button data-filter="onsite" class="filter-btn pts-btn pts-btn-outline">Onsite</button>
+    <button data-filter="hybrid" class="filter-btn pts-btn pts-btn-outline">Hybrid</button>
   </div>
 
-  <div id="courses-grid" class="fs-grid"></div>
+  <div id="courses-grid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
 </main>
-<footer class="fs-footer">
-  <div class="fs-footer__inner">
-    <div>
-      <strong style="color:#fff;font-family:var(--pts-display)">PTS Learning</strong>
-      <p style="margin:8px 0 0;font-size:14px">Personal Assistant Academy</p>
-    </div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap">
-      <a href="Home.html">หน้าแรก</a>
-      <a href="Community.html">คอมมูนิตี้</a>
-      <a href="Legal.html">นโยบาย</a>
-    </div>
-  </div>
-  <div class="fs-footer__copy">© PTS Learning</div>
-</footer>
+<div class="pts-footer-note">© PTS Learning · Courses</div>
 
 <script>
 let currentUser = null;
 let allCourses = [];
 const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const formatText = (v) => v || '-';
+const sentenceCase = (t) => t ? t.charAt(0).toUpperCase() + t.slice(1) : '-';
+const getBadge = (mode) => {
+  if (mode === 'online') return { label: 'Online', classes: 'bg-emerald-50 text-emerald-700' };
+  if (mode === 'onsite') return { label: 'Onsite', classes: 'bg-orange-50 text-orange-700' };
+  return { label: 'Hybrid', classes: 'bg-sky-50 text-sky-700' };
+};
 
-function modeLabel(mode) {
-  const m = String(mode || '').toLowerCase();
-  if (m === 'onsite') return 'Onsite';
-  if (m === 'hybrid') return 'Hybrid';
-  return 'Online';
+function requireAuth(label) {
+  if (currentUser) return true;
+  alert(`กรุณาเข้าสู่ระบบเพื่อ${label}`);
+  location.href = 'Login.html';
+  return false;
 }
 
 function renderAuthChrome() {
@@ -89,87 +102,182 @@ function renderAuthChrome() {
 
 function makeCourseCard(course) {
   const mode = (course.delivery_mode || '').toLowerCase();
+  const badge = getBadge(mode);
   const favorited = Number(course.is_favorited) === 1;
   const enrolled = Number(course.is_enrolled) === 1;
-  const price = Number(course.price || 0);
-  const hours = Number(course.total_hours || 0);
-  const img = course.cover_image_url || 'https://placehold.co/640x400/f6e6ea/974258?text=PTS';
+  const hours = Number(course.total_hours || 0).toFixed(1).replace('.0', '');
   return `
-    <article class="fs-course-card" data-type="${escapeHtml(mode)}">
-      <a href="CourseDetail.html?courseId=${course.course_id}" class="fs-course-card__media">
-        <img src="${img}" alt="">
-        <span class="fs-course-card__badge pts-chip">${escapeHtml(modeLabel(mode))}</span>
-      </a>
-      <div class="fs-course-card__body">
-        <a href="CourseDetail.html?courseId=${course.course_id}">
-          <h3 class="fs-course-card__title">${escapeHtml(course.course_name || '')}</h3>
-        </a>
-        <p class="fs-course-card__meta">โดย ${escapeHtml(course.instructor_name || '-')} · ${hours} ชม.</p>
-        <div class="fs-course-card__footer">
-          <span class="fs-course-card__price">${price ? '฿' + price.toLocaleString('th-TH') : 'สอบถามราคา'}</span>
-          <div style="display:flex;gap:6px;align-items:center">
-            ${currentUser ? `<button type="button" class="fav-btn pts-btn pts-btn-ghost ${favorited ? 'pts-like-active' : ''}" data-course-id="${course.course_id}" style="padding:8px" title="โปรด"><span class="material-symbols-outlined">favorite</span></button>` : ''}
-            <a class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}" style="padding:8px 14px;font-size:13px" href="CourseDetail.html?courseId=${course.course_id}">
-              ${enrolled ? 'เข้าเรียน' : 'รายละเอียด'}
-            </a>
+    <article data-type="${mode}" class="pts-card overflow-hidden flex flex-col group">
+      <div class="relative aspect-[16/10] overflow-hidden">
+        <img class="w-full h-full object-cover transition duration-500 group-hover:scale-105" src="${course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" alt="${escapeHtml(course.course_name || '')}">
+        <div class="absolute top-3 left-3 flex flex-wrap gap-2">
+          ${course.is_featured ? '<span class="px-3 py-1 rounded-full text-[12px] font-bold bg-secondary-container text-on-secondary-container">ยอดนิยม</span>' : ''}
+          <span class="px-3 py-1 rounded-full text-[12px] font-bold ${badge.classes}">${badge.label}</span>
+        </div>
+        ${currentUser ? `
+          <button type="button" class="fav-btn absolute top-3 right-3 w-10 h-10 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกคอร์สโปรด">
+            <span class="material-symbols-outlined">favorite</span>
+          </button>` : ''}
+      </div>
+      <div class="p-5 flex flex-col flex-1">
+        <p class="text-sm text-on-surface-variant mb-2">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
+        <h3 class="font-bold text-lg mb-2 line-clamp-2">${escapeHtml(formatText(course.course_name))}</h3>
+        <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
+        <div class="mt-auto space-y-3">
+          <div class="flex justify-between text-sm text-on-surface-variant">
+            <span>${hours} ชั่วโมง</span>
+            <span>${sentenceCase(course.difficulty_level)}</span>
           </div>
+          <a href="CourseDetail.html?courseId=${course.course_id}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'} w-full">
+            ${enrolled ? 'เข้าเรียน / รายละเอียด' : (currentUser ? 'ดูรายละเอียด / สมัครเรียน' : 'ดูรายละเอียด')}
+          </a>
         </div>
       </div>
     </article>`;
 }
 
-function renderCourses(list) {
-  const grid = document.getElementById('courses-grid');
-  if (!list.length) {
-    grid.innerHTML = '<div class="pts-empty" style="grid-column:1/-1">ไม่พบหลักสูตรในขณะนี้</div>';
-    return;
+function openCourseModal(course) {
+  document.getElementById('course-modal')?.remove();
+  const badge = getBadge((course.delivery_mode || '').toLowerCase());
+  const enrolled = Number(course.is_enrolled) === 1;
+  const modal = document.createElement('div');
+  modal.id = 'course-modal';
+  modal.className = 'fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/45';
+  modal.innerHTML = `
+    <div class="bg-white rounded-[24px] max-w-lg w-full p-5 shadow-xl relative max-h-[90vh] overflow-y-auto">
+      <button type="button" id="close-course-modal" class="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"><span class="material-symbols-outlined">close</span></button>
+      <img src="${course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" class="w-full h-40 object-cover rounded-2xl mb-4" alt="">
+      <span class="inline-block px-3 py-1 rounded-full text-[12px] font-bold mb-2 ${badge.classes}">${badge.label}</span>
+      <h3 class="text-xl font-bold mb-1">${escapeHtml(formatText(course.course_name))}</h3>
+      <p class="text-sm text-on-surface-variant mb-2">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
+      <p class="text-sm text-on-surface-variant mb-4">${Number(course.total_hours || 0).toFixed(1).replace('.0','')} ชั่วโมง · ระดับ ${sentenceCase(course.difficulty_level)}</p>
+      ${currentUser ? `
+        <div class="space-y-2">
+          ${enrolled
+            ? `<a class="pts-btn pts-btn-primary w-full" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
+            : `<button type="button" id="enroll-course-btn" class="pts-btn pts-btn-primary w-full">สมัครเรียนคอร์สนี้</button>`}
+          <a class="pts-btn pts-btn-outline w-full" href="Payments.html?courseId=${course.course_id}">ชำระเงิน</a>
+          <button type="button" id="fav-course-btn" class="pts-btn pts-btn-ghost w-full">${Number(course.is_favorited) ? 'นำออกจากคอร์สโปรด' : 'บันทึกเป็นคอร์สโปรด'}</button>
+        </div>` : `
+        <div class="pts-auth-banner mb-0">
+          <div><strong>ดูรายละเอียดได้อย่างเดียว</strong><p class="text-sm mt-1">เข้าสู่ระบบเพื่อสมัครเรียนและบันทึกโปรด</p></div>
+        </div>
+        <div class="flex gap-2 mt-4">
+          <a class="pts-btn pts-btn-primary flex-1" href="Login.html">เข้าสู่ระบบ</a>
+          <a class="pts-btn pts-btn-outline flex-1" href="Register.html">สมัครสมาชิก</a>
+        </div>`}
+      <p id="enroll-message" class="mt-3 text-center text-sm text-on-surface-variant"></p>
+    </div>`;
+  document.body.appendChild(modal);
+  modal.querySelector('#close-course-modal').onclick = () => modal.remove();
+  modal.onclick = (e) => { if (e.target === modal) modal.remove(); };
+
+  const enrollBtn = modal.querySelector('#enroll-course-btn');
+  if (enrollBtn) {
+    enrollBtn.onclick = async () => {
+      enrollBtn.disabled = true;
+      enrollBtn.textContent = 'กำลังสมัครเรียน...';
+      try {
+        const res = await fetch(`/api/courses/${course.course_id}/enroll`, { method: 'POST', credentials: 'include' });
+        const data = await res.json();
+        if (res.status === 401) return location.href = 'Login.html';
+        if (!res.ok || !data.success) throw new Error(data.message || 'สมัครไม่สำเร็จ');
+        modal.querySelector('#enroll-message').textContent = data.message;
+        if (!data.already_enrolled) setTimeout(() => location.href = `Learn.html?courseId=${course.course_id}`, 700);
+        else location.href = `Learn.html?courseId=${course.course_id}`;
+      } catch (err) {
+        modal.querySelector('#enroll-message').textContent = err.message;
+        enrollBtn.disabled = false;
+        enrollBtn.textContent = 'สมัครเรียนคอร์สนี้';
+      }
+    };
   }
-  grid.innerHTML = list.map(makeCourseCard).join('');
+
+  const favBtn = modal.querySelector('#fav-course-btn');
+  if (favBtn) {
+    favBtn.onclick = async () => {
+      const res = await fetch(`/api/courses/${course.course_id}/favorite`, { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok || !data.success) return alert(data.message || 'ไม่สำเร็จ');
+      course.is_favorited = data.favorited ? 1 : 0;
+      favBtn.textContent = data.favorited ? 'นำออกจากคอร์สโปรด' : 'บันทึกเป็นคอร์สโปรด';
+      renderCourses(allCourses);
+    };
+  }
 }
 
-function applyFilter(key) {
-  const k = (key || 'all').toLowerCase();
-  document.querySelectorAll('#filters .fs-cat').forEach(b => {
-    b.classList.toggle('is-active', b.dataset.filter === k);
+function renderCourses(courses) {
+  allCourses = courses || [];
+  const grid = document.getElementById('courses-grid');
+  if (!allCourses.length) {
+    grid.innerHTML = '<div class="pts-empty pts-card col-span-full">ไม่พบหลักสูตรในขณะนี้</div>';
+    return;
+  }
+  grid.innerHTML = allCourses.map(makeCourseCard).join('');
+}
+
+function setActiveFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.remove('pts-btn-primary');
+    b.classList.add('pts-btn-outline');
   });
-  if (k === 'all') return renderCourses(allCourses);
-  renderCourses(allCourses.filter(c => String(c.delivery_mode || '').toLowerCase() === k));
+  btn.classList.remove('pts-btn-outline');
+  btn.classList.add('pts-btn-primary');
+}
+
+function filterCourses(filter) {
+  document.querySelectorAll('#courses-grid [data-type]').forEach(card => {
+    const type = (card.dataset.type || '').toLowerCase();
+    card.classList.toggle('hidden', !(filter === 'all' || type === filter.toLowerCase()));
+  });
 }
 
 document.getElementById('filters').addEventListener('click', (e) => {
-  const btn = e.target.closest('.fs-cat');
+  const btn = e.target.closest('.filter-btn');
   if (!btn) return;
-  applyFilter(btn.dataset.filter);
+  setActiveFilter(btn);
+  filterCourses(btn.dataset.filter);
 });
 
 document.getElementById('courses-grid').addEventListener('click', async (e) => {
-  const btn = e.target.closest('.fav-btn');
-  if (!btn) return;
-  e.preventDefault();
-  if (!currentUser) return location.href = 'Login.html';
-  const res = await fetch(`/api/courses/${btn.dataset.courseId}/favorite`, { method: 'POST', credentials: 'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) return alert(data.message || 'ไม่สำเร็จ');
-  const course = allCourses.find(c => String(c.course_id) === String(btn.dataset.courseId));
-  if (course) course.is_favorited = data.favorited ? 1 : 0;
-  const active = document.querySelector('#filters .fs-cat.is-active')?.dataset.filter || 'all';
-  applyFilter(active);
+  const fav = e.target.closest('.fav-btn');
+  const detail = e.target.closest('.course-detail-btn');
+  if (fav) {
+    if (!requireAuth('บันทึกคอร์สโปรด')) return;
+    const id = Number(fav.dataset.courseId);
+    const res = await fetch(`/api/courses/${id}/favorite`, { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok || !data.success) return alert(data.message || 'ไม่สำเร็จ');
+    const course = allCourses.find(c => Number(c.course_id) === id);
+    if (course) course.is_favorited = data.favorited ? 1 : 0;
+    renderCourses(allCourses);
+    const active = document.querySelector('.filter-btn.pts-btn-primary');
+    if (active) filterCourses(active.dataset.filter);
+    return;
+  }
+  if (detail) {
+    const course = allCourses.find(c => Number(c.course_id) === Number(detail.dataset.courseId));
+    if (course) openCourseModal(course);
+  }
 });
 
 (async () => {
-  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
-  currentUser = me.loggedIn ? me.user : null;
-  renderAuthChrome();
-
-  const res = await fetch('/api/courses', { credentials: 'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    document.getElementById('courses-grid').innerHTML = `<div class="pts-empty pts-msg--err" style="grid-column:1/-1">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
-    return;
+  try {
+    const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+    currentUser = me.loggedIn ? me.user : null;
+    renderAuthChrome();
+    const res = await fetch('/api/courses', { credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.message || 'โหลดคอร์สไม่สำเร็จ');
+    renderCourses(data.data || []);
+    const urlFilter = new URLSearchParams(location.search).get('filter');
+    if (urlFilter) {
+      const btn = [...document.querySelectorAll('.filter-btn')].find(b => (b.dataset.filter || '').toLowerCase() === urlFilter.toLowerCase());
+      if (btn) { setActiveFilter(btn); filterCourses(btn.dataset.filter); }
+    }
+  } catch (err) {
+    document.getElementById('courses-grid').innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(err.message)}</div>`;
   }
-  allCourses = data.data || [];
-  const preset = new URLSearchParams(location.search).get('filter') || 'all';
-  applyFilter(preset);
 })();
 </script>
 <script src="/comp/navbar.js"></script>
