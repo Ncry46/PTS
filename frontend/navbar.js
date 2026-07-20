@@ -39,6 +39,43 @@
         font-size:14px; font-weight:600;
       }
       .pts-topnav__link:hover { background:#f6e6ea; color:#974258; }
+      .pts-topnav__mega-wrap { position:relative; height:100%; display:flex; align-items:center; }
+      .pts-topnav__mega-btn {
+        padding:8px 12px; border-radius:999px; border:none; background:transparent; cursor:pointer;
+        font:inherit; font-size:14px; font-weight:600; color:#4b3f44; display:inline-flex; align-items:center; gap:4px;
+      }
+      .pts-topnav__mega-btn:hover, .pts-topnav__mega-wrap:hover .pts-topnav__mega-btn {
+        background:#f6e6ea; color:#974258;
+      }
+      .pts-topnav__mega {
+        display:none; position:absolute; top:100%; left:0; width:420px; padding-top:8px; z-index:100001;
+      }
+      .pts-topnav__mega-wrap:hover .pts-topnav__mega,
+      .pts-topnav__mega-wrap:focus-within .pts-topnav__mega { display:block; }
+      .pts-topnav__mega-panel {
+        background:#fff; border:1px solid rgba(151,66,88,.16); border-radius:16px;
+        box-shadow:0 16px 40px rgba(28,21,32,.12); overflow:hidden;
+      }
+      .pts-topnav__mega-item {
+        display:flex; gap:12px; align-items:flex-start; width:100%; text-align:left; padding:14px 16px;
+        border:none; background:transparent; cursor:pointer; font:inherit; color:#1c1520;
+      }
+      .pts-topnav__mega-item:hover { background:#faf4f6; }
+      .pts-topnav__mega-icon {
+        width:40px; height:40px; border-radius:999px; display:grid; place-items:center; flex-shrink:0;
+        font-size:18px; background:#f6e6ea; color:#974258;
+      }
+      .pts-topnav__mega-icon--onsite { background:#eef5ea; color:#4c6548; }
+      .pts-topnav__mega-icon--hybrid { background:#e8f6ec; color:#166c39; }
+      .pts-topnav__mega-title { font-size:15px; font-weight:700; margin:0 0 2px; }
+      .pts-topnav__mega-desc { font-size:13px; color:#6b5c62; margin:0; line-height:1.4; }
+      .pts-topnav__mega-foot {
+        padding:12px 16px; border-top:1px solid rgba(151,66,88,.12); background:#faf7f8;
+      }
+      .pts-topnav__mega-foot a {
+        display:flex; align-items:center; justify-content:center; height:40px; border-radius:999px;
+        background:#974258; color:#fff; text-decoration:none; font-weight:700; font-size:14px;
+      }
       .pts-topnav__actions { display:flex; align-items:center; gap:8px; }
       .pts-topnav__btn {
         display:inline-flex; align-items:center; justify-content:center; height:40px; padding:0 16px;
@@ -104,6 +141,51 @@
       </a>`;
   }
 
+  function coursesMegaHtml() {
+    return `
+      <div class="pts-topnav__mega-wrap">
+        <button type="button" class="pts-topnav__mega-btn" aria-haspopup="true">
+          หลักสูตร <span aria-hidden="true">▾</span>
+        </button>
+        <div class="pts-topnav__mega" role="menu">
+          <div class="pts-topnav__mega-panel">
+            <button type="button" class="pts-topnav__mega-item" data-mega-filter="online">
+              <span class="pts-topnav__mega-icon">On</span>
+              <span>
+                <p class="pts-topnav__mega-title">Online</p>
+                <p class="pts-topnav__mega-desc">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา</p>
+              </span>
+            </button>
+            <button type="button" class="pts-topnav__mega-item" data-mega-filter="onsite">
+              <span class="pts-topnav__mega-icon pts-topnav__mega-icon--onsite">Os</span>
+              <span>
+                <p class="pts-topnav__mega-title">Onsite</p>
+                <p class="pts-topnav__mega-desc">เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code</p>
+              </span>
+            </button>
+            <button type="button" class="pts-topnav__mega-item" data-mega-filter="hybrid">
+              <span class="pts-topnav__mega-icon pts-topnav__mega-icon--hybrid">Hy</span>
+              <span>
+                <p class="pts-topnav__mega-title">Hybrid</p>
+                <p class="pts-topnav__mega-desc">เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว</p>
+              </span>
+            </button>
+            <div class="pts-topnav__mega-foot">
+              <a href="Courses.html">ดูหลักสูตรทั้งหมด</a>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function coursesMobileHtml() {
+    return `
+      <a href="Courses.html">หลักสูตรทั้งหมด</a>
+      <a href="Courses.html?filter=online">· Online</a>
+      <a href="Courses.html?filter=onsite">· Onsite</a>
+      <a href="Courses.html?filter=hybrid">· Hybrid</a>`;
+  }
+
   function bindToggles(root) {
     const burger = root.querySelector('[data-pts-burger]');
     const mobile = root.querySelector('[data-pts-mobile]');
@@ -127,7 +209,7 @@
           ${brandHtml()}
           <div class="pts-topnav__links">
             <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
-            <a class="pts-topnav__link" href="Courses.html">หลักสูตร</a>
+            ${coursesMegaHtml()}
             <a class="pts-topnav__link" href="Community.html">คอมมูนิตี้</a>
           </div>
           <div class="pts-topnav__actions">
@@ -138,7 +220,7 @@
         </div>
         <div class="pts-topnav__mobile" data-pts-mobile>
           <a href="Home.html">หน้าแรก</a>
-          <a href="Courses.html">หลักสูตร</a>
+          ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
           <a href="Login.html">เข้าสู่ระบบ</a>
           <a href="Register.html" style="color:#974258;font-weight:700">สมัครสมาชิก</a>
@@ -163,7 +245,7 @@
           ${brandHtml()}
           <div class="pts-topnav__links">
             <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
-            <a class="pts-topnav__link" href="Courses.html">หลักสูตร</a>
+            ${coursesMegaHtml()}
             <a class="pts-topnav__link" href="DashbordU.html">แดชบอร์ด</a>
             <a class="pts-topnav__link" href="Schedule.html">ตารางเรียน</a>
             <a class="pts-topnav__link" href="Community.html">คอมมูนิตี้</a>
@@ -195,7 +277,7 @@
         </div>
         <div class="pts-topnav__mobile" data-pts-mobile>
           <a href="Home.html">หน้าแรก</a>
-          <a href="Courses.html">หลักสูตร</a>
+          ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
           <a href="DashbordU.html">แดชบอร์ด</a>
           <a href="Schedule.html">ตารางเรียน</a>
