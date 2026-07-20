@@ -26,11 +26,8 @@
         display:flex; align-items:center; justify-content:space-between; gap:12px;
       }
       .pts-topnav__brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:#1c1520; flex-shrink:0; }
-      .pts-topnav__logo { height:40px; width:auto; max-width:140px; object-fit:contain; display:block; }
-      .pts-topnav__mark {
-        width:40px; height:40px; border-radius:12px; background:linear-gradient(135deg,#974258,#7a2f42);
-        color:#fff; display:grid; place-items:center; font-weight:800; font-size:12px; letter-spacing:.04em;
-      }
+      .pts-topnav__logo { height:42px; width:auto; max-width:160px; object-fit:contain; display:block; }
+      .pts-topnav__mark { display:none !important; }
       .pts-topnav__name { font-weight:700; font-size:15px; line-height:1.15; color:#1c1520; }
       .pts-topnav__tag { font-size:11px; color:#6b5c62; font-weight:500; }
       .pts-topnav__links { display:none; align-items:center; gap:6px; }
@@ -63,7 +60,7 @@
       .pts-topnav__mega-item:hover { background:#faf4f6; }
       .pts-topnav__mega-icon {
         width:40px; height:40px; border-radius:999px; display:grid; place-items:center; flex-shrink:0;
-        font-size:18px; background:#f6e6ea; color:#974258;
+        font-size:12px; font-weight:800; letter-spacing:.02em; background:#f6e6ea; color:#974258;
       }
       .pts-topnav__mega-icon--onsite { background:#eef5ea; color:#4c6548; }
       .pts-topnav__mega-icon--hybrid { background:#e8f6ec; color:#166c39; }
@@ -131,9 +128,9 @@
   function brandHtml() {
     return `
       <a class="pts-topnav__brand" href="Home.html" aria-label="PTS Learning">
-        <span class="pts-topnav__mark" aria-hidden="true">PTS</span>
-        <img class="pts-topnav__logo" src="${PTS_LOGO}" alt=""
-          onerror="this.style.display='none'">
+        <img class="pts-topnav__logo" src="${PTS_LOGO}" alt="PTS Learning"
+          onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+        <span class="pts-topnav__mark" style="display:none" aria-hidden="true">PTS</span>
         <span>
           <div class="pts-topnav__name">PTS Learning</div>
           <div class="pts-topnav__tag">Personal Assistant Academy</div>
