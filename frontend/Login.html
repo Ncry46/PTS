@@ -195,7 +195,7 @@
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
 <input class="w-full pl-12 pr-12 py-3.5 rounded-[12px] border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="password" placeholder="••••••••" type="password" required>
-<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button" id="toggle-password-btn">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors hidden" type="button" id="toggle-password-btn" aria-label="แสดงหรือซ่อนรหัสผ่าน">
 <span class="material-symbols-outlined" id="password-icon">visibility</span>
 </button>
 </div>
@@ -272,18 +272,33 @@
             });
         });
 
-        // 2. ปุ่มกดเปิด-ปิดตา ดูรหัสผ่าน (ของเดิม)
+        // 2. ปุ่มตา: แสดงเฉพาะตอนมีรหัสในช่อง
+        const passwordInput = document.getElementById('password');
         const togglePasswordBtn = document.getElementById('toggle-password-btn');
-        if(togglePasswordBtn) {
+        const passwordIcon = document.getElementById('password-icon');
+        function syncLoginPasswordToggle() {
+            if (!passwordInput || !togglePasswordBtn || !passwordIcon) return;
+            const hasValue = passwordInput.value.length > 0;
+            togglePasswordBtn.classList.toggle('hidden', !hasValue);
+            if (!hasValue) {
+                passwordInput.type = 'password';
+                passwordIcon.textContent = 'visibility';
+            }
+        }
+        if (passwordInput) {
+            passwordInput.addEventListener('input', syncLoginPasswordToggle);
+            passwordInput.addEventListener('change', syncLoginPasswordToggle);
+            syncLoginPasswordToggle();
+        }
+        if (togglePasswordBtn) {
             togglePasswordBtn.addEventListener('click', () => {
-                const passwordInput = document.getElementById('password');
-                const passwordIcon = document.getElementById('password-icon');
+                if (!passwordInput || !passwordIcon) return;
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
-                    passwordIcon.innerText = 'visibility_off';
+                    passwordIcon.textContent = 'visibility_off';
                 } else {
                     passwordInput.type = 'password';
-                    passwordIcon.innerText = 'visibility';
+                    passwordIcon.textContent = 'visibility';
                 }
             });
         }

@@ -200,7 +200,7 @@
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
 <input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="password" placeholder="••••••••" type="password" required>
-<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button" onclick="togglePasswordVisibility('password')">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors hidden" type="button" id="toggle-password-btn" onclick="togglePasswordVisibility('password')" aria-label="แสดงหรือซ่อนรหัสผ่าน">
 <span class="material-symbols-outlined" id="password-icon">visibility</span>
 </button>
 </div>
@@ -210,7 +210,7 @@
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock_reset</span>
 <input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="confirm-password" placeholder="••••••••" type="password" required>
-<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button" onclick="togglePasswordVisibility('confirm-password')">
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors hidden" type="button" id="toggle-confirm-password-btn" onclick="togglePasswordVisibility('confirm-password')" aria-label="แสดงหรือซ่อนรหัสผ่าน">
 <span class="material-symbols-outlined" id="confirm-password-icon">visibility</span>
 </button>
 </div>
@@ -248,18 +248,43 @@
             });
         });
 
-        // ฟังก์ชันเปิด-ปิดตา ดูรหัสผ่าน
+        // ปุ่มตา: แสดงเฉพาะตอนมีรหัสในช่อง
+        function getPasswordToggleBtn(id) {
+            if (id === 'password') return document.getElementById('toggle-password-btn');
+            if (id === 'confirm-password') return document.getElementById('toggle-confirm-password-btn');
+            return null;
+        }
+        function syncPasswordToggle(id) {
+            const input = document.getElementById(id);
+            const icon = document.getElementById(`${id}-icon`);
+            const btn = getPasswordToggleBtn(id);
+            if (!input || !icon || !btn) return;
+            const hasValue = input.value.length > 0;
+            btn.classList.toggle('hidden', !hasValue);
+            if (!hasValue) {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
         function togglePasswordVisibility(id) {
             const input = document.getElementById(id);
             const icon = document.getElementById(`${id}-icon`);
+            if (!input || !icon || !input.value.length) return;
             if (input.type === 'password') {
                 input.type = 'text';
-                icon.innerText = 'visibility_off';
+                icon.textContent = 'visibility_off';
             } else {
                 input.type = 'password';
-                icon.innerText = 'visibility';
+                icon.textContent = 'visibility';
             }
         }
+        ['password', 'confirm-password'].forEach((id) => {
+            const input = document.getElementById(id);
+            if (!input) return;
+            input.addEventListener('input', () => syncPasswordToggle(id));
+            input.addEventListener('change', () => syncPasswordToggle(id));
+            syncPasswordToggle(id);
+        });
 
         // ⚡ ระบบส่งข้อมูลเข้าฐานข้อมูลจริง (Connect with Node.js 后台)
         const form = document.querySelector('form');
