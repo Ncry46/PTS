@@ -100,23 +100,60 @@
 <style>
         body {
             font-family: 'IBM Plex Sans Thai', sans-serif;
-            background-color: #fcf8ff;
         }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
             vertical-align: middle;
         }
-        .soft-shadow {
-            box-shadow: 0 20px 40px -10px rgba(151, 66, 88, 0.08);
+        .pts-auth-page {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background:
+              radial-gradient(900px 520px at 12% -10%, rgba(151,66,88,.22), transparent 55%),
+              radial-gradient(700px 420px at 100% 0%, rgba(61,90,76,.14), transparent 50%),
+              radial-gradient(600px 380px at 70% 110%, rgba(151,66,88,.10), transparent 55%),
+              linear-gradient(165deg, #f7f2f4 0%, #efe8ea 45%, #e8eef0 100%);
+            position: relative;
+            overflow-x: hidden;
         }
-        .improved-border {
-            border: 1px solid rgba(217, 121, 142, 0.15);
+        .pts-auth-page::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none; opacity: .35;
+            background-image:
+              linear-gradient(rgba(151,66,88,.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(151,66,88,.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
         }
+        .pts-auth-shell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(var(--pts-nav-h, 68px) + 36px) 20px 48px;
+            position: relative;
+            z-index: 1;
+        }
+        .pts-auth-card {
+            width: 100%;
+            max-width: 460px;
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(151,66,88,.14);
+            border-radius: 28px;
+            box-shadow: 0 24px 60px rgba(28,21,32,.10);
+            padding: 36px 28px 28px;
+        }
+        @media (min-width: 640px) {
+          .pts-auth-card { padding: 40px 36px 32px; }
+        }
+        .pts-auth-card .pts-auth-title { text-align: center; margin-bottom: 24px; }
     </style>
 </head>
-<body class="pts-body min-h-screen bg-surface flex flex-col">
+<body class="pts-body pts-auth-page">
 <div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid rgba(151,66,88,.18);">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(151,66,88,.18);">
     <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
       <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
         <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
@@ -129,21 +166,14 @@
     </div>
   </nav>
 </div>
-<main class="flex-grow flex items-center justify-center p-margin-mobile md:p-lg pt-md"><div class="w-full max-w-[1000px] bg-white rounded-[32px] soft-shadow improved-border overflow-hidden flex flex-col md:flex-row">
-<div class="hidden md:block md:w-1/2 relative">
-<img alt="Professional Assistant" class="absolute inset-0 w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLu61qFiJeJEdBsvnElBbonj85VUvMdzq_XrVF21KxKkp_YNxmc9A2L_2cNOND_iBUu24i6XFezP8q401jYiQSX3wIlJrdDezXi95jI4Nk47qwt2eTHnMbOuafVPyQgI1PFH0kywy8GICpZQ6qOHtySgxqGHglfTynq9PqZv9jYIAfzzCMmQ814drzgVEgwKY0Gi6m-lq9gx5F7Q0puDdj1Oj_3fdFREsgDmHdBICrKRNg8RzK6sS6EhwAZ0">
-<div class="absolute inset-0 bg-gradient-to-t from-primary/60 via-primary/20 to-transparent"></div>
-<div class="absolute bottom-lg left-lg right-lg text-white">
-<h2 class="font-headline-md text-headline-md mb-xs">ก้าวสู่อาชีพผู้ช่วยมืออาชีพกับ PTS Learning</h2>
-<p class="font-body-sm text-body-sm opacity-90">เรียนรู้ทักษะที่จำเป็นสำหรับการเป็น Personal Assistant ระดับสากล</p>
+<main class="pts-auth-shell">
+<div class="pts-auth-card">
+<div class="pts-auth-title">
+<p class="text-xs font-bold tracking-[0.18em] uppercase text-primary mb-2">PTS Learning</p>
+<h1 class="text-2xl font-bold text-on-surface">สร้างบัญชีใหม่</h1>
+<p class="text-sm text-on-surface-variant mt-1">กรอกข้อมูลเพื่อเริ่มต้นการเรียนรู้ของคุณ</p>
 </div>
-</div>
-<div class="w-full md:w-1/2 p-lg md:p-lg">
-<div class="text-center mb-md">
-<h1 class="font-headline-md text-headline-md text-on-surface mb-xs">สร้างบัญชีใหม่</h1>
-<p class="font-body-md text-body-md text-on-surface-variant">กรอกข้อมูลเพื่อเริ่มต้นการเรียนรู้ของคุณ</p>
-</div>
-<form class="space-y-base">
+<form class="space-y-base" id="register-form">
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="fullname">ชื่อ-นามสกุล</label>
 <div class="relative group">
@@ -202,8 +232,9 @@
 <p class="mt-lg text-center font-body-sm text-body-sm text-on-surface-variant">
       เป็นสมาชิกอยู่แล้ว? <a class="text-primary font-bold hover:underline ml-xs" href="Login.html">เข้าสู่ระบบ</a>
 </p>
+<p class="mt-6 text-center text-xs text-on-surface-variant/70">© PTS Learning. All Rights Reserved.</p>
 </div>
-</div></main>
+</main>
 <script>
         // ไอคอนการกรอกข้อมูล Focus Interaction
         document.querySelectorAll('input').forEach(input => {

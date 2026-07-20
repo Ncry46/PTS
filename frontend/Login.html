@@ -108,14 +108,58 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+        .pts-auth-page {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background:
+              radial-gradient(900px 520px at 12% -10%, rgba(151,66,88,.22), transparent 55%),
+              radial-gradient(700px 420px at 100% 0%, rgba(61,90,76,.14), transparent 50%),
+              radial-gradient(600px 380px at 70% 110%, rgba(151,66,88,.10), transparent 55%),
+              linear-gradient(165deg, #f7f2f4 0%, #efe8ea 45%, #e8eef0 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+        .pts-auth-page::before {
+            content: '';
+            position: absolute; inset: 0; pointer-events: none; opacity: .35;
+            background-image:
+              linear-gradient(rgba(151,66,88,.04) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(151,66,88,.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
+        }
+        .pts-auth-shell {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: calc(var(--pts-nav-h, 68px) + 36px) 20px 48px;
+            position: relative;
+            z-index: 1;
+        }
+        .pts-auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: rgba(255,255,255,.92);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(151,66,88,.14);
+            border-radius: 28px;
+            box-shadow: 0 24px 60px rgba(28,21,32,.10);
+            padding: 36px 28px 28px;
+        }
+        @media (min-width: 640px) {
+          .pts-auth-card { padding: 40px 36px 32px; }
+        }
+        .pts-auth-card .pts-auth-title { text-align: center; margin-bottom: 28px; }
         .soft-shadow {
             box-shadow: 0 20px 50px -12px rgba(151, 66, 88, 0.12);
         }
     </style>
 </head>
-<body class="pts-body min-h-screen flex flex-col relative overflow-x-hidden">
+<body class="pts-body pts-auth-page">
 <div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid rgba(151,66,88,.18);">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(151,66,88,.18);">
     <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
       <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
         <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
@@ -128,34 +172,19 @@
     </div>
   </nav>
 </div>
-<div class="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-primary-fixed opacity-20 blur-[120px] rounded-full -z-10"></div>
-<div class="absolute bottom-[-5%] left-[-5%] w-[400px] h-[400px] bg-secondary-fixed opacity-30 blur-[100px] rounded-full -z-10"></div>
-<main class="w-full max-w-container-max mx-auto flex items-center justify-center px-margin-mobile md:px-lg py-lg" style="padding-top: calc(var(--pts-nav-h) + 32px); padding-bottom: 48px;">
-<div class="grid lg:grid-cols-2 w-full bg-surface-container-lowest rounded-[32px] overflow-hidden soft-shadow border border-outline-variant/30">
-<div class="hidden lg:block relative h-full min-h-[650px]">
-<div class="absolute inset-0 z-0 overflow-hidden">
-<img class="w-full h-full object-cover" data-alt="Illustration office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBPnT9SRnRkOhaHCdAoRdJ_qlDEKRYqNuwjDKlAHLcvE48d8iZaffmbEhXP5bzRIhjlXaTc_OPpHX-pEafIZafyDwtia9T_hy-QEFqHGA3oe653_ne73m8Gy1XlDE3HUi-rb3DXpRZOl45Lbk4NnwSMNTs2OxpbJVxMBPdfKZjdU-u26ouzb0qs7_cvlIMD5HHT3HzC8t1Efzmy_xTwpdxJlgq3YbarCabrJXaxbPHYIadxO4MObpMN0Q">
-</div>
-<div class="absolute inset-0 bg-gradient-to-t from-primary/40 to-transparent z-10"></div>
-<div class="absolute bottom-lg left-lg right-lg z-20 text-white">
-<p class="text-xs font-bold tracking-[0.2em] uppercase mb-2 opacity-90">PTS Learning</p>
-<h1 class="font-headline-lg text-headline-lg mb-sm">ยกระดับทักษะการเป็นผู้ช่วยมืออาชีพ</h1>
-<p class="font-body-md text-body-md opacity-90">เริ่มต้นเส้นทางการเรียนรู้ที่ออกแบบมาเพื่อคุณโดยเฉพาะ ด้วยเนื้อหาพรีเมียมจากผู้เชี่ยวชาญในวงการ</p>
-</div>
-</div>
-<div class="p-md md:p-xl flex flex-col justify-center items-center">
-<div class="w-full max-w-[420px]">
-<div class="mb-6 text-center lg:text-left">
+<main class="pts-auth-shell">
+<div class="pts-auth-card">
+<div class="pts-auth-title">
 <p class="text-xs font-bold tracking-[0.18em] uppercase text-primary mb-2">PTS Learning</p>
 <h2 class="text-2xl font-bold pts-display text-on-surface">เข้าสู่ระบบ</h2>
 <p class="text-sm text-on-surface-variant mt-1">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
 </div>
-<form class="space-y-md">
+<form class="space-y-md" id="login-form">
 <div class="space-y-xs">
 <label class="font-label-md text-label-md text-on-surface-variant" for="email">อีเมล</label>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
-<input class="w-full pl-12 pr-4 py-3.5 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="email" placeholder="example@email.com" type="email" required>
+<input class="w-full pl-12 pr-4 py-3.5 rounded-[12px] border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="email" placeholder="example@email.com" type="email" required>
 </div>
 </div>
 <div class="space-y-xs">
@@ -165,7 +194,7 @@
 </div>
 <div class="relative group">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
-<input class="w-full pl-12 pr-12 py-3.5 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="password" placeholder="••••••••" type="password" required>
+<input class="w-full pl-12 pr-12 py-3.5 rounded-[12px] border border-outline-variant bg-white focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md" id="password" placeholder="••••••••" type="password" required>
 <button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button" id="toggle-password-btn">
 <span class="material-symbols-outlined" id="password-icon">visibility</span>
 </button>
@@ -186,15 +215,8 @@
 <p class="mt-lg text-center font-body-sm text-body-sm text-on-surface-variant">
                         ยังไม่มีบัญชี? <a class="text-primary font-bold hover:underline" href="Register.html">สมัครสมาชิกที่นี่</a>
 </p>
+<p class="mt-6 text-center text-xs text-on-surface-variant/70">© PTS Learning. All Rights Reserved.</p>
 </div>
-<div class="mt-xl flex flex-wrap justify-center gap-md font-label-md text-label-md text-outline">
-<a class="hover:text-primary transition-colors" href="#">เกี่ยวกับเรา</a>
-<a class="hover:text-primary transition-colors" href="Legal.html">นโยบายความเป็นส่วนตัว</a>
-<a class="hover:text-primary transition-colors" href="#">ติดต่อเรา</a>
-</div>
-</div>
-</div>
-<p class="absolute bottom-md text-center w-full font-body-sm text-body-sm text-on-surface-variant opacity-60">© PTS Learning. All Rights Reserved.</p>
 </main>
 
 <!-- 📦 กล่องป๊อปอัปกู้คืนรหัสผ่านด้วย Email OTP -->
