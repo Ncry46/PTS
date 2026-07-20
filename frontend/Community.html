@@ -43,7 +43,11 @@ tailwind.config = {
   <div id="guest-banner" class="pts-auth-banner hidden">
     <div>
       <strong>โหมดอ่านอย่างเดียว</strong>
-      <p class="text-sm mt-1">ต้องการโพสต์หรือกดถูกใจ? <a class="text-primary font-bold" href="Login.html">เข้าสู่ระบบ</a></p>
+      <p class="text-sm mt-1">เข้าสู่ระบบเพื่อโพสต์ คอมเมนต์ และกดถูกใจ</p>
+    </div>
+    <div class="flex gap-2">
+      <a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a>
+      <a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>
     </div>
   </div>
 
@@ -157,10 +161,12 @@ function renderAuthUi() {
     guestBanner.classList.remove('hidden');
     composer.classList.add('hidden');
     likedLink.classList.add('hidden');
-    hero.innerHTML = '';
+    hero.innerHTML = `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a><a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>`;
     side.innerHTML = `
       <h3 class="font-bold text-primary mb-1">เข้าร่วมพูดคุย</h3>
-      <p class="text-sm text-on-surface-variant">ยังไม่ล็อกอิน: อ่านได้อย่างเดียว · ใช้ปุ่มเข้าสู่ระบบด้านบน</p>`;
+      <p class="text-sm text-on-surface-variant mb-3">ยังไม่ล็อกอิน: อ่านได้อย่างเดียว</p>
+      <a class="pts-btn pts-btn-primary w-full mb-2" href="Login.html">เข้าสู่ระบบ</a>
+      <a class="pts-btn pts-btn-outline w-full" href="Register.html">สมัครสมาชิก</a>`;
   }
 }
 

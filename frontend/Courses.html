@@ -24,7 +24,11 @@
   <div id="guest-banner" class="pts-auth-banner hidden">
     <div>
       <strong>โหมดดูหลักสูตรอย่างเดียว</strong>
-      <p style="margin:4px 0 0;font-size:14px">ต้องการสมัครเรียนหรือบันทึกโปรด? <a href="Login.html" style="color:var(--pts-primary);font-weight:700">เข้าสู่ระบบ</a></p>
+      <p style="margin:4px 0 0;font-size:14px">เข้าสู่ระบบเพื่อสมัครเรียน บันทึกโปรด และเข้าเรียน</p>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a>
+      <a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>
     </div>
   </div>
 
@@ -77,7 +81,9 @@ function renderAuthChrome() {
   } else {
     guest.classList.remove('hidden');
     sub.textContent = 'ยังไม่ล็อกอิน: ดูรายละเอียดหลักสูตรได้อย่างเดียว';
-    hero.innerHTML = '';
+    hero.innerHTML = `
+      <a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบ</a>
+      <a class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>`;
   }
 }
 

@@ -299,7 +299,7 @@ async function renderMail() {
         <input id="m-from-email" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="noreply@thanvasu.com" value="${escapeHtml(f.fromEmail||'')}">
       </label>
       <label class="text-sm">SMTP Host
-        <input id="m-host" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.smtpHost||'smtp.gmail.com')}">
+        <input id="m-host" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.smtpHost||'smtp.office365.com')}">
       </label>
       <label class="text-sm">SMTP Port
         <input id="m-port" type="number" class="mt-1 w-full border rounded-xl px-3 py-2" value="${Number(f.smtpPort||587)}">
@@ -318,13 +318,9 @@ async function renderMail() {
       <button id="save-mail" class="pts-btn pts-btn-primary">บันทึกการตั้งค่าอีเมล</button>
     </div>
     <h3 class="font-bold mb-2">ทดสอบส่ง OTP ไปอีเมลใดก็ได้</h3>
-    <ol class="text-sm text-on-surface-variant mb-3 list-decimal pl-5 space-y-1">
-      <li>ตั้ง Host เป็น <code>smtp.gmail.com</code> Port <code>587</code> แล้วใส่ App Password แล้วกดบันทึก</li>
-      <li>ใส่เมลผู้รับทดสอบด้านล่าง (Gmail ส่วนตัวก็ได้) แล้วกด <strong>ส่ง OTP ทดสอบ</strong></li>
-      <li>เปิดกล่องจดหมายผู้รับ (รวม Spam) — ถ้าถึงแล้ว ระบบพร้อมใช้ลืมรหัสผ่านได้</li>
-    </ol>
+    <p class="text-sm text-on-surface-variant mb-2">ใส่เมลผู้รับทดสอบ (ไม่ต้องเป็นเมล thanvasu) เพื่อยืนยันว่าส่งถึงทุกอีเมลได้</p>
     <div class="flex flex-col sm:flex-row gap-2">
-      <input id="m-test-email" class="flex-1 border rounded-xl px-3 py-2" placeholder="อีเมลปลายทางทดสอบ เช่น you@gmail.com">
+      <input id="m-test-email" class="flex-1 border rounded-xl px-3 py-2" placeholder="อีเมลปลายทางทดสอบ">
       <button id="test-mail" class="pts-btn pts-btn-outline">ส่ง OTP ทดสอบ</button>
     </div>
     <p id="mail-msg" class="pts-msg"></p>`;
