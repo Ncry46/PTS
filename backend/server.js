@@ -3,6 +3,9 @@ const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
+const { ensureLearningSchema } = require('./ensureSchema');
+const { createLearningRouter } = require('./learningRoutes');
+const { createAdminRouter } = require('./adminRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -42,24 +45,10 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
     .then(async pool => {
         console.log('🔌 Connected to Microsoft SQL Server Successfully!');
         try {
-            await pool.request().query(`
-                IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'course_enrollments')
-                BEGIN
-                    CREATE TABLE dbo.course_enrollments (
-                        enrollment_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-                        user_id INT NOT NULL,
-                        course_id INT NOT NULL,
-                        progress_percent INT NOT NULL CONSTRAINT DF_course_enrollments_progress DEFAULT (0),
-                        status VARCHAR(20) NOT NULL CONSTRAINT DF_course_enrollments_status DEFAULT ('in_progress'),
-                        enrolled_at DATETIME NOT NULL CONSTRAINT DF_course_enrollments_enrolled DEFAULT (GETDATE()),
-                        updated_at DATETIME NOT NULL CONSTRAINT DF_course_enrollments_updated DEFAULT (GETDATE()),
-                        CONSTRAINT UQ_course_enrollments_user_course UNIQUE (user_id, course_id)
-                    );
-                END
-            `);
-            console.log('📚 course_enrollments table ready');
+            await ensureLearningSchema(pool);
+            console.log('📚 Learning schema ready');
         } catch (schemaErr) {
-            console.error('⚠️ ไม่สามารถเตรียมตาราง course_enrollments ได้:', schemaErr.message);
+            console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
         }
         return pool;
     })
@@ -751,6 +740,9 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 // 📸 Kiosk จำลอง: หน้า frontend/kiosk.html เป็นตัวทดสอบเท่านั้น
 // เครื่อง Kiosk จริงให้ POST มาที่ endpoint นี้ด้วย payload เดียวกัน
 // -------------------------------------------------------------------------
+app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
+app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
+
 app.post('/api/attendance/scan', async (req, res) => {
     const { employee_id, kiosk_device_id } = req.body;
 

@@ -141,27 +141,27 @@
 </div>
 </div>
 <!-- Navigation Links -->
-<nav class="flex flex-col gap-xs flex-grow"><a class="flex items-center gap-sm bg-secondary-container text-on-secondary-container rounded-xl px-md py-sm font-bold shadow-sm transition-transform active:scale-98" href="#">
+<nav class="flex flex-col gap-xs flex-grow"><a class="flex items-center gap-sm bg-secondary-container text-on-secondary-container rounded-xl px-md py-sm font-bold shadow-sm transition-transform active:scale-98" href="DashbordU.html">
 <span class="material-symbols-outlined">dashboard</span>
 <span class="font-label-md text-label-md">หน้าหลัก</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#my-courses">
 <span class="material-symbols-outlined">menu_book</span>
 <span class="font-label-md text-label-md">คอร์สของฉัน</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Schedule.html">
 <span class="material-symbols-outlined">calendar_today</span>
 <span class="font-label-md text-label-md">ตารางเรียน</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Courses.html">
 <span class="material-symbols-outlined">bookmark</span>
-<span class="font-label-md text-label-md">รายการโปรด</span>
+<span class="font-label-md text-label-md">หลักสูตรทั้งหมด</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Payments.html">
 <span class="material-symbols-outlined">payments</span>
 <span class="font-label-md text-label-md">ชำระเงิน</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Certificates.html">
 <span class="material-symbols-outlined">workspace_premium</span>
 <span class="font-label-md text-label-md">ใบประกาศ</span>
 </a></nav>
@@ -255,7 +255,7 @@
 <h3 class="font-headline-sm text-headline-sm">คอร์สของฉัน</h3>
 <a class="text-primary font-label-md text-label-md hover:underline" href="Courses.html">ดูหลักสูตรทั้งหมด</a>
 </div>
-<div id="dash-my-courses" class="space-y-md">
+<div id="my-courses"></div><div id="dash-my-courses" class="space-y-md">
 <div class="bg-surface-container-lowest rounded-24px soft-shadow p-md text-on-surface-variant">กำลังโหลดคอร์สของฉัน...</div>
 </div>
 </div>
@@ -501,10 +501,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                                     <div class="h-full bg-primary rounded-full" style="width: ${progress}%;"></div>
                                 </div>
                                 <div class="flex flex-wrap gap-sm">
-                                    <button type="button" class="progress-btn bg-primary text-white px-lg py-sm rounded-full font-bold" data-course-id="${course.course_id}" data-progress="${Math.min(100, progress + 10)}">
-                                        อัปเดตความคืบหน้า +10%
-                                    </button>
-                                    <a href="Courses.html" class="border border-primary/30 text-primary px-lg py-sm rounded-full font-bold">ดูรายละเอียด</a>
+                                    <a href="Learn.html?courseId=${course.course_id}" class="bg-primary text-white px-lg py-sm rounded-full font-bold">เข้าเรียน</a>
+                                    <a href="Payments.html?courseId=${course.course_id}" class="border border-primary/30 text-primary px-lg py-sm rounded-full font-bold">ชำระเงิน</a>
                                 </div>
                             </div>
                         </div>
