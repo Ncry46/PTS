@@ -156,7 +156,7 @@
       });
       const result = await response.json();
       if (result.success) {
-        window.location.href = 'DashbordU.html';
+        window.location.href = 'Home.html';
       } else if (loginMsg) {
         loginMsg.textContent = result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
         loginMsg.classList.remove('hidden');
