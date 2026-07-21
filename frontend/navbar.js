@@ -263,11 +263,10 @@
           <a href="DashbordU.html">แดชบอร์ด</a>
           <a href="Certificates.html">ใบประกาศ</a>
           <a href="Payments.html">ชำระเงิน</a>
-          <a href="Favorites.html">คอร์สโปรด</a>
-          <a href="Liked.html">โพสต์ถูกใจ</a>
+          <a href="Favorites.html">รายการโปรด</a>
           <a href="Settings.html">ตั้งค่า</a>
           <a href="Schedule.html">ตารางเรียน</a>
-          ${isAdmin ? '<a href="Admin.html">Admin</a>' : ''}
+          ${isAdmin ? '<a href="Admin.html">แอดมิน</a>' : ''}
           <button type="button" class="pts-drawer__logout" onclick="logout()">ออกจากระบบ</button>
         </nav>
       </aside>`;
@@ -318,7 +317,6 @@
             <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
             ${coursesMegaHtml()}
             <a class="pts-topnav__link" href="Community.html">คอมมูนิตี้</a>
-            ${isAdmin ? '<a class="pts-topnav__link" href="Admin.html">Admin</a>' : ''}
           </div>
           <div class="pts-topnav__actions">
             <a href="Notifications.html" class="pts-topnav__icon" title="การแจ้งเตือน" aria-label="การแจ้งเตือน">🔔</a>
@@ -337,9 +335,8 @@
           ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
           <a href="Certificates.html">ใบประกาศ</a>
-          <a href="Favorites.html">คอร์สโปรด</a>
+          <a href="Favorites.html">รายการโปรด</a>
           <a href="Settings.html">ตั้งค่า</a>
-          ${isAdmin ? '<a href="Admin.html">Admin</a>' : ''}
           <button type="button" onclick="logout()" style="color:#ba1a1a">ออกจากระบบ</button>
         </div>
       </nav>

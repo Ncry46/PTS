@@ -253,18 +253,6 @@
   <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
 </div>
 </section>
-<!-- Upcoming Schedules Section -->
-<section class="py-xl bg-surface">
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
-<div class="flex items-center gap-md mb-base">
-<h2 class="font-headline-lg text-headline-lg text-on-background">ตารางเรียนที่กำลังจะถึง</h2>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant">ดึงจากตารางเรียนจริงในระบบ</p>
-</div>
-<div id="home-schedules" class="max-w-container-max mx-auto px-margin-mobile md:px-lg space-y-md">
-  <div class="text-on-surface-variant py-6 text-center">กำลังโหลดตาราง...</div>
-</div>
-</section>
 <!-- Learning Steps (How to Start) -->
 <section class="py-xl bg-surface">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
@@ -463,7 +451,6 @@
 document.addEventListener('DOMContentLoaded', async () => {
   const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const grid = document.getElementById('home-courses');
-  const scheduleEl = document.getElementById('home-schedules');
   let allCourses = [];
   let activeMode = '';
 
@@ -540,47 +527,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   } catch {
     if (grid) grid.innerHTML = '<div class="col-span-full text-center text-error py-8">โหลดหลักสูตรไม่สำเร็จ</div>';
   }
-
-  if (scheduleEl) {
-    try {
-      const sres = await fetch('/api/schedules', { credentials: 'include' });
-      const sdata = await sres.json();
-      const items = (sdata.data || []).slice(0, 4);
-      if (!items.length) {
-        scheduleEl.innerHTML = '<div class="text-on-surface-variant py-6 text-center">ยังไม่มีตารางเรียนที่กำลังจะถึง · <a class="text-primary font-bold" href="Schedule.html">ดูหน้าตาราง</a></div>';
-      } else {
-        scheduleEl.innerHTML = items.map(item => {
-          const d = new Date(item.start_at);
-          const month = d.toLocaleDateString('th-TH', { month: 'short' });
-          const day = d.getDate();
-          const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-          const href = item.course_id ? `CourseDetail.html?courseId=${item.course_id}` : 'Schedule.html';
-          return `<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
-            <div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
-              <div class="bg-primary-fixed p-4 rounded-2xl text-primary text-center min-w-[100px]">
-                <p class="font-label-md text-label-md uppercase">${escapeHtml(month)}</p>
-                <p class="font-headline-lg text-headline-lg">${day}</p>
-              </div>
-              <div>
-                <h4 class="font-headline-sm text-headline-sm text-on-surface">${escapeHtml(item.title)}</h4>
-                <div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
-                  <span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-                    <span class="material-symbols-outlined text-sm text-primary">schedule</span> ${escapeHtml(time)}
-                  </span>
-                  <span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-                    <span class="material-symbols-outlined text-sm text-primary">location_on</span> ${escapeHtml(item.location || item.delivery_mode || '-')}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <a href="${href}" class="px-md py-3 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-lg shadow-primary/20">ดูรายละเอียด</a>
-          </div>`;
-        }).join('');
-      }
-    } catch {
-      scheduleEl.innerHTML = '<div class="text-error py-6 text-center">โหลดตารางไม่สำเร็จ</div>';
-    }
-  }
 });
 </script>
 <!-- PTS-NAV-INLINE-BOOT -->
@@ -604,6 +550,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 })();
 </script>
-<script src="navbar.js?v=20260720i"></script>
+<script src="navbar.js?v=20260721c"></script>
 </body>
 </html>

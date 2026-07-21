@@ -32,9 +32,9 @@ app.use(session({
 const frontendDir = path.join(__dirname, '..', 'frontend');
 const componentsDir = path.join(__dirname, '..', 'components');
 
-// เสิร์ฟหน้าบ้าน + ไฟล์ navbar/css ที่อยู่ใน frontend โดยตรง
+// เสิร์ฟหน้าบ้าน + ไฟล์ shared (navbar.js อยู่ที่ frontend/ เท่านั้น — ไม่ซ้ำใน components/)
 app.use(express.static(frontendDir));
-// /comp ชี้ทั้ง frontend และ components (กันพาธเก่าพัง)
+// /comp ชี้ frontend ก่อน แล้วค่อย components (กันพาธเก่าพัง)
 app.use('/comp', express.static(frontendDir));
 app.use('/comp', express.static(componentsDir));
 

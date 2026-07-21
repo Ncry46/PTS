@@ -47,13 +47,6 @@ tailwind.config = {
     <p id="hero-sub" class="text-on-surface-variant max-w-2xl">เลือกหลักสูตร Online / Onsite / Hybrid ที่เหมาะกับเป้าหมายของคุณ</p>
   </div>
 
-  <div id="guest-banner" class="pts-auth-banner hidden">
-    <div>
-      <strong>โหมดดูหลักสูตรอย่างเดียว</strong>
-      <p class="text-sm mt-1">ต้องการสมัครเรียนหรือบันทึกโปรด? ใช้ปุ่มเข้าสู่ระบบด้านบน</p>
-    </div>
-  </div>
-
   <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
     <div class="flex flex-wrap gap-2" id="filters">
       <button data-filter="all" class="filter-btn pts-btn pts-btn-primary">ทั้งหมด</button>
@@ -87,17 +80,14 @@ function requireAuth(label) {
 }
 
 function renderAuthChrome() {
-  const guest = document.getElementById('guest-banner');
   const hero = document.getElementById('hero-actions');
   const sub = document.getElementById('hero-sub');
   if (currentUser) {
-    guest.classList.add('hidden');
     sub.textContent = 'สมัครเรียน บันทึกคอร์สโปรด และเข้าเรียนได้ทันทีหลังล็อกอิน';
     hero.innerHTML = `
-      <a class="pts-btn pts-btn-outline" href="Favorites.html">คอร์สโปรด</a>
+      <a class="pts-btn pts-btn-outline" href="Favorites.html">รายการโปรด</a>
       <a class="pts-btn pts-btn-primary" href="DashbordU.html">แดชบอร์ด</a>`;
   } else {
-    guest.classList.remove('hidden');
     sub.textContent = 'เลือกดูหลักสูตร Online / Onsite / Hybrid ได้ตามต้องการ';
     hero.innerHTML = '';
   }
@@ -162,9 +152,6 @@ function openCourseModal(course) {
           <a class="pts-btn pts-btn-outline w-full" href="Payments.html?courseId=${course.course_id}">ชำระเงิน</a>
           <button type="button" id="fav-course-btn" class="pts-btn pts-btn-ghost w-full">${Number(course.is_favorited) ? 'นำออกจากคอร์สโปรด' : 'บันทึกเป็นคอร์สโปรด'}</button>
         </div>` : `
-        <div class="pts-auth-banner mb-0">
-          <div><strong>ดูรายละเอียดได้อย่างเดียว</strong><p class="text-sm mt-1">เข้าสู่ระบบเพื่อสมัครเรียนและบันทึกโปรด</p></div>
-        </div>
         <div class="flex gap-2 mt-4">
           <a class="pts-btn pts-btn-primary flex-1" href="Login.html">เข้าสู่ระบบ</a>
           <a class="pts-btn pts-btn-outline flex-1" href="Register.html">สมัครสมาชิก</a>
@@ -304,6 +291,6 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
   }
 })();
 </script>
-<script src="navbar.js?v=20260720i"></script>
+<script src="navbar.js?v=20260721c"></script>
 </body>
 </html>

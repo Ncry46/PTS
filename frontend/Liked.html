@@ -2,108 +2,11 @@
 <html lang="th">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>โพสต์ที่ถูกใจ | PTS Learning</title>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260720c">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+<meta http-equiv="refresh" content="0;url=Favorites.html#posts">
+<title>รายการโปรด | PTS Learning</title>
+<script>location.replace('Favorites.html#posts');</script>
 </head>
-<body class="pts-body">
-<div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid rgba(151,66,88,.18);">
-    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
-        PTS Learning
-      </a>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
-      </div>
-    </div>
-  </nav>
-</div>
-<main class="pts-main">
-  <section class="pts-page-hero">
-    <span class="pts-chip mb-3">Liked Posts</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">โพสต์ที่คุณถูกใจ</h1>
-    <p class="text-on-surface-variant">รวมโพสต์ที่กดถูกใจไว้ อ่านซ้ำหรือเลิกถูกใจได้จากหน้านี้</p>
-    <div class="mt-4 flex gap-2">
-      <a class="pts-btn pts-btn-outline" href="Community.html">กลับคอมมูนิตี้</a>
-    </div>
-  </section>
-  <div id="list" class="space-y-4"></div>
-</main>
-<script>
-const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-(async () => {
-  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
-  if (!me.loggedIn) return location.href = 'Login.html';
-  const box = document.getElementById('list');
-  const res = await fetch('/api/my/liked-posts', { credentials:'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    box.innerHTML = `<div class="pts-card p-5 text-error">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
-    return;
-  }
-  if (!data.data.length) {
-    box.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ<br><a class="text-primary font-bold" href="Community.html">ไปสำรวจคอมมูนิตี้</a></div>`;
-    return;
-  }
-  box.innerHTML = data.data.map(p => `
-    <article class="pts-card p-5">
-      <div class="flex items-start justify-between gap-3 mb-3">
-        <div class="flex items-center gap-3">
-          <img class="w-10 h-10 rounded-full object-cover" src="${p.author_avatar||''}" alt="">
-          <div>
-            <p class="font-bold">${escapeHtml(p.author_name||'')}</p>
-            <p class="text-xs text-on-surface-variant">${new Date(p.created_at).toLocaleString('th-TH')}</p>
-          </div>
-        </div>
-        <button class="unlike pts-btn pts-btn-ghost pts-like-active" data-id="${p.post_id}">
-          <span class="material-symbols-outlined">favorite</span> เลิกถูกใจ
-        </button>
-      </div>
-      <p class="whitespace-pre-line text-on-surface-variant mb-3">${escapeHtml(p.content||'')}</p>
-      <a class="text-sm font-bold text-primary" href="Community.html">ดูในคอมมูนิตี้ →</a>
-    </article>`).join('');
-
-  box.addEventListener('click', async (e) => {
-    const btn = e.target.closest('.unlike');
-    if (!btn) return;
-    const r = await fetch(`/api/community/${btn.dataset.id}/like`, { method:'POST', credentials:'include' });
-    const j = await r.json();
-    if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
-    btn.closest('article').remove();
-    if (!box.children.length) {
-      box.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ</div>`;
-    }
-  });
-})();
-</script>
-<!-- PTS-NAV-INLINE-BOOT -->
-<script>
-(function(){
-  var box = document.getElementById('app-navbar');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'app-navbar';
-    if (document.body) document.body.insertBefore(box, document.body.firstChild);
-  }
-  if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid #eadfe2">'
-      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
-      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
-      + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
-      + '</div></div></nav>';
-  }
-})();
-</script>
-<script src="navbar.js?v=20260720i"></script>
+<body>
+  <p>กำลังไปหน้ารายการโปรด… <a href="Favorites.html#posts">คลิกที่นี่</a></p>
 </body>
 </html>
