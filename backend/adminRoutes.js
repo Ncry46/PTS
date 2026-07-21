@@ -256,12 +256,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!title || !start_at || !end_at) {
             return res.status(400).json({ success: false, message: 'กรุณากรอกหัวข้อและเวลา' });
         }
+        if (!course_id) {
+            return res.status(400).json({ success: false, message: 'กรุณาเลือกคอร์สที่ผูกตาราง (จำเป็นสำหรับซิงค์ปฏิทินนักเรียน)' });
+        }
 
         try {
             const pool = await poolPromise;
             const result = await pool.request()
                 .input('title', sql.NVarChar, title)
-                .input('courseId', sql.Int, course_id ? Number(course_id) : null)
+                .input('courseId', sql.Int, Number(course_id))
                 .input('startAt', sql.DateTime, new Date(start_at))
                 .input('endAt', sql.DateTime, new Date(end_at))
                 .input('location', sql.NVarChar, location || null)

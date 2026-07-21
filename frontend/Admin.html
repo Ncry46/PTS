@@ -232,11 +232,14 @@ async function renderSchedules() {
     </div>`;
 
   document.getElementById('add-schedule').onclick = async () => {
+    const formMsg = document.getElementById('schedule-form-msg');
+    const showErr = (t) => { formMsg.textContent = t; formMsg.className = 'pts-msg pts-msg--err mb-4'; };
     const title = document.getElementById('s-title').value.trim();
     const courseId = document.getElementById('s-course').value;
-    if (!title) { console.error('กรุณาใส่หัวข้อคลาส'); return; }
-    if (!courseId) { console.error('กรุณาเลือกคอร์สที่ผูกตาราง'); return; }
-    const msg = document.createElement('p');
+    if (!title) return showErr('กรุณาใส่หัวข้อคลาส');
+    if (!courseId) return showErr('กรุณาเลือกคอร์สที่ผูกตาราง (จำเป็นสำหรับซิงค์ Google Calendar)');
+    formMsg.textContent = 'กำลังบันทึก...';
+    formMsg.className = 'pts-msg mb-4';
     try {
       await api('/api/admin/schedules', {
         method: 'POST',
@@ -252,7 +255,7 @@ async function renderSchedules() {
       });
       renderSchedules();
     } catch (e) {
-      alert(e.message || 'เพิ่มตารางไม่สำเร็จ');
+      showErr(e.message || 'เพิ่มตารางไม่สำเร็จ');
     }
   };
   document.querySelectorAll('.del-schedule').forEach(btn => {
