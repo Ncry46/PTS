@@ -187,21 +187,37 @@ async function renderSchedules() {
   const start = new Date(now.getTime() + 86400000); start.setMinutes(0,0,0);
   const end = new Date(start.getTime() + 2*3600000);
   document.getElementById('panel').innerHTML = `
+    <h2 class="font-bold text-lg mb-3">เพิ่มตารางเรียน</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="s-title" class="border rounded-xl px-3 py-2" placeholder="หัวข้อคลาส">
-      <select id="s-course" class="border rounded-xl px-3 py-2"><option value="">ไม่ผูกคอร์ส</option>${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
-      <input id="s-start" type="datetime-local" class="border rounded-xl px-3 py-2" value="${start.toISOString().slice(0,16)}">
-      <input id="s-end" type="datetime-local" class="border rounded-xl px-3 py-2" value="${end.toISOString().slice(0,16)}">
-      <input id="s-location" class="border rounded-xl px-3 py-2" placeholder="สถานที่">
-      <input id="s-meeting" class="border rounded-xl px-3 py-2" placeholder="Meeting URL">
-      <select id="s-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
+        <input id="s-title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับคอร์ส
+        <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2"><option value="">ไม่ผูกคอร์ส</option>${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">วันเวลาเริ่ม
+        <input id="s-start" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(start)}">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">วันเวลาจบ
+        <input id="s-end" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(end)}">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">สถานที่
+        <input id="s-location" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="สถานที่ (onsite)">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">Meeting URL
+        <input id="s-meeting" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="https://meet.google.com/...">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">รูปแบบ
+        <select id="s-mode" class="mt-1 w-full border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      </label>
     </div>
     <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มตาราง</button>
+    <h3 class="font-bold mb-2">ตารางที่มีอยู่</h3>
     <div class="space-y-2">${data.map(s => `
       <div class="border rounded-xl p-3 flex justify-between gap-2">
         <div>
           <p class="font-bold">${escapeHtml(s.title)}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')} – ${new Date(s.end_at).toLocaleString('th-TH')}</p>
         </div>
         <button class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
       </div>`).join('') || '<p>ยังไม่มีตาราง</p>'}
