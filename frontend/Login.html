@@ -5,611 +5,12 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>เข้าสู่ระบบ | PTS Learning</title>
 <link rel="stylesheet" href="site.css?v=20260721k">
+<link rel="stylesheet" href="login.css?v=20260721a">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-<style>
-  input[type="password"]::-ms-reveal,
-  input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
-
-  .material-symbols-outlined {
-    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-  }
-
-  body.pts-body.pts-login {
-    background:
-      radial-gradient(900px 520px at 8% -5%, rgba(217,119,142,.28), transparent 55%),
-      radial-gradient(780px 480px at 100% 10%, rgba(151,66,88,.12), transparent 50%),
-      radial-gradient(700px 420px at 70% 110%, rgba(61,90,76,.14), transparent 55%),
-      linear-gradient(165deg, #f3e8ec 0%, #ebe4ea 42%, #e7e2e8 100%) !important;
-    color: #1c1520;
-    overflow-x: hidden;
-  }
-
-  .pts-login__stage {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-top: var(--pts-nav-h, 68px);
-    min-height: calc(100dvh - var(--pts-nav-h, 68px));
-    padding: 28px 16px 36px;
-    position: relative;
-    z-index: 1;
-  }
-
-  /* Soft floating blobs behind the card */
-  .pts-login__blob {
-    position: fixed;
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-    filter: blur(40px);
-    animation: pts-blob 16s ease-in-out infinite;
-  }
-  .pts-login__blob--a {
-    width: min(48vw, 420px); height: min(48vw, 420px);
-    top: 12%; left: -8%;
-    background: rgba(217,119,142,.35);
-  }
-  .pts-login__blob--b {
-    width: min(40vw, 360px); height: min(40vw, 360px);
-    bottom: 6%; right: -6%;
-    background: rgba(85,165,107,.22);
-    animation-delay: -6s;
-  }
-  .pts-login__blob--c {
-    width: min(28vw, 240px); height: min(28vw, 240px);
-    top: 55%; left: 42%;
-    background: rgba(255,177,193,.28);
-    animation-delay: -10s;
-  }
-
-  @keyframes pts-blob {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    40% { transform: translate(18px, -22px) scale(1.06); }
-    70% { transform: translate(-14px, 12px) scale(.96); }
-  }
-
-  /* Main split card */
-  .pts-login__shell {
-    width: 100%;
-    max-width: 980px;
-    display: grid;
-    grid-template-columns: 1fr;
-    border-radius: 32px;
-    overflow: hidden;
-    background: #fff;
-    border: 1px solid rgba(151,66,88,.12);
-    box-shadow:
-      0 30px 80px rgba(58,28,39,.14),
-      0 8px 24px rgba(58,28,39,.06);
-    opacity: 0;
-    transform: translateY(28px) scale(.98);
-    animation: pts-card-in .7s cubic-bezier(.22,1,.36,1) .08s forwards;
-    transition: box-shadow .25s ease, transform .25s ease;
-  }
-
-  @media (min-width: 900px) {
-    .pts-login__shell {
-      grid-template-columns: 1.05fr .95fr;
-      min-height: 560px;
-    }
-  }
-
-  @keyframes pts-card-in {
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-
-  /* Left visual panel */
-  .pts-login__visual {
-    position: relative;
-    min-height: 240px;
-    overflow: hidden;
-    background: #3a1c27;
-  }
-
-  @media (min-width: 900px) {
-    .pts-login__visual { min-height: 100%; }
-  }
-
-  .pts-login__visual-img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    object-position: center 20%;
-    transform: scale(1.04);
-    transition: transform 1.1s cubic-bezier(.22,1,.36,1);
-  }
-  .pts-login__visual:hover .pts-login__visual-img {
-    transform: scale(1.1);
-  }
-
-  .pts-login__visual-shade {
-    position: absolute;
-    inset: 0;
-    background:
-      linear-gradient(180deg, rgba(36,18,26,.15) 0%, rgba(36,18,26,.2) 40%, rgba(26,12,18,.88) 100%),
-      linear-gradient(90deg, rgba(151,66,88,.18), transparent 55%);
-    pointer-events: none;
-  }
-
-  .pts-login__visual-spark {
-    position: absolute;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: rgba(255,255,255,.85);
-    box-shadow: 0 0 12px rgba(255,177,193,.8);
-    animation: pts-spark 4.5s ease-in-out infinite;
-    pointer-events: none;
-  }
-  .pts-login__visual-spark:nth-child(1) { top: 18%; left: 22%; animation-delay: 0s; }
-  .pts-login__visual-spark:nth-child(2) { top: 36%; right: 18%; width: 6px; height: 6px; animation-delay: -1.4s; }
-  .pts-login__visual-spark:nth-child(3) { top: 58%; left: 14%; width: 5px; height: 5px; animation-delay: -2.6s; }
-
-  @keyframes pts-spark {
-    0%, 100% { opacity: .25; transform: translateY(0) scale(.8); }
-    50% { opacity: 1; transform: translateY(-10px) scale(1.15); }
-  }
-
-  .pts-login__visual-copy {
-    position: absolute;
-    left: 0; right: 0; bottom: 0;
-    z-index: 2;
-    padding: 28px 24px 26px;
-    color: #fff;
-  }
-
-  .pts-login__visual-kicker {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
-    padding: 6px 11px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.14);
-    border: 1px solid rgba(255,255,255,.22);
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .08em;
-    text-transform: uppercase;
-    backdrop-filter: blur(8px);
-  }
-
-  .pts-login__visual-title {
-    margin: 0;
-    font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
-    font-size: clamp(1.35rem, 2.6vw, 1.85rem);
-    font-weight: 700;
-    line-height: 1.25;
-    letter-spacing: -0.02em;
-    text-wrap: balance;
-  }
-
-  .pts-login__visual-lead {
-    margin: 10px 0 0;
-    font-size: 13.5px;
-    line-height: 1.55;
-    color: rgba(255,255,255,.86);
-    max-width: 28rem;
-  }
-
-  /* Right form panel */
-  .pts-login__panel {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 28px 22px 22px;
-    background: #fff;
-    position: relative;
-  }
-
-  @media (min-width: 640px) {
-    .pts-login__panel { padding: 36px 40px 28px; }
-  }
-
-  .pts-login__brand-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-  }
-  .pts-login__brand-row img {
-    height: 36px; width: auto; max-width: 120px;
-    object-fit: contain; display: block;
-  }
-  .pts-login__brand-row span {
-    font-family: 'Sora', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: #974258;
-    letter-spacing: .04em;
-  }
-
-  .pts-login__eyebrow {
-    margin: 0 0 6px;
-    font-family: 'Sora', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: .18em;
-    text-transform: uppercase;
-    color: #974258;
-  }
-
-  .pts-login__title {
-    margin: 0;
-    font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
-    font-size: clamp(1.55rem, 3vw, 1.9rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: #1c1520;
-  }
-
-  .pts-login__sub {
-    margin: 8px 0 0;
-    font-size: 14px;
-    line-height: 1.5;
-    color: #5c4f55;
-  }
-
-  .pts-login__form {
-    margin-top: 22px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .pts-login__field label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #5c4f55;
-  }
-
-  .pts-login__field-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 6px;
-  }
-  .pts-login__field-row label { margin: 0; }
-
-  .pts-login__link {
-    border: 0;
-    background: none;
-    padding: 0;
-    color: #974258;
-    font-size: 13px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: color .15s ease, transform .15s ease;
-  }
-  .pts-login__link:hover {
-    color: #7a2f42;
-    text-decoration: underline;
-  }
-
-  .pts-login__control { position: relative; }
-
-  .pts-login__control > .pts-login__ico {
-    position: absolute;
-    left: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: #867275;
-    font-size: 20px;
-    pointer-events: none;
-    transition: color .2s ease, transform .2s ease;
-  }
-  .pts-login__control:focus-within > .pts-login__ico {
-    color: #974258;
-    transform: translateY(-50%) scale(1.08);
-  }
-
-  .pts-login__input {
-    width: 100%;
-    border: 1.5px solid rgba(151,66,88,.18);
-    border-radius: 14px;
-    padding: 13px 14px 13px 44px;
-    font: inherit;
-    font-size: 15px;
-    background: #faf7f8;
-    color: #1c1520;
-    outline: none;
-    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
-  }
-  .pts-login__input:hover { border-color: rgba(151,66,88,.32); }
-  .pts-login__input:focus {
-    background: #fff;
-    border-color: #974258;
-    box-shadow: 0 0 0 4px rgba(151,66,88,.16);
-    transform: translateY(-1px);
-  }
-  .pts-login__control .pts-pw-toggle { right: 12px !important; }
-
-  .pts-login__remember {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    color: #5c4f55;
-    user-select: none;
-  }
-  .pts-login__remember input {
-    width: 18px; height: 18px;
-    accent-color: #974258;
-    cursor: pointer;
-  }
-
-  .pts-login__submit {
-    position: relative;
-    width: 100%;
-    min-height: 50px;
-    margin-top: 2px;
-    border: 0;
-    border-radius: 999px;
-    overflow: hidden;
-    background: linear-gradient(135deg, #c4637b, #974258 55%, #7a2f42);
-    color: #fff;
-    font: inherit;
-    font-size: 15px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    cursor: pointer;
-    box-shadow: 0 12px 28px rgba(151,66,88,.32);
-    transition: transform .18s ease, box-shadow .18s ease, opacity .15s ease;
-  }
-  .pts-login__submit::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(105deg, transparent 35%, rgba(255,255,255,.28) 50%, transparent 65%);
-    transform: translateX(-120%);
-    transition: transform .55s ease;
-  }
-  .pts-login__submit:hover {
-    transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 16px 34px rgba(151,66,88,.4);
-  }
-  .pts-login__submit:hover::after { transform: translateX(120%); }
-  .pts-login__submit:active { transform: scale(0.98); }
-  .pts-login__submit:disabled { opacity: .65; cursor: wait; box-shadow: none; transform: none; }
-  .pts-login__submit:disabled::after { display: none; }
-
-  .pts-login__msg { margin: 0; text-align: center; font-size: 14px; color: #ba1a1a; }
-  .pts-login__msg.hidden { display: none; }
-  .pts-login__msg.is-info { color: #974258; }
-
-  .pts-login__divider {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 16px 0 4px;
-    color: #867275;
-    font-size: 12px;
-    font-weight: 600;
-  }
-  .pts-login__divider::before,
-  .pts-login__divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(151,66,88,.22), transparent);
-  }
-
-  .pts-login__google {
-    width: 100%;
-    min-height: 48px;
-    border-radius: 999px;
-    border: 1.5px solid rgba(151,66,88,.2);
-    background: #fff;
-    color: #1c1520;
-    font: inherit;
-    font-size: 14px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
-    cursor: pointer;
-    transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease;
-  }
-  .pts-login__google:hover {
-    background: #faf7f8;
-    border-color: rgba(151,66,88,.4);
-    transform: translateY(-1px);
-    box-shadow: 0 8px 20px rgba(28,21,32,.06);
-  }
-  .pts-login__google:active { transform: scale(0.98); }
-  .pts-login__google svg { width: 18px; height: 18px; flex-shrink: 0; }
-
-  .pts-login__foot {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 14px;
-    color: #5c4f55;
-  }
-  .pts-login__foot a {
-    color: #974258;
-    font-weight: 700;
-    text-decoration: none;
-    position: relative;
-  }
-  .pts-login__foot a::after {
-    content: '';
-    position: absolute;
-    left: 0; right: 0; bottom: -1px;
-    height: 1.5px;
-    background: #974258;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform .2s ease;
-  }
-  .pts-login__foot a:hover::after { transform: scaleX(1); }
-
-  .pts-login__legal {
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid rgba(151,66,88,.1);
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 16px;
-    font-size: 12px;
-  }
-  .pts-login__legal a {
-    color: #867275;
-    text-decoration: none;
-    transition: color .15s ease;
-  }
-  .pts-login__legal a:hover { color: #974258; }
-
-  /* Modal */
-  .pts-login-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100000;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background: rgba(26,16,20,.5);
-    backdrop-filter: blur(8px);
-  }
-  .pts-login-modal:not(.hidden) { display: flex; }
-
-  .pts-login-modal__card {
-    width: 100%;
-    max-width: 420px;
-    border-radius: 28px;
-    background: #fff;
-    border: 1px solid rgba(151,66,88,.14);
-    box-shadow: 0 30px 80px rgba(0,0,0,.28);
-    padding: 28px 24px 22px;
-    animation: pts-modal-in .35s cubic-bezier(.22,1,.36,1);
-  }
-  @keyframes pts-modal-in {
-    from { opacity: 0; transform: translateY(16px) scale(.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
-  }
-  .pts-login-modal__card h3 {
-    margin: 0;
-    text-align: center;
-    font-family: 'Sora', sans-serif;
-    font-size: 1.25rem;
-    color: #974258;
-  }
-  .pts-login-modal__card > p {
-    margin: 8px 0 0;
-    text-align: center;
-    font-size: 13px;
-    line-height: 1.55;
-    color: #5c4f55;
-  }
-  .pts-login-modal__body { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
-  .pts-login-modal label {
-    display: block;
-    margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: #5c4f55;
-  }
-  .pts-login-modal input[type="email"],
-  .pts-login-modal input[type="text"],
-  .pts-login-modal input[type="password"] {
-    width: 100%;
-    border: 1px solid rgba(151,66,88,.18);
-    border-radius: 12px;
-    padding: 12px 14px;
-    font: inherit;
-    font-size: 15px;
-    outline: none;
-    background: #fff;
-  }
-  .pts-login-modal input:focus {
-    border-color: rgba(151,66,88,.45);
-    box-shadow: 0 0 0 3px rgba(151,66,88,.12);
-  }
-  .pts-login-modal__row { display: flex; gap: 8px; }
-  .pts-login-modal__otp-btn {
-    flex-shrink: 0;
-    border: 0;
-    border-radius: 12px;
-    padding: 0 14px;
-    background: #974258;
-    color: #fff;
-    font-weight: 700;
-    font-size: 13px;
-    cursor: pointer;
-    white-space: nowrap;
-  }
-  .pts-login-modal__actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 8px;
-  }
-  .pts-login-modal__actions button {
-    flex: 1;
-    min-height: 46px;
-    border-radius: 999px;
-    font-weight: 700;
-    font-size: 14px;
-    cursor: pointer;
-  }
-  .pts-login-modal__cancel {
-    border: 1px solid rgba(151,66,88,.2);
-    background: #fff;
-    color: #5c4f55;
-  }
-  .pts-login-modal__confirm {
-    border: 0;
-    background: #974258;
-    color: #fff;
-  }
-  .pts-login-modal__confirm:disabled {
-    background: #b8b0b3;
-    cursor: not-allowed;
-  }
-  #otp-verification-zone { transition: opacity .3s ease; }
-
-  @media (prefers-reduced-motion: reduce) {
-    .pts-login__blob,
-    .pts-login__visual-spark,
-    .pts-login__shell,
-    .pts-login-modal__card,
-    .pts-login__submit::after {
-      animation: none !important;
-      transition: none !important;
-    }
-    .pts-login__shell {
-      opacity: 1;
-      transform: none;
-    }
-    .pts-login__visual:hover .pts-login__visual-img { transform: none; }
-  }
-</style>
 </head>
 <body class="pts-body pts-login">
-<div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(151,66,88,.18);">
-    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
-        PTS Learning
-      </a>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
-      </div>
-    </div>
-  </nav>
-</div>
+<div id="app-navbar"></div>
 
 <div class="pts-login__blob pts-login__blob--a" aria-hidden="true"></div>
 <div class="pts-login__blob pts-login__blob--b" aria-hidden="true"></div>
@@ -617,21 +18,15 @@
 
 <main class="pts-login__stage">
   <div class="pts-login__shell" id="login-shell">
-    <aside class="pts-login__visual" aria-hidden="false">
-      <img
-        class="pts-login__visual-img"
-        src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
-        alt="ผู้เรียน Personal Assistant Academy"
-        width="800"
-        height="1000"
-      >
+    <aside class="pts-login__visual">
+      <img class="pts-login__visual-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" alt="ผู้เรียน Personal Assistant Academy" width="800" height="1000">
       <div class="pts-login__visual-shade"></div>
       <span class="pts-login__visual-spark" aria-hidden="true"></span>
       <span class="pts-login__visual-spark" aria-hidden="true"></span>
       <span class="pts-login__visual-spark" aria-hidden="true"></span>
       <div class="pts-login__visual-copy">
         <span class="pts-login__visual-kicker">
-          <span class="material-symbols-outlined" style="font-size:15px">auto_awesome</span>
+          <span class="material-symbols-outlined pts-login__kicker-ico">auto_awesome</span>
           Personal Assistant Academy
         </span>
         <h1 class="pts-login__visual-title">ยกระดับทักษะการเป็นผู้ช่วยมืออาชีพ</h1>
@@ -667,7 +62,7 @@
           </div>
           <div class="pts-login__control pts-pw-wrap">
             <span class="material-symbols-outlined pts-login__ico">lock</span>
-            <input class="pts-login__input" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1" style="padding-right:2.75rem">
+            <input class="pts-login__input pts-login__input--pw" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1">
             <button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
               <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
             </button>
@@ -681,7 +76,7 @@
 
         <button class="pts-login__submit" type="submit" id="submit-btn">
           เข้าสู่ระบบ
-          <span class="material-symbols-outlined" style="font-size:20px">login</span>
+          <span class="material-symbols-outlined pts-login__submit-ico">login</span>
         </button>
         <p id="login-msg" class="pts-login__msg hidden"></p>
       </form>
@@ -698,10 +93,7 @@
         เข้าสู่ระบบด้วย Gmail
       </button>
 
-      <p class="pts-login__foot">
-        ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a>
-      </p>
-
+      <p class="pts-login__foot">ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a></p>
       <nav class="pts-login__legal" aria-label="ลิงก์เพิ่มเติม">
         <a href="Home.html">About Us</a>
         <a href="Legal.html">Privacy Policy</a>
@@ -711,7 +103,6 @@
   </div>
 </main>
 
-<!-- OTP reset modal -->
 <div id="reset-modal" class="pts-login-modal hidden">
   <div class="pts-login-modal__card" role="dialog" aria-modal="true" aria-labelledby="reset-title">
     <h3 id="reset-title">กู้คืนรหัสผ่านด้วย Email OTP</h3>
@@ -722,229 +113,39 @@
         <label for="reset-email">อีเมลในระบบ</label>
         <div class="pts-login-modal__row">
           <input type="email" id="reset-email" placeholder="example@email.com" autocomplete="email">
-          <button type="button" onclick="requestRealOTP()" id="otp-btn" class="pts-login-modal__otp-btn">ขอรหัส OTP</button>
+          <button type="button" id="otp-btn" class="pts-login-modal__otp-btn">ขอรหัส OTP</button>
         </div>
       </div>
 
-      <div class="opacity-40 pointer-events-none" id="otp-verification-zone">
-        <div style="border-top:1px dashed rgba(151,66,88,.25);margin:4px 0 14px"></div>
-        <div style="margin-bottom:14px">
-          <label for="reset-otp" style="color:#974258;display:flex;align-items:center;gap:4px">
-            <span class="material-symbols-outlined" style="font-size:18px">mail</span> รหัส OTP 6 หลักจากอีเมล
+      <div class="pts-login-modal__otp-zone is-locked" id="otp-verification-zone">
+        <div class="pts-login-modal__dash"></div>
+        <div class="pts-login-modal__otp-field">
+          <label for="reset-otp" class="pts-login-modal__otp-label">
+            <span class="material-symbols-outlined">mail</span> รหัส OTP 6 หลักจากอีเมล
           </label>
-          <input type="text" id="reset-otp" placeholder="••••••" maxlength="6" inputmode="numeric" style="text-align:center;font-weight:700;letter-spacing:.3em;font-size:18px;border-width:2px;border-color:rgba(151,66,88,.28)">
+          <input class="pts-login-modal__otp-input" type="text" id="reset-otp" placeholder="••••••" maxlength="6" inputmode="numeric">
         </div>
         <div>
           <label for="reset-new-password">ตั้งรหัสผ่านใหม่</label>
-          <div class="relative pts-pw-wrap">
-            <input type="password" id="reset-new-password" placeholder="••••••••" data-pts-pw-field="1" style="padding-right:2.75rem">
-            <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
+          <div class="pts-pw-wrap pts-login-modal__pw">
+            <input type="password" id="reset-new-password" placeholder="••••••••" data-pts-pw-field="1">
+            <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="pts-login-modal__actions">
-      <button type="button" onclick="closeResetModal()" class="pts-login-modal__cancel">ยกเลิก</button>
-      <button type="button" onclick="submitVerifyAndReset()" id="confirm-reset-btn" disabled class="pts-login-modal__confirm" style="background:#b8b0b3">ยืนยันเปลี่ยนรหัส</button>
+      <button type="button" id="reset-cancel-btn" class="pts-login-modal__cancel">ยกเลิก</button>
+      <button type="button" id="confirm-reset-btn" disabled class="pts-login-modal__confirm is-disabled">ยืนยันเปลี่ยนรหัส</button>
     </div>
-    <p id="reset-msg" class="pts-login__msg hidden" style="margin-top:12px"></p>
+    <p id="reset-msg" class="pts-login__msg hidden pts-login-modal__msg"></p>
   </div>
 </div>
 
-<script>
-  (function () {
-    const shell = document.getElementById('login-shell');
-    if (!shell || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const onMove = (e) => {
-      if (window.innerWidth < 900) return;
-      const rect = shell.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width - 0.5;
-      const y = (e.clientY - rect.top) / rect.height - 0.5;
-      shell.style.transform = `perspective(1200px) rotateY(${x * 4}deg) rotateX(${-y * 3}deg)`;
-    };
-    const reset = () => { shell.style.transform = ''; };
-    shell.addEventListener('mousemove', onMove);
-    shell.addEventListener('mouseleave', reset);
-  })();
-
-  document.querySelectorAll('.pts-login__control').forEach((wrap) => {
-    const input = wrap.querySelector('input');
-    const icon = wrap.querySelector(':scope > .pts-login__ico');
-    if (!input || !icon) return;
-    input.addEventListener('focus', () => { icon.style.color = '#974258'; });
-    input.addEventListener('blur', () => { icon.style.color = ''; });
-  });
-
-  document.getElementById('google-login-btn')?.addEventListener('click', () => {
-    const loginMsg = document.getElementById('login-msg');
-    if (!loginMsg) return;
-    loginMsg.textContent = 'ขณะนี้เข้าสู่ระบบด้วยอีเมลได้เลย — Gmail OAuth กำลังเตรียมเปิดใช้งาน';
-    loginMsg.classList.remove('hidden');
-    loginMsg.classList.add('is-info');
-  });
-
-  function openResetModal() {
-    const modal = document.getElementById('reset-modal');
-    modal.classList.remove('hidden');
-    modal.style.display = 'flex';
-  }
-  function closeResetModal() {
-    const modal = document.getElementById('reset-modal');
-    modal.classList.add('hidden');
-    modal.style.display = 'none';
-    document.getElementById('otp-verification-zone').classList.add('opacity-40', 'pointer-events-none');
-    const confirmBtn = document.getElementById('confirm-reset-btn');
-    confirmBtn.disabled = true;
-    confirmBtn.style.background = '#b8b0b3';
-    confirmBtn.className = 'pts-login-modal__confirm';
-    clearResetMsg();
-  }
-  window.openResetModal = openResetModal;
-  window.closeResetModal = closeResetModal;
-  document.getElementById('forgot-password-btn')?.addEventListener('click', (e) => {
-    e.preventDefault();
-    openResetModal();
-  });
-
-  function showResetMsg(text, isError = true) {
-    const el = document.getElementById('reset-msg');
-    if (!el) return;
-    el.textContent = text;
-    el.style.color = isError ? '#ba1a1a' : '#974258';
-    el.classList.remove('hidden');
-  }
-  function clearResetMsg() {
-    const el = document.getElementById('reset-msg');
-    if (el) { el.textContent = ''; el.classList.add('hidden'); }
-  }
-
-  async function requestRealOTP() {
-    const email = document.getElementById('reset-email').value.trim();
-    const otpBtn = document.getElementById('otp-btn');
-    clearResetMsg();
-    if (!email) {
-      showResetMsg('กรุณากรอกอีเมลในระบบก่อนครับ');
-      return;
-    }
-    otpBtn.innerText = 'กำลังส่ง...';
-    otpBtn.disabled = true;
-    try {
-      const response = await fetch('/api/users/request-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email })
-      });
-      const result = await response.json();
-      if (result.success) {
-        document.getElementById('otp-verification-zone').classList.remove('opacity-40', 'pointer-events-none');
-        const confirmBtn = document.getElementById('confirm-reset-btn');
-        confirmBtn.disabled = false;
-        confirmBtn.style.background = '#974258';
-        confirmBtn.className = 'pts-login-modal__confirm';
-        otpBtn.innerText = 'ส่งอีกครั้ง';
-      } else {
-        showResetMsg(result.message || 'ส่ง OTP ไม่สำเร็จ');
-        otpBtn.innerText = 'ขอรหัส OTP';
-      }
-    } catch (err) {
-      console.error(err);
-      showResetMsg('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ');
-      otpBtn.innerText = 'ขอรหัส OTP';
-    } finally {
-      otpBtn.disabled = false;
-    }
-  }
-  window.requestRealOTP = requestRealOTP;
-
-  async function submitVerifyAndReset() {
-    const payload = {
-      email: document.getElementById('reset-email').value.trim(),
-      otp: document.getElementById('reset-otp').value.trim(),
-      new_password: document.getElementById('reset-new-password').value
-    };
-    clearResetMsg();
-    if (!payload.otp || !payload.new_password) {
-      showResetMsg('กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่');
-      return;
-    }
-    try {
-      const response = await fetch('/api/users/verify-otp-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-      if (result.success) closeResetModal();
-      else showResetMsg(result.message || 'ยืนยันไม่สำเร็จ');
-    } catch (err) {
-      console.error(err);
-      showResetMsg('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-    }
-  }
-  window.submitVerifyAndReset = submitVerifyAndReset;
-
-  document.getElementById('login-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const submitBtn = document.getElementById('submit-btn');
-    const loginMsg = document.getElementById('login-msg');
-    if (loginMsg) {
-      loginMsg.textContent = '';
-      loginMsg.classList.add('hidden');
-      loginMsg.classList.remove('is-info');
-    }
-    submitBtn.textContent = 'กำลังตรวจสอบข้อมูล...';
-    submitBtn.disabled = true;
-    try {
-      const response = await fetch('/api/users/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          email: document.getElementById('email').value,
-          password: document.getElementById('password').value
-        })
-      });
-      const result = await response.json();
-      if (result.success) {
-        window.location.href = 'DashbordU.html';
-      } else if (loginMsg) {
-        loginMsg.textContent = result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-        loginMsg.classList.remove('hidden');
-      }
-    } catch (err) {
-      console.error(err);
-      if (loginMsg) {
-        loginMsg.textContent = 'ไม่สามารถติดต่อเซิร์ฟเวอร์ได้';
-        loginMsg.classList.remove('hidden');
-      }
-    } finally {
-      submitBtn.innerHTML = `เข้าสู่ระบบ <span class="material-symbols-outlined" style="font-size:20px">login</span>`;
-      submitBtn.disabled = false;
-    }
-  });
-</script>
-<!-- PTS-NAV-INLINE-BOOT -->
-<script>
-(function(){
-  var box = document.getElementById('app-navbar');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'app-navbar';
-    if (document.body) document.body.insertBefore(box, document.body.firstChild);
-  }
-  if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid #eadfe2">'
-      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
-      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
-      + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
-      + '</div></div></nav>';
-  }
-})();
-</script>
+<script src="login.js?v=20260721a"></script>
 <script src="password-toggle.js?v=20260720e"></script>
 <script src="/comp/navbar.js?v=20260721d"></script>
 </body>
