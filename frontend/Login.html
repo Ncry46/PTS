@@ -51,7 +51,13 @@
   }
 
   @media (min-width: 960px) {
-    .pts-login__brand { display: flex; flex-direction: column; justify-content: space-between; padding: 48px 52px 40px; }
+    .pts-login__brand {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 36px;
+      padding: 48px 52px 48px;
+    }
   }
 
   .pts-login__orb {
@@ -91,8 +97,7 @@
   }
 
   .pts-login__brand-top,
-  .pts-login__brand-mid,
-  .pts-login__brand-foot {
+  .pts-login__brand-mid {
     position: relative;
     z-index: 1;
   }
@@ -213,66 +218,83 @@
     animation: pts-login-rise .55s ease both;
   }
 
-  .pts-login__stats {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    margin-top: 28px;
-  }
-
-  .pts-login__stat {
-    padding: 14px 12px;
-    border-radius: 16px;
-    background: rgba(0,0,0,.18);
-    border: 1px solid rgba(255,255,255,.1);
-    text-align: center;
-  }
-
-  .pts-login__stat strong {
-    display: block;
-    font-family: 'Sora', sans-serif;
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: #ffb1c1;
-  }
-
-  .pts-login__stat span {
-    display: block;
-    margin-top: 4px;
-    font-size: 11px;
-    color: rgba(255,255,255,.65);
-  }
-
   /* Form panel */
   .pts-login__panel {
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 28px 18px 40px;
+    padding: 28px 20px 36px;
+    overflow: hidden;
     background:
-      radial-gradient(700px 420px at 100% 0%, rgba(151,66,88,.10), transparent 55%),
-      radial-gradient(520px 360px at 0% 100%, rgba(61,90,76,.08), transparent 50%),
-      linear-gradient(180deg, #faf7f8 0%, #f3f0f1 55%, #efeceb 100%);
+      radial-gradient(720px 440px at 100% -10%, rgba(151,66,88,.14), transparent 55%),
+      radial-gradient(560px 380px at -10% 110%, rgba(61,90,76,.10), transparent 50%),
+      linear-gradient(165deg, #faf7f8 0%, #f3f0f1 42%, #efe8ea 100%);
+  }
+
+  .pts-login__panel-deco {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .pts-login__panel-deco span {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(0.5px);
+  }
+  .pts-login__panel-deco span:nth-child(1) {
+    width: 220px; height: 220px; top: 8%; right: -40px;
+    background: radial-gradient(circle, rgba(151,66,88,.16), transparent 70%);
+  }
+  .pts-login__panel-deco span:nth-child(2) {
+    width: 160px; height: 160px; bottom: 12%; left: -30px;
+    background: radial-gradient(circle, rgba(61,90,76,.12), transparent 70%);
+  }
+  .pts-login__panel-deco span:nth-child(3) {
+    width: 90px; height: 90px; top: 42%; left: 12%;
+    background: radial-gradient(circle, rgba(217,119,142,.18), transparent 70%);
+  }
+
+  .pts-login__panel-mesh {
+    position: absolute;
+    inset: 0;
+    opacity: .4;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(151,66,88,.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(151,66,88,.035) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at 55% 45%, #000 25%, transparent 78%);
+  }
+
+  .pts-login__stack {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
   }
 
   .pts-login__card {
     width: 100%;
-    max-width: 440px;
     position: relative;
     border-radius: 28px;
-    padding: 34px 26px 26px;
-    background: rgba(255,255,255,.88);
+    padding: 30px 24px 22px;
+    background: rgba(255,255,255,.92);
     border: 1px solid rgba(151,66,88,.14);
     box-shadow:
-      0 1px 0 rgba(255,255,255,.8) inset,
-      0 28px 70px rgba(28,21,32,.10);
+      0 1px 0 rgba(255,255,255,.85) inset,
+      0 24px 60px rgba(28,21,32,.10);
     backdrop-filter: blur(18px);
     animation: pts-login-rise .6s ease both;
   }
 
   @media (min-width: 640px) {
-    .pts-login__card { padding: 40px 36px 32px; }
+    .pts-login__card { padding: 34px 32px 26px; }
   }
 
   @keyframes pts-login-rise {
@@ -318,10 +340,10 @@
   }
 
   .pts-login__form {
-    margin-top: 28px;
+    margin-top: 22px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
   }
 
   .pts-login__field label {
@@ -466,10 +488,82 @@
   .pts-login__foot a:hover { text-decoration: underline; }
 
   .pts-login__copy {
-    margin-top: 18px;
+    margin-top: 14px;
     text-align: center;
     font-size: 12px;
     color: rgba(92,79,85,.7);
+  }
+
+  .pts-login__modes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .pts-login__mode {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 14px 12px;
+    border-radius: 18px;
+    background: rgba(255,255,255,.82);
+    border: 1px solid rgba(151,66,88,.12);
+    box-shadow: 0 8px 24px rgba(28,21,32,.05);
+    text-decoration: none;
+    color: inherit;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+
+  .pts-login__mode:hover {
+    transform: translateY(-2px);
+    border-color: rgba(151,66,88,.28);
+    box-shadow: 0 12px 28px rgba(151,66,88,.10);
+  }
+
+  .pts-login__mode-dot {
+    width: 8px; height: 8px; border-radius: 999px;
+  }
+  .pts-login__mode-dot--online { background: #55a56b; }
+  .pts-login__mode-dot--onsite { background: #f59e0b; }
+  .pts-login__mode-dot--hybrid { background: #4c6548; }
+
+  .pts-login__mode strong {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1c1520;
+  }
+
+  .pts-login__mode span {
+    font-size: 11px;
+    line-height: 1.35;
+    color: #5c4f55;
+  }
+
+  .pts-login__trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    justify-content: center;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.7);
+    border: 1px dashed rgba(151,66,88,.2);
+    color: #5c4f55;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .pts-login__trust em {
+    font-style: normal;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .pts-login__trust .material-symbols-outlined {
+    font-size: 16px;
+    color: #974258;
   }
 
   /* Reset modal */
@@ -665,68 +759,93 @@
       </div>
     </div>
 
-    <div class="pts-login__brand-foot">
-      <div class="pts-login__stats">
-        <div class="pts-login__stat"><strong>3</strong><span>โหมดเรียน</span></div>
-        <div class="pts-login__stat"><strong>24/7</strong><span>เรียนออนไลน์</span></div>
-        <div class="pts-login__stat"><strong>OTP</strong><span>ปลอดภัยด้วยอีเมล</span></div>
-      </div>
     </div>
   </aside>
 
   <!-- Auth form -->
   <section class="pts-login__panel">
-    <div class="pts-login__card">
-      <div class="pts-login__mobile-brand">
-        <p class="pts-login__eyebrow">PTS Learning</p>
-        <p class="pts-login__sub" style="margin:0">Personal Assistant Academy</p>
+    <div class="pts-login__panel-deco" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="pts-login__panel-mesh" aria-hidden="true"></div>
+
+    <div class="pts-login__stack">
+      <div class="pts-login__card">
+        <div class="pts-login__mobile-brand">
+          <p class="pts-login__eyebrow">PTS Learning</p>
+          <p class="pts-login__sub" style="margin:0">Personal Assistant Academy</p>
+        </div>
+
+        <header>
+          <p class="pts-login__eyebrow">Welcome back</p>
+          <h2 class="pts-login__title">เข้าสู่ระบบ</h2>
+          <p class="pts-login__sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
+        </header>
+
+        <form class="pts-login__form" id="login-form">
+          <div class="pts-login__field">
+            <label for="email">อีเมล</label>
+            <div class="pts-login__control pts-pw-wrap">
+              <span class="material-symbols-outlined pts-login__ico">mail</span>
+              <input class="pts-login__input" id="email" name="email" placeholder="example@email.com" type="email" required autocomplete="email">
+            </div>
+          </div>
+
+          <div class="pts-login__field">
+            <div class="pts-login__field-row">
+              <label for="password">รหัสผ่าน</label>
+              <button type="button" id="forgot-password-btn" class="pts-login__link">ลืมรหัสผ่าน?</button>
+            </div>
+            <div class="pts-login__control pts-pw-wrap">
+              <span class="material-symbols-outlined pts-login__ico">lock</span>
+              <input class="pts-login__input" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1" style="padding-right:2.75rem">
+              <button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+                <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
+              </button>
+            </div>
+          </div>
+
+          <label class="pts-login__remember" for="remember">
+            <input id="remember" type="checkbox">
+            <span>จำการเข้าสู่ระบบ</span>
+          </label>
+
+          <button class="pts-login__submit" type="submit" id="submit-btn">
+            เข้าสู่ระบบ
+            <span class="material-symbols-outlined" style="font-size:20px">login</span>
+          </button>
+          <p id="login-msg" class="pts-login__msg hidden"></p>
+        </form>
+
+        <p class="pts-login__foot">
+          ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a>
+        </p>
+        <p class="pts-login__copy">© PTS Learning. All Rights Reserved.</p>
       </div>
 
-      <header>
-        <p class="pts-login__eyebrow">Welcome back</p>
-        <h2 class="pts-login__title">เข้าสู่ระบบ</h2>
-        <p class="pts-login__sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
-      </header>
+      <div class="pts-login__modes" aria-label="ประเภทการเรียน">
+        <a class="pts-login__mode" href="Courses.html?mode=online">
+          <i class="pts-login__mode-dot pts-login__mode-dot--online" aria-hidden="true"></i>
+          <strong>Online</strong>
+          <span>เรียนได้ทุกที่ ทุกเวลา</span>
+        </a>
+        <a class="pts-login__mode" href="Courses.html?mode=onsite">
+          <i class="pts-login__mode-dot pts-login__mode-dot--onsite" aria-hidden="true"></i>
+          <strong>Onsite</strong>
+          <span>เช็กอินที่ Academy</span>
+        </a>
+        <a class="pts-login__mode" href="Courses.html?mode=hybrid">
+          <i class="pts-login__mode-dot pts-login__mode-dot--hybrid" aria-hidden="true"></i>
+          <strong>Hybrid</strong>
+          <span>ผสมออนไลน์+ออนไซต์</span>
+        </a>
+      </div>
 
-      <form class="pts-login__form" id="login-form">
-        <div class="pts-login__field">
-          <label for="email">อีเมล</label>
-          <div class="pts-login__control pts-pw-wrap">
-            <span class="material-symbols-outlined pts-login__ico">mail</span>
-            <input class="pts-login__input" id="email" name="email" placeholder="example@email.com" type="email" required autocomplete="email">
-          </div>
-        </div>
-
-        <div class="pts-login__field">
-          <div class="pts-login__field-row">
-            <label for="password">รหัสผ่าน</label>
-            <button type="button" id="forgot-password-btn" class="pts-login__link">ลืมรหัสผ่าน?</button>
-          </div>
-          <div class="pts-login__control pts-pw-wrap">
-            <span class="material-symbols-outlined pts-login__ico">lock</span>
-            <input class="pts-login__input" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1" style="padding-right:2.75rem">
-            <button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
-              <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
-            </button>
-          </div>
-        </div>
-
-        <label class="pts-login__remember" for="remember">
-          <input id="remember" type="checkbox">
-          <span>จำการเข้าสู่ระบบ</span>
-        </label>
-
-        <button class="pts-login__submit" type="submit" id="submit-btn">
-          เข้าสู่ระบบ
-          <span class="material-symbols-outlined" style="font-size:20px">login</span>
-        </button>
-        <p id="login-msg" class="pts-login__msg hidden"></p>
-      </form>
-
-      <p class="pts-login__foot">
-        ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a>
-      </p>
-      <p class="pts-login__copy">© PTS Learning. All Rights Reserved.</p>
+      <div class="pts-login__trust">
+        <em><span class="material-symbols-outlined">lock</span>เข้าสู่ระบบปลอดภัย</em>
+        <em><span class="material-symbols-outlined">mark_email_read</span>กู้รหัสด้วย Email OTP</em>
+        <em><span class="material-symbols-outlined">verified</span>หลักสูตรรับรองวิชาชีพ</em>
+      </div>
     </div>
   </section>
 </main>
