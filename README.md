@@ -42,6 +42,21 @@ cp .env.example .env
 - `backend/` — Express API + SQL Server
 - `frontend/` — หน้าเว็บ HTML
 - `components/` — navbar และ CSS ร่วม
+- `PRODUCT.md` / `DESIGN.md` — บริบทแบรนด์และดีไซน์สำหรับ Impeccable (AI design commands)
+
+### Impeccable (ออกแบบ UI ร่วมกับ AI)
+
+ติดตั้ง skills แล้วที่ `.cursor/skills/impeccable` (v3.9.1)
+
+```bash
+# ตัวอย่างคำสั่งใน Cursor
+/impeccable critique Settings
+/impeccable polish Home
+/impeccable audit Courses
+/impeccable live
+```
+
+อ่าน `PRODUCT.md` (ใคร/ทำไม) และ `DESIGN.md` (สี ฟอนต์ คอมโพเนนต์) ก่อนแก้ UI ทุกครั้ง
 
 ## บัญชีและสิทธิ์
 

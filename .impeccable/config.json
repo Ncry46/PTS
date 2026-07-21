@@ -1,0 +1,9 @@
+{
+  "version": 1,
+  "detector": {
+    "enabled": true
+  },
+  "hook": {
+    "enabled": false
+  }
+}
