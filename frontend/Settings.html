@@ -112,13 +112,22 @@ async function refreshGcalStatus() {
   const disconnectBtn = document.getElementById('gcal-disconnect');
   const hint = document.getElementById('gcal-setup-hint');
   const msg = document.getElementById('gcal-msg');
+  connectBtn.classList.add('hidden');
+  syncBtn.classList.add('hidden');
+  disconnectBtn.classList.add('hidden');
   try {
-    const st = await fetch('/api/google/status', { credentials: 'include' }).then(r => r.json());
+    const res = await fetch('/api/google/status', { credentials: 'include' });
+    const raw = await res.text();
+    let st;
+    try {
+      st = JSON.parse(raw);
+    } catch (_) {
+      statusText.textContent = 'เซิร์ฟเวอร์ยังไม่มีระบบ Google Calendar — ดึงโค้ดล่าสุด สร้างไฟล์ backend/google.local.js แล้วรัน npm start ใหม่จากโฟลเดอร์ PTS';
+      hint.classList.remove('hidden');
+      return;
+    }
     if (!st.configured) {
-      statusText.textContent = 'ระบบยังไม่ได้ตั้งค่า Google OAuth — ติดต่อผู้ดูแลเพื่อใส่ Client ID/Secret';
-      connectBtn.classList.add('hidden');
-      syncBtn.classList.add('hidden');
-      disconnectBtn.classList.add('hidden');
+      statusText.textContent = 'ยังไม่มี Client ID/Secret — สร้างไฟล์ backend/google.local.js ตามตัวอย่าง google.local.example.js แล้วรีสตาร์ทเซิร์ฟเวอร์';
       hint.classList.remove('hidden');
       return;
     }
@@ -127,17 +136,15 @@ async function refreshGcalStatus() {
       statusText.textContent = st.google_email
         ? `เชื่อมต่อแล้วกับ ${st.google_email} — ตารางเรียนจะถูกเพิ่มลงปฏิทินพร้อมแจ้งเตือน`
         : 'เชื่อมต่อ Google Calendar แล้ว — ตารางเรียนจะถูกซิงค์พร้อมแจ้งเตือน';
-      connectBtn.classList.add('hidden');
       syncBtn.classList.remove('hidden');
       disconnectBtn.classList.remove('hidden');
     } else {
       statusText.textContent = 'ยังไม่ได้เชื่อมต่อ — กดปุ่มด้านล่างเพื่ออนุญาตให้ PTS เพิ่มตารางเรียนลงปฏิทินของคุณ';
       connectBtn.classList.remove('hidden');
-      syncBtn.classList.add('hidden');
-      disconnectBtn.classList.add('hidden');
     }
   } catch (e) {
     statusText.textContent = 'ตรวจสอบสถานะไม่สำเร็จ: ' + e.message;
+    hint.classList.remove('hidden');
   }
 
   const params = new URLSearchParams(location.search);
