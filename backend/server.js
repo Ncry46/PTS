@@ -38,6 +38,8 @@ app.use(express.static(frontendDir));
 app.use(express.static(componentsDir));
 app.use('/comp', express.static(componentsDir));
 app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
+// รูปโปรไฟล์ที่อัปโหลดจากเครื่อง
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 // 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
 const dbConfig = {
     user: 'uinet',

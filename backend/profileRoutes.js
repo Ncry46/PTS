@@ -1,6 +1,41 @@
 const express = require('express');
 const sql = require('mssql');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
+
+const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars');
+const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+function ensureAvatarDir() {
+    fs.mkdirSync(AVATAR_DIR, { recursive: true });
+}
+
+const avatarUpload = multer({
+    storage: multer.diskStorage({
+        destination: (_req, _file, cb) => {
+            ensureAvatarDir();
+            cb(null, AVATAR_DIR);
+        },
+        filename: (req, file, cb) => {
+            const userId = req.session?.user?.user_id || 'anon';
+            const ext = path.extname(file.originalname || '').toLowerCase();
+            const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)
+                ? (ext === '.jpeg' ? '.jpg' : ext)
+                : '.jpg';
+            cb(null, `user-${userId}-${Date.now()}${safeExt}`);
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+        if (ALLOWED_MIME.has(String(file.mimetype || '').toLowerCase())) {
+            cb(null, true);
+        } else {
+            cb(new Error('รองรับเฉพาะไฟล์รูป JPG, PNG, WEBP หรือ GIF'));
+        }
+    }
+});
 
 function createProfileRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -54,6 +89,56 @@ function createProfileRouter({ poolPromise, requireLogin }) {
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
+    });
+
+    // อัปโหลดรูปโปรไฟล์จากไฟล์ในเครื่อง
+    router.post('/profile/avatar', (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+
+        avatarUpload.single('avatar')(req, res, async (err) => {
+            if (err) {
+                const message = err.code === 'LIMIT_FILE_SIZE'
+                    ? 'ไฟล์ใหญ่เกิน 5MB'
+                    : (err.message || 'อัปโหลดไม่สำเร็จ');
+                return res.status(400).json({ success: false, message });
+            }
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูปภาพ' });
+            }
+
+            const publicUrl = `/uploads/avatars/${req.file.filename}`;
+            try {
+                const pool = await poolPromise;
+                const prev = await pool.request()
+                    .input('userId', sql.Int, user.user_id)
+                    .query(`SELECT Url FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
+                const oldUrl = prev.recordset[0]?.Url || '';
+
+                await pool.request()
+                    .input('userId', sql.Int, user.user_id)
+                    .input('url', sql.NVarChar, publicUrl)
+                    .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+
+                req.session.user.Url = publicUrl;
+
+                // ลบไฟล์เก่าของเราเอง (ถ้าเคยอัปโหลดไว้)
+                if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/')) {
+                    const oldPath = path.join(__dirname, '..', String(oldUrl).replace(/^\//, ''));
+                    fs.promises.unlink(oldPath).catch(() => {});
+                }
+
+                res.json({
+                    success: true,
+                    message: 'อัปเดตรูปโปรไฟล์แล้ว',
+                    url: publicUrl,
+                    user: req.session.user
+                });
+            } catch (error) {
+                fs.promises.unlink(req.file.path).catch(() => {});
+                res.status(500).json({ success: false, message: error.message });
+            }
+        });
     });
 
     // ขอ OTP ทางอีเมลเพื่อเปลี่ยนรหัสผ่าน (ผู้ใช้ที่ล็อกอินแล้ว)

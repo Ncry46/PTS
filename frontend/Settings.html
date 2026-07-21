@@ -37,10 +37,24 @@
 
   <section class="pts-panel mb-5">
     <h2 class="font-bold text-lg mb-4">โปรไฟล์</h2>
+    <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
+      <div class="shrink-0">
+        <img id="avatar-preview" src="" alt="รูปโปรไฟล์" class="w-24 h-24 rounded-full object-cover border border-[rgba(151,66,88,.2)] bg-[#faf7f8]">
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold mb-1">รูปโปรไฟล์</p>
+        <p class="text-xs text-on-surface-variant mb-3">เลือกไฟล์จากเครื่อง (JPG, PNG, WEBP, GIF · สูงสุด 5MB)</p>
+        <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
+        <div class="flex flex-wrap gap-2">
+          <button type="button" id="pick-avatar" class="pts-btn pts-btn-outline">เลือกไฟล์จากเครื่อง</button>
+          <button type="button" id="clear-avatar-pick" class="pts-btn pts-btn-ghost hidden">ยกเลิกไฟล์ที่เลือก</button>
+        </div>
+        <p id="avatar-file-name" class="text-xs text-on-surface-variant mt-2"></p>
+      </div>
+    </div>
     <label class="pts-field"><span>ชื่อ-นามสกุล</span><input id="full_name" class="pts-input"></label>
     <label class="pts-field"><span>อีเมล</span><input id="email" disabled class="pts-input"></label>
     <label class="pts-field"><span>เบอร์โทร</span><input id="phone" class="pts-input"></label>
-    <label class="pts-field"><span>URL รูปโปรไฟล์</span><input id="url" class="pts-input" placeholder="https://..."></label>
     <button id="save-profile" class="pts-btn pts-btn-primary">บันทึกโปรไฟล์</button>
     <p id="profile-msg" class="pts-msg"></p>
   </section>
@@ -112,6 +126,18 @@
 </main>
 <div class="pts-footer-note">© PTS Learning</div>
 <script>
+let pendingAvatarFile = null;
+let currentAvatarUrl = '';
+
+function defaultAvatar(name) {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'P')}&background=F8BBD0&color=880E4F&size=128`;
+}
+
+function setAvatarPreview(url, name) {
+  const img = document.getElementById('avatar-preview');
+  img.src = url || defaultAvatar(name);
+}
+
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
@@ -120,9 +146,97 @@
   document.getElementById('full_name').value = profile.data.full_name || '';
   document.getElementById('email').value = profile.data.email || '';
   document.getElementById('phone').value = profile.data.phone || '';
-  document.getElementById('url').value = profile.data.Url || '';
+  currentAvatarUrl = profile.data.Url || '';
+  setAvatarPreview(currentAvatarUrl, profile.data.full_name);
   await refreshGcalStatus();
 })();
+
+document.getElementById('pick-avatar').onclick = () => {
+  document.getElementById('avatar-file').click();
+};
+
+document.getElementById('avatar-file').onchange = (e) => {
+  const file = e.target.files && e.target.files[0];
+  const clearBtn = document.getElementById('clear-avatar-pick');
+  const nameEl = document.getElementById('avatar-file-name');
+  const msg = document.getElementById('profile-msg');
+  if (!file) return;
+  if (!String(file.type || '').startsWith('image/')) {
+    msg.textContent = 'กรุณาเลือกไฟล์รูปภาพ';
+    msg.className = 'pts-msg pts-msg--err';
+    e.target.value = '';
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    msg.textContent = 'ไฟล์ใหญ่เกิน 5MB';
+    msg.className = 'pts-msg pts-msg--err';
+    e.target.value = '';
+    return;
+  }
+  pendingAvatarFile = file;
+  nameEl.textContent = 'ไฟล์ที่เลือก: ' + file.name;
+  clearBtn.classList.remove('hidden');
+  const localUrl = URL.createObjectURL(file);
+  setAvatarPreview(localUrl, document.getElementById('full_name').value);
+  msg.textContent = 'เลือกไฟล์แล้ว — กดบันทึกโปรไฟล์เพื่ออัปโหลด';
+  msg.className = 'pts-msg';
+};
+
+document.getElementById('clear-avatar-pick').onclick = () => {
+  pendingAvatarFile = null;
+  document.getElementById('avatar-file').value = '';
+  document.getElementById('avatar-file-name').textContent = '';
+  document.getElementById('clear-avatar-pick').classList.add('hidden');
+  setAvatarPreview(currentAvatarUrl, document.getElementById('full_name').value);
+  document.getElementById('profile-msg').textContent = '';
+};
+
+document.getElementById('save-profile').onclick = async () => {
+  const msg = document.getElementById('profile-msg');
+  const btn = document.getElementById('save-profile');
+  btn.disabled = true;
+  msg.textContent = 'กำลังบันทึก...';
+  msg.className = 'pts-msg';
+  try {
+    if (pendingAvatarFile) {
+      const fd = new FormData();
+      fd.append('avatar', pendingAvatarFile);
+      const up = await fetch('/api/profile/avatar', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      });
+      const upData = await up.json();
+      if (!up.ok || !upData.success) {
+        throw new Error(upData.message || 'อัปโหลดรูปไม่สำเร็จ');
+      }
+      currentAvatarUrl = upData.url || currentAvatarUrl;
+      pendingAvatarFile = null;
+      document.getElementById('avatar-file').value = '';
+      document.getElementById('avatar-file-name').textContent = '';
+      document.getElementById('clear-avatar-pick').classList.add('hidden');
+      setAvatarPreview(currentAvatarUrl, document.getElementById('full_name').value);
+    }
+
+    const res = await fetch('/api/profile', {
+      method: 'PUT', credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: document.getElementById('full_name').value,
+        phone: document.getElementById('phone').value
+      })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'บันทึกไม่สำเร็จ');
+    msg.textContent = data.message || 'บันทึกโปรไฟล์แล้ว';
+    msg.className = 'pts-msg pts-msg--ok';
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'pts-msg pts-msg--err';
+  } finally {
+    btn.disabled = false;
+  }
+};
 
 async function refreshGcalStatus() {
   const statusText = document.getElementById('gcal-status-text');
@@ -276,22 +390,6 @@ document.getElementById('gcal-disconnect').onclick = async () => {
     msg.textContent = e.message;
     msg.className = 'pts-msg pts-msg--err';
   }
-};
-
-document.getElementById('save-profile').onclick = async () => {
-  const res = await fetch('/api/profile', {
-    method: 'PUT', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      full_name: document.getElementById('full_name').value,
-      phone: document.getElementById('phone').value,
-      url: document.getElementById('url').value
-    })
-  });
-  const data = await res.json();
-  const msg = document.getElementById('profile-msg');
-  msg.textContent = data.message || '';
-  msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
 };
 
 document.getElementById('request-password-otp').onclick = async () => {
