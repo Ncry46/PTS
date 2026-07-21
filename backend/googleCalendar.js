@@ -110,7 +110,8 @@ function formatDateTimeLocal(value) {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
 }
 
-function buildEventBody(schedule) {
+function buildEventBody(schedule, options = {}) {
+    const remindersEnabled = options.remindersEnabled !== false;
     const courseLabel = schedule.course_name ? ` · ${schedule.course_name}` : '';
     const lines = [
         'ตารางเรียนจาก PTS Learning',
@@ -118,6 +119,9 @@ function buildEventBody(schedule) {
         schedule.delivery_mode ? `รูปแบบ: ${schedule.delivery_mode}` : '',
         schedule.meeting_url ? `ลิงก์เข้าเรียน: ${schedule.meeting_url}` : '',
         schedule.location ? `สถานที่: ${schedule.location}` : '',
+        remindersEnabled
+            ? 'การแจ้งเตือน: เปิด (ล่วงหน้า 1 วัน และ 1 ชั่วโมง)'
+            : 'การแจ้งเตือน: ปิดโดยผู้ใช้',
         'ดูตารางทั้งหมด: ' + (getGoogleConfig().appBaseUrl + '/Schedule.html')
     ].filter(Boolean);
 
@@ -133,14 +137,19 @@ function buildEventBody(schedule) {
             dateTime: formatDateTimeLocal(schedule.end_at),
             timeZone: TIMEZONE
         },
-        reminders: {
-            useDefault: false,
-            overrides: [
-                { method: 'popup', minutes: 24 * 60 },
-                { method: 'popup', minutes: 60 },
-                { method: 'email', minutes: 24 * 60 }
-            ]
-        },
+        reminders: remindersEnabled
+            ? {
+                useDefault: false,
+                overrides: [
+                    { method: 'popup', minutes: 24 * 60 },
+                    { method: 'popup', minutes: 60 },
+                    { method: 'email', minutes: 24 * 60 }
+                ]
+            }
+            : {
+                useDefault: false,
+                overrides: []
+            },
         source: {
             title: 'PTS Learning',
             url: getGoogleConfig().appBaseUrl + '/Schedule.html'
@@ -220,11 +229,38 @@ async function getLink(pool, userId) {
     const result = await pool.request()
         .input('userId', sql.Int, userId)
         .query(`
-            SELECT user_id, google_email, access_token, refresh_token, token_expiry, calendar_id, connected_at
+            SELECT user_id, google_email, access_token, refresh_token, token_expiry, calendar_id,
+                   connected_at, ISNULL(reminders_enabled, 1) AS reminders_enabled
             FROM BD_PTS.dbo.google_calendar_links
             WHERE user_id = @userId
         `);
     return result.recordset[0] || null;
+}
+
+async function setRemindersEnabled(pool, userId, enabled) {
+    const link = await getLink(pool, userId);
+    if (!link) {
+        return { success: false, message: 'ยังไม่ได้เชื่อมต่อ Google Calendar' };
+    }
+    await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('enabled', sql.Bit, enabled ? 1 : 0)
+        .query(`
+            UPDATE BD_PTS.dbo.google_calendar_links
+            SET reminders_enabled = @enabled, updated_at = GETDATE()
+            WHERE user_id = @userId
+        `);
+
+    // อัปเดตอีเวนต์ในปฏิทินให้ตรงกับสถานะแจ้งเตือน
+    const sync = await syncUserSchedules(pool, userId, { notify: false });
+    return {
+        success: true,
+        reminders_enabled: Boolean(enabled),
+        synced: sync.synced || 0,
+        message: enabled
+            ? 'เปิดการแจ้งเตือนแล้ว (ล่วงหน้า 1 วัน และ 1 ชั่วโมง) และอัปเดตปฏิทินแล้ว'
+            : 'ปิดการแจ้งเตือนแล้ว และอัปเดตปฏิทินแล้ว'
+    };
 }
 
 async function saveLink(pool, userId, tokens, googleEmail) {
@@ -349,7 +385,8 @@ async function syncOneSchedule(pool, userId, schedule) {
     const auth = await getValidAccessToken(pool, userId);
     if (!auth) return { skipped: true, reason: 'not_connected' };
 
-    const body = buildEventBody(schedule);
+    const remindersEnabled = !(auth.link && (auth.link.reminders_enabled === false || auth.link.reminders_enabled === 0));
+    const body = buildEventBody(schedule, { remindersEnabled });
     const calId = encodeURIComponent(auth.calendarId || 'primary');
     const mapped = await getEventMap(pool, userId, schedule.schedule_id);
 
@@ -571,6 +608,7 @@ module.exports = {
     fetchGoogleEmail,
     saveLink,
     getLink,
+    setRemindersEnabled,
     syncUserSchedules,
     syncAfterEnroll,
     syncScheduleToEnrolledUsers,

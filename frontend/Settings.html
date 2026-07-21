@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตั้งค่าบัญชี | PTS Learning</title>
-<link rel="stylesheet" href="site.css?v=20260720e">
+<link rel="stylesheet" href="site.css?v=20260721a">
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
@@ -54,12 +54,31 @@
     <div id="gcal-status-box" class="rounded-2xl border border-[rgba(151,66,88,.14)] bg-[#faf7f8] p-4 mb-4">
       <p id="gcal-status-text" class="text-sm text-on-surface-variant">กำลังตรวจสอบสถานะ...</p>
     </div>
+    <div id="gcal-reminders-row" class="hidden items-center justify-between gap-3 rounded-2xl border border-[rgba(151,66,88,.14)] px-4 py-3 mb-4">
+      <div>
+        <p class="font-semibold text-sm">การแจ้งเตือนก่อนวันเรียน</p>
+        <p class="text-xs text-on-surface-variant mt-0.5">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
+      </div>
+      <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
+        <input type="checkbox" id="gcal-reminders-toggle">
+        <span class="pts-switch__slider"></span>
+      </label>
+    </div>
     <div class="flex flex-wrap gap-2">
       <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อมต่อ Google Calendar</a>
       <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียนตอนนี้</button>
       <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
     </div>
     <p id="gcal-msg" class="pts-msg"></p>
+    <div id="gcal-howto" class="hidden mt-4 text-sm text-on-surface-variant space-y-1">
+      <p class="font-semibold text-on-surface">วิธีทดสอบ</p>
+      <ol class="list-decimal pl-5 space-y-1">
+        <li>ให้แอดมินสร้างตารางเรียนของคอร์สที่คุณสมัครไว้ (หรือมีตารางอยู่แล้ว)</li>
+        <li>กด <strong>ซิงค์ตารางเรียนตอนนี้</strong></li>
+        <li>เปิด <a class="text-primary underline" href="https://calendar.google.com" target="_blank" rel="noopener">Google Calendar</a> ดูอีเวนต์ PTS</li>
+        <li>คลิกอีเวนต์ → ตรวจ Reminder ว่ามี 1 วัน / 1 ชั่วโมง (เมื่อเปิดการแจ้งเตือน)</li>
+      </ol>
+    </div>
     <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-3 hidden">
       ผู้ดูแลระบบต้องตั้งค่า <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> ในไฟล์
       <code>.env</code> หรือ <code>backend/google.local.js</code> (ดูตัวอย่างที่ <code>backend/google.local.example.js</code>)
@@ -112,9 +131,15 @@ async function refreshGcalStatus() {
   const disconnectBtn = document.getElementById('gcal-disconnect');
   const hint = document.getElementById('gcal-setup-hint');
   const msg = document.getElementById('gcal-msg');
+  const remindersRow = document.getElementById('gcal-reminders-row');
+  const remindersToggle = document.getElementById('gcal-reminders-toggle');
+  const howto = document.getElementById('gcal-howto');
   connectBtn.classList.add('hidden');
   syncBtn.classList.add('hidden');
   disconnectBtn.classList.add('hidden');
+  remindersRow.classList.add('hidden');
+  remindersRow.classList.remove('flex');
+  howto.classList.add('hidden');
   try {
     const res = await fetch('/api/google/status', { credentials: 'include' });
     const raw = await res.text();
@@ -134,11 +159,16 @@ async function refreshGcalStatus() {
     }
     hint.classList.add('hidden');
     if (st.connected) {
+      const remOn = st.reminders_enabled !== false;
       statusText.textContent = st.google_email
-        ? `เชื่อมต่อแล้วกับ ${st.google_email} — ตารางเรียนจะถูกเพิ่มลงปฏิทินพร้อมแจ้งเตือน`
-        : 'เชื่อมต่อ Google Calendar แล้ว — ตารางเรียนจะถูกซิงค์พร้อมแจ้งเตือน';
+        ? `เชื่อมต่อแล้วกับ ${st.google_email}`
+        : 'เชื่อมต่อ Google Calendar แล้ว';
       syncBtn.classList.remove('hidden');
       disconnectBtn.classList.remove('hidden');
+      remindersRow.classList.remove('hidden');
+      remindersRow.classList.add('flex');
+      remindersToggle.checked = remOn;
+      howto.classList.remove('hidden');
     } else {
       statusText.textContent = 'ยังไม่ได้เชื่อมต่อ — กดปุ่มด้านล่างเพื่ออนุญาตให้ PTS เพิ่มตารางเรียนลงปฏิทินของคุณ';
       connectBtn.classList.remove('hidden');
@@ -160,6 +190,29 @@ async function refreshGcalStatus() {
     history.replaceState({}, '', 'Settings.html');
   }
 }
+
+document.getElementById('gcal-reminders-toggle').onchange = async (e) => {
+  const msg = document.getElementById('gcal-msg');
+  const enabled = e.target.checked;
+  msg.textContent = 'กำลังอัปเดตการแจ้งเตือน...';
+  msg.className = 'pts-msg';
+  try {
+    const res = await fetch('/api/google/reminders', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ enabled })
+    });
+    const data = await res.json();
+    msg.textContent = data.message || '';
+    msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
+    if (!res.ok) e.target.checked = !enabled;
+  } catch (err) {
+    e.target.checked = !enabled;
+    msg.textContent = err.message;
+    msg.className = 'pts-msg pts-msg--err';
+  }
+};
 
 document.getElementById('gcal-connect').onclick = async (e) => {
   e.preventDefault();

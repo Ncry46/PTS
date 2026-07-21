@@ -579,6 +579,50 @@ textarea.pts-input {
 .pts-msg--ok { color: var(--pts-primary); font-weight: 600; }
 .pts-msg--err { color: #ba1a1a; }
 
+/* Toggle switch */
+.pts-switch {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 28px;
+  flex: 0 0 auto;
+}
+.pts-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.pts-switch__slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: #d9c1c4;
+  border-radius: 999px;
+  transition: .2s;
+}
+.pts-switch__slider::before {
+  content: '';
+  position: absolute;
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: .2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+}
+.pts-switch input:checked + .pts-switch__slider {
+  background: var(--pts-primary);
+}
+.pts-switch input:checked + .pts-switch__slider::before {
+  transform: translateX(20px);
+}
+.pts-switch input:disabled + .pts-switch__slider {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
 /* Hide Edge/IE native password reveal — prevents double eye icons */
 input[type="password"]::-ms-reveal,
 input[type="password"]::-ms-clear,

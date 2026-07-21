@@ -8,6 +8,7 @@ const {
     fetchGoogleEmail,
     saveLink,
     getLink,
+    setRemindersEnabled,
     syncUserSchedules,
     disconnectUser,
     newOAuthState
@@ -35,7 +36,10 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
                 loggedIn: true,
                 connected: Boolean(link),
                 google_email: link ? link.google_email : null,
-                connected_at: link ? link.connected_at : null
+                connected_at: link ? link.connected_at : null,
+                reminders_enabled: link
+                    ? !(link.reminders_enabled === false || link.reminders_enabled === 0)
+                    : true
             });
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message, ...base });
@@ -122,6 +126,21 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         } catch (err) {
             console.error('[google-calendar] callback:', err.message);
             return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent(err.message)}`);
+        }
+    });
+
+    router.post('/google/reminders', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+
+        const enabled = Boolean(req.body && (req.body.enabled === true || req.body.enabled === 1 || req.body.enabled === '1'));
+        try {
+            const pool = await poolPromise;
+            const result = await setRemindersEnabled(pool, user.user_id, enabled);
+            const status = result.success ? 200 : 400;
+            return res.status(status).json(result);
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
         }
     });
 
