@@ -961,11 +961,18 @@ app.post('/api/attendance/scan', async (req, res) => {
 });
 
 app.listen(PORT, () => {
-    const { isGoogleConfigured, publicGoogleStatus } = require('./googleCalendar');
-    const g = publicGoogleStatus();
     console.log(`🚀 Server running on http://localhost:${PORT}`);
-    console.log(`📅 Google Calendar: ${isGoogleConfigured() ? 'configured ✓' : 'NOT configured — สร้าง backend/google.local.js'}`);
-    console.log(`   redirectUri = ${g.redirectUri}`);
-    const localG = path.join(__dirname, 'google.local.js');
-    console.log(`   google.local.js = ${localG} ${fs.existsSync(localG) ? '(มีไฟล์)' : '(ไม่พบ)'}`);
+    try {
+        const configured = typeof googleCalendar.isGoogleConfigured === 'function'
+            && googleCalendar.isGoogleConfigured();
+        const status = typeof googleCalendar.publicGoogleStatus === 'function'
+            ? googleCalendar.publicGoogleStatus()
+            : {};
+        console.log(`📅 Google Calendar: ${configured ? 'configured ✓' : 'NOT configured — สร้าง backend/google.local.js'}`);
+        if (status.redirectUri) console.log(`   redirectUri = ${status.redirectUri}`);
+        const localG = path.join(__dirname, 'google.local.js');
+        console.log(`   google.local.js = ${localG} ${fs.existsSync(localG) ? '(มีไฟล์)' : '(ไม่พบ)'}`);
+    } catch (err) {
+        console.warn('📅 Google Calendar status unavailable:', err.message);
+    }
 });
