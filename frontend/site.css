@@ -695,7 +695,7 @@ input.pts-pw-input::-ms-clear {
   .pts-nav__hide-mobile { display: none !important; }
 }
 
-/* —— Home hero banner carousel —— */
+/* —— Home hero banner carousel (full panel) —— */
 .pts-hero-banner {
   position: relative;
   overflow: hidden;
@@ -713,9 +713,31 @@ input.pts-pw-input::-ms-clear {
     linear-gradient(180deg, #faf7f8 0%, #f3f0f1 55%, #efeceb 100%);
 }
 
-.pts-hero-banner__inner {
+.pts-hero-banner__viewport {
   position: relative;
   z-index: 1;
+  display: grid;
+}
+
+.pts-hero-banner__panel {
+  grid-area: 1 / 1;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity .7s ease, transform .7s ease, visibility 0s linear .7s;
+}
+
+.pts-hero-banner__panel.is-active {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition: opacity .7s ease, transform .7s ease, visibility 0s;
+  z-index: 1;
+}
+
+.pts-hero-banner__inner {
   max-width: var(--pts-max);
   margin: 0 auto;
   display: grid;
@@ -735,10 +757,6 @@ input.pts-pw-input::-ms-clear {
 
 @media (min-width: 1280px) {
   .pts-hero-banner { padding-left: 32px; padding-right: 32px; }
-}
-
-.pts-hero-banner__copy {
-  animation: pts-fade-up .55s ease both;
 }
 
 .pts-hero-banner__eyebrow {
@@ -789,11 +807,10 @@ input.pts-pw-input::-ms-clear {
 
 .pts-hero-banner__media {
   position: relative;
-  animation: pts-fade-up .7s ease .08s both;
 }
 
-.pts-hero-banner__stage {
-  position: relative;
+.pts-hero-banner__frame {
+  margin: 0;
   aspect-ratio: 1 / 1;
   max-height: min(520px, 72vw);
   border-radius: 28px;
@@ -802,24 +819,7 @@ input.pts-pw-input::-ms-clear {
   background: #e8e0e2;
 }
 
-.pts-hero-banner__slide {
-  position: absolute;
-  inset: 0;
-  margin: 0;
-  opacity: 0;
-  transform: scale(1.03);
-  transition: opacity .85s ease, transform 1.1s ease;
-  pointer-events: none;
-}
-
-.pts-hero-banner__slide.is-active {
-  opacity: 1;
-  transform: scale(1);
-  pointer-events: auto;
-  z-index: 1;
-}
-
-.pts-hero-banner__slide img {
+.pts-hero-banner__frame img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -875,7 +875,7 @@ input.pts-pw-input::-ms-clear {
 
 .pts-hero-banner__nav {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   max-width: var(--pts-max);
   margin: 22px auto 0;
   display: flex;
@@ -934,11 +934,7 @@ input.pts-pw-input::-ms-clear {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pts-hero-banner__copy,
-  .pts-hero-banner__media {
-    animation: none;
-  }
-  .pts-hero-banner__slide {
+  .pts-hero-banner__panel {
     transition: none;
     transform: none;
   }
