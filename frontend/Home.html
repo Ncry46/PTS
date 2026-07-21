@@ -433,7 +433,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', async () => {
-  const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const grid = document.getElementById('home-courses');
   let allCourses = [];
   let activeMode = '';
