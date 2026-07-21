@@ -32,12 +32,12 @@ app.use(session({
 const frontendDir = path.join(__dirname, '..', 'frontend');
 const componentsDir = path.join(__dirname, '..', 'components');
 
-// เสิร์ฟหน้าบ้าน + ไฟล์ shared (navbar.js อยู่ที่ frontend/ เท่านั้น — ไม่ซ้ำใน components/)
+// เสิร์ฟหน้าบ้านจาก frontend/
 app.use(express.static(frontendDir));
-// /comp ชี้ frontend ก่อน แล้วค่อย components (กันพาธเก่าพัง)
-app.use('/comp', express.static(frontendDir));
+// shared UI (navbar.js ฯลฯ) อยู่ที่ components/ — เสิร์ฟที่ / และ /comp
+app.use(express.static(componentsDir));
 app.use('/comp', express.static(componentsDir));
-
+app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
 // 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
 const dbConfig = {
     user: 'uinet',
