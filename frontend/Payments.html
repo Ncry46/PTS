@@ -4,85 +4,275 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ชำระเงิน | PTS Learning</title>
-<link rel="stylesheet" href="site.css?v=20260720c">
+<link rel="stylesheet" href="site.css?v=20260721k">
+<link rel="stylesheet" href="payments.css?v=20260721a">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-<script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-<body class="pts-body">
-<div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid rgba(151,66,88,.18);">
-    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
-        PTS Learning
-      </a>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
-      </div>
-    </div>
-  </nav>
-</div>
+<body class="pts-body pay-page">
+<div id="app-navbar"></div>
+
 <main class="pts-main">
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Payments</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ชำระเงินคอร์ส</h1>
-    <p class="text-on-surface-variant max-w-xl">สร้างรายการ PromptPay แล้วกดยืนยันหลังโอน — บันทึกตามบัญชีของคุณ</p>
+    <p class="text-on-surface-variant max-w-xl">เลือกชำระด้วย QR PromptPay หรือบัตรเครดิต — หลังชำระสำเร็จระบบจะเปิดสิทธิ์เรียนให้ทันที</p>
   </section>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+  <div class="pay-layout">
     <section class="pts-panel">
-      <h2 class="font-bold text-lg mb-4">สร้างรายการ</h2>
+      <h2 class="font-bold text-lg mb-1">ชำระเงิน</h2>
+      <p class="text-sm text-on-surface-variant mb-4">เลือกคอร์ส ช่องทางชำระ แล้วทำรายการให้เสร็จในหน้านี้</p>
+
       <label class="pts-field"><span>เลือกคอร์ส</span><select id="course-select" class="pts-input"></select></label>
-      <label class="pts-field"><span>จำนวนเงิน (บาท)</span><input id="amount" type="number" value="0" min="0" class="pts-input"></label>
-      <button id="create-pay" class="pts-btn pts-btn-primary w-full">สร้างรายการชำระเงิน</button>
+
+      <div class="pay-summary" aria-live="polite">
+        <span class="pay-summary__label">ยอดชำระ</span>
+        <span class="pay-summary__amount" id="amount-display">฿0</span>
+      </div>
+      <input type="hidden" id="amount" value="0">
+
+      <p class="text-sm font-bold mb-2">ช่องทางชำระเงิน</p>
+      <div class="pay-methods" role="tablist" aria-label="ช่องทางชำระเงิน">
+        <button type="button" class="pay-method is-active" data-method="promptpay" id="method-qr" role="tab" aria-selected="true">
+          <span class="material-symbols-outlined">qr_code_2</span>
+          <strong>QR PromptPay</strong>
+          <span>สแกนจ่ายด้วยแอปธนาคาร</span>
+        </button>
+        <button type="button" class="pay-method" data-method="card" id="method-card" role="tab" aria-selected="false">
+          <span class="material-symbols-outlined">credit_card</span>
+          <strong>บัตรเครดิต</strong>
+          <span>Visa / Mastercard</span>
+        </button>
+      </div>
+
+      <!-- PromptPay QR -->
+      <div class="pay-qr-box is-open" id="qr-panel">
+        <div class="pay-qr-frame" id="qr-frame"><span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span></div>
+        <p class="pay-qr-meta" id="qr-meta">เลือกคอร์สแล้วกด “สร้าง QR PromptPay”</p>
+        <button type="button" id="create-qr" class="pts-btn pts-btn-primary w-full">สร้าง QR PromptPay</button>
+        <button type="button" id="confirm-qr" class="pts-btn pts-btn-outline w-full mt-2" hidden>ฉันโอนแล้ว — ยืนยันการชำระ</button>
+      </div>
+
+      <!-- Credit card -->
+      <div class="pay-card-box" id="card-panel">
+        <div class="pay-card-grid">
+          <label class="pts-field"><span>ชื่อบนบัตร</span><input id="card-name" class="pts-input" autocomplete="cc-name" placeholder="NAME ON CARD"></label>
+          <label class="pts-field"><span>เลขบัตร</span><input id="card-number" class="pts-input" inputmode="numeric" autocomplete="cc-number" placeholder="•••• •••• •••• ••••" maxlength="19"></label>
+          <div class="pay-card-grid pay-card-grid--split">
+            <label class="pts-field"><span>หมดอายุ (MM/YY)</span><input id="card-exp" class="pts-input" inputmode="numeric" autocomplete="cc-exp" placeholder="MM/YY" maxlength="5"></label>
+            <label class="pts-field"><span>CVC</span><input id="card-cvc" class="pts-input" inputmode="numeric" autocomplete="cc-csc" placeholder="•••" maxlength="4"></label>
+          </div>
+        </div>
+        <button type="button" id="pay-card" class="pts-btn pts-btn-primary w-full">ชำระด้วยบัตรเครดิต</button>
+        <p class="text-xs text-on-surface-variant mt-2">ระบบไม่เก็บเลขบัตรเต็ม — ใช้เฉพาะเพื่อประมวลผลรายการนี้</p>
+      </div>
+
       <p id="pay-msg" class="pts-msg"></p>
     </section>
+
     <section class="pts-panel">
       <h2 class="font-bold text-lg mb-4">ประวัติการชำระเงิน</h2>
-      <div id="payment-list" class="space-y-3">กำลังโหลด...</div>
+      <div id="payment-list">กำลังโหลด...</div>
     </section>
   </div>
 </main>
 <div class="pts-footer-note">© PTS Learning</div>
+
 <script>
-const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const params = new URLSearchParams(location.search);
 const presetCourseId = params.get('courseId');
+let activeMethod = 'promptpay';
+let activePaymentId = null;
+let qrWidget = null;
+
+function money(n) {
+  return '฿' + Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function setMsg(text, ok) {
+  const msg = document.getElementById('pay-msg');
+  msg.textContent = text || '';
+  msg.className = text ? (ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err') : 'pts-msg';
+}
+
+function syncAmount() {
+  const select = document.getElementById('course-select');
+  const opt = select.selectedOptions[0];
+  const price = Number(opt?.dataset.price || 0);
+  document.getElementById('amount').value = price;
+  document.getElementById('amount-display').textContent = money(price);
+}
+
+function setMethod(method) {
+  activeMethod = method === 'card' ? 'card' : 'promptpay';
+  document.querySelectorAll('.pay-method').forEach((btn) => {
+    const on = btn.dataset.method === activeMethod;
+    btn.classList.toggle('is-active', on);
+    btn.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  document.getElementById('qr-panel').classList.toggle('is-open', activeMethod === 'promptpay');
+  document.getElementById('card-panel').classList.toggle('is-open', activeMethod === 'card');
+  setMsg('');
+}
+
+function renderQr(payload) {
+  const frame = document.getElementById('qr-frame');
+  frame.innerHTML = '';
+  qrWidget = new QRCode(frame, {
+    text: payload,
+    width: 196,
+    height: 196,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+function formatCardNumber(value) {
+  return String(value || '').replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+}
+
+function formatExp(value) {
+  const d = String(value || '').replace(/\D/g, '').slice(0, 4);
+  if (d.length <= 2) return d;
+  return d.slice(0, 2) + '/' + d.slice(2);
+}
+
+async function createPayment(method) {
+  const courseId = document.getElementById('course-select').value;
+  const amount = Number(document.getElementById('amount').value || 0);
+  if (!courseId) throw new Error('กรุณาเลือกคอร์ส');
+  if (!(amount > 0)) throw new Error('คอร์สนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน');
+
+  const res = await fetch(`/api/courses/${courseId}/pay`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ amount, method })
+  });
+  const data = await res.json();
+  if (!res.ok || data.success === false) throw new Error(data.message || 'สร้างรายการไม่สำเร็จ');
+  if (data.already_paid) throw new Error(data.message || 'ชำระคอร์สนี้แล้ว');
+  return data;
+}
 
 async function init() {
-  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
 
-  const courses = await fetch('/api/courses', { credentials: 'include' }).then(r => r.json());
+  const courses = await fetch('/api/courses', { credentials: 'include' }).then((r) => r.json());
   const select = document.getElementById('course-select');
   const courseList = courses.data || [];
   select.innerHTML = courseList.length
-    ? courseList.map(c => `<option value="${c.course_id}" data-price="${Number(c.price||0)}" ${String(c.course_id)===String(presetCourseId)?'selected':''}>${escapeHtml(c.course_name)}</option>`).join('')
+    ? courseList.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price || 0)}" ${String(c.course_id) === String(presetCourseId) ? 'selected' : ''}>${escapeHtml(c.course_name)}</option>`).join('')
     : '<option value="">ยังไม่มีคอร์ส</option>';
-  const syncPrice = () => {
-    const opt = select.selectedOptions[0];
-    if (opt) document.getElementById('amount').value = opt.dataset.price || 0;
+  select.onchange = () => {
+    syncAmount();
+    activePaymentId = null;
+    document.getElementById('confirm-qr').hidden = true;
+    document.getElementById('qr-frame').innerHTML = '<span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span>';
+    document.getElementById('qr-meta').textContent = 'เลือกคอร์สแล้วกด “สร้าง QR PromptPay”';
   };
-  select.onchange = syncPrice;
-  syncPrice();
-  await loadPayments();
+  syncAmount();
 
-  document.getElementById('create-pay').onclick = async () => {
-    const courseId = select.value;
-    const amount = Number(document.getElementById('amount').value || 0);
-    const msg = document.getElementById('pay-msg');
-    const res = await fetch(`/api/courses/${courseId}/pay`, {
-      method: 'POST', credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount })
-    });
-    const data = await res.json();
-    msg.textContent = data.message || '';
-    msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
-    await loadPayments();
+  document.querySelectorAll('.pay-method').forEach((btn) => {
+    btn.onclick = () => setMethod(btn.dataset.method);
+  });
+
+  document.getElementById('card-number').addEventListener('input', (e) => {
+    e.target.value = formatCardNumber(e.target.value);
+  });
+  document.getElementById('card-exp').addEventListener('input', (e) => {
+    e.target.value = formatExp(e.target.value);
+  });
+  document.getElementById('card-cvc').addEventListener('input', (e) => {
+    e.target.value = String(e.target.value || '').replace(/\D/g, '').slice(0, 4);
+  });
+
+  document.getElementById('create-qr').onclick = async () => {
+    const btn = document.getElementById('create-qr');
+    btn.disabled = true;
+    btn.textContent = 'กำลังสร้าง QR...';
+    try {
+      setMethod('promptpay');
+      const data = await createPayment('promptpay');
+      activePaymentId = data.data.payment_id;
+      const payload = data.promptpay?.qr_payload;
+      if (!payload) throw new Error('ไม่ได้รับข้อมูล QR');
+      renderQr(payload);
+      document.getElementById('qr-meta').innerHTML =
+        `ยอด <strong>${money(data.data.amount)}</strong><br>` +
+        `รหัสอ้างอิง <strong>${escapeHtml(data.data.reference_code)}</strong><br>` +
+        `PromptPay ${escapeHtml(data.promptpay.id_masked || '')}`;
+      document.getElementById('confirm-qr').hidden = false;
+      setMsg(data.message || 'สร้าง QR แล้ว', true);
+      await loadPayments();
+    } catch (err) {
+      setMsg(err.message || 'สร้าง QR ไม่สำเร็จ', false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'สร้าง QR PromptPay';
+    }
   };
+
+  document.getElementById('confirm-qr').onclick = async () => {
+    if (!activePaymentId) return setMsg('ยังไม่มีรายการ QR', false);
+    const btn = document.getElementById('confirm-qr');
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/payments/${activePaymentId}/confirm`, { method: 'POST', credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok || data.success === false) throw new Error(data.message || 'ยืนยันไม่สำเร็จ');
+      setMsg(data.message || 'ชำระสำเร็จ', true);
+      document.getElementById('confirm-qr').hidden = true;
+      await loadPayments();
+    } catch (err) {
+      setMsg(err.message, false);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  document.getElementById('pay-card').onclick = async () => {
+    const btn = document.getElementById('pay-card');
+    btn.disabled = true;
+    btn.textContent = 'กำลังชำระ...';
+    try {
+      setMethod('card');
+      const data = await createPayment('card');
+      const paymentId = data.data.payment_id;
+      activePaymentId = paymentId;
+
+      const exp = document.getElementById('card-exp').value.split('/');
+      const res = await fetch(`/api/payments/${paymentId}/charge-card`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          card_name: document.getElementById('card-name').value,
+          card_number: document.getElementById('card-number').value,
+          exp_month: exp[0] || '',
+          exp_year: exp[1] || '',
+          cvc: document.getElementById('card-cvc').value
+        })
+      });
+      const result = await res.json();
+      if (!res.ok || result.success === false) throw new Error(result.message || 'ชำระด้วยบัตรไม่สำเร็จ');
+      setMsg(result.message || 'ชำระสำเร็จ', true);
+      document.getElementById('card-number').value = '';
+      document.getElementById('card-cvc').value = '';
+      activePaymentId = null;
+      await loadPayments();
+    } catch (err) {
+      setMsg(err.message, false);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'ชำระด้วยบัตรเครดิต';
+    }
+  };
+
+  await loadPayments();
 }
 
 async function loadPayments() {
@@ -97,52 +287,51 @@ async function loadPayments() {
     el.innerHTML = `<div class="pts-empty" style="padding:28px"><p>ยังไม่มีรายการชำระเงิน</p></div>`;
     return;
   }
-  el.innerHTML = data.data.map(p => `
-    <div class="pts-row" style="padding:14px">
-      <div>
-        <p class="font-bold">${escapeHtml(p.course_name)}</p>
-        <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} ${escapeHtml(p.currency)} · ${escapeHtml(p.status)}</p>
-        <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(p.reference_code || '')}</p>
-      </div>
-      ${p.status === 'pending'
-        ? `<button data-id="${p.payment_id}" class="confirm-pay pts-btn pts-btn-primary">ยืนยันชำระ</button>`
-        : `<span class="pts-chip">ชำระแล้ว</span>`}
-    </div>
-  `).join('');
 
-  el.querySelectorAll('.confirm-pay').forEach(btn => {
+  el.innerHTML = data.data.map((p) => {
+    const methodLabel = p.method === 'card' ? 'บัตรเครดิต' : 'QR PromptPay';
+    const status = p.status === 'paid'
+      ? '<span class="pay-status pay-status--paid">ชำระแล้ว</span>'
+      : '<span class="pay-status pay-status--pending">รอชำระ</span>';
+    const action = p.status === 'pending' && p.method !== 'card'
+      ? `<button data-id="${p.payment_id}" class="confirm-pay pts-btn pts-btn-primary">ยืนยันโอนแล้ว</button>`
+      : (p.status === 'pending' && p.method === 'card'
+        ? `<button data-id="${p.payment_id}" data-amount="${p.amount}" class="resume-card pts-btn pts-btn-outline">ชำระด้วยบัตร</button>`
+        : '');
+    return `
+      <div class="pts-row" style="padding:14px;margin-bottom:10px">
+        <div>
+          <p class="pay-history-method">${methodLabel}</p>
+          <p class="font-bold">${escapeHtml(p.course_name)}</p>
+          <p class="text-sm text-on-surface-variant">${money(p.amount)} · ${status}</p>
+          <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(p.reference_code || '')}</p>
+        </div>
+        ${action}
+      </div>`;
+  }).join('');
+
+  el.querySelectorAll('.confirm-pay').forEach((btn) => {
     btn.onclick = async () => {
       btn.disabled = true;
       const r = await fetch(`/api/payments/${btn.dataset.id}/confirm`, { method: 'POST', credentials: 'include' });
       const j = await r.json();
-      if (!r.ok) console.error(j.message || 'ยืนยันชำระไม่สำเร็จ');
+      if (!r.ok) setMsg(j.message || 'ยืนยันไม่สำเร็จ', false);
+      else setMsg(j.message || 'ชำระสำเร็จ', true);
       await loadPayments();
+    };
+  });
+
+  el.querySelectorAll('.resume-card').forEach((btn) => {
+    btn.onclick = () => {
+      activePaymentId = Number(btn.dataset.id);
+      setMethod('card');
+      setMsg('กรอกข้อมูลบัตรแล้วกดชำระ — จะใช้รายการที่รอชำระอยู่', true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
   });
 }
 
-init().catch(err => console.error(err));
-</script>
-<!-- PTS-NAV-INLINE-BOOT -->
-<script>
-(function(){
-  var box = document.getElementById('app-navbar');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'app-navbar';
-    if (document.body) document.body.insertBefore(box, document.body.firstChild);
-  }
-  if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid #eadfe2">'
-      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
-      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
-      + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
-      + '</div></div></nav>';
-  }
-})();
+init().catch((err) => console.error(err));
 </script>
 <script src="/comp/navbar.js?v=20260721e"></script>
 </body>
