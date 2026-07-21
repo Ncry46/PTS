@@ -205,19 +205,12 @@
   }
 
   .pts-login__quote-panel {
+    display: none;
     opacity: 0;
-    transform: translateY(8px);
-    transition: opacity .55s ease, transform .55s ease;
-    position: absolute;
-    inset: 22px 22px 20px;
-    pointer-events: none;
   }
   .pts-login__quote-panel.is-active {
-    opacity: 1;
-    transform: translateY(0);
-    position: relative;
-    inset: auto;
-    pointer-events: auto;
+    display: block;
+    animation: pts-login-rise .55s ease both;
   }
 
   .pts-login__stats {
