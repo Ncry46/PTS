@@ -1,8 +1,8 @@
 <!DOCTYPE html><html lang="th" style="">
         <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260720c">
+        <link rel="stylesheet" href="site.css?v=20260721e">
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
                 tailwind.config = {
@@ -123,35 +123,76 @@
 </div>
 
 <main>
-<!-- Hero Section -->
-<section class="relative overflow-hidden pt-[calc(var(--pts-nav-h)+32px)] pb-lg md:pb-xl">
-<div class="absolute inset-0 -z-10 bg-[radial-gradient(900px_420px_at_15%_0%,rgba(151,66,88,0.16),transparent_55%),radial-gradient(700px_360px_at_100%_10%,rgba(61,90,76,0.10),transparent_50%),linear-gradient(180deg,#faf7f8,#f3f0f1)]"></div>
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-2 items-center gap-lg">
-<div class="space-y-md animate-[pts-fade-up_.6s_ease_both]">
-<p class="font-[family-name:var(--pts-display)] text-[13px] font-bold tracking-[0.22em] uppercase text-primary">PTS Learning</p>
-<h1 class="font-headline-xl text-headline-xl text-on-surface md:text-[52px] md:leading-[1.12]">ยกระดับทักษะ <span class="text-primary">Personal Assistant</span> สู่มาตรฐานมืออาชีพ</h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ</p>
-<div class="flex flex-wrap gap-md pt-sm" id="home-hero-actions">
-<button class="px-xl py-4 bg-primary text-on-primary rounded-full font-headline-sm text-headline-sm hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20" onclick="location.href='Courses.html'">ดูหลักสูตร</button>
-<button id="home-register-btn" class="px-xl py-4 bg-white text-primary rounded-full font-headline-sm text-headline-sm border border-primary/25 hover:bg-primary/5 active:scale-95 transition-all" onclick="location.href='Register.html'">สมัครสมาชิก</button>
-</div>
-</div>
-<div class="relative">
-<div class="absolute -top-10 -left-10 w-48 h-48 bg-primary-container/20 rounded-full blur-3xl"></div>
-<div class="relative z-10 rounded-2xl overflow-hidden soft-shadow rotate-2 hover:rotate-0 transition-transform duration-500">
-<img alt="Professional Woman" class="w-full h-[500px] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1bLgj4_cdFQwufD7fHr7mIzwwLX1eg6KHtRGNWkUYTSFBNEzOkfgN5Bpvqx4pzCO1HDdnOeKyf9kSglaEJZ0oilzaKD-actnGqN9yHVSPnMsVEePg6HbyhjRFyukb2cFtg15dFQG8pw7GhjRJ6qCiFxBqsOU9FtRQjAWKZJHfKjZIdK__xUHPQGyylmAfalj9Psv-EiJd16IvIbdHQRwdmdkZQgSL50gh22cqBbgCWExhU_x5NFwAg">
-</div>
-<div class="absolute -bottom-6 -right-6 bg-surface-bright p-md rounded-2xl soft-shadow z-20 flex items-center gap-sm border border-outline-variant/30">
-<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center">
-<span class="material-symbols-outlined text-on-tertiary">check_circle</span>
-</div>
-<div>
-<p class="font-headline-sm text-headline-sm text-primary">Certified</p>
-<p class="font-label-md text-label-md text-on-surface-variant">หลักสูตรรับรองวิชาชีพ</p>
-</div>
-</div>
-</div>
-</div>
+<!-- Hero Banner Carousel -->
+<section class="pts-hero-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+  <div class="pts-hero-banner__wash" aria-hidden="true"></div>
+  <div class="pts-hero-banner__inner">
+    <div class="pts-hero-banner__copy">
+      <p class="pts-hero-banner__eyebrow">PTS Learning</p>
+      <h1 class="pts-hero-banner__title">
+        ยกระดับทักษะ <span>Personal Assistant</span> สู่มาตรฐานมืออาชีพ
+      </h1>
+      <p class="pts-hero-banner__lead">
+        เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ
+      </p>
+      <div class="pts-hero-banner__actions" id="home-hero-actions">
+        <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Courses.html">ดูหลักสูตร</a>
+        <a id="home-register-btn" class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>
+      </div>
+    </div>
+
+    <div class="pts-hero-banner__media">
+      <div class="pts-hero-banner__stage" id="hero-stage">
+        <figure class="pts-hero-banner__slide is-active" data-slide="0">
+          <img
+            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
+            alt="ผู้ช่วยมืออาชีพทำงานที่โต๊ะด้วยแล็ปท็อป"
+            width="1200"
+            height="1200"
+            decoding="async"
+            fetchpriority="high">
+        </figure>
+        <figure class="pts-hero-banner__slide" data-slide="1">
+          <img
+            src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
+            alt="ทีมงานประชุมวางแผนอย่างมืออาชีพ"
+            width="1200"
+            height="1200"
+            decoding="async"
+            loading="lazy">
+        </figure>
+        <figure class="pts-hero-banner__slide" data-slide="2">
+          <img
+            src="https://images.unsplash.com/photo-1580894732444-8ecded7900cd?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
+            alt="ผู้เรียนพัฒนาทักษะการทำงานอย่างมั่นใจ"
+            width="1200"
+            height="1200"
+            decoding="async"
+            loading="lazy">
+        </figure>
+      </div>
+
+      <div class="pts-hero-banner__badge" aria-hidden="true">
+        <span class="pts-hero-banner__badge-icon">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
+        </span>
+        <span>
+          <strong>Certified</strong>
+          <small>หลักสูตรรับรองวิชาชีพ</small>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="pts-hero-banner__nav" role="group" aria-label="สลับแบนเนอร์">
+    <button type="button" class="pts-hero-banner__arrow" id="hero-prev" aria-label="รูปก่อนหน้า">
+      <span class="material-symbols-outlined">chevron_left</span>
+    </button>
+    <div class="pts-hero-banner__dots" id="hero-dots" role="tablist" aria-label="เลือกภาพแบนเนอร์"></div>
+    <button type="button" class="pts-hero-banner__arrow" id="hero-next" aria-label="รูปถัดไป">
+      <span class="material-symbols-outlined">chevron_right</span>
+    </button>
+  </div>
 </section>
 <!-- Choose Learning Type Section -->
 <section class="py-xl bg-surface">
@@ -453,6 +494,86 @@ document.addEventListener('DOMContentLoaded', async () => {
   const grid = document.getElementById('home-courses');
   let allCourses = [];
   let activeMode = '';
+
+  // Hero image carousel
+  (function initHeroBanner() {
+    const stage = document.getElementById('hero-stage');
+    const dotsBox = document.getElementById('hero-dots');
+    const prevBtn = document.getElementById('hero-prev');
+    const nextBtn = document.getElementById('hero-next');
+    const banner = document.querySelector('.pts-hero-banner');
+    if (!stage || !dotsBox) return;
+
+    const slides = Array.from(stage.querySelectorAll('.pts-hero-banner__slide'));
+    if (slides.length < 2) return;
+
+    let index = 0;
+    let timer = null;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const INTERVAL = 5500;
+
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'pts-hero-banner__dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', 'ภาพที่ ' + (i + 1));
+      dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      dot.addEventListener('click', () => goTo(i, true));
+      dotsBox.appendChild(dot);
+    });
+
+    const dots = Array.from(dotsBox.querySelectorAll('.pts-hero-banner__dot'));
+
+    function goTo(next, userAction) {
+      index = (next + slides.length) % slides.length;
+      slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
+      dots.forEach((dot, i) => {
+        const on = i === index;
+        dot.classList.toggle('is-active', on);
+        dot.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      if (userAction) restart();
+    }
+
+    function next() { goTo(index + 1, false); }
+    function prev() { goTo(index - 1, false); }
+
+    function stop() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    }
+
+    function start() {
+      if (reduceMotion) return;
+      stop();
+      timer = setInterval(next, INTERVAL);
+    }
+
+    function restart() {
+      stop();
+      start();
+    }
+
+    prevBtn?.addEventListener('click', () => { prev(); restart(); });
+    nextBtn?.addEventListener('click', () => { next(); restart(); });
+
+    banner?.addEventListener('mouseenter', stop);
+    banner?.addEventListener('mouseleave', start);
+    banner?.addEventListener('focusin', stop);
+    banner?.addEventListener('focusout', (e) => {
+      if (!banner.contains(e.relatedTarget)) start();
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else start();
+    });
+
+    start();
+  })();
 
   // ซ่อนปุ่มสมัครสมาชิกใน hero เมื่อล็อกอินแล้ว
   try {
