@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>เข้าสู่ระบบ | PTS Learning</title>
-<link rel="stylesheet" href="site.css?v=20260721g">
+<link rel="stylesheet" href="site.css?v=20260721h">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <style>
@@ -15,91 +15,83 @@
     font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 
-  /* —— Premium login stage —— */
+  /* —— Full-page login (no split) —— */
   .pts-login {
     min-height: 100dvh;
     display: flex;
     flex-direction: column;
-    background: #120d10;
-    color: #1c1520;
+    color: #fff;
     overflow-x: hidden;
+    background:
+      radial-gradient(1100px 620px at 12% -8%, rgba(217,119,142,.42), transparent 55%),
+      radial-gradient(900px 560px at 95% 15%, rgba(61,90,76,.28), transparent 52%),
+      radial-gradient(800px 500px at 50% 110%, rgba(151,66,88,.22), transparent 55%),
+      linear-gradient(160deg, #2d1520 0%, #140e12 42%, #1a1418 100%);
   }
 
   .pts-login__stage {
-    flex: 1;
-    display: grid;
-    min-height: calc(100dvh - var(--pts-nav-h, 68px));
-    margin-top: var(--pts-nav-h, 68px);
-  }
-
-  @media (min-width: 960px) {
-    .pts-login__stage {
-      grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr);
-    }
-  }
-
-  /* Brand panel */
-  .pts-login__brand {
     position: relative;
-    display: none;
-    overflow: hidden;
-    color: #fff;
-    background:
-      radial-gradient(900px 520px at 10% 0%, rgba(217, 119, 142, 0.45), transparent 55%),
-      radial-gradient(700px 480px at 100% 80%, rgba(61, 90, 76, 0.35), transparent 50%),
-      linear-gradient(155deg, #3a1c27 0%, #1a1014 48%, #241820 100%);
-  }
-
-  @media (min-width: 960px) {
-    .pts-login__brand {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 36px;
-      padding: 48px 52px 48px;
-    }
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    width: 100%;
+    max-width: 1120px;
+    margin: var(--pts-nav-h, 68px) auto 0;
+    padding: 28px 18px 40px;
+    z-index: 1;
   }
 
   .pts-login__orb {
-    position: absolute;
+    position: fixed;
     border-radius: 50%;
-    filter: blur(2px);
     pointer-events: none;
-    animation: pts-login-float 12s ease-in-out infinite;
+    z-index: 0;
+    animation: pts-login-float 14s ease-in-out infinite;
   }
   .pts-login__orb--a {
-    width: 280px; height: 280px; top: -60px; right: -40px;
-    background: radial-gradient(circle, rgba(255,177,193,.55), transparent 70%);
+    width: min(42vw, 420px); height: min(42vw, 420px);
+    top: 8%; left: -8%;
+    background: radial-gradient(circle, rgba(255,177,193,.4), transparent 70%);
   }
   .pts-login__orb--b {
-    width: 220px; height: 220px; bottom: 12%; left: -50px;
-    background: radial-gradient(circle, rgba(85,165,107,.35), transparent 70%);
-    animation-delay: -4s;
+    width: min(36vw, 360px); height: min(36vw, 360px);
+    bottom: 4%; right: -6%;
+    background: radial-gradient(circle, rgba(85,165,107,.28), transparent 70%);
+    animation-delay: -5s;
   }
   .pts-login__orb--c {
-    width: 140px; height: 140px; top: 42%; right: 18%;
-    background: radial-gradient(circle, rgba(255,255,255,.18), transparent 70%);
-    animation-delay: -7s;
+    width: 180px; height: 180px;
+    top: 48%; left: 55%;
+    background: radial-gradient(circle, rgba(255,255,255,.12), transparent 70%);
+    animation-delay: -9s;
   }
 
   @keyframes pts-login-float {
-    0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-    50% { transform: translate3d(12px, -18px, 0) scale(1.06); }
+    0%, 100% { transform: translate3d(0,0,0) scale(1); }
+    50% { transform: translate3d(14px,-20px,0) scale(1.05); }
   }
 
-  .pts-login__grid {
-    position: absolute; inset: 0; opacity: .18; pointer-events: none;
+  .pts-login__mesh {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    opacity: .22;
     background-image:
-      linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse at 30% 40%, #000 20%, transparent 75%);
+      linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px);
+    background-size: 52px 52px;
+    mask-image: radial-gradient(ellipse at 50% 40%, #000 15%, transparent 72%);
   }
 
-  .pts-login__brand-top,
-  .pts-login__brand-mid {
-    position: relative;
-    z-index: 1;
+  .pts-login__intro {
+    width: 100%;
+    max-width: 720px;
+    text-align: center;
+    animation: pts-login-rise .55s ease both;
   }
 
   .pts-login__kicker {
@@ -111,21 +103,20 @@
     background: rgba(255,255,255,.1);
     border: 1px solid rgba(255,255,255,.18);
     backdrop-filter: blur(10px);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: .14em;
+    letter-spacing: .16em;
     text-transform: uppercase;
   }
 
   .pts-login__brand-title {
-    margin: 28px 0 16px;
+    margin: 18px 0 12px;
     font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
-    font-size: clamp(2.1rem, 3.4vw, 3.4rem);
+    font-size: clamp(1.85rem, 4.5vw, 3rem);
     font-weight: 700;
-    line-height: 1.12;
+    line-height: 1.15;
     letter-spacing: -0.03em;
     text-wrap: balance;
-    max-width: 14ch;
   }
 
   .pts-login__brand-title em {
@@ -134,9 +125,9 @@
   }
 
   .pts-login__brand-lead {
-    margin: 0;
-    max-width: 34rem;
-    font-size: 1.05rem;
+    margin: 0 auto;
+    max-width: 36rem;
+    font-size: clamp(0.95rem, 2vw, 1.08rem);
     line-height: 1.65;
     color: rgba(255,255,255,.78);
   }
@@ -144,136 +135,32 @@
   .pts-login__pills {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 28px;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 18px;
   }
 
   .pts-login__pill {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 14px;
+    gap: 7px;
+    padding: 8px 12px;
     border-radius: 999px;
     background: rgba(255,255,255,.08);
     border: 1px solid rgba(255,255,255,.14);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     color: rgba(255,255,255,.92);
   }
 
   .pts-login__pill .material-symbols-outlined {
-    font-size: 18px;
+    font-size: 16px;
     color: #ffb1c1;
   }
 
-  .pts-login__quote {
-    position: relative;
-    margin-top: 36px;
-    padding: 22px 22px 20px;
-    border-radius: 22px;
-    background: rgba(255,255,255,.08);
-    border: 1px solid rgba(255,255,255,.14);
-    backdrop-filter: blur(14px);
-    max-width: 420px;
-    min-height: 132px;
-  }
-
-  .pts-login__quote-mark {
-    position: absolute;
-    top: 10px; right: 18px;
-    font-family: 'Sora', sans-serif;
-    font-size: 56px;
-    line-height: 1;
-    color: rgba(255,177,193,.35);
-    pointer-events: none;
-  }
-
-  .pts-login__quote-text {
-    margin: 0;
-    font-size: 15px;
-    line-height: 1.6;
-    color: rgba(255,255,255,.9);
-  }
-
-  .pts-login__quote-meta {
-    margin-top: 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: rgba(255,255,255,.7);
-  }
-
-  .pts-login__quote-avatar {
-    width: 34px; height: 34px; border-radius: 999px;
-    object-fit: cover; border: 2px solid rgba(255,255,255,.3);
-  }
-
-  .pts-login__quote-panel {
-    display: none;
-    opacity: 0;
-  }
-  .pts-login__quote-panel.is-active {
-    display: block;
-    animation: pts-login-rise .55s ease both;
-  }
-
-  /* Form panel */
-  .pts-login__panel {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 28px 20px 36px;
-    overflow: hidden;
-    background:
-      radial-gradient(720px 440px at 100% -10%, rgba(151,66,88,.14), transparent 55%),
-      radial-gradient(560px 380px at -10% 110%, rgba(61,90,76,.10), transparent 50%),
-      linear-gradient(165deg, #faf7f8 0%, #f3f0f1 42%, #efe8ea 100%);
-  }
-
-  .pts-login__panel-deco {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .pts-login__panel-deco span {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(0.5px);
-  }
-  .pts-login__panel-deco span:nth-child(1) {
-    width: 220px; height: 220px; top: 8%; right: -40px;
-    background: radial-gradient(circle, rgba(151,66,88,.16), transparent 70%);
-  }
-  .pts-login__panel-deco span:nth-child(2) {
-    width: 160px; height: 160px; bottom: 12%; left: -30px;
-    background: radial-gradient(circle, rgba(61,90,76,.12), transparent 70%);
-  }
-  .pts-login__panel-deco span:nth-child(3) {
-    width: 90px; height: 90px; top: 42%; left: 12%;
-    background: radial-gradient(circle, rgba(217,119,142,.18), transparent 70%);
-  }
-
-  .pts-login__panel-mesh {
-    position: absolute;
-    inset: 0;
-    opacity: .4;
-    pointer-events: none;
-    background-image:
-      linear-gradient(rgba(151,66,88,.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(151,66,88,.035) 1px, transparent 1px);
-    background-size: 40px 40px;
-    mask-image: radial-gradient(ellipse at 55% 45%, #000 25%, transparent 78%);
-  }
-
-  .pts-login__stack {
-    position: relative;
-    z-index: 1;
+  .pts-login__layout {
     width: 100%;
-    max-width: 460px;
+    max-width: 520px;
     display: flex;
     flex-direction: column;
     gap: 14px;
@@ -281,36 +168,25 @@
 
   .pts-login__card {
     width: 100%;
-    position: relative;
     border-radius: 28px;
-    padding: 30px 24px 22px;
-    background: rgba(255,255,255,.92);
-    border: 1px solid rgba(151,66,88,.14);
+    padding: 28px 22px 22px;
+    background: rgba(255,255,255,.94);
+    color: #1c1520;
+    border: 1px solid rgba(255,255,255,.55);
     box-shadow:
-      0 1px 0 rgba(255,255,255,.85) inset,
-      0 24px 60px rgba(28,21,32,.10);
+      0 1px 0 rgba(255,255,255,.9) inset,
+      0 28px 70px rgba(0,0,0,.28);
     backdrop-filter: blur(18px);
-    animation: pts-login-rise .6s ease both;
+    animation: pts-login-rise .65s ease .05s both;
   }
 
   @media (min-width: 640px) {
-    .pts-login__card { padding: 34px 32px 26px; }
+    .pts-login__card { padding: 32px 30px 26px; }
   }
 
   @keyframes pts-login-rise {
-    from { opacity: 0; transform: translateY(16px); }
+    from { opacity: 0; transform: translateY(14px); }
     to { opacity: 1; transform: translateY(0); }
-  }
-
-  .pts-login__mobile-brand {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 22px;
-  }
-
-  @media (min-width: 960px) {
-    .pts-login__mobile-brand { display: none; }
   }
 
   .pts-login__eyebrow {
@@ -326,7 +202,7 @@
   .pts-login__title {
     margin: 0;
     font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
-    font-size: clamp(1.6rem, 3vw, 2rem);
+    font-size: clamp(1.55rem, 3vw, 1.9rem);
     font-weight: 700;
     letter-spacing: -0.02em;
     color: #1c1520;
@@ -361,7 +237,6 @@
     gap: 12px;
     margin-bottom: 6px;
   }
-
   .pts-login__field-row label { margin: 0; }
 
   .pts-login__link {
@@ -372,13 +247,10 @@
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
-    text-decoration: none;
   }
   .pts-login__link:hover { text-decoration: underline; }
 
-  .pts-login__control {
-    position: relative;
-  }
+  .pts-login__control { position: relative; }
 
   .pts-login__control > .material-symbols-outlined.pts-login__ico {
     position: absolute;
@@ -390,10 +262,7 @@
     pointer-events: none;
     transition: color .15s ease;
   }
-
-  .pts-login__control:focus-within > .material-symbols-outlined.pts-login__ico {
-    color: #974258;
-  }
+  .pts-login__control:focus-within > .pts-login__ico { color: #974258; }
 
   .pts-login__input {
     width: 100%;
@@ -405,17 +274,13 @@
     background: #fff;
     color: #1c1520;
     outline: none;
-    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+    transition: border-color .15s ease, box-shadow .15s ease;
   }
-
   .pts-login__input:focus {
     border-color: rgba(151,66,88,.45);
     box-shadow: 0 0 0 4px rgba(151,66,88,.12);
   }
-
-  .pts-login__control .pts-pw-toggle {
-    right: 12px !important;
-  }
+  .pts-login__control .pts-pw-toggle { right: 12px !important; }
 
   .pts-login__remember {
     display: flex;
@@ -425,10 +290,8 @@
     color: #5c4f55;
     user-select: none;
   }
-
   .pts-login__remember input {
-    width: 18px;
-    height: 18px;
+    width: 18px; height: 18px;
     accent-color: #974258;
     cursor: pointer;
   }
@@ -450,20 +313,11 @@
     gap: 8px;
     cursor: pointer;
     box-shadow: 0 14px 28px rgba(151,66,88,.28);
-    transition: transform .15s ease, opacity .15s ease, box-shadow .15s ease;
+    transition: transform .15s ease, opacity .15s ease;
   }
-
-  .pts-login__submit:hover {
-    opacity: .95;
-    box-shadow: 0 18px 34px rgba(151,66,88,.34);
-  }
-
+  .pts-login__submit:hover { opacity: .95; }
   .pts-login__submit:active { transform: scale(0.98); }
-  .pts-login__submit:disabled {
-    opacity: .65;
-    cursor: wait;
-    box-shadow: none;
-  }
+  .pts-login__submit:disabled { opacity: .65; cursor: wait; box-shadow: none; }
 
   .pts-login__msg {
     margin: 0;
@@ -474,12 +328,11 @@
   .pts-login__msg.hidden { display: none; }
 
   .pts-login__foot {
-    margin-top: 22px;
+    margin-top: 18px;
     text-align: center;
     font-size: 14px;
     color: #5c4f55;
   }
-
   .pts-login__foot a {
     color: #974258;
     font-weight: 700;
@@ -488,37 +341,87 @@
   .pts-login__foot a:hover { text-decoration: underline; }
 
   .pts-login__copy {
-    margin-top: 14px;
+    margin-top: 12px;
     text-align: center;
     font-size: 12px;
     color: rgba(92,79,85,.7);
   }
 
+  .pts-login__side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: pts-login-rise .7s ease .1s both;
+  }
+
+  .pts-login__quote {
+    position: relative;
+    padding: 20px 18px 16px;
+    border-radius: 22px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.16);
+    backdrop-filter: blur(14px);
+    min-height: 128px;
+  }
+
+  .pts-login__quote-mark {
+    position: absolute;
+    top: 6px; right: 16px;
+    font-family: 'Sora', sans-serif;
+    font-size: 52px;
+    line-height: 1;
+    color: rgba(255,177,193,.35);
+    pointer-events: none;
+  }
+
+  .pts-login__quote-panel { display: none; }
+  .pts-login__quote-panel.is-active {
+    display: block;
+    animation: pts-login-rise .5s ease both;
+  }
+
+  .pts-login__quote-text {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(255,255,255,.92);
+  }
+
+  .pts-login__quote-meta {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,.7);
+  }
+
+  .pts-login__quote-avatar {
+    width: 32px; height: 32px; border-radius: 999px;
+    object-fit: cover; border: 2px solid rgba(255,255,255,.3);
+  }
+
   .pts-login__modes {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 10px;
+    gap: 8px;
   }
 
   .pts-login__mode {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 6px;
-    padding: 14px 12px;
-    border-radius: 18px;
-    background: rgba(255,255,255,.82);
-    border: 1px solid rgba(151,66,88,.12);
-    box-shadow: 0 8px 24px rgba(28,21,32,.05);
+    gap: 5px;
+    padding: 12px 10px;
+    border-radius: 16px;
+    background: rgba(255,255,255,.1);
+    border: 1px solid rgba(255,255,255,.14);
     text-decoration: none;
-    color: inherit;
-    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    color: #fff;
+    transition: transform .15s ease, background .15s ease;
   }
-
   .pts-login__mode:hover {
     transform: translateY(-2px);
-    border-color: rgba(151,66,88,.28);
-    box-shadow: 0 12px 28px rgba(151,66,88,.10);
+    background: rgba(255,255,255,.16);
   }
 
   .pts-login__mode-dot {
@@ -526,47 +429,43 @@
   }
   .pts-login__mode-dot--online { background: #55a56b; }
   .pts-login__mode-dot--onsite { background: #f59e0b; }
-  .pts-login__mode-dot--hybrid { background: #4c6548; }
+  .pts-login__mode-dot--hybrid { background: #b3ceab; }
 
   .pts-login__mode strong {
     font-size: 13px;
     font-weight: 700;
-    color: #1c1520;
   }
-
   .pts-login__mode span {
     font-size: 11px;
     line-height: 1.35;
-    color: #5c4f55;
+    color: rgba(255,255,255,.72);
   }
 
   .pts-login__trust {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px 14px;
+    gap: 8px 12px;
     justify-content: center;
     padding: 12px 14px;
     border-radius: 16px;
-    background: rgba(255,255,255,.7);
-    border: 1px dashed rgba(151,66,88,.2);
-    color: #5c4f55;
+    background: rgba(255,255,255,.08);
+    border: 1px dashed rgba(255,255,255,.2);
+    color: rgba(255,255,255,.8);
     font-size: 12px;
     font-weight: 600;
   }
-
   .pts-login__trust em {
     font-style: normal;
     display: inline-flex;
     align-items: center;
     gap: 5px;
   }
-
   .pts-login__trust .material-symbols-outlined {
     font-size: 16px;
-    color: #974258;
+    color: #ffb1c1;
   }
 
-  /* Reset modal */
+  /* Modal */
   .pts-login-modal {
     position: fixed;
     inset: 0;
@@ -585,12 +484,12 @@
     max-width: 420px;
     border-radius: 28px;
     background: #fff;
+    color: #1c1520;
     border: 1px solid rgba(151,66,88,.14);
     box-shadow: 0 30px 80px rgba(0,0,0,.28);
     padding: 28px 24px 22px;
     animation: pts-login-rise .35s ease both;
   }
-
   .pts-login-modal__card h3 {
     margin: 0;
     text-align: center;
@@ -598,7 +497,6 @@
     font-size: 1.25rem;
     color: #974258;
   }
-
   .pts-login-modal__card > p {
     margin: 8px 0 0;
     text-align: center;
@@ -606,9 +504,7 @@
     line-height: 1.55;
     color: #5c4f55;
   }
-
   .pts-login-modal__body { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
-
   .pts-login-modal label {
     display: block;
     margin-bottom: 6px;
@@ -616,7 +512,6 @@
     font-weight: 600;
     color: #5c4f55;
   }
-
   .pts-login-modal input[type="email"],
   .pts-login-modal input[type="text"],
   .pts-login-modal input[type="password"] {
@@ -629,14 +524,11 @@
     outline: none;
     background: #fff;
   }
-
   .pts-login-modal input:focus {
     border-color: rgba(151,66,88,.45);
     box-shadow: 0 0 0 3px rgba(151,66,88,.12);
   }
-
   .pts-login-modal__row { display: flex; gap: 8px; }
-
   .pts-login-modal__otp-btn {
     flex-shrink: 0;
     border: 0;
@@ -649,13 +541,11 @@
     cursor: pointer;
     white-space: nowrap;
   }
-
   .pts-login-modal__actions {
     display: flex;
     gap: 10px;
     margin-top: 8px;
   }
-
   .pts-login-modal__actions button {
     flex: 1;
     min-height: 46px;
@@ -664,31 +554,27 @@
     font-size: 14px;
     cursor: pointer;
   }
-
   .pts-login-modal__cancel {
     border: 1px solid rgba(151,66,88,.2);
     background: #fff;
     color: #5c4f55;
   }
-
   .pts-login-modal__confirm {
     border: 0;
     background: #974258;
     color: #fff;
   }
-
   .pts-login-modal__confirm:disabled {
     background: #b8b0b3;
     cursor: not-allowed;
   }
-
-  #otp-verification-zone {
-    transition: opacity .3s ease;
-  }
+  #otp-verification-zone { transition: opacity .3s ease; }
 
   @media (prefers-reduced-motion: reduce) {
     .pts-login__orb,
     .pts-login__card,
+    .pts-login__intro,
+    .pts-login__side,
     .pts-login-modal__card,
     .pts-login__quote-panel {
       animation: none !important;
@@ -713,26 +599,73 @@
   </nav>
 </div>
 
-<main class="pts-login__stage">
-  <!-- Immersive brand side -->
-  <aside class="pts-login__brand" aria-hidden="true">
-    <div class="pts-login__orb pts-login__orb--a"></div>
-    <div class="pts-login__orb pts-login__orb--b"></div>
-    <div class="pts-login__orb pts-login__orb--c"></div>
-    <div class="pts-login__grid"></div>
+<div class="pts-login__orb pts-login__orb--a" aria-hidden="true"></div>
+<div class="pts-login__orb pts-login__orb--b" aria-hidden="true"></div>
+<div class="pts-login__orb pts-login__orb--c" aria-hidden="true"></div>
+<div class="pts-login__mesh" aria-hidden="true"></div>
 
-    <div class="pts-login__brand-top">
-      <span class="pts-login__kicker">Personal Assistant Academy</span>
-      <h1 class="pts-login__brand-title">เรียนอย่างมืออาชีพ<br>ในจังหวะของ <em>คุณ</em></h1>
-      <p class="pts-login__brand-lead">Online · Onsite · Hybrid พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพในระบบเดียว</p>
-      <div class="pts-login__pills">
-        <span class="pts-login__pill"><span class="material-symbols-outlined">school</span>หลักสูตรรับรอง</span>
-        <span class="pts-login__pill"><span class="material-symbols-outlined">event</span>ซิงค์ปฏิทิน</span>
-        <span class="pts-login__pill"><span class="material-symbols-outlined">groups</span>คอมมูนิตี้</span>
-      </div>
+<main class="pts-login__stage">
+  <header class="pts-login__intro">
+    <span class="pts-login__kicker">Personal Assistant Academy</span>
+    <h1 class="pts-login__brand-title">เรียนอย่างมืออาชีพ<br>ในจังหวะของ <em>คุณ</em></h1>
+    <p class="pts-login__brand-lead">Online · Onsite · Hybrid พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพในระบบเดียว</p>
+    <div class="pts-login__pills">
+      <span class="pts-login__pill"><span class="material-symbols-outlined">school</span>หลักสูตรรับรอง</span>
+      <span class="pts-login__pill"><span class="material-symbols-outlined">event</span>ซิงค์ปฏิทิน</span>
+      <span class="pts-login__pill"><span class="material-symbols-outlined">groups</span>คอมมูนิตี้</span>
+    </div>
+  </header>
+
+  <div class="pts-login__layout">
+    <div class="pts-login__card">
+      <header>
+        <p class="pts-login__eyebrow">Welcome back</p>
+        <h2 class="pts-login__title">เข้าสู่ระบบ</h2>
+        <p class="pts-login__sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
+      </header>
+
+      <form class="pts-login__form" id="login-form">
+        <div class="pts-login__field">
+          <label for="email">อีเมล</label>
+          <div class="pts-login__control pts-pw-wrap">
+            <span class="material-symbols-outlined pts-login__ico">mail</span>
+            <input class="pts-login__input" id="email" name="email" placeholder="example@email.com" type="email" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="pts-login__field">
+          <div class="pts-login__field-row">
+            <label for="password">รหัสผ่าน</label>
+            <button type="button" id="forgot-password-btn" class="pts-login__link">ลืมรหัสผ่าน?</button>
+          </div>
+          <div class="pts-login__control pts-pw-wrap">
+            <span class="material-symbols-outlined pts-login__ico">lock</span>
+            <input class="pts-login__input" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1" style="padding-right:2.75rem">
+            <button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+              <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <label class="pts-login__remember" for="remember">
+          <input id="remember" type="checkbox">
+          <span>จำการเข้าสู่ระบบ</span>
+        </label>
+
+        <button class="pts-login__submit" type="submit" id="submit-btn">
+          เข้าสู่ระบบ
+          <span class="material-symbols-outlined" style="font-size:20px">login</span>
+        </button>
+        <p id="login-msg" class="pts-login__msg hidden"></p>
+      </form>
+
+      <p class="pts-login__foot">
+        ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a>
+      </p>
+      <p class="pts-login__copy">© PTS Learning. All Rights Reserved.</p>
     </div>
 
-    <div class="pts-login__brand-mid">
+    <aside class="pts-login__side">
       <div class="pts-login__quote" id="login-quotes">
         <span class="pts-login__quote-mark" aria-hidden="true">“</span>
         <div class="pts-login__quote-panel is-active" data-q="0">
@@ -757,77 +690,12 @@
           </div>
         </div>
       </div>
-    </div>
-
-    </div>
-  </aside>
-
-  <!-- Auth form -->
-  <section class="pts-login__panel">
-    <div class="pts-login__panel-deco" aria-hidden="true">
-      <span></span><span></span><span></span>
-    </div>
-    <div class="pts-login__panel-mesh" aria-hidden="true"></div>
-
-    <div class="pts-login__stack">
-      <div class="pts-login__card">
-        <div class="pts-login__mobile-brand">
-          <p class="pts-login__eyebrow">PTS Learning</p>
-          <p class="pts-login__sub" style="margin:0">Personal Assistant Academy</p>
-        </div>
-
-        <header>
-          <p class="pts-login__eyebrow">Welcome back</p>
-          <h2 class="pts-login__title">เข้าสู่ระบบ</h2>
-          <p class="pts-login__sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
-        </header>
-
-        <form class="pts-login__form" id="login-form">
-          <div class="pts-login__field">
-            <label for="email">อีเมล</label>
-            <div class="pts-login__control pts-pw-wrap">
-              <span class="material-symbols-outlined pts-login__ico">mail</span>
-              <input class="pts-login__input" id="email" name="email" placeholder="example@email.com" type="email" required autocomplete="email">
-            </div>
-          </div>
-
-          <div class="pts-login__field">
-            <div class="pts-login__field-row">
-              <label for="password">รหัสผ่าน</label>
-              <button type="button" id="forgot-password-btn" class="pts-login__link">ลืมรหัสผ่าน?</button>
-            </div>
-            <div class="pts-login__control pts-pw-wrap">
-              <span class="material-symbols-outlined pts-login__ico">lock</span>
-              <input class="pts-login__input" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1" style="padding-right:2.75rem">
-              <button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
-                <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
-              </button>
-            </div>
-          </div>
-
-          <label class="pts-login__remember" for="remember">
-            <input id="remember" type="checkbox">
-            <span>จำการเข้าสู่ระบบ</span>
-          </label>
-
-          <button class="pts-login__submit" type="submit" id="submit-btn">
-            เข้าสู่ระบบ
-            <span class="material-symbols-outlined" style="font-size:20px">login</span>
-          </button>
-          <p id="login-msg" class="pts-login__msg hidden"></p>
-        </form>
-
-        <p class="pts-login__foot">
-          ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a>
-        </p>
-        <p class="pts-login__copy">© PTS Learning. All Rights Reserved.</p>
-      </div>
 
       <div class="pts-login__modes" aria-label="ประเภทการเรียน">
         <a class="pts-login__mode" href="Courses.html?mode=online">
           <i class="pts-login__mode-dot pts-login__mode-dot--online" aria-hidden="true"></i>
           <strong>Online</strong>
-          <span>เรียนได้ทุกที่ ทุกเวลา</span>
+          <span>เรียนได้ทุกที่</span>
         </a>
         <a class="pts-login__mode" href="Courses.html?mode=onsite">
           <i class="pts-login__mode-dot pts-login__mode-dot--onsite" aria-hidden="true"></i>
@@ -837,7 +705,7 @@
         <a class="pts-login__mode" href="Courses.html?mode=hybrid">
           <i class="pts-login__mode-dot pts-login__mode-dot--hybrid" aria-hidden="true"></i>
           <strong>Hybrid</strong>
-          <span>ผสมออนไลน์+ออนไซต์</span>
+          <span>ออนไลน์+ออนไซต์</span>
         </a>
       </div>
 
@@ -846,8 +714,8 @@
         <em><span class="material-symbols-outlined">mark_email_read</span>กู้รหัสด้วย Email OTP</em>
         <em><span class="material-symbols-outlined">verified</span>หลักสูตรรับรองวิชาชีพ</em>
       </div>
-    </div>
-  </section>
+    </aside>
+  </div>
 </main>
 
 <!-- 📦 กล่องป๊อปอัปกู้คืนรหัสผ่านด้วย Email OTP -->
@@ -892,13 +760,11 @@
 </div>
 
 <script>
-  // Quote rotator on brand panel
   (function () {
     const panels = Array.from(document.querySelectorAll('#login-quotes .pts-login__quote-panel'));
     if (panels.length < 2) return;
     let i = 0;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (reduce) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
     setInterval(() => {
       panels[i].classList.remove('is-active');
       i = (i + 1) % panels.length;
@@ -906,7 +772,6 @@
     }, 5200);
   })();
 
-  // Focus icon tint (login fields)
   document.querySelectorAll('.pts-login__control').forEach((wrap) => {
     const input = wrap.querySelector('input');
     const icon = wrap.querySelector(':scope > .pts-login__ico');
@@ -954,24 +819,19 @@
     const email = document.getElementById('reset-email').value.trim();
     const otpBtn = document.getElementById('otp-btn');
     clearResetMsg();
-
     if (!email) {
       showResetMsg('กรุณากรอกอีเมลในระบบก่อนครับ');
       return;
     }
-
     otpBtn.innerText = 'กำลังส่ง...';
     otpBtn.disabled = true;
-
     try {
       const response = await fetch('/api/users/request-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
-
       const result = await response.json();
-
       if (result.success) {
         document.getElementById('otp-verification-zone').classList.remove('opacity-40', 'pointer-events-none');
         const confirmBtn = document.getElementById('confirm-reset-btn');
@@ -1000,12 +860,10 @@
       new_password: document.getElementById('reset-new-password').value
     };
     clearResetMsg();
-
     if (!payload.otp || !payload.new_password) {
       showResetMsg('กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่');
       return;
     }
-
     try {
       const response = await fetch('/api/users/verify-otp-reset', {
         method: 'POST',
@@ -1013,12 +871,8 @@
         body: JSON.stringify(payload)
       });
       const result = await response.json();
-
-      if (result.success) {
-        closeResetModal();
-      } else {
-        showResetMsg(result.message || 'ยืนยันไม่สำเร็จ');
-      }
+      if (result.success) closeResetModal();
+      else showResetMsg(result.message || 'ยืนยันไม่สำเร็จ');
     } catch (err) {
       console.error(err);
       showResetMsg('เกิดข้อผิดพลาดในการเชื่อมต่อ');
@@ -1026,15 +880,13 @@
   }
   window.submitVerifyAndReset = submitVerifyAndReset;
 
-  const form = document.getElementById('login-form');
-  form.addEventListener('submit', async (e) => {
+  document.getElementById('login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = document.getElementById('submit-btn');
     const loginMsg = document.getElementById('login-msg');
     if (loginMsg) { loginMsg.textContent = ''; loginMsg.classList.add('hidden'); }
     submitBtn.textContent = 'กำลังตรวจสอบข้อมูล...';
     submitBtn.disabled = true;
-
     try {
       const response = await fetch('/api/users/login', {
         method: 'POST',
@@ -1048,13 +900,9 @@
       const result = await response.json();
       if (result.success) {
         window.location.href = 'DashbordU.html';
-      } else {
-        if (loginMsg) {
-          loginMsg.textContent = result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
-          loginMsg.classList.remove('hidden');
-        } else {
-          console.error(result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
-        }
+      } else if (loginMsg) {
+        loginMsg.textContent = result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
+        loginMsg.classList.remove('hidden');
       }
     } catch (err) {
       console.error(err);
