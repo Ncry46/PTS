@@ -186,14 +186,21 @@ async function renderSchedules() {
   const now = new Date();
   const start = new Date(now.getTime() + 86400000); start.setMinutes(0,0,0);
   const end = new Date(start.getTime() + 2*3600000);
+  const toLocalInput = (d) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
   document.getElementById('panel').innerHTML = `
     <h2 class="font-bold text-lg mb-3">เพิ่มตารางเรียน</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
         <input id="s-title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
       </label>
-      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับคอร์ส
-        <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2"><option value="">ไม่ผูกคอร์ส</option>${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
+      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับคอร์ส (จำเป็น — ต้องเป็นคอร์สที่นักเรียนสมัครไว้)
+        <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
+          <option value="">-- เลือกคอร์ส --</option>
+          ${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+        </select>
       </label>
       <label class="text-sm font-semibold text-on-surface-variant">วันเวลาเริ่ม
         <input id="s-start" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(start)}">
@@ -211,7 +218,8 @@ async function renderSchedules() {
         <select id="s-mode" class="mt-1 w-full border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
       </label>
     </div>
-    <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มตาราง</button>
+    <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-2">เพิ่มตาราง</button>
+    <p id="schedule-form-msg" class="pts-msg mb-4"></p>
     <h3 class="font-bold mb-2">ตารางที่มีอยู่</h3>
     <div class="space-y-2">${data.map(s => `
       <div class="border rounded-xl p-3 flex justify-between gap-2">
@@ -224,19 +232,28 @@ async function renderSchedules() {
     </div>`;
 
   document.getElementById('add-schedule').onclick = async () => {
-    await api('/api/admin/schedules', {
-      method: 'POST',
-      body: JSON.stringify({
-        title: document.getElementById('s-title').value,
-        course_id: document.getElementById('s-course').value || null,
-        start_at: document.getElementById('s-start').value,
-        end_at: document.getElementById('s-end').value,
-        location: document.getElementById('s-location').value,
-        meeting_url: document.getElementById('s-meeting').value,
-        delivery_mode: document.getElementById('s-mode').value
-      })
-    });
-    renderSchedules();
+    const title = document.getElementById('s-title').value.trim();
+    const courseId = document.getElementById('s-course').value;
+    if (!title) { console.error('กรุณาใส่หัวข้อคลาส'); return; }
+    if (!courseId) { console.error('กรุณาเลือกคอร์สที่ผูกตาราง'); return; }
+    const msg = document.createElement('p');
+    try {
+      await api('/api/admin/schedules', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          course_id: courseId,
+          start_at: document.getElementById('s-start').value,
+          end_at: document.getElementById('s-end').value,
+          location: document.getElementById('s-location').value,
+          meeting_url: document.getElementById('s-meeting').value,
+          delivery_mode: document.getElementById('s-mode').value
+        })
+      });
+      renderSchedules();
+    } catch (e) {
+      alert(e.message || 'เพิ่มตารางไม่สำเร็จ');
+    }
   };
   document.querySelectorAll('.del-schedule').forEach(btn => {
     btn.onclick = async () => { await api(`/api/admin/schedules/${btn.dataset.id}`, { method: 'DELETE' }); renderSchedules(); };

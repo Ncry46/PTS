@@ -464,6 +464,40 @@ async function syncUserSchedules(pool, userId, options = {}) {
     }
 
     const schedules = await listUserFutureSchedules(pool, userId, options.courseId || null);
+    if (!schedules.length) {
+        const hint = await pool.request()
+            .input('userId', sql.Int, userId)
+            .query(`
+                SELECT
+                  (SELECT COUNT(*) FROM BD_PTS.dbo.course_enrollments WHERE user_id = @userId) AS enroll_count,
+                  (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules WHERE flag_use = 1 AND course_id IS NOT NULL AND end_at >= DATEADD(day,-1,GETDATE())) AS schedule_count,
+                  (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules WHERE flag_use = 1 AND course_id IS NULL) AS unbound_count
+            `);
+        const h = hint.recordset[0] || {};
+        let message = 'ยังไม่มีตารางเรียนที่จะซิงค์';
+        if (!h.enroll_count) {
+            message = 'บัญชียังไม่ได้สมัครคอร์ส — ไปหน้าหลักสูตรแล้วกดสมัครเรียนก่อน แล้วค่อยซิงค์';
+        } else if (h.unbound_count > 0 && !h.schedule_count) {
+            message = 'มีตารางในระบบแต่ยังไม่ผูกคอร์ส — ให้แอดมินสร้างตารางใหม่แล้วเลือกคอร์สที่คุณสมัครไว้';
+        } else if (!h.schedule_count) {
+            message = 'ยังไม่มีตารางเรียนในระบบ — ให้แอดมินไป Admin → ตารางเรียน สร้างตารางและเลือกคอร์สที่คุณสมัครไว้';
+        } else {
+            message = 'มีตารางในระบบแล้ว แต่ไม่มีตารางของคอร์สที่คุณสมัคร — ให้แอดมินผูกตารางกับคอร์สที่บัญชีนี้สมัครไว้ หรือสมัครคอร์สที่มีตาราง';
+        }
+        return {
+            success: false,
+            connected: true,
+            synced: 0,
+            total: 0,
+            hint: {
+                enroll_count: h.enroll_count || 0,
+                schedule_count: h.schedule_count || 0,
+                unbound_count: h.unbound_count || 0
+            },
+            message
+        };
+    }
+
     let synced = 0;
     const errors = [];
     for (const schedule of schedules) {
