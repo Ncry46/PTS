@@ -248,6 +248,25 @@
   }
 
   function profileDrawerHtml(name, roleLabel, avatar, isAdmin) {
+    const studentLinks = `
+          <a href="DashbordU.html">แดชบอร์ด</a>
+          <a href="Certificates.html">ใบประกาศ</a>
+          <a href="Payments.html">ชำระเงิน</a>
+          <a href="Favorites.html">รายการโปรด</a>
+          <a href="Settings.html">ตั้งค่า</a>
+          <a href="Schedule.html">ตารางเรียน</a>`;
+
+    const adminLinks = `
+          <a href="Home.html">หน้าแรก</a>
+          <a href="Admin.html#courses">คอร์ส</a>
+          <a href="Admin.html#lessons">บทเรียน</a>
+          <a href="Admin.html#schedules">ตารางเรียน</a>
+          <a href="Admin.html#banners">แบนเนอร์</a>
+          <a href="Admin.html#users">ผู้ใช้</a>
+          <a href="Admin.html#posts">โพสต์</a>
+          <a href="Admin.html#payments">ชำระเงิน</a>
+          <a href="Admin.html#mail">อีเมล OTP</a>`;
+
     return `
       <div id="pts-drawer-backdrop" class="pts-drawer-backdrop" aria-hidden="true"></div>
       <aside id="pts-profile-drawer" class="pts-drawer" aria-label="เมนูบัญชีผู้ใช้">
@@ -260,13 +279,7 @@
           <button type="button" class="pts-drawer__close" id="pts-drawer-close" aria-label="ปิด">×</button>
         </div>
         <nav class="pts-drawer__nav">
-          <a href="DashbordU.html">แดชบอร์ด</a>
-          <a href="Certificates.html">ใบประกาศ</a>
-          <a href="Payments.html">ชำระเงิน</a>
-          <a href="Favorites.html">รายการโปรด</a>
-          <a href="Settings.html">ตั้งค่า</a>
-          <a href="Schedule.html">ตารางเรียน</a>
-          ${isAdmin ? '<a href="Admin.html">แอดมิน</a>' : ''}
+          ${isAdmin ? adminLinks : studentLinks}
           <button type="button" class="pts-drawer__logout" onclick="logout()">ออกจากระบบ</button>
         </nav>
       </aside>`;
@@ -334,9 +347,20 @@
           <a href="Home.html">หน้าแรก</a>
           ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
+          ${isAdmin ? `
+          <a href="Admin.html#courses">คอร์ส</a>
+          <a href="Admin.html#lessons">บทเรียน</a>
+          <a href="Admin.html#schedules">ตารางเรียน</a>
+          <a href="Admin.html#banners">แบนเนอร์</a>
+          <a href="Admin.html#users">ผู้ใช้</a>
+          <a href="Admin.html#posts">โพสต์</a>
+          <a href="Admin.html#payments">ชำระเงิน</a>
+          <a href="Admin.html#mail">อีเมล OTP</a>
+          ` : `
           <a href="Certificates.html">ใบประกาศ</a>
           <a href="Favorites.html">รายการโปรด</a>
           <a href="Settings.html">ตั้งค่า</a>
+          `}
           <button type="button" onclick="logout()" style="color:#ba1a1a">ออกจากระบบ</button>
         </div>
       </nav>

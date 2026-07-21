@@ -12,7 +12,60 @@
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
-  body{font-family:'IBM Plex Sans Thai',sans-serif}.tab-btn.active{background:#974258;color:#fff}
+  body{font-family:'IBM Plex Sans Thai',sans-serif}
+  .admin-shell {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .admin-shell {
+      grid-template-columns: 220px minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+  }
+  .admin-side {
+    background: #fff;
+    border: 1px solid rgba(151,66,88,.14);
+    border-radius: 20px;
+    padding: 14px 12px;
+    box-shadow: 0 8px 24px rgba(28,21,32,.05);
+  }
+  @media (min-width: 900px) {
+    .admin-side { position: sticky; top: calc(var(--pts-nav-h, 68px) + 16px); }
+  }
+  .admin-side__label {
+    margin: 0 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #974258;
+  }
+  .admin-side__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  @media (min-width: 900px) {
+    .admin-side__nav { flex-direction: column; flex-wrap: nowrap; }
+  }
+  .tab-btn {
+    border: 1px solid rgba(151,66,88,.18);
+    background: #fff;
+    color: #1c1520;
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  @media (min-width: 900px) {
+    .tab-btn { width: 100%; border-radius: 12px; }
+  }
+  .tab-btn.active { background: #974258; color: #fff; border-color: #974258; }
+  .admin-main { min-width: 0; }
 </style>
 </head>
 <body class="pts-body text-on-surface">
@@ -30,23 +83,28 @@
     </div>
   </nav>
 </div>
-<main class="pts-main pts-main--wide">
-  <section class="pts-page-hero">
-    <span class="pts-chip mb-3">Admin</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
-    <p class="text-on-surface-variant">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
-  </section>
-  <div class="flex flex-wrap gap-2 mb-4">
-    <button class="tab-btn active px-4 py-2 rounded-full border text-sm font-bold" data-tab="courses">คอร์ส</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="lessons">บทเรียน</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="schedules">ตารางเรียน</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="banners">แบนเนอร์</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="users">ผู้ใช้</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="posts">โพสต์</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="payments">ชำระเงิน</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="mail">อีเมล OTP</button>
+<main class="pts-main pts-main--wide admin-shell">
+  <aside class="admin-side" aria-label="เมนูแอดมิน">
+    <p class="admin-side__label">จัดการระบบ</p>
+    <nav class="admin-side__nav">
+      <button type="button" class="tab-btn active" data-tab="courses">คอร์ส</button>
+      <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
+      <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
+      <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
+      <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
+      <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
+      <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
+      <button type="button" class="tab-btn" data-tab="mail">อีเมล OTP</button>
+    </nav>
+  </aside>
+  <div class="admin-main">
+    <section class="pts-page-hero">
+      <span class="pts-chip mb-3">Admin</span>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
+      <p class="text-on-surface-variant">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
+    </section>
+    <section id="panel" class="pts-panel"></section>
   </div>
-  <section id="panel" class="pts-panel"></section>
 </main>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -553,12 +611,23 @@ const tabs = {
   mail: renderMail
 };
 
+function activateTab(name) {
+  const key = tabs[name] ? name : 'courses';
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === key);
+  });
+  tabs[key]();
+  if (location.hash !== '#' + key) {
+    history.replaceState(null, '', '#' + key);
+  }
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    tabs[btn.dataset.tab]();
-  };
+  btn.onclick = () => activateTab(btn.dataset.tab);
+});
+
+window.addEventListener('hashchange', () => {
+  activateTab((location.hash || '').replace(/^#/, ''));
 });
 
 (async () => {
@@ -567,7 +636,7 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   if ((me.user.role || '').toLowerCase() !== 'admin') {
     return location.href = 'Home.html';
   }
-  await renderCourses();
+  activateTab((location.hash || '').replace(/^#/, '') || 'courses');
 })().catch(err => console.error(err));
 </script>
 <!-- PTS-NAV-INLINE-BOOT -->
@@ -592,6 +661,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 })();
 </script>
 <script src="password-toggle.js?v=20260720e"></script>
-<script src="/comp/navbar.js?v=20260721d"></script>
+<script src="/comp/navbar.js?v=20260721e"></script>
 </body>
 </html>
