@@ -45,6 +45,27 @@
     <p id="profile-msg" class="pts-msg"></p>
   </section>
 
+  <section class="pts-panel mb-5">
+    <h2 class="font-bold text-lg mb-2">Google Calendar</h2>
+    <p class="text-sm text-on-surface-variant mb-4">
+      เชื่อมปฏิทิน Google เพื่อรับการแจ้งเตือนอัตโนมัติก่อนวันเรียนของคอร์สที่สมัครไว้
+      (แจ้งเตือนล่วงหน้า 1 วัน และ 1 ชั่วโมง)
+    </p>
+    <div id="gcal-status-box" class="rounded-2xl border border-[rgba(151,66,88,.14)] bg-[#faf7f8] p-4 mb-4">
+      <p id="gcal-status-text" class="text-sm text-on-surface-variant">กำลังตรวจสอบสถานะ...</p>
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="/api/google/oauth/start">เชื่อมต่อ Google Calendar</a>
+      <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียนตอนนี้</button>
+      <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
+    </div>
+    <p id="gcal-msg" class="pts-msg"></p>
+    <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-3 hidden">
+      ผู้ดูแลระบบต้องตั้งค่า <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> ในไฟล์
+      <code>.env</code> หรือ <code>backend/google.local.js</code> (ดูตัวอย่างที่ <code>backend/google.local.example.js</code>)
+    </p>
+  </section>
+
   <section class="pts-panel">
     <h2 class="font-bold text-lg mb-2">เปลี่ยนรหัสผ่าน</h2>
     <p class="text-sm text-on-surface-variant mb-4">ระบบส่ง OTP ไปที่อีเมลบัญชีเพื่อยืนยันก่อนเปลี่ยนรหัสผ่าน</p>
@@ -81,7 +102,94 @@
   document.getElementById('email').value = profile.data.email || '';
   document.getElementById('phone').value = profile.data.phone || '';
   document.getElementById('url').value = profile.data.Url || '';
+  await refreshGcalStatus();
 })();
+
+async function refreshGcalStatus() {
+  const statusText = document.getElementById('gcal-status-text');
+  const connectBtn = document.getElementById('gcal-connect');
+  const syncBtn = document.getElementById('gcal-sync');
+  const disconnectBtn = document.getElementById('gcal-disconnect');
+  const hint = document.getElementById('gcal-setup-hint');
+  const msg = document.getElementById('gcal-msg');
+  try {
+    const st = await fetch('/api/google/status', { credentials: 'include' }).then(r => r.json());
+    if (!st.configured) {
+      statusText.textContent = 'ระบบยังไม่ได้ตั้งค่า Google OAuth — ติดต่อผู้ดูแลเพื่อใส่ Client ID/Secret';
+      connectBtn.classList.add('hidden');
+      syncBtn.classList.add('hidden');
+      disconnectBtn.classList.add('hidden');
+      hint.classList.remove('hidden');
+      return;
+    }
+    hint.classList.add('hidden');
+    if (st.connected) {
+      statusText.textContent = st.google_email
+        ? `เชื่อมต่อแล้วกับ ${st.google_email} — ตารางเรียนจะถูกเพิ่มลงปฏิทินพร้อมแจ้งเตือน`
+        : 'เชื่อมต่อ Google Calendar แล้ว — ตารางเรียนจะถูกซิงค์พร้อมแจ้งเตือน';
+      connectBtn.classList.add('hidden');
+      syncBtn.classList.remove('hidden');
+      disconnectBtn.classList.remove('hidden');
+    } else {
+      statusText.textContent = 'ยังไม่ได้เชื่อมต่อ — กดปุ่มด้านล่างเพื่ออนุญาตให้ PTS เพิ่มตารางเรียนลงปฏิทินของคุณ';
+      connectBtn.classList.remove('hidden');
+      syncBtn.classList.add('hidden');
+      disconnectBtn.classList.add('hidden');
+    }
+  } catch (e) {
+    statusText.textContent = 'ตรวจสอบสถานะไม่สำเร็จ: ' + e.message;
+  }
+
+  const params = new URLSearchParams(location.search);
+  const gcal = params.get('gcal');
+  if (gcal === 'connected') {
+    msg.textContent = 'เชื่อมต่อ Google Calendar สำเร็จ และกำลังซิงค์ตารางเรียน';
+    msg.className = 'pts-msg pts-msg--ok';
+    history.replaceState({}, '', 'Settings.html');
+  } else if (gcal === 'error') {
+    msg.textContent = params.get('msg') || 'เชื่อมต่อไม่สำเร็จ';
+    msg.className = 'pts-msg pts-msg--err';
+    history.replaceState({}, '', 'Settings.html');
+  }
+}
+
+document.getElementById('gcal-sync').onclick = async () => {
+  const btn = document.getElementById('gcal-sync');
+  const msg = document.getElementById('gcal-msg');
+  btn.disabled = true;
+  btn.textContent = 'กำลังซิงค์...';
+  try {
+    const res = await fetch('/api/google/sync', { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    msg.textContent = data.message || '';
+    msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'pts-msg pts-msg--err';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ซิงค์ตารางเรียนตอนนี้';
+  }
+};
+
+document.getElementById('gcal-disconnect').onclick = async () => {
+  const msg = document.getElementById('gcal-msg');
+  try {
+    const res = await fetch('/api/google/disconnect', {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ delete_events: true })
+    });
+    const data = await res.json();
+    msg.textContent = data.message || '';
+    msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
+    await refreshGcalStatus();
+  } catch (e) {
+    msg.textContent = e.message;
+    msg.className = 'pts-msg pts-msg--err';
+  }
+};
 
 document.getElementById('save-profile').onclick = async () => {
   const res = await fetch('/api/profile', {

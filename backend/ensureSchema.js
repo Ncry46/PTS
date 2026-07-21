@@ -88,6 +88,26 @@ async function ensureLearningSchema(pool) {
             is_read BIT NOT NULL CONSTRAINT DF_notifications_read DEFAULT (0),
             created_at DATETIME NOT NULL CONSTRAINT DF_notifications_created DEFAULT (GETDATE())
          )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'google_calendar_links')
+         CREATE TABLE dbo.google_calendar_links (
+            user_id INT NOT NULL PRIMARY KEY,
+            google_email NVARCHAR(255) NULL,
+            access_token NVARCHAR(MAX) NOT NULL,
+            refresh_token NVARCHAR(MAX) NULL,
+            token_expiry DATETIME NULL,
+            calendar_id NVARCHAR(128) NOT NULL CONSTRAINT DF_gcal_calendar DEFAULT ('primary'),
+            connected_at DATETIME NOT NULL CONSTRAINT DF_gcal_connected DEFAULT (GETDATE()),
+            updated_at DATETIME NOT NULL CONSTRAINT DF_gcal_updated DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'google_calendar_events')
+         CREATE TABLE dbo.google_calendar_events (
+            map_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            user_id INT NOT NULL,
+            schedule_id INT NOT NULL,
+            google_event_id NVARCHAR(255) NOT NULL,
+            synced_at DATETIME NOT NULL CONSTRAINT DF_gcal_events_synced DEFAULT (GETDATE()),
+            CONSTRAINT UQ_gcal_events_user_schedule UNIQUE (user_id, schedule_id)
+         )`,
         `IF COL_LENGTH('dbo.courses_main', 'price') IS NULL
          ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
         `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL

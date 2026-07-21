@@ -2,6 +2,7 @@ const express = require('express');
 const sql = require('mssql');
 const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = require('./mailSecrets');
 const { issueEmailOtp, getMailStatus } = require('./emailOtp');
+const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
 
 function createAdminRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -272,6 +273,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     OUTPUT INSERTED.schedule_id
                     VALUES (@courseId, @title, @startAt, @endAt, @location, @meeting, @mode, 1)
                 `);
+            const scheduleId = result.recordset[0].schedule_id;
+            syncScheduleToEnrolledUsers(pool, scheduleId).catch(() => {});
             res.json({ success: true, message: 'เพิ่มตารางเรียนแล้ว', data: result.recordset[0] });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -286,6 +289,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             await pool.request()
                 .input('scheduleId', sql.Int, scheduleId)
                 .query(`UPDATE BD_PTS.dbo.class_schedules SET flag_use = 0 WHERE schedule_id = @scheduleId`);
+            removeScheduleFromAllCalendars(pool, scheduleId).catch(() => {});
             res.json({ success: true, message: 'ลบตารางเรียนแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

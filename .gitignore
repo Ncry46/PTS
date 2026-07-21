@@ -1,6 +1,7 @@
 node_modules/.cache/
 backend/mail.secrets.json
 backend/mail.local.js
+backend/google.local.js
 .env
 .env.local
 *.log

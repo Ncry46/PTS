@@ -29,6 +29,12 @@
     <span class="pts-chip mb-3">My Schedule</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตารางเรียนของฉัน</h1>
     <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากคอร์สที่คุณสมัครไว้เท่านั้น</p>
+    <div id="gcal-bar" class="mt-4 flex flex-wrap items-center gap-2 hidden">
+      <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="/api/google/oauth/start">เชื่อม Google Calendar</a>
+      <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ไปยังปฏิทิน</button>
+      <a class="pts-btn pts-btn-outline" href="Settings.html">ตั้งค่าปฏิทิน</a>
+      <span id="gcal-note" class="text-sm text-on-surface-variant"></span>
+    </div>
   </section>
   <div id="schedule-list" class="space-y-3">
     <div class="pts-empty">กำลังโหลดตาราง...</div>
@@ -37,9 +43,56 @@
 <div class="pts-footer-note">© PTS Learning</div>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+async function loadGcalBar() {
+  const bar = document.getElementById('gcal-bar');
+  const connectBtn = document.getElementById('gcal-connect');
+  const syncBtn = document.getElementById('gcal-sync');
+  const note = document.getElementById('gcal-note');
+  try {
+    const st = await fetch('/api/google/status', { credentials: 'include' }).then(r => r.json());
+    if (!st.configured) {
+      bar.classList.add('hidden');
+      return;
+    }
+    bar.classList.remove('hidden');
+    if (st.connected) {
+      connectBtn.classList.add('hidden');
+      syncBtn.classList.remove('hidden');
+      note.textContent = st.google_email
+        ? `เชื่อมแล้ว: ${st.google_email} (แจ้งเตือนล่วงหน้า 1 วัน / 1 ชม.)`
+        : 'เชื่อม Google Calendar แล้ว — กดซิงค์เพื่ออัปเดต';
+    } else {
+      connectBtn.classList.remove('hidden');
+      syncBtn.classList.add('hidden');
+      note.textContent = 'เชื่อมปฏิทินเพื่อรับการแจ้งเตือนก่อนวันเรียน';
+    }
+  } catch (_) {
+    bar.classList.add('hidden');
+  }
+}
+
+document.getElementById('gcal-sync').onclick = async () => {
+  const btn = document.getElementById('gcal-sync');
+  const note = document.getElementById('gcal-note');
+  btn.disabled = true;
+  btn.textContent = 'กำลังซิงค์...';
+  try {
+    const res = await fetch('/api/google/sync', { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    note.textContent = data.message || (res.ok ? 'ซิงค์แล้ว' : 'ซิงค์ไม่สำเร็จ');
+  } catch (e) {
+    note.textContent = e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'ซิงค์ไปยังปฏิทิน';
+  }
+};
+
 async function load() {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
+  await loadGcalBar();
   const res = await fetch('/api/my/schedules', { credentials: 'include' });
   const data = await res.json();
   const el = document.getElementById('schedule-list');

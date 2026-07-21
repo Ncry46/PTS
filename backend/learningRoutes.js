@@ -1,5 +1,6 @@
 const express = require('express');
 const sql = require('mssql');
+const { syncAfterEnroll } = require('./googleCalendar');
 
 function createLearningRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -391,6 +392,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         INSERT INTO BD_PTS.dbo.course_enrollments (user_id, course_id, progress_percent, status)
                         VALUES (@userId, @courseId, 0, 'in_progress')
                     `);
+                syncAfterEnroll(pool, user.user_id, row.course_id).catch(() => {});
             }
 
             res.json({ success: true, message: 'ยืนยันชำระเงินสำเร็จ และเปิดสิทธิ์เรียนแล้ว' });

@@ -9,6 +9,8 @@ const { ensureLearningSchema, createNotification } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createProfileRouter } = require('./profileRoutes');
+const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
+const { syncAfterEnroll } = require('./googleCalendar');
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 
@@ -762,6 +764,9 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
                 VALUES (@userId, @courseId, 0, 'in_progress')
             `);
 
+        // ซิงค์ตารางเรียนเข้า Google Calendar (ถ้าผู้ใช้เชื่อมไว้แล้ว)
+        syncAfterEnroll(pool, user.user_id, courseId).catch(() => {});
+
         res.json({
             success: true,
             already_enrolled: false,
@@ -874,6 +879,7 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 // -------------------------------------------------------------------------
 app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
 app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
+app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {
