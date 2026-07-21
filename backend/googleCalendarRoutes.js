@@ -2,6 +2,7 @@ const express = require('express');
 const {
     isGoogleConfigured,
     publicGoogleStatus,
+    diagnoseGoogleSetup,
     buildAuthUrl,
     exchangeCode,
     fetchGoogleEmail,
@@ -14,6 +15,10 @@ const {
 
 function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
+
+    router.get('/google/diagnose', (req, res) => {
+        res.json(diagnoseGoogleSetup());
+    });
 
     router.get('/google/status', async (req, res) => {
         const base = publicGoogleStatus();
@@ -44,8 +49,9 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         if (!isGoogleConfigured()) {
             return res.status(503).json({
                 success: false,
-                message: 'ยังไม่ได้ตั้งค่า Google OAuth (GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET)',
-                ...publicGoogleStatus()
+                message: 'ยังไม่ได้ตั้งค่า Google OAuth — ตรวจ backend/google.local.js หรือรัน /api/google/diagnose',
+                ...publicGoogleStatus(),
+                diagnose: diagnoseGoogleSetup()
             });
         }
 
@@ -53,12 +59,26 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         req.session.googleOAuthState = state;
         req.session.googleOAuthUserId = user.user_id;
 
+        const finish = (url) => {
+            const wantJson = req.query.redirect === '0'
+                || (req.headers.accept && String(req.headers.accept).includes('application/json'));
+            if (wantJson) return res.json({ success: true, url });
+            return res.redirect(url);
+        };
+
         try {
             const url = buildAuthUrl(state);
-            if (req.query.redirect === '0' || req.headers.accept && String(req.headers.accept).includes('application/json')) {
-                return res.json({ success: true, url });
+            // สำคัญ: บันทึก session ก่อนเด้งไป Google ไม่งั้น state หาย
+            if (typeof req.session.save === 'function') {
+                return req.session.save((err) => {
+                    if (err) {
+                        console.error('[google-calendar] session.save:', err.message);
+                        return res.status(500).json({ success: false, message: 'บันทึก session ไม่สำเร็จ' });
+                    }
+                    return finish(url);
+                });
             }
-            return res.redirect(url);
+            return finish(url);
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });
         }
@@ -76,8 +96,13 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         const userId = (req.session && req.session.googleOAuthUserId)
             || (req.session && req.session.user && req.session.user.user_id);
 
-        if (!code || !state || !sessionState || state !== sessionState || !userId) {
-            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent('การยืนยัน Google ไม่สำเร็จ กรุณาลองใหม่')}`);
+        if (!code || !userId) {
+            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent('การยืนยัน Google ไม่สำเร็จ (ไม่มี code หรือยังไม่ล็อกอิน) กรุณาเข้าสู่ระบบแล้วลองใหม่')}`);
+        }
+
+        // ถ้า state ใน session หาย (เบราว์เซอร์บางตัว) ยังให้ผ่านได้เมื่อมี user login อยู่
+        if (sessionState && state && sessionState !== state) {
+            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent('การยืนยัน Google ไม่สำเร็จ (state ไม่ตรง) กรุณาลองใหม่')}`);
         }
 
         try {
@@ -89,7 +114,6 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
             delete req.session.googleOAuthState;
             delete req.session.googleOAuthUserId;
 
-            // Sync schedules in background after connect
             syncUserSchedules(pool, userId, { notify: true }).catch((err) => {
                 console.warn('[google-calendar] post-connect sync:', err.message);
             });

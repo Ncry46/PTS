@@ -17,9 +17,27 @@ const SCOPES = ['https://www.googleapis.com/auth/calendar.events', 'openid', 'em
 const TIMEZONE = 'Asia/Bangkok';
 
 function readLocalGoogle() {
+    const localPath = path.join(__dirname, 'google.local.js');
     try {
+        if (!fs.existsSync(localPath)) return {};
+        const buf = fs.readFileSync(localPath);
+        let text;
+        // PowerShell Set-Content มักเขียน UTF-16 LE (FF FE)
+        if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) {
+            text = buf.toString('utf16le');
+        } else {
+            text = buf.toString('utf8').replace(/^\uFEFF/, '');
+        }
+        const match = text.match(/module\.exports\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
+        if (match) {
+            // eslint-disable-next-line no-new-func
+            const obj = Function('"use strict"; return (' + match[1] + ')')();
+            return obj && typeof obj === 'object' ? obj : {};
+        }
+        delete require.cache[require.resolve('./google.local.js')];
         return require('./google.local.js') || {};
-    } catch (_) {
+    } catch (err) {
+        console.warn('[google-calendar] อ่าน google.local.js ไม่สำเร็จ:', err.message);
         return {};
     }
 }
@@ -28,10 +46,12 @@ function getGoogleConfig() {
     const local = readLocalGoogle();
     const baseUrl = (process.env.APP_BASE_URL || local.appBaseUrl || 'http://localhost:3000').replace(/\/$/, '');
     return {
-        clientId: process.env.GOOGLE_CLIENT_ID || local.clientId || '',
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET || local.clientSecret || '',
-        redirectUri: process.env.GOOGLE_REDIRECT_URI || local.redirectUri || `${baseUrl}/api/google/oauth/callback`,
-        appBaseUrl: baseUrl
+        clientId: String(process.env.GOOGLE_CLIENT_ID || local.clientId || '').trim(),
+        clientSecret: String(process.env.GOOGLE_CLIENT_SECRET || local.clientSecret || '').trim(),
+        redirectUri: String(process.env.GOOGLE_REDIRECT_URI || local.redirectUri || `${baseUrl}/api/google/oauth/callback`).trim(),
+        appBaseUrl: baseUrl,
+        hasLocalFile: fs.existsSync(path.join(__dirname, 'google.local.js')),
+        localKeys: Object.keys(local || {})
     };
 }
 
@@ -45,7 +65,37 @@ function publicGoogleStatus() {
     return {
         configured: isGoogleConfigured(),
         redirectUri: c.redirectUri,
-        appBaseUrl: c.appBaseUrl
+        appBaseUrl: c.appBaseUrl,
+        hasLocalFile: c.hasLocalFile,
+        clientIdHint: c.clientId ? (c.clientId.slice(0, 12) + '…') : null
+    };
+}
+
+function diagnoseGoogleSetup() {
+    const c = getGoogleConfig();
+    const localPath = path.join(__dirname, 'google.local.js');
+    let fileBytes = 0;
+    let fileEncodingGuess = 'missing';
+    if (fs.existsSync(localPath)) {
+        const buf = fs.readFileSync(localPath);
+        fileBytes = buf.length;
+        if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) fileEncodingGuess = 'utf16le-bom';
+        else if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) fileEncodingGuess = 'utf8-bom';
+        else fileEncodingGuess = 'utf8-or-ascii';
+    }
+    return {
+        success: true,
+        configured: isGoogleConfigured(),
+        hasLocalFile: c.hasLocalFile,
+        localPath,
+        fileBytes,
+        fileEncodingGuess,
+        clientIdHint: c.clientId ? (c.clientId.slice(0, 20) + '…') : null,
+        hasClientSecret: Boolean(c.clientSecret),
+        redirectUri: c.redirectUri,
+        appBaseUrl: c.appBaseUrl,
+        moduleFile: path.join(__dirname, 'googleCalendar.js'),
+        moduleExists: fs.existsSync(path.join(__dirname, 'googleCalendar.js'))
     };
 }
 
@@ -514,6 +564,7 @@ function newOAuthState() {
 module.exports = {
     isGoogleConfigured,
     publicGoogleStatus,
+    diagnoseGoogleSetup,
     getGoogleConfig,
     buildAuthUrl,
     exchangeCode,
