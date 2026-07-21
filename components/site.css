@@ -650,6 +650,7 @@ input.pts-pw-input::-ms-clear {
 @media (max-width: 767px) {
   .pts-nav__hide-mobile { display: none !important; }
 }
+
 /* —— Home hero banner carousel —— */
 .pts-hero-banner {
   position: relative;

@@ -2,7 +2,7 @@
         <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260721e">
+        <link rel="stylesheet" href="site.css?v=20260721f">
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
                 tailwind.config = {
@@ -123,73 +123,126 @@
 </div>
 
 <main>
-<!-- Hero Banner Carousel -->
+<!-- Hero Banner Carousel — full panel (text + image + badge) rotates -->
 <section class="pts-hero-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
   <div class="pts-hero-banner__wash" aria-hidden="true"></div>
-  <div class="pts-hero-banner__inner">
-    <div class="pts-hero-banner__copy">
-      <p class="pts-hero-banner__eyebrow">PTS Learning</p>
-      <h1 class="pts-hero-banner__title">
-        ยกระดับทักษะ <span>Personal Assistant</span> สู่มาตรฐานมืออาชีพ
-      </h1>
-      <p class="pts-hero-banner__lead">
-        เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ
-      </p>
-      <div class="pts-hero-banner__actions" id="home-hero-actions">
-        <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Courses.html">ดูหลักสูตร</a>
-        <a id="home-register-btn" class="pts-btn pts-btn-outline" href="Register.html">สมัครสมาชิก</a>
-      </div>
-    </div>
 
-    <div class="pts-hero-banner__media">
-      <div class="pts-hero-banner__stage" id="hero-stage">
-        <figure class="pts-hero-banner__slide is-active" data-slide="0">
-          <img
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1bLgj4_cdFQwufD7fHr7mIzwwLX1eg6KHtRGNWkUYTSFBNEzOkfgN5Bpvqx4pzCO1HDdnOeKyf9kSglaEJZ0oilzaKD-actnGqN9yHVSPnMsVEePg6HbyhjRFyukb2cFtg15dFQG8pw7GhjRJ6qCiFxBqsOU9FtRQjAWKZJHfKjZIdK__xUHPQGyylmAfalj9Psv-EiJd16IvIbdHQRwdmdkZQgSL50gh22cqBbgCWExhU_x5NFwAg"
-            alt="ผู้ช่วยมืออาชีพทำงานที่โต๊ะด้วยแล็ปท็อป"
-            width="1200"
-            height="1200"
-            decoding="async"
-            fetchpriority="high">
-        </figure>
-        <figure class="pts-hero-banner__slide" data-slide="1">
-          <img
-            src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
-            alt="ผู้เชี่ยวชาญวางแผนงานอย่างมืออาชีพ"
-            width="1200"
-            height="1200"
-            decoding="async"
-            loading="lazy">
-        </figure>
-        <figure class="pts-hero-banner__slide" data-slide="2">
-          <img
-            src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
-            alt="ทีมงานประชุมพัฒนาทักษะการทำงาน"
-            width="1200"
-            height="1200"
-            decoding="async"
-            loading="lazy">
-        </figure>
+  <div class="pts-hero-banner__viewport" id="hero-stage">
+    <!-- Slide 1 -->
+    <article class="pts-hero-banner__panel is-active" data-slide="0" aria-hidden="false">
+      <div class="pts-hero-banner__inner">
+        <div class="pts-hero-banner__copy">
+          <p class="pts-hero-banner__eyebrow">PTS Learning</p>
+          <h1 class="pts-hero-banner__title">
+            ยกระดับทักษะ <span>Personal Assistant</span> สู่มาตรฐานมืออาชีพ
+          </h1>
+          <p class="pts-hero-banner__lead">
+            เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ
+          </p>
+          <div class="pts-hero-banner__actions">
+            <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Courses.html">ดูหลักสูตร</a>
+            <a class="pts-btn pts-btn-outline home-register-btn" href="Register.html">สมัครสมาชิก</a>
+          </div>
+        </div>
+        <div class="pts-hero-banner__media">
+          <figure class="pts-hero-banner__frame">
+            <img
+              src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1bLgj4_cdFQwufD7fHr7mIzwwLX1eg6KHtRGNWkUYTSFBNEzOkfgN5Bpvqx4pzCO1HDdnOeKyf9kSglaEJZ0oilzaKD-actnGqN9yHVSPnMsVEePg6HbyhjRFyukb2cFtg15dFQG8pw7GhjRJ6qCiFxBqsOU9FtRQjAWKZJHfKjZIdK__xUHPQGyylmAfalj9Psv-EiJd16IvIbdHQRwdmdkZQgSL50gh22cqBbgCWExhU_x5NFwAg"
+              alt="ผู้ช่วยมืออาชีพทำงานที่โต๊ะด้วยแล็ปท็อป"
+              width="1200" height="1200" decoding="async" fetchpriority="high">
+          </figure>
+          <div class="pts-hero-banner__badge">
+            <span class="pts-hero-banner__badge-icon">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
+            </span>
+            <span>
+              <strong>Certified</strong>
+              <small>หลักสูตรรับรองวิชาชีพ</small>
+            </span>
+          </div>
+        </div>
       </div>
+    </article>
 
-      <div class="pts-hero-banner__badge" aria-hidden="true">
-        <span class="pts-hero-banner__badge-icon">
-          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">check_circle</span>
-        </span>
-        <span>
-          <strong>Certified</strong>
-          <small>หลักสูตรรับรองวิชาชีพ</small>
-        </span>
+    <!-- Slide 2 -->
+    <article class="pts-hero-banner__panel" data-slide="1" aria-hidden="true">
+      <div class="pts-hero-banner__inner">
+        <div class="pts-hero-banner__copy">
+          <p class="pts-hero-banner__eyebrow">เรียนได้ทุกที่</p>
+          <h1 class="pts-hero-banner__title">
+            เลือกสไตล์การเรียน <span>Online · Onsite · Hybrid</span> ได้ตามชีวิตคุณ
+          </h1>
+          <p class="pts-hero-banner__lead">
+            จัดตารางเรียนเอง เช็กอินออนไซต์ด้วย QR และเรียนต่อออนไลน์ได้เมื่อติดงาน — ครบในแพลตฟอร์มเดียว
+          </p>
+          <div class="pts-hero-banner__actions">
+            <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Courses.html?mode=online">เริ่มเลือกโหมดเรียน</a>
+            <a class="pts-btn pts-btn-outline home-register-btn" href="Register.html">สมัครสมาชิก</a>
+          </div>
+        </div>
+        <div class="pts-hero-banner__media">
+          <figure class="pts-hero-banner__frame">
+            <img
+              src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
+              alt="ผู้เชี่ยวชาญวางแผนงานอย่างมืออาชีพ"
+              width="1200" height="1200" decoding="async" loading="lazy">
+          </figure>
+          <div class="pts-hero-banner__badge">
+            <span class="pts-hero-banner__badge-icon">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">schedule</span>
+            </span>
+            <span>
+              <strong>Flexible</strong>
+              <small>เรียนได้ตามตารางงานจริง</small>
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
+    </article>
+
+    <!-- Slide 3 -->
+    <article class="pts-hero-banner__panel" data-slide="2" aria-hidden="true">
+      <div class="pts-hero-banner__inner">
+        <div class="pts-hero-banner__copy">
+          <p class="pts-hero-banner__eyebrow">พร้อมใบประกาศ</p>
+          <h1 class="pts-hero-banner__title">
+            จบหลักสูตรได้ <span>ใบประกาศนียบัตร</span> ที่นำไปใช้ต่อได้จริง
+          </h1>
+          <p class="pts-hero-banner__lead">
+            เรียนครบ ทำแบบทดสอบผ่านเกณฑ์ แล้วรับใบประกาศดิจิทัลเก็บในโปรไฟล์ พร้อมคอมมูนิตี้เพื่อนร่วมอาชีพ
+          </p>
+          <div class="pts-hero-banner__actions">
+            <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Certificates.html">ดูใบประกาศ</a>
+            <a class="pts-btn pts-btn-outline" href="Community.html">เข้าคอมมูนิตี้</a>
+          </div>
+        </div>
+        <div class="pts-hero-banner__media">
+          <figure class="pts-hero-banner__frame">
+            <img
+              src="https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&amp;fit=crop&amp;w=1200&amp;q=80"
+              alt="ทีมงานประชุมพัฒนาทักษะการทำงาน"
+              width="1200" height="1200" decoding="async" loading="lazy">
+          </figure>
+          <div class="pts-hero-banner__badge">
+            <span class="pts-hero-banner__badge-icon">
+              <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">workspace_premium</span>
+            </span>
+            <span>
+              <strong>Certificate</strong>
+              <small>เก็บใบประกาศในระบบได้ทันที</small>
+            </span>
+          </div>
+        </div>
+      </div>
+    </article>
   </div>
 
   <div class="pts-hero-banner__nav" role="group" aria-label="สลับแบนเนอร์">
-    <button type="button" class="pts-hero-banner__arrow" id="hero-prev" aria-label="รูปก่อนหน้า">
+    <button type="button" class="pts-hero-banner__arrow" id="hero-prev" aria-label="แบนเนอร์ก่อนหน้า">
       <span class="material-symbols-outlined">chevron_left</span>
     </button>
-    <div class="pts-hero-banner__dots" id="hero-dots" role="tablist" aria-label="เลือกภาพแบนเนอร์"></div>
-    <button type="button" class="pts-hero-banner__arrow" id="hero-next" aria-label="รูปถัดไป">
+    <div class="pts-hero-banner__dots" id="hero-dots" role="tablist" aria-label="เลือกแบนเนอร์"></div>
+    <button type="button" class="pts-hero-banner__arrow" id="hero-next" aria-label="แบนเนอร์ถัดไป">
       <span class="material-symbols-outlined">chevron_right</span>
     </button>
   </div>
@@ -495,7 +548,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allCourses = [];
   let activeMode = '';
 
-  // Hero image carousel
+  // Hero full-banner carousel (text + image + badge)
   (function initHeroBanner() {
     const stage = document.getElementById('hero-stage');
     const dotsBox = document.getElementById('hero-dots');
@@ -504,20 +557,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     const banner = document.querySelector('.pts-hero-banner');
     if (!stage || !dotsBox) return;
 
-    const slides = Array.from(stage.querySelectorAll('.pts-hero-banner__slide'));
+    const slides = Array.from(stage.querySelectorAll('.pts-hero-banner__panel'));
     if (slides.length < 2) return;
 
     let index = 0;
     let timer = null;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const INTERVAL = 5500;
+    const INTERVAL = 6500;
 
     slides.forEach((_, i) => {
       const dot = document.createElement('button');
       dot.type = 'button';
       dot.className = 'pts-hero-banner__dot' + (i === 0 ? ' is-active' : '');
       dot.setAttribute('role', 'tab');
-      dot.setAttribute('aria-label', 'ภาพที่ ' + (i + 1));
+      dot.setAttribute('aria-label', 'แบนเนอร์ที่ ' + (i + 1));
       dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
       dot.addEventListener('click', () => goTo(i, true));
       dotsBox.appendChild(dot);
@@ -527,7 +580,11 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function goTo(next, userAction) {
       index = (next + slides.length) % slides.length;
-      slides.forEach((slide, i) => slide.classList.toggle('is-active', i === index));
+      slides.forEach((slide, i) => {
+        const on = i === index;
+        slide.classList.toggle('is-active', on);
+        slide.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
       dots.forEach((dot, i) => {
         const on = i === index;
         dot.classList.toggle('is-active', on);
@@ -579,7 +636,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   try {
     const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
     if (me.loggedIn) {
-      document.getElementById('home-register-btn')?.remove();
+      document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
     }
   } catch (_) {}
 
