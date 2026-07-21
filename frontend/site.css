@@ -46,6 +46,12 @@ body.pts-body {
   overflow-x: hidden;
 }
 
+/* Login owns its own sectioned palette — do not wash with the light shell bg */
+body.pts-body.pts-login {
+  background: #241820;
+  color: #1c1520;
+}
+
 body.pts-body > #app-navbar { flex: 0 0 auto; }
 
 a { color: inherit; }
