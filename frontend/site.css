@@ -25,6 +25,7 @@
   --pts-wash-b: rgba(61, 90, 76, 0.08);
   --pts-wash-top: #faf7f8;
   --pts-wash-bottom: #efeceb;
+  --pts-input-bg: #faf7f8;
 }
 
 html[data-theme="dark"] {
@@ -48,6 +49,7 @@ html[data-theme="dark"] {
   --pts-wash-b: rgba(61, 90, 76, 0.16);
   --pts-wash-top: #161218;
   --pts-wash-bottom: #0e0c10;
+  --pts-input-bg: #242028;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -276,12 +278,13 @@ a { color: inherit; }
   right: 0;
   top: calc(100% + 8px);
   width: 200px;
-  background: #fff;
+  background: var(--pts-surface);
   border: 1px solid var(--pts-border);
   border-radius: 14px;
   box-shadow: var(--pts-shadow);
   overflow: hidden;
   z-index: 60;
+  color: var(--pts-text);
 }
 
 .pts-dropdown a,
@@ -313,7 +316,7 @@ a { color: inherit; }
 .pts-mobile-menu {
   display: none;
   border-top: 1px solid var(--pts-border);
-  background: #fff;
+  background: var(--pts-nav-bg, var(--pts-surface));
   padding: 10px 16px 14px;
 }
 
@@ -381,12 +384,13 @@ table { max-width: 100%; }
   border-radius: calc(var(--pts-radius) + 4px);
   padding: 28px 24px;
   background:
-    linear-gradient(125deg, rgba(151, 66, 88, 0.14) 0%, rgba(255,255,255,0.95) 42%, #fff 100%);
+    linear-gradient(125deg, color-mix(in srgb, var(--pts-primary) 18%, transparent) 0%, color-mix(in srgb, var(--pts-surface) 92%, transparent) 42%, var(--pts-surface) 100%);
   border: 1px solid var(--pts-border);
   box-shadow: var(--pts-shadow);
   margin-bottom: 28px;
   position: relative;
   overflow: hidden;
+  color: var(--pts-text);
 }
 
 .pts-page-hero::after {
@@ -397,8 +401,18 @@ table { max-width: 100%; }
   width: 160px;
   height: 160px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(151, 66, 88, 0.12), transparent 70%);
+  background: radial-gradient(circle, color-mix(in srgb, var(--pts-primary) 16%, transparent), transparent 70%);
   pointer-events: none;
+}
+
+html[data-theme="dark"] .pts-page-hero {
+  background:
+    linear-gradient(125deg, rgba(232, 149, 168, 0.16) 0%, var(--pts-surface-2) 45%, var(--pts-surface) 100%);
+}
+
+.pts-page-hero p,
+.pts-page-hero .text-on-surface-variant {
+  color: var(--pts-muted);
 }
 
 @media (min-width: 768px) {
@@ -528,10 +542,15 @@ table { max-width: 100%; }
   justify-content: space-between;
   padding: 14px 16px;
   border-radius: 14px;
-  background: linear-gradient(90deg, #fff8eb, #fff);
-  border: 1px solid #ead9a8;
-  color: #6a5420;
+  background: linear-gradient(90deg, color-mix(in srgb, #d4a017 18%, var(--pts-surface)), var(--pts-surface));
+  border: 1px solid color-mix(in srgb, #d4a017 35%, var(--pts-border));
+  color: var(--pts-text);
   margin-bottom: 18px;
+}
+html[data-theme="dark"] .pts-auth-banner {
+  background: linear-gradient(90deg, rgba(212, 160, 23, 0.16), var(--pts-surface));
+  border-color: rgba(212, 160, 23, 0.28);
+  color: var(--pts-muted);
 }
 
 .pts-like-active { color: var(--pts-primary) !important; }
@@ -564,7 +583,7 @@ textarea.pts-input {
   padding: 11px 14px;
   font: inherit;
   font-size: 15px;
-  background: #fff;
+  background: var(--pts-surface);
   color: var(--pts-text);
   outline: none;
   transition: border-color .15s ease, box-shadow .15s ease;
@@ -572,11 +591,11 @@ textarea.pts-input {
 .pts-input:focus,
 .pts-select:focus,
 .pts-textarea:focus {
-  border-color: rgba(151, 66, 88, 0.45);
-  box-shadow: 0 0 0 3px rgba(151, 66, 88, 0.12);
+  border-color: color-mix(in srgb, var(--pts-primary) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pts-primary) 16%, transparent);
 }
 .pts-input:disabled {
-  background: #f5f2f3;
+  background: color-mix(in srgb, var(--pts-surface) 85%, var(--pts-muted));
   color: var(--pts-muted);
 }
 
@@ -586,10 +605,11 @@ textarea.pts-input {
   flex-direction: column;
   gap: 14px;
   padding: 18px;
-  background: #fff;
+  background: var(--pts-surface);
   border: 1px solid var(--pts-border);
   border-radius: var(--pts-radius);
   box-shadow: var(--pts-shadow-sm);
+  color: var(--pts-text);
 }
 @media (min-width: 768px) {
   .pts-row {
@@ -1487,10 +1507,10 @@ html[data-theme="dark"] .soft-shadow {
   box-shadow: var(--pts-shadow-sm) !important;
 }
 
-html[data-theme="dark"] input,
+html[data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select {
-  background-color: var(--pts-surface-2);
+  background-color: var(--pts-input-bg);
   color: var(--pts-text);
   border-color: var(--pts-border);
 }
@@ -1498,6 +1518,16 @@ html[data-theme="dark"] select {
 html[data-theme="dark"] input::placeholder,
 html[data-theme="dark"] textarea::placeholder {
   color: color-mix(in srgb, var(--pts-muted) 75%, transparent);
+}
+
+html[data-theme="dark"] .text-on-primary-container,
+html[data-theme="dark"] .text-on-secondary-container,
+html[data-theme="dark"] .text-on-tertiary-container {
+  color: var(--pts-text) !important;
+}
+
+html[data-theme="dark"] .bg-amber-50 {
+  background-color: rgba(212, 160, 23, 0.16) !important;
 }
 
 html[data-theme="dark"] .shadow,
