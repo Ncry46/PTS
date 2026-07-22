@@ -559,9 +559,9 @@ input[type="password"]::-ms-reveal,
     cursor: pointer;
   }
   .pts-login-modal__cancel {
-    border: 1px solid rgba(151,66,88,.2);
-    background: #fff;
-    color: #5c4f55;
+    border: 1px solid var(--pts-border, rgba(151,66,88,.2));
+    background: var(--pts-surface, #fff);
+    color: var(--pts-muted, #5c4f55);
   }
   .pts-login-modal__confirm {
     border: 0;
