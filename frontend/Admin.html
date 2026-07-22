@@ -132,7 +132,7 @@
     background: linear-gradient(135deg, #1a1216, var(--ban-c, #974258) 48%, #2a1a22);
   }
   .ban-rgb {
-    display:grid; gap:10px; margin-top:12px; padding:12px;
+    display:grid; gap:12px; margin-top:12px; padding:14px;
     border:1px solid var(--pts-border,rgba(151,66,88,.16));
     border-radius:14px; background:rgba(151,66,88,.04);
   }
@@ -143,6 +143,35 @@
     width:52px; height:40px; padding:0; border:0; border-radius:10px;
     background:transparent; cursor:pointer;
   }
+  .ban-wheel-layout {
+    display:grid; gap:14px; align-items:center;
+  }
+  @media (min-width:640px) {
+    .ban-wheel-layout { grid-template-columns: auto minmax(0,1fr); }
+  }
+  .ban-wheel-stage {
+    position:relative; width:220px; height:220px; margin:0 auto;
+    touch-action:none; user-select:none;
+  }
+  .ban-wheel-stage canvas {
+    display:block; width:220px; height:220px; border-radius:50%;
+    box-shadow:0 10px 28px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.35);
+    cursor:crosshair;
+  }
+  .ban-wheel-marker {
+    position:absolute; width:18px; height:18px; margin:-9px 0 0 -9px;
+    border:2px solid #fff; border-radius:999px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.25);
+    pointer-events:none; left:50%; top:50%;
+  }
+  .ban-wheel-side { display:grid; gap:10px; }
+  .ban-wheel-swatch {
+    width:100%; height:48px; border-radius:12px;
+    border:1px solid rgba(0,0,0,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .ban-wheel-side label { font-size:12px; font-weight:700; color:var(--pts-muted,#5c4f55); }
+  .ban-wheel-side input[type="range"] { width:100%; accent-color:#974258; }
   .ban-mini-themes button[data-theme="custom"] {
     background: conic-gradient(from 90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #1dd1a1, #ff6b6b);
   }
@@ -492,6 +521,39 @@ async function renderBanners() {
   function toHex(r, g, b) {
     return '#' + [r, g, b].map((x) => Math.max(0, Math.min(255, Number(x) || 0)).toString(16).padStart(2, '0')).join('');
   }
+  function hsvToRgb(h, s, v) {
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    let rp = 0, gp = 0, bp = 0;
+    if (h < 60) { rp = c; gp = x; }
+    else if (h < 120) { rp = x; gp = c; }
+    else if (h < 180) { gp = c; bp = x; }
+    else if (h < 240) { gp = x; bp = c; }
+    else if (h < 300) { rp = x; bp = c; }
+    else { rp = c; bp = x; }
+    return {
+      r: Math.round((rp + m) * 255),
+      g: Math.round((gp + m) * 255),
+      b: Math.round((bp + m) * 255)
+    };
+  }
+  function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    if (d !== 0) {
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    const s = max === 0 ? 0 : d / max;
+    return { h, s, v: max };
+  }
   const presets = [
     {
       key: 'cert',
@@ -577,12 +639,22 @@ async function renderBanners() {
       <label>สีแบนเนอร์ (พรีเซ็ตเดิม หรือกำหนดเองด้วย RGB)</label>
       <div class="ban-theme-grid" id="b-theme-picker">${themePickerHtml(theme, s.theme_color || custom.hex)}</div>
       <div class="ban-rgb${theme === 'custom' ? '' : ' is-hidden'}" id="b-rgb-box">
-        <p class="text-xs font-bold text-on-surface-variant m-0">เลือกสีเอง (RGB / HEX)</p>
-        <div class="ban-rgb__row">
-          <div class="ban-field">
-            <label>สี</label>
-            <input type="color" id="b-color" class="ban-rgb__picker" value="${escapeHtml(custom.hex)}">
+        <p class="text-sm font-bold m-0" style="color:var(--pts-primary,#974258)">กงล้อสี RGB — คลิกหรือลากเพื่อเลือกสี</p>
+        <div class="ban-wheel-layout">
+          <div class="ban-wheel-stage" id="b-wheel-stage">
+            <canvas id="b-wheel" width="220" height="220" aria-label="กงล้อสี"></canvas>
+            <span class="ban-wheel-marker" id="b-wheel-marker" aria-hidden="true"></span>
           </div>
+          <div class="ban-wheel-side">
+            <div class="ban-wheel-swatch" id="b-wheel-swatch" style="background:${escapeHtml(custom.hex)}"></div>
+            <div>
+              <label for="b-bright">ความสว่าง</label>
+              <input type="range" id="b-bright" min="20" max="100" value="85">
+            </div>
+            <p class="text-xs text-on-surface-variant m-0">ลากบนกงล้อ = โทนสีและความเข้ม · สไลเดอร์ = ความสว่าง</p>
+          </div>
+        </div>
+        <div class="ban-rgb__row">
           <div class="ban-field">
             <label>R</label>
             <input type="number" id="b-r" min="0" max="255" value="${custom.r}">
@@ -598,6 +670,10 @@ async function renderBanners() {
           <div class="ban-field" style="flex:1.4 1 100px">
             <label>HEX</label>
             <input type="text" id="b-hex" maxlength="7" value="${escapeHtml(custom.hex)}" placeholder="#974258">
+          </div>
+          <div class="ban-field">
+            <label>สำรอง</label>
+            <input type="color" id="b-color" class="ban-rgb__picker" value="${escapeHtml(custom.hex)}" title="เปิดตัวเลือกสีของระบบ">
           </div>
         </div>
       </div>
@@ -787,8 +863,13 @@ async function renderBanners() {
       else preview.style.removeProperty('--ban-c');
     }
     if (rgbBox) rgbBox.classList.toggle('is-hidden', theme !== 'custom');
+    if (theme === 'custom') {
+      requestAnimationFrame(() => initColorWheel(true));
+    }
     const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
     if (customBtn && theme === 'custom') customBtn.style.background = color;
+    const swatch = document.getElementById('b-wheel-swatch');
+    if (swatch) swatch.style.background = color;
     const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
     const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
     const img = document.getElementById('b-image')?.value || '';
@@ -807,7 +888,87 @@ async function renderBanners() {
     );
   };
 
-  const applyCustomColor = (hexOrParts) => {
+  let wheelState = { h: 340, s: 0.55, v: 0.85, drawing: false, bound: false };
+
+  const drawColorWheel = () => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    const cx = size / 2;
+    const cy = size / 2;
+    const radius = size / 2 - 2;
+    const image = ctx.createImageData(size, size);
+    const data = image.data;
+    const v = wheelState.v;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const i = (y * size + x) * 4;
+        if (dist > radius) {
+          data[i + 3] = 0;
+          continue;
+        }
+        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        const sat = Math.min(1, dist / radius);
+        const rgb = hsvToRgb(angle, sat, v);
+        data[i] = rgb.r;
+        data[i + 1] = rgb.g;
+        data[i + 2] = rgb.b;
+        data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+
+    // center hole soft white for readability
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(8, radius * 0.08), 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.15 + (1 - v) * 0.35})`;
+    ctx.fill();
+
+    const marker = document.getElementById('b-wheel-marker');
+    if (marker) {
+      const mr = wheelState.s * radius;
+      const rad = wheelState.h * Math.PI / 180;
+      const mx = cx + Math.cos(rad) * mr;
+      const my = cy + Math.sin(rad) * mr;
+      marker.style.left = `${(mx / size) * 100}%`;
+      marker.style.top = `${(my / size) * 100}%`;
+      marker.style.background = toHex(
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).r,
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).g,
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).b
+      );
+    }
+  };
+
+  const colorFromWheelEvent = (e) => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const size = canvas.width;
+    const scaleX = size / rect.width;
+    const scaleY = size / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const cx = size / 2;
+    const cy = size / 2;
+    const dx = x - cx;
+    const dy = y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const radius = size / 2 - 2;
+    let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (angle < 0) angle += 360;
+    const sat = Math.min(1, dist / radius);
+    wheelState.h = angle;
+    wheelState.s = sat;
+    return hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
+  };
+
+  const applyCustomColor = (hexOrParts, opts = {}) => {
     let parsed = null;
     if (typeof hexOrParts === 'string') parsed = parseHex(hexOrParts);
     else if (hexOrParts && typeof hexOrParts === 'object') {
@@ -826,7 +987,100 @@ async function renderBanners() {
     if (r) r.value = parsed.r;
     if (g) g.value = parsed.g;
     if (b) b.value = parsed.b;
-    syncPreview();
+
+    if (!opts.fromWheel) {
+      const hsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
+      wheelState.h = hsv.h;
+      wheelState.s = hsv.s;
+      wheelState.v = Math.max(0.2, hsv.v || 0.85);
+      const bright = document.getElementById('b-bright');
+      if (bright) bright.value = String(Math.round(wheelState.v * 100));
+    }
+    drawColorWheel();
+
+    const swatch = document.getElementById('b-wheel-swatch');
+    if (swatch) swatch.style.background = parsed.hex;
+
+    // sync preview without re-init wheel loop
+    const theme = 'custom';
+    const preview = document.getElementById('b-preview');
+    const rgbBox = document.getElementById('b-rgb-box');
+    if (preview) {
+      preview.dataset.theme = theme;
+      preview.style.setProperty('--ban-c', parsed.hex);
+    }
+    if (rgbBox) rgbBox.classList.remove('is-hidden');
+    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
+    if (customBtn) customBtn.style.background = parsed.hex;
+    const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
+    const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
+    const img = document.getElementById('b-image')?.value || '';
+    const bpEyebrow = document.getElementById('bp-eyebrow');
+    const bpLead = document.getElementById('bp-lead');
+    const bpImg = document.getElementById('bp-img');
+    if (bpEyebrow) bpEyebrow.textContent = eyebrow;
+    if (bpLead) bpLead.textContent = lead;
+    if (bpImg) {
+      bpImg.style.opacity = '1';
+      bpImg.src = img || '';
+    }
+    renderPreviewTitle(
+      document.getElementById('b-title')?.value,
+      document.getElementById('b-highlight')?.value
+    );
+  };
+
+  const initColorWheel = (onlyRedraw) => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return;
+    if (!onlyRedraw) {
+      const current = parseHex(document.getElementById('b-theme-color')?.value || '#974258')
+        || { r: 151, g: 66, b: 88, hex: '#974258' };
+      const hsv = rgbToHsv(current.r, current.g, current.b);
+      wheelState.h = hsv.h;
+      wheelState.s = hsv.s;
+      wheelState.v = Math.max(0.2, hsv.v || 0.85);
+      const bright = document.getElementById('b-bright');
+      if (bright) bright.value = String(Math.round(wheelState.v * 100));
+    }
+    drawColorWheel();
+
+    if (wheelState.bound) return;
+    wheelState.bound = true;
+
+    const onMove = (e) => {
+      if (!wheelState.drawing) return;
+      e.preventDefault();
+      const rgb = colorFromWheelEvent(e);
+      if (!rgb) return;
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      applyCustomColor(rgb, { fromWheel: true });
+    };
+    const onUp = () => { wheelState.drawing = false; };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      wheelState.drawing = true;
+      canvas.setPointerCapture?.(e.pointerId);
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
+        btn.classList.toggle('is-active', btn.dataset.theme === 'custom');
+      });
+      const rgb = colorFromWheelEvent(e);
+      if (rgb) applyCustomColor(rgb, { fromWheel: true });
+    });
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerup', onUp);
+    canvas.addEventListener('pointercancel', onUp);
+
+    document.getElementById('b-bright')?.addEventListener('input', (e) => {
+      wheelState.v = Math.max(0.2, Math.min(1, (Number(e.target.value) || 85) / 100));
+      const rgb = hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      applyCustomColor(rgb, { fromWheel: true });
+    });
   };
 
   const setTheme = (theme) => {
@@ -839,6 +1093,7 @@ async function renderBanners() {
     if (t === 'custom') {
       const current = document.getElementById('b-theme-color')?.value || '#974258';
       applyCustomColor(current);
+      initColorWheel(false);
     } else {
       syncPreview();
     }
@@ -889,7 +1144,11 @@ async function renderBanners() {
   };
 
   const wireForm = () => {
+    wheelState.bound = false;
     syncPreview();
+    if (document.getElementById('b-theme')?.value === 'custom') {
+      initColorWheel(false);
+    }
 
     document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
       btn.onclick = () => setTheme(btn.dataset.theme);
