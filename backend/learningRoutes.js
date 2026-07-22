@@ -260,7 +260,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT
                         cert.certificate_id, cert.certificate_code, cert.issued_at,
-                        c.course_id, c.course_name, c.instructor_name, c.cover_image_url
+                        c.course_id, c.course_name, c.instructor_name, c.cover_image_url,
+                        c.delivery_mode
                     FROM BD_PTS.dbo.certificates cert
                     INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = cert.course_id
                     WHERE cert.user_id = @userId
