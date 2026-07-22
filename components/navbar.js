@@ -393,8 +393,8 @@
           <div class="pts-topnav__actions">
             <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">เข้าสู่ระบบ</a>
             <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Register.html">สมัครสมาชิก</a>
-            ${themeToggleHtml()}
             <button type="button" class="pts-topnav__icon pts-topnav__burger" data-pts-burger aria-label="เมนู">☰</button>
+            ${themeToggleHtml()}
           </div>
         </div>
         <div class="pts-topnav__mobile" data-pts-mobile>
@@ -437,8 +437,8 @@
               </span>
               <img src="${avatar}" alt="">
             </button>
-            ${themeToggleHtml()}
             <button type="button" class="pts-topnav__icon pts-topnav__burger" data-pts-burger aria-label="เมนู">☰</button>
+            ${themeToggleHtml()}
           </div>
         </div>
         <div class="pts-topnav__mobile" data-pts-mobile>

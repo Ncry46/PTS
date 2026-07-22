@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260722d">
+<link rel="stylesheet" href="site.css?v=20260722e">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -26,11 +26,11 @@
     }
   }
   .admin-side {
-    background: #fff;
-    border: 1px solid rgba(151,66,88,.14);
+    background: var(--pts-surface, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
     border-radius: 20px;
     padding: 14px 12px;
-    box-shadow: 0 8px 24px rgba(28,21,32,.05);
+    box-shadow: var(--pts-shadow-sm, 0 8px 24px rgba(28,21,32,.05));
   }
   @media (min-width: 900px) {
     .admin-side { position: sticky; top: calc(var(--pts-nav-h, 68px) + 16px); }
@@ -41,7 +41,7 @@
     font-weight: 700;
     letter-spacing: .08em;
     text-transform: uppercase;
-    color: #974258;
+    color: var(--pts-primary, #974258);
   }
   .admin-side__nav {
     display: flex;
@@ -52,9 +52,9 @@
     .admin-side__nav { flex-direction: column; flex-wrap: nowrap; }
   }
   .tab-btn {
-    border: 1px solid rgba(151,66,88,.18);
-    background: #fff;
-    color: #1c1520;
+    border: 1px solid var(--pts-border, rgba(151,66,88,.18));
+    background: var(--pts-surface, #fff);
+    color: var(--pts-text, #1c1520);
     border-radius: 999px;
     padding: 10px 14px;
     font-size: 14px;
@@ -66,14 +66,15 @@
     .tab-btn { width: 100%; border-radius: 12px; }
   }
   .tab-btn.active { background: #974258; color: #fff; border-color: #974258; }
+  html[data-theme="dark"] .tab-btn.active { background: #b85a70; border-color: #b85a70; }
   .admin-main { min-width: 0; }
 </style>
 </head>
 <body class="pts-body text-on-surface">
 <div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid rgba(151,66,88,.18);">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
     <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
         <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
         PTS Learning
       </a>
@@ -663,9 +664,9 @@ window.addEventListener('hashchange', () => {
     if (document.body) document.body.insertBefore(box, document.body.firstChild);
   }
   if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid #eadfe2">'
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
       + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
       + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
       + '<div style="display:flex;gap:8px">'
       + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
@@ -675,6 +676,6 @@ window.addEventListener('hashchange', () => {
 })();
 </script>
 <script src="password-toggle.js?v=20260720e"></script>
-<script src="/comp/navbar.js?v=20260722d"></script>
+<script src="/comp/navbar.js?v=20260722e"></script>
 </body>
 </html>

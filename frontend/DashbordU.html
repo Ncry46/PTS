@@ -110,20 +110,30 @@
     </script>
 <style>
         body {
-            background-color: #FAFAFA;
+            background-color: var(--pts-bg, #FAFAFA);
             font-family: 'IBM Plex Sans Thai', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
         .soft-shadow {
             box-shadow: 0 10px 30px -5px rgba(151, 66, 88, 0.05);
         }
+        html[data-theme="dark"] .soft-shadow {
+            box-shadow: var(--pts-shadow-sm);
+        }
         .glass-header {
             background: rgba(252, 248, 255, 0.8);
             backdrop-filter: blur(12px);
         }
+        html[data-theme="dark"] .glass-header {
+            background: color-mix(in srgb, var(--pts-nav-bg) 88%, transparent);
+        }
         .circular-progress {
             background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
                         conic-gradient(#974258 75%, #f4c7d3 0);
+        }
+        html[data-theme="dark"] .circular-progress {
+            background: radial-gradient(closest-side, var(--pts-surface) 79%, transparent 80% 100%),
+                        conic-gradient(#e895a8 75%, rgba(232,149,168,.25) 0);
         }
     </style>
 </head>

@@ -35,6 +35,8 @@ html[data-theme="dark"] {
   --pts-accent: #8fbc9a;
   --pts-bg: #121014;
   --pts-surface: #1c181c;
+  --pts-surface-2: #242028;
+  --pts-surface-3: #2e2832;
   --pts-text: #f4eef2;
   --pts-muted: #b8a8ae;
   --pts-border: rgba(232, 149, 168, 0.2);
@@ -1328,6 +1330,13 @@ input.pts-pw-input::-ms-clear {
 }
 
 /* —— Light / Dark theme system —— */
+.pts-section-alt {
+  background: #fafafa;
+}
+html[data-theme="dark"] .pts-section-alt {
+  background: color-mix(in srgb, var(--pts-bg) 88%, #000);
+}
+
 .pts-theme-toggle {
   width: 40px;
   height: 40px;
@@ -1369,19 +1378,49 @@ html[data-theme="dark"] .pts-surface {
   color: var(--pts-text);
 }
 
-/* Common Tailwind / utility surfaces used across pages */
+/* Hardcoded light section backgrounds (Home / Dashboard) */
+html[data-theme="dark"] .bg-\[\#FAFAFA\],
+html[data-theme="dark"] .bg-\[\#fafafa\],
+html[data-theme="dark"] .bg-\[\#faf7f8\],
+html[data-theme="dark"] .bg-\[\#FAF7F8\] {
+  background-color: var(--pts-bg) !important;
+}
+
+/* Surface hierarchy */
 html[data-theme="dark"] .bg-white,
 html[data-theme="dark"] .bg-background,
 html[data-theme="dark"] .bg-surface,
-html[data-theme="dark"] .bg-surface-bright,
-html[data-theme="dark"] .bg-surface-container,
-html[data-theme="dark"] .bg-surface-container-low,
-html[data-theme="dark"] .bg-surface-container-lowest,
-html[data-theme="dark"] .bg-surface-container-high,
-html[data-theme="dark"] .bg-surface-container-highest,
-html[data-theme="dark"] .bg-primary-fixed,
-html[data-theme="dark"] .bg-secondary-fixed {
+html[data-theme="dark"] .bg-surface-bright {
+  background-color: var(--pts-bg) !important;
+}
+html[data-theme="dark"] .bg-white\/95,
+html[data-theme="dark"] .bg-white\/90,
+html[data-theme="dark"] .bg-white\/10 {
+  background-color: color-mix(in srgb, var(--pts-surface) 92%, transparent) !important;
+}
+html[data-theme="dark"] .bg-surface-container-lowest {
   background-color: var(--pts-surface) !important;
+}
+html[data-theme="dark"] .bg-surface-container-low,
+html[data-theme="dark"] .bg-surface-container {
+  background-color: var(--pts-surface-2) !important;
+}
+html[data-theme="dark"] .bg-surface-container-high,
+html[data-theme="dark"] .bg-surface-container-highest {
+  background-color: var(--pts-surface-3) !important;
+}
+html[data-theme="dark"] .bg-primary-fixed {
+  background-color: rgba(232, 149, 168, 0.18) !important;
+}
+html[data-theme="dark"] .bg-secondary-fixed,
+html[data-theme="dark"] .bg-secondary-container {
+  background-color: rgba(143, 188, 154, 0.18) !important;
+}
+html[data-theme="dark"] .bg-tertiary-container {
+  background-color: rgba(87, 216, 153, 0.16) !important;
+}
+html[data-theme="dark"] .bg-primary-container {
+  background-color: rgba(217, 119, 142, 0.28) !important;
 }
 
 html[data-theme="dark"] .text-on-background,
@@ -1395,29 +1434,63 @@ html[data-theme="dark"] .text-black {
 html[data-theme="dark"] .text-on-surface-variant,
 html[data-theme="dark"] .text-gray-600,
 html[data-theme="dark"] .text-gray-500,
-html[data-theme="dark"] .text-gray-400 {
+html[data-theme="dark"] .text-gray-400,
+html[data-theme="dark"] .text-outline {
   color: var(--pts-muted) !important;
+}
+
+html[data-theme="dark"] .text-primary {
+  color: var(--pts-primary) !important;
+}
+html[data-theme="dark"] .border-primary,
+html[data-theme="dark"] .border-primary\/10,
+html[data-theme="dark"] .border-primary\/20 {
+  border-color: color-mix(in srgb, var(--pts-primary) 55%, transparent) !important;
+}
+html[data-theme="dark"] .bg-primary {
+  background-color: #b85a70 !important;
+}
+html[data-theme="dark"] .text-on-primary {
+  color: #fff !important;
+}
+html[data-theme="dark"] .hover\:bg-primary-fixed:hover {
+  background-color: rgba(232, 149, 168, 0.22) !important;
+}
+html[data-theme="dark"] .hover\:text-primary:hover {
+  color: var(--pts-primary) !important;
 }
 
 html[data-theme="dark"] .border,
 html[data-theme="dark"] .border-gray-100,
 html[data-theme="dark"] .border-gray-200,
 html[data-theme="dark"] .border-outline,
-html[data-theme="dark"] .border-outline-variant {
+html[data-theme="dark"] .border-outline-variant,
+html[data-theme="dark"] .border-outline-variant\/10,
+html[data-theme="dark"] .border-outline-variant\/20 {
   border-color: var(--pts-border) !important;
 }
 
 html[data-theme="dark"] .bg-gray-50,
 html[data-theme="dark"] .bg-gray-100,
 html[data-theme="dark"] .bg-slate-50,
-html[data-theme="dark"] .bg-slate-100 {
-  background-color: color-mix(in srgb, var(--pts-surface) 88%, #000) !important;
+html[data-theme="dark"] .bg-slate-100,
+html[data-theme="dark"] .bg-emerald-50,
+html[data-theme="dark"] .bg-orange-50,
+html[data-theme="dark"] .bg-sky-50 {
+  background-color: var(--pts-surface-2) !important;
+}
+html[data-theme="dark"] .text-emerald-700 { color: #6ee7b7 !important; }
+html[data-theme="dark"] .text-orange-700 { color: #fdba74 !important; }
+html[data-theme="dark"] .text-sky-700 { color: #7dd3fc !important; }
+
+html[data-theme="dark"] .soft-shadow {
+  box-shadow: var(--pts-shadow-sm) !important;
 }
 
 html[data-theme="dark"] input,
 html[data-theme="dark"] textarea,
 html[data-theme="dark"] select {
-  background-color: color-mix(in srgb, var(--pts-surface) 92%, #000);
+  background-color: var(--pts-surface-2);
   color: var(--pts-text);
   border-color: var(--pts-border);
 }
@@ -1435,10 +1508,39 @@ html[data-theme="dark"] .shadow-lg {
 }
 
 html[data-theme="dark"] .pts-footer,
-html[data-theme="dark"] footer.pts-footer {
-  background: var(--pts-surface);
+html[data-theme="dark"] footer.pts-footer,
+html[data-theme="dark"] .pts-footer-note {
+  background: transparent;
   border-color: var(--pts-border);
   color: var(--pts-muted);
+}
+
+html[data-theme="dark"] .pts-btn-outline {
+  color: var(--pts-primary);
+  border-color: color-mix(in srgb, var(--pts-primary) 45%, transparent);
+  background: transparent;
+}
+html[data-theme="dark"] .pts-btn-outline:hover {
+  background: var(--pts-primary-soft);
+}
+html[data-theme="dark"] .pts-btn-ghost {
+  color: var(--pts-muted);
+}
+html[data-theme="dark"] .pts-btn-ghost:hover {
+  background: var(--pts-nav-hover);
+  color: var(--pts-primary);
+}
+
+/* Admin / panels often use generic white cards */
+html[data-theme="dark"] .rounded-xl.border,
+html[data-theme="dark"] .rounded-2xl.border,
+html[data-theme="dark"] .rounded-lg.border {
+  background-color: var(--pts-surface);
+  color: var(--pts-text);
+}
+
+html[data-theme="dark"] .glass-header {
+  background: color-mix(in srgb, var(--pts-nav-bg) 88%, transparent) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {
