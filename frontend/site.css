@@ -1037,12 +1037,28 @@ input.pts-pw-input::-ms-clear {
   to { transform: rotate(360deg); }
 }
 @keyframes pts-hero-badge {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  0%, 100% { transform: translateY(0) rotate(-0.4deg); }
+  50% { transform: translateY(-10px) rotate(0.6deg); }
 }
 @keyframes pts-hero-enter {
-  from { opacity: 0; transform: translateY(18px) scale(.985); }
+  from { opacity: 0; transform: translateY(22px) scale(.97); }
   to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes pts-hero-kenburns {
+  0% { transform: scale(1.04) translate3d(0,0,0); }
+  100% { transform: scale(1.14) translate3d(-2%, -1%, 0); }
+}
+@keyframes pts-hero-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes pts-hero-copy-in {
+  from { opacity: 0; transform: translate3d(0, 22px, 0); filter: blur(4px); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); filter: blur(0); }
+}
+@keyframes pts-hero-media-in {
+  from { opacity: 0; transform: translate3d(36px, 12px, 0) scale(.96); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
 /* Premium glass stage */
@@ -1051,24 +1067,43 @@ input.pts-pw-input::-ms-clear {
   z-index: 1;
   max-width: calc(var(--pts-max) + 48px);
   margin: 0 auto;
-  padding: 22px 18px 18px;
+  padding: 22px 18px 14px;
   border-radius: 32px;
   background:
-    linear-gradient(145deg, rgba(255,255,255,.22), rgba(255,255,255,.08) 40%, rgba(255,255,255,.14));
-  border: 1px solid rgba(255,255,255,.28);
+    linear-gradient(145deg, rgba(255,255,255,.26), rgba(255,255,255,.08) 42%, rgba(255,255,255,.16));
+  border: 1px solid rgba(255,255,255,.34);
   box-shadow:
-    0 40px 80px rgba(20, 8, 14, .35),
-    0 2px 0 rgba(255,255,255,.2) inset,
+    0 40px 90px rgba(20, 8, 14, .38),
+    0 2px 0 rgba(255,255,255,.28) inset,
     0 0 0 1px rgba(151,66,88,.08);
-  backdrop-filter: blur(18px) saturate(1.15);
-  -webkit-backdrop-filter: blur(18px) saturate(1.15);
-  animation: pts-hero-enter .8s cubic-bezier(.22,1,.36,1) both;
+  backdrop-filter: blur(22px) saturate(1.25);
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  animation: pts-hero-enter .9s cubic-bezier(.22,1,.36,1) both;
+  transform-style: preserve-3d;
+  transition: transform .45s cubic-bezier(.22,1,.36,1), box-shadow .45s ease;
+  will-change: transform;
+}
+
+.pts-hero-banner__shine {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(520px 220px at var(--hero-mx, 70%) var(--hero-my, 20%), rgba(255,255,255,.28), transparent 55%);
+  opacity: .55;
+  mix-blend-mode: soft-light;
+  z-index: 3;
+  transition: opacity .35s ease;
 }
 
 .pts-hero-banner__viewport {
   position: relative;
   z-index: 1;
   display: grid;
+  overflow: hidden;
+  border-radius: 22px;
+  min-height: 0;
 }
 
 .pts-hero-banner__panel {
@@ -1076,17 +1111,57 @@ input.pts-pw-input::-ms-clear {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
-  transform: translateY(14px) scale(.99);
-  transition: opacity .75s ease, transform .75s ease, visibility 0s linear .75s;
+  transform: translate3d(8%, 0, 0) scale(.985);
+  filter: blur(8px);
+  transition:
+    opacity .7s cubic-bezier(.22,1,.36,1),
+    transform .85s cubic-bezier(.22,1,.36,1),
+    filter .7s ease,
+    visibility 0s linear .85s;
+}
+
+.pts-hero-banner__panel.is-leaving {
+  opacity: 0;
+  visibility: visible;
+  pointer-events: none;
+  filter: blur(6px);
+  transition:
+    opacity .55s cubic-bezier(.4,0,.2,1),
+    transform .7s cubic-bezier(.4,0,.2,1),
+    filter .55s ease,
+    visibility 0s linear .7s;
+  z-index: 1;
+}
+
+.pts-hero-banner__panel.is-leaving[data-dir="next"] {
+  transform: translate3d(-10%, 0, 0) scale(.97);
+}
+.pts-hero-banner__panel.is-leaving[data-dir="prev"] {
+  transform: translate3d(10%, 0, 0) scale(.97);
 }
 
 .pts-hero-banner__panel.is-active {
   opacity: 1;
   visibility: visible;
   pointer-events: auto;
-  transform: translateY(0) scale(1);
-  transition: opacity .75s ease, transform .75s ease, visibility 0s;
-  z-index: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  filter: blur(0);
+  transition:
+    opacity .75s cubic-bezier(.22,1,.36,1),
+    transform .85s cubic-bezier(.22,1,.36,1),
+    filter .75s ease,
+    visibility 0s;
+  z-index: 2;
+}
+
+.pts-hero-banner__panel.is-active[data-dir="next"] {
+  animation: none;
+}
+.pts-hero-banner__panel:not(.is-active):not(.is-leaving)[data-prep="next"] {
+  transform: translate3d(12%, 0, 0) scale(.98);
+}
+.pts-hero-banner__panel:not(.is-active):not(.is-leaving)[data-prep="prev"] {
+  transform: translate3d(-12%, 0, 0) scale(.98);
 }
 
 .pts-hero-banner__inner {
@@ -1099,10 +1174,10 @@ input.pts-pw-input::-ms-clear {
   .pts-hero-banner {
     padding: calc(var(--pts-nav-h) + 28px) 28px 44px;
   }
-  .pts-hero-banner__stage { padding: 28px 28px 22px; border-radius: 36px; }
+  .pts-hero-banner__stage { padding: 30px 30px 18px; border-radius: 38px; }
   .pts-hero-banner__inner {
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
-    gap: 36px;
+    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+    gap: 40px;
   }
 }
 
@@ -1112,6 +1187,27 @@ input.pts-pw-input::-ms-clear {
 
 .pts-hero-banner__copy {
   padding: 8px 4px 4px;
+  transform: translateZ(28px);
+}
+
+.pts-hero-banner__panel.is-active .pts-hero-banner__eyebrow,
+.pts-hero-banner__panel.is-active .pts-hero-banner__title,
+.pts-hero-banner__panel.is-active .pts-hero-banner__lead,
+.pts-hero-banner__panel.is-active .pts-hero-banner__actions {
+  animation: pts-hero-copy-in .75s cubic-bezier(.22,1,.36,1) both;
+}
+.pts-hero-banner__panel.is-active .pts-hero-banner__eyebrow { animation-delay: .05s; }
+.pts-hero-banner__panel.is-active .pts-hero-banner__title { animation-delay: .14s; }
+.pts-hero-banner__panel.is-active .pts-hero-banner__lead { animation-delay: .24s; }
+.pts-hero-banner__panel.is-active .pts-hero-banner__actions { animation-delay: .34s; }
+.pts-hero-banner__panel.is-active .pts-hero-banner__media {
+  animation: pts-hero-media-in .9s cubic-bezier(.22,1,.36,1) both;
+  animation-delay: .12s;
+}
+.pts-hero-banner__panel.is-active .pts-hero-banner__badge {
+  animation:
+    pts-hero-copy-in .7s cubic-bezier(.22,1,.36,1) .42s both,
+    pts-hero-badge 4.2s ease-in-out 1.2s infinite;
 }
 
 .pts-hero-banner__eyebrow {
@@ -1119,17 +1215,17 @@ input.pts-pw-input::-ms-clear {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 7px 12px;
+  padding: 7px 14px;
   border-radius: 999px;
   background: rgba(255,255,255,.16);
   border: 1px solid rgba(255,255,255,.28);
   font-family: var(--pts-display);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: #ffe4ea;
   backdrop-filter: blur(8px);
+  text-transform: none;
 }
 
 .pts-hero-banner__title {
@@ -1171,27 +1267,36 @@ input.pts-pw-input::-ms-clear {
   padding-left: 28px;
   padding-right: 28px;
   box-shadow: 0 14px 30px rgba(0,0,0,.28);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.pts-hero-banner__cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 36px rgba(0,0,0,.34);
 }
 
 .pts-hero-banner__actions .pts-btn-outline {
   border-color: rgba(255,255,255,.45);
   color: #fff;
   background: rgba(255,255,255,.08);
+  backdrop-filter: blur(8px);
+  transition: transform .2s ease, background .2s ease;
 }
 .pts-hero-banner__actions .pts-btn-outline:hover {
   background: rgba(255,255,255,.16);
   color: #fff;
+  transform: translateY(-2px);
 }
 
 .pts-hero-banner__media {
   position: relative;
+  transform: translateZ(40px);
 }
 
 .pts-hero-banner__frame {
   margin: 0;
-  aspect-ratio: 1 / 1;
-  max-height: min(520px, 72vw);
-  border-radius: 28px;
+  aspect-ratio: 4 / 3;
+  max-height: min(460px, 68vw);
+  border-radius: 24px;
   overflow: hidden;
   padding: 3px;
   background: linear-gradient(145deg, rgba(255,210,180,.85), rgba(255,177,193,.55), rgba(255,255,255,.25));
@@ -1205,30 +1310,33 @@ input.pts-pw-input::-ms-clear {
   height: 100%;
   object-fit: cover;
   display: block;
-  border-radius: 25px;
-  transform: scale(1.03);
+  border-radius: 21px;
+  transform: scale(1.04);
   transition: transform 1.15s cubic-bezier(.22,1,.36,1);
+}
+.pts-hero-banner__panel.is-active .pts-hero-banner__frame img {
+  animation: pts-hero-kenburns 7s ease-out both;
 }
 .pts-hero-banner__media:hover .pts-hero-banner__frame img {
   transform: scale(1.1);
+  animation: none;
 }
 
 .pts-hero-banner__badge {
   position: absolute;
-  right: 16px;
-  bottom: 16px;
+  right: 14px;
+  bottom: 14px;
   z-index: 2;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 12px 16px 12px 12px;
-  background: rgba(255,255,255,.92);
-  border: 1px solid rgba(255,255,255,.65);
+  background: rgba(255,255,255,.94);
+  border: 1px solid rgba(255,255,255,.7);
   border-radius: 18px;
   box-shadow: 0 16px 36px rgba(0,0,0,.22);
-  max-width: calc(100% - 32px);
+  max-width: calc(100% - 28px);
   backdrop-filter: blur(12px);
-  animation: pts-hero-badge 4.2s ease-in-out infinite;
 }
 
 .pts-hero-banner__badge-icon {
@@ -1266,7 +1374,7 @@ input.pts-pw-input::-ms-clear {
 .pts-hero-banner__nav {
   position: relative;
   z-index: 2;
-  margin: 18px auto 0;
+  margin: 18px auto 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1291,18 +1399,18 @@ input.pts-pw-input::-ms-clear {
   padding: 0;
   background: rgba(255,255,255,.35);
   cursor: pointer;
-  transition: width .25s ease, background .25s ease;
+  transition: width .35s cubic-bezier(.22,1,.36,1), background .25s ease, box-shadow .25s ease;
 }
 
 .pts-hero-banner__dot.is-active {
-  width: 28px;
+  width: 30px;
   background: #ffb1c1;
-  box-shadow: 0 0 12px rgba(255,177,193,.55);
+  box-shadow: 0 0 14px rgba(255,177,193,.6);
 }
 
 .pts-hero-banner__arrow {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 999px;
   border: 1px solid rgba(255,255,255,.28);
   background: rgba(255,255,255,.14);
@@ -1313,28 +1421,67 @@ input.pts-pw-input::-ms-clear {
   cursor: pointer;
   backdrop-filter: blur(8px);
   box-shadow: 0 8px 20px rgba(0,0,0,.18);
-  transition: background .15s ease, transform .15s ease, border-color .15s ease;
+  transition: background .15s ease, transform .2s cubic-bezier(.22,1,.36,1), border-color .15s ease;
 }
 
 .pts-hero-banner__arrow:hover {
   background: rgba(255,255,255,.24);
   border-color: rgba(255,255,255,.45);
+  transform: scale(1.06);
 }
 
 .pts-hero-banner__arrow:active {
-  transform: scale(0.96);
+  transform: scale(0.94);
 }
 
 .pts-hero-banner__arrow .material-symbols-outlined {
   font-size: 22px;
 }
 
+.pts-hero-banner__progress {
+  position: relative;
+  z-index: 2;
+  height: 3px;
+  margin: 0 8px 6px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.14);
+  overflow: hidden;
+}
+
+.pts-hero-banner__progress-bar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  border-radius: inherit;
+  background: linear-gradient(90deg, #ffb1c1, #f0c27a 70%, #fff);
+  box-shadow: 0 0 12px rgba(255,177,193,.55);
+}
+
+.pts-hero-banner__progress-bar.is-running {
+  animation: pts-hero-progress var(--hero-interval, 7s) linear forwards;
+}
+
+.pts-hero-banner__progress-bar.is-paused {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .pts-hero-banner__panel,
-  .pts-hero-banner__stage {
-    transition: none;
-    animation: none;
-    transform: none;
+  .pts-hero-banner__stage,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__eyebrow,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__title,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__lead,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__actions,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__media,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__badge,
+  .pts-hero-banner__panel.is-active .pts-hero-banner__frame img,
+  .pts-hero-banner__progress-bar {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
   }
   .pts-hero-banner__orb,
   .pts-hero-banner__spark,
@@ -1347,6 +1494,7 @@ input.pts-pw-input::-ms-clear {
   .pts-hero-banner__media:hover .pts-hero-banner__frame img {
     transform: none;
   }
+  .pts-hero-banner__shine { display: none; }
 }
 
 /* —— Onsite attendance QR (email) —— */
