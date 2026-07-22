@@ -33,6 +33,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         secure: process.env.COOKIE_SECURE === 'true' || process.env.COOKIE_SECURE === '1',
+        sameSite: process.env.COOKIE_SAMESITE || 'lax',
         maxAge: 24 * 60 * 60 * 1000 // อยู่ได้นาน 24 ชั่วโมง
     }
 }));
@@ -48,6 +49,23 @@ app.use('/comp', express.static(componentsDir));
 app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
 // รูปโปรไฟล์ที่อัปโหลดจากเครื่อง
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
+// Health check สำหรับ Docker / Render / โหลดบาลานเซอร์
+app.get('/api/health', async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        await pool.request().query('SELECT 1 AS ok');
+        res.json({ ok: true, db: true, service: 'pts-learning' });
+    } catch (error) {
+        res.status(503).json({
+            ok: false,
+            db: false,
+            service: 'pts-learning',
+            message: error.message || 'database unavailable'
+        });
+    }
+});
+
 // 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server (override ได้ด้วย env / Docker)
 const dbConfig = {
     user: process.env.DB_USER || 'uinet',

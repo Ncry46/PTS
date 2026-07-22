@@ -124,6 +124,8 @@ docker push YOUR_USER/pts-learning:latest
 - VPS: DigitalOcean, Linode, AWS Lightsail, ออฟฟิศเซิร์ฟเวอร์
 - แพลตฟอร์ม container: Railway, Render, Fly.io, Google Cloud Run (ตั้ง env แล้วชี้ image จาก Docker Hub)
 
+สำหรับ checklist ขึ้นออนไลน์แบบเต็ม (Render Blueprint / env / firewall) ดู **[GO_ONLINE.md](./GO_ONLINE.md)**
+
 ---
 
 ## Troubleshooting
