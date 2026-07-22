@@ -2,7 +2,8 @@
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>สมัครสมาชิก | PTS Learning</title>
-<link rel="stylesheet" href="site.css?v=20260720d">
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722f">
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
@@ -120,6 +121,14 @@
               linear-gradient(165deg, #f7f2f4 0%, #efe8ea 45%, #e8eef0 100%);
             position: relative;
             overflow-x: hidden;
+            color: var(--pts-text, #1c1520);
+        }
+        html[data-theme="dark"] .pts-auth-page {
+            background:
+              radial-gradient(900px 520px at 12% -10%, rgba(151,66,88,.22), transparent 55%),
+              radial-gradient(700px 420px at 100% 0%, rgba(61,90,76,.12), transparent 50%),
+              linear-gradient(165deg, #1a1418 0%, #141218 45%, #100e14 100%);
+            color: var(--pts-text);
         }
         .pts-auth-page::before {
             content: '';
@@ -142,24 +151,36 @@
         .pts-auth-card {
             width: 100%;
             max-width: 460px;
-            background: rgba(255,255,255,.92);
+            background: color-mix(in srgb, var(--pts-surface, #fff) 94%, transparent);
             backdrop-filter: blur(16px);
-            border: 1px solid rgba(151,66,88,.14);
+            border: 1px solid var(--pts-border, rgba(151,66,88,.14));
             border-radius: 28px;
-            box-shadow: 0 24px 60px rgba(28,21,32,.10);
+            box-shadow: var(--pts-shadow, 0 24px 60px rgba(28,21,32,.10));
             padding: 36px 28px 28px;
+            color: var(--pts-text, #1c1520);
+        }
+        html[data-theme="dark"] .pts-auth-card {
+            background: var(--pts-surface);
+            box-shadow: 0 24px 60px rgba(0,0,0,.4);
         }
         @media (min-width: 640px) {
           .pts-auth-card { padding: 40px 36px 32px; }
         }
         .pts-auth-card .pts-auth-title { text-align: center; margin-bottom: 24px; }
+        html[data-theme="dark"] .pts-auth-card input:not([type="checkbox"]),
+        html[data-theme="dark"] .pts-auth-card textarea,
+        html[data-theme="dark"] .pts-auth-card select {
+          background: var(--pts-input-bg) !important;
+          color: var(--pts-text) !important;
+          border-color: var(--pts-border) !important;
+        }
     </style>
 </head>
 <body class="pts-body pts-auth-page">
 <div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid rgba(151,66,88,.18);">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);backdrop-filter:blur(12px);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
     <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
         <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
         PTS Learning
       </a>
@@ -327,9 +348,9 @@
     if (document.body) document.body.insertBefore(box, document.body.firstChild);
   }
   if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid #eadfe2">'
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
       + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
       + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
       + '<div style="display:flex;gap:8px">'
       + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
@@ -339,5 +360,5 @@
 })();
 </script>
 <script src="password-toggle.js?v=20260720e"></script>
-<script src="/comp/navbar.js?v=20260721e"></script>
+<script src="/comp/navbar.js?v=20260722f"></script>
 </body></html>
