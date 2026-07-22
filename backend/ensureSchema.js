@@ -132,10 +132,14 @@ async function ensureLearningSchema(pool) {
             badge_icon NVARCHAR(64) NULL,
             badge_title NVARCHAR(100) NULL,
             badge_subtitle NVARCHAR(255) NULL,
+            theme NVARCHAR(32) NOT NULL CONSTRAINT DF_hero_slides_theme DEFAULT ('rose'),
             flag_use BIT NOT NULL CONSTRAINT DF_hero_slides_flag DEFAULT (1),
             created_at DATETIME NOT NULL CONSTRAINT DF_hero_slides_created DEFAULT (GETDATE()),
             updated_at DATETIME NOT NULL CONSTRAINT DF_hero_slides_updated DEFAULT (GETDATE())
-         )`
+         )`,
+        `IF COL_LENGTH('dbo.hero_slides', 'theme') IS NULL
+         ALTER TABLE dbo.hero_slides ADD theme NVARCHAR(32) NOT NULL
+            CONSTRAINT DF_hero_slides_theme_col DEFAULT ('rose')`
     ];
 
     for (const statement of statements) {
@@ -143,6 +147,30 @@ async function ensureLearningSchema(pool) {
     }
 
     await seedHeroSlidesIfEmpty(pool);
+    await ensureHeroSlideThemes(pool);
+}
+
+async function ensureHeroSlideThemes(pool) {
+    // Diversify existing slides that still use the default theme only when all are 'rose'
+    try {
+        const rows = await pool.request().query(`
+            SELECT slide_id, sort_order, theme
+            FROM BD_PTS.dbo.hero_slides
+            WHERE flag_use = 1
+            ORDER BY sort_order ASC, slide_id ASC
+        `);
+        const list = rows.recordset || [];
+        if (list.length < 2) return;
+        const allRose = list.every((r) => !r.theme || String(r.theme).toLowerCase() === 'rose');
+        if (!allRose) return;
+        const cycle = ['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset'];
+        for (let i = 0; i < list.length; i += 1) {
+            await pool.request()
+                .input('slideId', sql.Int, list[i].slide_id)
+                .input('theme', sql.NVarChar, cycle[i % cycle.length])
+                .query(`UPDATE BD_PTS.dbo.hero_slides SET theme = @theme WHERE slide_id = @slideId`);
+        }
+    } catch (_) { /* ignore */ }
 }
 
 async function seedHeroSlidesIfEmpty(pool) {
@@ -152,6 +180,7 @@ async function seedHeroSlidesIfEmpty(pool) {
     const seeds = [
         {
             sort_order: 1,
+            theme: 'rose',
             eyebrow: 'PTS Learning',
             title: 'ยกระดับทักษะ Personal Assistant สู่มาตรฐานมืออาชีพ',
             title_highlight: 'Personal Assistant',
@@ -168,6 +197,7 @@ async function seedHeroSlidesIfEmpty(pool) {
         },
         {
             sort_order: 2,
+            theme: 'sage',
             eyebrow: 'เรียนได้ทุกที่',
             title: 'เลือกสไตล์การเรียน Online · Onsite · Hybrid ได้ตามชีวิตคุณ',
             title_highlight: 'Online · Onsite · Hybrid',
@@ -184,6 +214,7 @@ async function seedHeroSlidesIfEmpty(pool) {
         },
         {
             sort_order: 3,
+            theme: 'gold',
             eyebrow: 'พร้อมใบประกาศ',
             title: 'จบหลักสูตรได้ ใบประกาศนียบัตร ที่นำไปใช้ต่อได้จริง',
             title_highlight: 'ใบประกาศนียบัตร',
@@ -216,15 +247,16 @@ async function seedHeroSlidesIfEmpty(pool) {
             .input('badge_icon', sql.NVarChar, s.badge_icon)
             .input('badge_title', sql.NVarChar, s.badge_title)
             .input('badge_subtitle', sql.NVarChar, s.badge_subtitle)
+            .input('theme', sql.NVarChar, s.theme || 'rose')
             .query(`
                 INSERT INTO BD_PTS.dbo.hero_slides (
                     sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, flag_use
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, flag_use
                 ) VALUES (
                     @sort_order, @eyebrow, @title, @title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
-                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, 1
+                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, 1
                 )
             `);
     }

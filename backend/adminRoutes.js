@@ -13,6 +13,7 @@ const HERO_ICONS = new Set([
     'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
     'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
 ]);
+const HERO_THEMES = new Set(['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset']);
 
 function ensureHeroDir() {
     fs.mkdirSync(HERO_DIR, { recursive: true });
@@ -41,6 +42,7 @@ const heroUpload = multer({
 
 function normalizeHeroBody(body = {}) {
     const icon = String(body.badge_icon || '').trim() || 'check_circle';
+    const theme = String(body.theme || '').trim().toLowerCase() || 'rose';
     return {
         sort_order: Math.max(1, parseInt(body.sort_order, 10) || 1),
         eyebrow: String(body.eyebrow || '').trim() || null,
@@ -56,6 +58,7 @@ function normalizeHeroBody(body = {}) {
         badge_icon: HERO_ICONS.has(icon) ? icon : 'check_circle',
         badge_title: String(body.badge_title || '').trim() || null,
         badge_subtitle: String(body.badge_subtitle || '').trim() || null,
+        theme: HERO_THEMES.has(theme) ? theme : 'rose',
         flag_use: body.flag_use === false || body.flag_use === 0 || body.flag_use === '0' ? 0 : 1
     };
 }
@@ -76,6 +79,7 @@ function bindHeroInputs(request, data) {
         .input('badge_icon', sql.NVarChar, data.badge_icon)
         .input('badge_title', sql.NVarChar, data.badge_title)
         .input('badge_subtitle', sql.NVarChar, data.badge_subtitle)
+        .input('theme', sql.NVarChar, data.theme)
         .input('flag_use', sql.Bit, data.flag_use);
 }
 
@@ -433,7 +437,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT
                     slide_id, sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle,
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme,
                     flag_use, created_at, updated_at
                 FROM BD_PTS.dbo.hero_slides
                 ORDER BY sort_order ASC, slide_id ASC
@@ -456,13 +460,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 INSERT INTO BD_PTS.dbo.hero_slides (
                     sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, flag_use
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, flag_use
                 )
                 OUTPUT INSERTED.slide_id
                 VALUES (
                     @sort_order, @eyebrow, @title, @title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
-                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @flag_use
+                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, @flag_use
                 )
             `);
             res.json({ success: true, message: 'เพิ่มแบนเนอร์แล้ว', data: result.recordset[0] });
@@ -499,6 +503,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         badge_icon = @badge_icon,
                         badge_title = @badge_title,
                         badge_subtitle = @badge_subtitle,
+                        theme = @theme,
                         flag_use = @flag_use,
                         updated_at = GETDATE()
                     WHERE slide_id = @slideId

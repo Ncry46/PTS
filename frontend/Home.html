@@ -2,7 +2,7 @@
         <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
         <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260722b">
+        <link rel="stylesheet" href="site.css?v=20260722c">
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
                 tailwind.config = {
@@ -124,7 +124,7 @@
 
 <main>
 <!-- Hero Banner Carousel — loaded from /api/hero-slides (admin-managed) -->
-<section class="pts-hero-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+<section class="pts-hero-banner" data-theme="rose" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
   <div class="pts-hero-banner__wash" aria-hidden="true">
     <span class="pts-hero-banner__orb pts-hero-banner__orb--a"></span>
     <span class="pts-hero-banner__orb pts-hero-banner__orb--b"></span>
@@ -466,6 +466,17 @@ document.addEventListener('DOMContentLoaded', async () => {
       'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
       'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
     ]);
+    const ALLOWED_THEMES = new Set(['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset']);
+
+    function normalizeTheme(theme) {
+      const t = String(theme || '').trim().toLowerCase();
+      return ALLOWED_THEMES.has(t) ? t : 'rose';
+    }
+
+    function applyTheme(theme) {
+      if (!banner) return;
+      banner.dataset.theme = normalizeTheme(theme);
+    }
 
     function renderTitle(title, highlight) {
       const raw = String(title || '');
@@ -536,6 +547,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!slidesData.length) {
       if (nav) nav.hidden = true;
+      applyTheme('rose');
       stage.innerHTML = `
         <article class="pts-hero-banner__panel is-active" data-slide="0" aria-hidden="false">
           <div class="pts-hero-banner__inner">
@@ -553,6 +565,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     stage.innerHTML = slidesData.map(panelHtml).join('');
+    applyTheme(slidesData[0].theme);
 
     const slides = Array.from(stage.querySelectorAll('.pts-hero-banner__panel'));
     if (slides.length < 2) {
@@ -591,6 +604,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         dot.classList.toggle('is-active', on);
         dot.setAttribute('aria-selected', on ? 'true' : 'false');
       });
+      applyTheme(slidesData[index]?.theme);
       if (userAction) restart();
     }
 

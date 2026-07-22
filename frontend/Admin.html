@@ -309,11 +309,23 @@ async function renderBanners() {
     'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
     'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
   ];
+  const themeOptions = [
+    { value: 'rose', label: 'Rose — ชมพูโรสโกลด์' },
+    { value: 'sage', label: 'Sage — เขียวเซจ' },
+    { value: 'gold', label: 'Gold — ทองอุ่น' },
+    { value: 'ink', label: 'Ink — ดำหมึก' },
+    { value: 'ocean', label: 'Ocean — ทะเลเทียล' },
+    { value: 'sunset', label: 'Sunset — พระอาทิตย์ตก' }
+  ];
+  const themeLabel = (t) => (themeOptions.find((x) => x.value === t) || themeOptions[0]).label;
 
   const formHtml = (s = {}) => `
     <input type="hidden" id="b-id" value="${s.slide_id || ''}">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
       <input id="b-sort" type="number" class="border rounded-xl px-3 py-2" placeholder="ลำดับ" value="${s.sort_order || data.length + 1}">
+      <select id="b-theme" class="border rounded-xl px-3 py-2">
+        ${themeOptions.map((t) => `<option value="${t.value}" ${(s.theme || 'rose') === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
+      </select>
       <input id="b-eyebrow" class="border rounded-xl px-3 py-2" placeholder="ข้อความเล็กเหนือหัวข้อ" value="${escapeHtml(s.eyebrow || '')}">
       <input id="b-title" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="หัวข้อหลัก *" value="${escapeHtml(s.title || '')}">
       <input id="b-highlight" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="คำในหัวข้อที่อยากไฮไลต์สี (ต้องตรงกับข้อความในหัวข้อ)" value="${escapeHtml(s.title_highlight || '')}">
@@ -343,14 +355,14 @@ async function renderBanners() {
 
   document.getElementById('panel').innerHTML = `
     <h2 class="font-bold text-lg mb-1" id="b-form-title">เพิ่มแบนเนอร์หน้าแรก</h2>
-    <p class="text-sm text-on-surface-variant mb-4">สไลด์ที่เปิดใช้จะหมุนบนหน้าแรกตามลำดับ</p>
+    <p class="text-sm text-on-surface-variant mb-4">สไลด์ที่เปิดใช้จะหมุนบนหน้าแรกตามลำดับ — เลือกธีมสีพื้นหลังต่างกันได้ทุกสไลด์</p>
     <div id="b-form">${formHtml()}</div>
     <h3 class="font-bold mb-2">รายการแบนเนอร์</h3>
     <div class="space-y-3">${data.map(s => `
       <div class="border rounded-xl p-3 flex flex-col md:flex-row gap-3 ${s.flag_use ? '' : 'opacity-50'}">
         <img src="${escapeHtml(s.image_url || '')}" alt="" class="w-full md:w-36 h-24 object-cover rounded-lg bg-gray-100" onerror="this.style.display='none'">
         <div class="flex-1 min-w-0">
-          <p class="text-xs text-on-surface-variant">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'}</p>
+          <p class="text-xs text-on-surface-variant">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'} · ${themeLabel(s.theme)}</p>
           <p class="font-bold truncate">${escapeHtml(s.eyebrow || '')}</p>
           <p class="text-sm">${escapeHtml(s.title)}</p>
         </div>
@@ -364,6 +376,7 @@ async function renderBanners() {
 
   const readForm = () => ({
     sort_order: Number(document.getElementById('b-sort').value || 1),
+    theme: document.getElementById('b-theme').value,
     eyebrow: document.getElementById('b-eyebrow').value,
     title: document.getElementById('b-title').value,
     title_highlight: document.getElementById('b-highlight').value,

@@ -588,7 +588,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 SELECT
                     slide_id, sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme
                 FROM BD_PTS.dbo.hero_slides
                 WHERE flag_use = 1
                 ORDER BY sort_order ASC, slide_id ASC

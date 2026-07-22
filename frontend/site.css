@@ -718,6 +718,7 @@ input.pts-pw-input::-ms-clear {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
+  transition: background 0.85s ease;
   background:
     radial-gradient(1100px 620px at -5% -10%, rgba(255, 177, 193, 0.7), transparent 58%),
     radial-gradient(900px 540px at 105% 5%, rgba(176, 141, 87, 0.28), transparent 52%),
@@ -830,6 +831,137 @@ input.pts-pw-input::-ms-clear {
   border-color: rgba(255,177,193,.22);
   animation-direction: reverse;
   animation-duration: 40s;
+}
+
+/* —— Per-slide background themes —— */
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__wash {
+  background:
+    radial-gradient(1100px 620px at -5% -10%, rgba(133, 190, 150, 0.55), transparent 58%),
+    radial-gradient(900px 540px at 105% 5%, rgba(176, 141, 87, 0.22), transparent 52%),
+    radial-gradient(780px 460px at 70% 110%, rgba(42, 90, 72, 0.45), transparent 55%),
+    radial-gradient(520px 320px at 40% 40%, rgba(74, 120, 96, 0.2), transparent 60%),
+    linear-gradient(148deg, #14241c 0%, #1f3d2e 28%, #3d5a4c 52%, #2a4a3a 78%, #121a16 100%);
+}
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__orb--a {
+  background: radial-gradient(circle, rgba(133,190,150,.9) 0%, rgba(61,90,76,.4) 45%, transparent 72%);
+}
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__orb--b {
+  background: radial-gradient(circle, rgba(212,175,110,.55) 0%, rgba(176,141,87,.22) 50%, transparent 72%);
+}
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__orb--c {
+  background: radial-gradient(circle, rgba(180,220,190,.7) 0%, rgba(42,90,72,.3) 55%, transparent 72%);
+}
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__beam {
+  background: linear-gradient(180deg, rgba(255,255,255,.18), rgba(133,190,150,.1) 40%, transparent 70%);
+}
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__ring--a { border-color: rgba(180,220,190,.3); }
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__ring--b { border-color: rgba(133,190,150,.25); }
+.pts-hero-banner[data-theme="sage"] .pts-hero-banner__stage {
+  box-shadow: 0 40px 80px rgba(8, 20, 14, .38), 0 2px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(61,90,76,.1);
+}
+
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__wash {
+  background:
+    radial-gradient(1100px 620px at -5% -10%, rgba(232, 196, 120, 0.55), transparent 58%),
+    radial-gradient(900px 540px at 105% 5%, rgba(255, 177, 193, 0.18), transparent 52%),
+    radial-gradient(780px 460px at 70% 110%, rgba(120, 72, 32, 0.4), transparent 55%),
+    radial-gradient(520px 320px at 40% 40%, rgba(176, 141, 87, 0.22), transparent 60%),
+    linear-gradient(148deg, #2a1c10 0%, #5c3a18 28%, #a67b32 52%, #3d2a18 78%, #1a120c 100%);
+}
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__orb--a {
+  background: radial-gradient(circle, rgba(232,196,120,.95) 0%, rgba(176,141,87,.45) 45%, transparent 72%);
+}
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__orb--b {
+  background: radial-gradient(circle, rgba(255,210,160,.65) 0%, rgba(166,123,50,.3) 50%, transparent 72%);
+}
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__orb--c {
+  background: radial-gradient(circle, rgba(255,177,193,.4) 0%, rgba(120,72,32,.25) 55%, transparent 72%);
+}
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__beam {
+  background: linear-gradient(180deg, rgba(255,245,220,.28), rgba(232,196,120,.12) 40%, transparent 70%);
+}
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__ring--a { border-color: rgba(255,220,160,.35); }
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__ring--b { border-color: rgba(232,196,120,.28); }
+.pts-hero-banner[data-theme="gold"] .pts-hero-banner__stage {
+  box-shadow: 0 40px 80px rgba(24, 14, 6, .4), 0 2px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(176,141,87,.12);
+}
+
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__wash {
+  background:
+    radial-gradient(1100px 620px at -5% -10%, rgba(120, 140, 160, 0.35), transparent 58%),
+    radial-gradient(900px 540px at 105% 5%, rgba(176, 141, 87, 0.18), transparent 52%),
+    radial-gradient(780px 460px at 70% 110%, rgba(40, 55, 70, 0.5), transparent 55%),
+    radial-gradient(520px 320px at 40% 40%, rgba(70, 85, 100, 0.2), transparent 60%),
+    linear-gradient(148deg, #0c1016 0%, #1a2430 28%, #2c3a48 52%, #182028 78%, #0a0c10 100%);
+}
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__orb--a {
+  background: radial-gradient(circle, rgba(140,160,180,.7) 0%, rgba(60,75,95,.35) 45%, transparent 72%);
+}
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__orb--b {
+  background: radial-gradient(circle, rgba(212,175,110,.45) 0%, rgba(80,90,100,.25) 50%, transparent 72%);
+}
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__orb--c {
+  background: radial-gradient(circle, rgba(180,200,220,.45) 0%, rgba(40,55,70,.3) 55%, transparent 72%);
+}
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__beam {
+  background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(140,160,180,.08) 40%, transparent 70%);
+}
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__ring--a { border-color: rgba(180,200,220,.25); }
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__ring--b { border-color: rgba(140,160,180,.2); }
+.pts-hero-banner[data-theme="ink"] .pts-hero-banner__stage {
+  box-shadow: 0 40px 80px rgba(4, 8, 12, .5), 0 2px 0 rgba(255,255,255,.15) inset, 0 0 0 1px rgba(80,100,120,.12);
+}
+
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__wash {
+  background:
+    radial-gradient(1100px 620px at -5% -10%, rgba(100, 190, 200, 0.5), transparent 58%),
+    radial-gradient(900px 540px at 105% 5%, rgba(176, 141, 87, 0.16), transparent 52%),
+    radial-gradient(780px 460px at 70% 110%, rgba(28, 80, 90, 0.45), transparent 55%),
+    radial-gradient(520px 320px at 40% 40%, rgba(46, 120, 130, 0.22), transparent 60%),
+    linear-gradient(148deg, #0e1e24 0%, #1a3d48 28%, #2a6a72 52%, #1c4048 78%, #0a1418 100%);
+}
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__orb--a {
+  background: radial-gradient(circle, rgba(100,190,200,.9) 0%, rgba(40,100,110,.4) 45%, transparent 72%);
+}
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__orb--b {
+  background: radial-gradient(circle, rgba(160,220,210,.55) 0%, rgba(50,120,130,.28) 50%, transparent 72%);
+}
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__orb--c {
+  background: radial-gradient(circle, rgba(212,175,110,.4) 0%, rgba(28,80,90,.25) 55%, transparent 72%);
+}
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__beam {
+  background: linear-gradient(180deg, rgba(220,255,255,.22), rgba(100,190,200,.1) 40%, transparent 70%);
+}
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__ring--a { border-color: rgba(140,220,230,.32); }
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__ring--b { border-color: rgba(100,190,200,.25); }
+.pts-hero-banner[data-theme="ocean"] .pts-hero-banner__stage {
+  box-shadow: 0 40px 80px rgba(6, 16, 20, .42), 0 2px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(40,100,110,.12);
+}
+
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__wash {
+  background:
+    radial-gradient(1100px 620px at -5% -10%, rgba(255, 160, 120, 0.55), transparent 58%),
+    radial-gradient(900px 540px at 105% 5%, rgba(255, 200, 140, 0.35), transparent 52%),
+    radial-gradient(780px 460px at 70% 110%, rgba(140, 50, 60, 0.4), transparent 55%),
+    radial-gradient(520px 320px at 40% 40%, rgba(200, 90, 70, 0.22), transparent 60%),
+    linear-gradient(148deg, #2a1410 0%, #6e2e28 28%, #c45a3a 48%, #8a3a48 72%, #1e1014 100%);
+}
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__orb--a {
+  background: radial-gradient(circle, rgba(255,160,120,.95) 0%, rgba(200,90,70,.45) 45%, transparent 72%);
+}
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__orb--b {
+  background: radial-gradient(circle, rgba(255,210,140,.7) 0%, rgba(176,141,87,.28) 50%, transparent 72%);
+}
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__orb--c {
+  background: radial-gradient(circle, rgba(255,177,193,.55) 0%, rgba(140,50,60,.28) 55%, transparent 72%);
+}
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__beam {
+  background: linear-gradient(180deg, rgba(255,230,200,.28), rgba(255,160,120,.12) 40%, transparent 70%);
+}
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__ring--a { border-color: rgba(255,200,150,.35); }
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__ring--b { border-color: rgba(255,160,120,.28); }
+.pts-hero-banner[data-theme="sunset"] .pts-hero-banner__stage {
+  box-shadow: 0 40px 80px rgba(28, 10, 10, .42), 0 2px 0 rgba(255,255,255,.2) inset, 0 0 0 1px rgba(200,90,70,.12);
 }
 
 @keyframes pts-hero-float {
