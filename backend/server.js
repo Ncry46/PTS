@@ -16,17 +16,25 @@ const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+    app.set('trust proxy', 1);
+}
 
 app.use(cors());
 app.use(express.json());
 
 // 🌟 2. เปิดใช้งานระบบจำสิทธิ์ (Session) ยึดตามเบราว์เซอร์
 app.use(session({
-    secret: 'your-secret-key-pts-academy', // เปลี่ยนคีย์ความปลอดภัยได้ตามใจชอบ
+    secret: process.env.SESSION_SECRET || 'your-secret-key-pts-academy',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // อยู่ได้นาน 24 ชั่วโมง
+    cookie: {
+        secure: process.env.COOKIE_SECURE === 'true' || process.env.COOKIE_SECURE === '1',
+        maxAge: 24 * 60 * 60 * 1000 // อยู่ได้นาน 24 ชั่วโมง
+    }
 }));
 
 const frontendDir = path.join(__dirname, '..', 'frontend');
@@ -40,37 +48,41 @@ app.use('/comp', express.static(componentsDir));
 app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
 // รูปโปรไฟล์ที่อัปโหลดจากเครื่อง
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
+// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server (override ได้ด้วย env / Docker)
 const dbConfig = {
-    user: 'uinet',
-    password: 'p@$$w0rd', // ⚠️ ตรวจสอบรหัสผ่าน SQL Server ของคุณให้ถูกต้องตรงนี้ครับ
-    server: 'tvsdb2.thanvasupos.com',
-    port: 28914,
-    database: 'BD_PTS',
+    user: process.env.DB_USER || 'uinet',
+    password: process.env.DB_PASSWORD || 'p@$$w0rd',
+    server: process.env.DB_SERVER || 'tvsdb2.thanvasupos.com',
+    port: Number(process.env.DB_PORT) || 28914,
+    database: process.env.DB_NAME || 'BD_PTS',
     options: {
-        encrypt: true,
-        trustServerCertificate: true
+        encrypt: process.env.DB_ENCRYPT !== 'false',
+        trustServerCertificate: process.env.DB_TRUST_CERT !== 'false'
     },
     pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
 };
 
-// 📧 ตั้งค่าส่ง Email OTP (แก้ตรงนี้เหมือนรหัส SQL ด้านบน)
-// App Password จาก https://myaccount.google.com/apppasswords
+// 📧 ตั้งค่าส่ง Email OTP — แนะนำตั้งผ่าน .env (SMTP_*) เมื่อรัน Docker
+// ค่าด้านล่างเป็น fallback สำหรับรันในเครื่อง; mailSecrets อ่าน process.env ก่อน
 const mailConfig = {
-    mode: 'smtp',
-    smtpHost: 'smtp.gmail.com',
-    smtpPort: 587,
-    smtpSecure: false,
-    smtpUser: 'businessdev@thanvasu.com',
-    smtpPass: 'zwqmqqykmgrzqbcj',
-    fromName: 'PTS Learning',
-    fromEmail: 'businessdev@thanvasu.com',
-    brevoApiKey: ''
+    mode: process.env.MAIL_MODE || 'smtp',
+    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+    smtpPort: Number(process.env.SMTP_PORT) || 587,
+    smtpSecure: process.env.SMTP_SECURE === 'true',
+    smtpUser: process.env.SMTP_USER || 'businessdev@thanvasu.com',
+    smtpPass: process.env.SMTP_PASS || '',
+    fromName: process.env.MAIL_FROM_NAME || 'PTS Learning',
+    fromEmail: process.env.MAIL_FROM_EMAIL || process.env.MAIL_FROM || 'businessdev@thanvasu.com',
+    brevoApiKey: process.env.BREVO_API_KEY || ''
 };
 
 try {
-    writeSecretsFile(mailConfig);
-    console.log('📧 บันทึกค่า Email OTP จาก server.js → mail.local.js / mail.secrets.json');
+    if (mailConfig.smtpPass) {
+        writeSecretsFile(mailConfig);
+        console.log('📧 บันทึกค่า Email OTP จาก env/server.js → mail.local.js / mail.secrets.json');
+    } else {
+        console.log('📧 SMTP_PASS ว่าง — ใช้ mail.local.js / .env ที่มีอยู่ (ถ้ามี)');
+    }
 } catch (e) {
     console.error('⚠️ บันทึกค่าอีเมลไม่สำเร็จ:', e.message);
 }
@@ -962,8 +974,8 @@ app.post('/api/attendance/scan', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
     try {
         const configured = typeof googleCalendar.isGoogleConfigured === 'function'
             && googleCalendar.isGoogleConfigured();
