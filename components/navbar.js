@@ -96,7 +96,10 @@
         max-width:1120px; margin:0 auto; height:100%; padding:0 16px;
         display:flex; align-items:center; justify-content:space-between; gap:12px;
       }
-      .pts-topnav__brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--pts-text,#1c1520); flex-shrink:0; }
+      .pts-topnav__start {
+        display:flex; align-items:center; gap:4px; min-width:0; flex-shrink:0;
+      }
+      .pts-topnav__brand { display:flex; align-items:center; gap:10px; text-decoration:none; color:var(--pts-text,#1c1520); flex-shrink:1; min-width:0; }
       .pts-topnav__logo { height:42px; width:auto; max-width:160px; object-fit:contain; display:block; }
       .pts-topnav__mark { display:none !important; }
       .pts-topnav__name { font-weight:700; font-size:15px; line-height:1.15; color:var(--pts-text,#1c1520); }
@@ -147,7 +150,7 @@
         display:flex; align-items:center; justify-content:center; height:40px; border-radius:999px;
         background:var(--pts-primary,#974258); color:#fff; text-decoration:none; font-weight:700; font-size:14px;
       }
-      .pts-topnav__actions { display:flex; align-items:center; gap:8px; }
+      .pts-topnav__actions { display:flex; align-items:center; gap:8px; margin-left:auto; }
       .pts-topnav__btn {
         display:inline-flex; align-items:center; justify-content:center; height:40px; padding:0 16px;
         border-radius:999px; text-decoration:none; font-size:14px; font-weight:700; white-space:nowrap;
@@ -175,7 +178,15 @@
       .pts-theme-toggle .pts-theme-icon--moon { display:block; }
       html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--sun { display:block; }
       html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--moon { display:none; }
-      .pts-topnav__burger { display:grid; }
+      .pts-topnav__burger {
+        display:grid; place-items:center; width:40px; height:40px; flex-shrink:0;
+        border:none; border-radius:999px; background:transparent;
+        color:var(--pts-muted,#5c4f55); font-size:20px; line-height:1; cursor:pointer;
+      }
+      .pts-topnav__burger:hover { background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258); }
+      .pts-topnav__burger[aria-expanded="true"] {
+        background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258);
+      }
       .pts-topnav__mobile {
         display:none; border-top:1px solid var(--pts-border,rgba(151,66,88,.14));
         background:var(--pts-nav-bg,#fff); padding:8px 16px 14px;
@@ -186,48 +197,63 @@
         font:inherit; font-weight:600; color:var(--pts-text,#1c1520); text-decoration:none; border-radius:10px; cursor:pointer;
       }
       .pts-topnav__mobile a:hover, .pts-topnav__mobile button:hover { background:var(--pts-nav-hover,#f6e6ea); }
-      .pts-topnav__user { display:flex; align-items:center; gap:8px; border:none; background:transparent; cursor:pointer; padding:4px; border-radius:999px; color:var(--pts-text,#1c1520); }
-      .pts-topnav__user:hover { background:var(--pts-nav-hover,#f6e6ea); }
-      .pts-topnav__user img { width:36px; height:36px; border-radius:999px; object-fit:cover; border:2px solid var(--pts-primary-soft,#f6e6ea); }
-      .pts-topnav__drop { display:none !important; }
-      .pts-drawer-backdrop {
-        position:fixed; inset:0; background:rgba(12,10,14,.55); z-index:100000;
-        opacity:0; pointer-events:none; transition:opacity .2s ease;
+      .pts-topnav__user-wrap { position:relative; }
+      .pts-topnav__user {
+        display:flex; align-items:center; gap:8px; border:none; background:transparent; cursor:pointer;
+        padding:4px; border-radius:999px; color:var(--pts-text,#1c1520);
       }
-      .pts-drawer-backdrop.is-open { opacity:1; pointer-events:auto; }
-      .pts-drawer {
-        position:fixed; top:0; left:0; bottom:0; width:min(300px,86vw); z-index:100001;
-        background:var(--pts-surface,#fff); border-right:1px solid var(--pts-border,rgba(151,66,88,.14));
-        box-shadow:8px 0 32px rgba(0,0,0,.25);
-        transform:translateX(-105%); transition:transform .25s ease;
-        display:flex; flex-direction:column; font-family:'IBM Plex Sans Thai',Sarabun,sans-serif;
-        color:var(--pts-text,#1c1520);
+      .pts-topnav__user:hover, .pts-topnav__user-wrap.is-open .pts-topnav__user {
+        background:var(--pts-nav-hover,#f6e6ea);
       }
-      .pts-drawer.is-open { transform:translateX(0); }
-      .pts-drawer__head {
-        display:flex; align-items:center; gap:12px; padding:20px 18px 16px;
+      .pts-topnav__user img {
+        width:36px; height:36px; border-radius:999px; object-fit:cover;
+        border:2px solid var(--pts-primary-soft,#f6e6ea);
+      }
+      .pts-topnav__drop {
+        display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:100002;
+        width:min(280px, calc(100vw - 24px)); padding:0;
+        background:var(--pts-surface,#fff);
+        border:1px solid var(--pts-border,rgba(151,66,88,.16));
+        border-radius:14px;
+        box-shadow:var(--pts-shadow,0 16px 40px rgba(28,21,32,.14));
+        overflow:hidden;
+      }
+      .pts-topnav__user-wrap.is-open .pts-topnav__drop { display:block; }
+      .pts-topnav__drop-head {
+        display:flex; align-items:center; gap:10px; padding:14px 14px 12px;
         border-bottom:1px solid var(--pts-border,rgba(151,66,88,.12));
         background:linear-gradient(180deg, var(--pts-nav-hover,#faf4f6), var(--pts-surface,#fff));
       }
-      .pts-drawer__head img {
-        width:48px; height:48px; border-radius:999px; object-fit:cover; border:2px solid var(--pts-primary-soft,#f6e6ea);
+      .pts-topnav__drop-head img {
+        width:40px; height:40px; border-radius:999px; object-fit:cover;
+        border:2px solid var(--pts-primary-soft,#f6e6ea); flex-shrink:0;
       }
-      .pts-drawer__name { font-size:15px; font-weight:700; color:var(--pts-text,#1c1520); line-height:1.2; }
-      .pts-drawer__role { font-size:11px; font-weight:700; color:var(--pts-primary,#974258); text-transform:uppercase; letter-spacing:.04em; margin-top:2px; }
-      .pts-drawer__close {
-        margin-left:auto; width:36px; height:36px; border:none; border-radius:999px;
-        background:transparent; cursor:pointer; font-size:20px; color:var(--pts-muted,#6b5c62);
+      .pts-topnav__drop-name { font-size:14px; font-weight:700; color:var(--pts-text,#1c1520); line-height:1.2; }
+      .pts-topnav__drop-role {
+        font-size:11px; font-weight:700; color:var(--pts-primary,#974258);
+        text-transform:uppercase; letter-spacing:.04em; margin-top:2px;
       }
-      .pts-drawer__close:hover { background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258); }
-      .pts-drawer__nav { padding:10px 10px 20px; overflow:auto; flex:1; }
-      .pts-drawer__nav a, .pts-drawer__nav button {
-        display:flex; align-items:center; width:100%; text-align:left; padding:13px 14px;
-        border:none; background:transparent; font:inherit; font-size:15px; font-weight:600;
-        color:var(--pts-text,#1c1520); text-decoration:none; border-radius:12px; cursor:pointer;
+      .pts-topnav__drop-nav { padding:6px; }
+      .pts-topnav__drop-nav a, .pts-topnav__drop-nav button {
+        display:flex; align-items:center; width:100%; text-align:left; padding:11px 12px;
+        border:none; background:transparent; font:inherit; font-size:14px; font-weight:600;
+        color:var(--pts-text,#1c1520); text-decoration:none; border-radius:10px; cursor:pointer;
       }
-      .pts-drawer__nav a:hover, .pts-drawer__nav button:hover { background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258); }
-      .pts-drawer__nav .pts-drawer__logout { color:#f07178; margin-top:8px; border-top:1px solid var(--pts-border,rgba(151,66,88,.1)); border-radius:0 0 12px 12px; padding-top:16px; }
-      .pts-drawer__nav .pts-drawer__logout:hover { background:rgba(186,26,26,.16); color:#ff8a8a; }
+      .pts-topnav__drop-nav a:hover, .pts-topnav__drop-nav button:hover {
+        background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258);
+      }
+      .pts-topnav__drop-logout {
+        color:#ba1a1a !important; margin-top:4px;
+        border-top:1px solid var(--pts-border,rgba(151,66,88,.1)) !important;
+        border-radius:0 0 10px 10px !important; padding-top:14px !important;
+      }
+      .pts-topnav__drop-logout:hover {
+        background:rgba(186,26,26,.1) !important; color:#d32f2f !important;
+      }
+      html[data-theme="dark"] .pts-topnav__drop-logout { color:#f07178 !important; }
+      html[data-theme="dark"] .pts-topnav__drop-logout:hover {
+        background:rgba(186,26,26,.16) !important; color:#ff8a8a !important;
+      }
       @media (min-width:768px) {
         .pts-topnav__inner { padding:0 28px; }
         .pts-topnav__btn--desktop { display:inline-flex !important; }
@@ -259,6 +285,12 @@
           <div class="pts-topnav__tag">Personal Assistant Academy</div>
         </span>
       </a>`;
+  }
+
+  function burgerHtml() {
+    return `
+      <button type="button" class="pts-topnav__burger" data-pts-burger
+        aria-label="เปิดเมนู" aria-expanded="false" aria-controls="pts-mobile-nav">☰</button>`;
   }
 
   function coursesMegaHtml() {
@@ -306,85 +338,117 @@
       <a href="Courses.html?filter=hybrid">· Hybrid</a>`;
   }
 
+  function profileMenuHtml(name, roleLabel, avatar, isAdmin) {
+    const studentLinks = `
+          <a href="DashbordU.html" role="menuitem">แดชบอร์ด</a>
+          <a href="Certificates.html" role="menuitem">ใบประกาศ</a>
+          <a href="Payments.html" role="menuitem">ชำระเงิน</a>
+          <a href="Favorites.html" role="menuitem">รายการโปรด</a>
+          <a href="Schedule.html" role="menuitem">ตารางเรียน / QR Onsite</a>
+          <a href="Settings.html" role="menuitem">ตั้งค่า</a>`;
+
+    const adminLinks = `
+          <a href="Home.html" role="menuitem">หน้าแรก</a>
+          <a href="Admin.html#courses" role="menuitem">คอร์ส</a>
+          <a href="Admin.html#lessons" role="menuitem">บทเรียน</a>
+          <a href="Admin.html#schedules" role="menuitem">ตารางเรียน</a>
+          <a href="Admin.html#banners" role="menuitem">แบนเนอร์</a>
+          <a href="Admin.html#users" role="menuitem">ผู้ใช้</a>
+          <a href="Admin.html#posts" role="menuitem">โพสต์</a>
+          <a href="Admin.html#payments" role="menuitem">ชำระเงิน</a>
+          <a href="Admin.html#mail" role="menuitem">อีเมล OTP</a>`;
+
+    return `
+      <div class="pts-topnav__user-wrap" data-pts-user-wrap>
+        <button type="button" class="pts-topnav__user" data-pts-user
+          aria-label="เปิดเมนูบัญชี" aria-expanded="false" aria-haspopup="true" aria-controls="pts-user-menu">
+          <span style="display:none;text-align:right;line-height:1.15" class="pts-topnav__user-meta">
+            <span style="display:block;font-size:13px;font-weight:700">${name}</span>
+            <span style="display:block;font-size:10px;font-weight:700;color:var(--pts-primary,#974258);text-transform:uppercase">${roleLabel}</span>
+          </span>
+          <img src="${avatar}" alt="">
+        </button>
+        <div class="pts-topnav__drop" id="pts-user-menu" data-pts-user-drop role="menu" hidden>
+          <div class="pts-topnav__drop-head">
+            <img src="${avatar}" alt="">
+            <div>
+              <div class="pts-topnav__drop-name">${name}</div>
+              <div class="pts-topnav__drop-role">${roleLabel}</div>
+            </div>
+          </div>
+          <nav class="pts-topnav__drop-nav">
+            ${isAdmin ? adminLinks : studentLinks}
+            <button type="button" class="pts-topnav__drop-logout" role="menuitem" onclick="logout()">ออกจากระบบ</button>
+          </nav>
+        </div>
+      </div>`;
+  }
+
+  function setMobileOpen(root, open) {
+    const burger = root.querySelector('[data-pts-burger]');
+    const mobile = root.querySelector('[data-pts-mobile]');
+    if (!burger || !mobile) return;
+    mobile.classList.toggle('is-open', open);
+    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
+    burger.setAttribute('aria-label', open ? 'ปิดเมนู' : 'เปิดเมนู');
+  }
+
+  function setProfileOpen(wrap, open) {
+    if (!wrap) return;
+    const btn = wrap.querySelector('[data-pts-user]');
+    const drop = wrap.querySelector('[data-pts-user-drop]');
+    wrap.classList.toggle('is-open', open);
+    if (btn) {
+      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      btn.setAttribute('aria-label', open ? 'ปิดเมนูบัญชี' : 'เปิดเมนูบัญชี');
+    }
+    if (drop) {
+      if (open) drop.removeAttribute('hidden');
+      else drop.setAttribute('hidden', '');
+    }
+  }
+
+  function closeAllMenus(root) {
+    if (!root) root = document.getElementById('app-navbar');
+    if (!root) return;
+    setMobileOpen(root, false);
+    const wrap = root.querySelector('[data-pts-user-wrap]');
+    setProfileOpen(wrap, false);
+  }
+
   function bindToggles(root) {
     const burger = root.querySelector('[data-pts-burger]');
     const mobile = root.querySelector('[data-pts-mobile]');
-    if (burger && mobile) {
-      burger.onclick = () => mobile.classList.toggle('is-open');
-    }
-
+    const wrap = root.querySelector('[data-pts-user-wrap]');
     const userBtn = root.querySelector('[data-pts-user]');
-    const drawer = document.getElementById('pts-profile-drawer');
-    const backdrop = document.getElementById('pts-drawer-backdrop');
-    const closeBtn = document.getElementById('pts-drawer-close');
 
-    function openDrawer() {
-      if (!drawer || !backdrop) return;
-      drawer.classList.add('is-open');
-      backdrop.classList.add('is-open');
-      document.body.style.overflow = 'hidden';
-    }
-    function closeDrawer() {
-      if (!drawer || !backdrop) return;
-      drawer.classList.remove('is-open');
-      backdrop.classList.remove('is-open');
-      document.body.style.overflow = '';
-    }
-
-    if (userBtn) {
-      userBtn.onclick = (e) => {
+    if (burger && mobile) {
+      burger.onclick = (e) => {
         e.stopPropagation();
-        if (drawer && drawer.classList.contains('is-open')) closeDrawer();
-        else openDrawer();
+        const willOpen = !mobile.classList.contains('is-open');
+        setProfileOpen(wrap, false);
+        setMobileOpen(root, willOpen);
       };
     }
-    if (closeBtn) closeBtn.onclick = closeDrawer;
-    if (backdrop) backdrop.onclick = closeDrawer;
-  }
 
-  function profileDrawerHtml(name, roleLabel, avatar, isAdmin) {
-    const studentLinks = `
-          <a href="DashbordU.html">แดชบอร์ด</a>
-          <a href="Certificates.html">ใบประกาศ</a>
-          <a href="Payments.html">ชำระเงิน</a>
-          <a href="Favorites.html">รายการโปรด</a>
-          <a href="Schedule.html">ตารางเรียน / QR Onsite</a>
-          <a href="Settings.html">ตั้งค่า</a>`;
-
-    const adminLinks = `
-          <a href="Home.html">หน้าแรก</a>
-          <a href="Admin.html#courses">คอร์ส</a>
-          <a href="Admin.html#lessons">บทเรียน</a>
-          <a href="Admin.html#schedules">ตารางเรียน</a>
-          <a href="Admin.html#banners">แบนเนอร์</a>
-          <a href="Admin.html#users">ผู้ใช้</a>
-          <a href="Admin.html#posts">โพสต์</a>
-          <a href="Admin.html#payments">ชำระเงิน</a>
-          <a href="Admin.html#mail">อีเมล OTP</a>`;
-
-    return `
-      <div id="pts-drawer-backdrop" class="pts-drawer-backdrop" aria-hidden="true"></div>
-      <aside id="pts-profile-drawer" class="pts-drawer" aria-label="เมนูบัญชีผู้ใช้">
-        <div class="pts-drawer__head">
-          <img src="${avatar}" alt="">
-          <div>
-            <div class="pts-drawer__name">${name}</div>
-            <div class="pts-drawer__role">${roleLabel}</div>
-          </div>
-          <button type="button" class="pts-drawer__close" id="pts-drawer-close" aria-label="ปิด">×</button>
-        </div>
-        <nav class="pts-drawer__nav">
-          ${isAdmin ? adminLinks : studentLinks}
-          <button type="button" class="pts-drawer__logout" onclick="logout()">ออกจากระบบ</button>
-        </nav>
-      </aside>`;
+    if (userBtn && wrap) {
+      userBtn.onclick = (e) => {
+        e.stopPropagation();
+        const willOpen = !wrap.classList.contains('is-open');
+        setMobileOpen(root, false);
+        setProfileOpen(wrap, willOpen);
+      };
+    }
   }
 
   function renderGuest(container) {
     container.innerHTML = `
       <nav class="pts-topnav" aria-label="เมนูหลัก">
         <div class="pts-topnav__inner">
-          ${brandHtml()}
+          <div class="pts-topnav__start">
+            ${burgerHtml()}
+            ${brandHtml()}
+          </div>
           <div class="pts-topnav__links">
             <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
             ${coursesMegaHtml()}
@@ -393,11 +457,10 @@
           <div class="pts-topnav__actions">
             <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">เข้าสู่ระบบ</a>
             <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Register.html">สมัครสมาชิก</a>
-            <button type="button" class="pts-topnav__icon pts-topnav__burger" data-pts-burger aria-label="เมนู">☰</button>
             ${themeToggleHtml()}
           </div>
         </div>
-        <div class="pts-topnav__mobile" data-pts-mobile>
+        <div class="pts-topnav__mobile" id="pts-mobile-nav" data-pts-mobile>
           <a href="Home.html">หน้าแรก</a>
           ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
@@ -422,7 +485,10 @@
     container.innerHTML = `
       <nav class="pts-topnav" aria-label="เมนูหลัก">
         <div class="pts-topnav__inner">
-          ${brandHtml()}
+          <div class="pts-topnav__start">
+            ${burgerHtml()}
+            ${brandHtml()}
+          </div>
           <div class="pts-topnav__links">
             <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
             ${coursesMegaHtml()}
@@ -430,39 +496,16 @@
           </div>
           <div class="pts-topnav__actions">
             <a href="Notifications.html" class="pts-topnav__icon" title="การแจ้งเตือน" aria-label="การแจ้งเตือน">🔔</a>
-            <button type="button" class="pts-topnav__user" data-pts-user aria-label="เปิดเมนูบัญชี">
-              <span style="display:none;text-align:right;line-height:1.15" class="pts-topnav__user-meta">
-                <span style="display:block;font-size:13px;font-weight:700">${name}</span>
-                <span style="display:block;font-size:10px;font-weight:700;color:var(--pts-primary,#974258);text-transform:uppercase">${roleLabel}</span>
-              </span>
-              <img src="${avatar}" alt="">
-            </button>
-            <button type="button" class="pts-topnav__icon pts-topnav__burger" data-pts-burger aria-label="เมนู">☰</button>
+            ${profileMenuHtml(name, roleLabel, avatar, isAdmin)}
             ${themeToggleHtml()}
           </div>
         </div>
-        <div class="pts-topnav__mobile" data-pts-mobile>
+        <div class="pts-topnav__mobile" id="pts-mobile-nav" data-pts-mobile>
           <a href="Home.html">หน้าแรก</a>
           ${coursesMobileHtml()}
           <a href="Community.html">คอมมูนิตี้</a>
-          ${isAdmin ? `
-          <a href="Admin.html#courses">คอร์ส</a>
-          <a href="Admin.html#lessons">บทเรียน</a>
-          <a href="Admin.html#schedules">ตารางเรียน</a>
-          <a href="Admin.html#banners">แบนเนอร์</a>
-          <a href="Admin.html#users">ผู้ใช้</a>
-          <a href="Admin.html#posts">โพสต์</a>
-          <a href="Admin.html#payments">ชำระเงิน</a>
-          <a href="Admin.html#mail">อีเมล OTP</a>
-          ` : `
-          <a href="Certificates.html">ใบประกาศ</a>
-          <a href="Favorites.html">รายการโปรด</a>
-          <a href="Settings.html">ตั้งค่า</a>
-          `}
-          <button type="button" onclick="logout()" style="color:#ba1a1a">ออกจากระบบ</button>
         </div>
-      </nav>
-      ${profileDrawerHtml(name, roleLabel, avatar, isAdmin)}`;
+      </nav>`;
     bindToggles(container);
     syncThemeToggle(container);
   }
@@ -517,15 +560,18 @@
       window.location.href = `Courses.html?filter=${String(filterType).toLowerCase()}`;
       return;
     }
+
+    const root = document.getElementById('app-navbar');
+    if (!root) return;
+    if (e.target.closest('[data-pts-user-wrap]') || e.target.closest('[data-pts-burger]') || e.target.closest('[data-pts-mobile]')) {
+      return;
+    }
+    closeAllMenus(root);
   });
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    const drawer = document.getElementById('pts-profile-drawer');
-    const backdrop = document.getElementById('pts-drawer-backdrop');
-    if (drawer) drawer.classList.remove('is-open');
-    if (backdrop) backdrop.classList.remove('is-open');
-    document.body.style.overflow = '';
+    closeAllMenus(document.getElementById('app-navbar'));
   });
 
   function boot() {
