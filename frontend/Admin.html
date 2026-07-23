@@ -277,6 +277,7 @@
       <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
       <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
       <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
+      <button type="button" class="tab-btn" data-tab="cert">ใบประกาศ</button>
       <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
       <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
       <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
@@ -287,7 +288,7 @@
     <section class="pts-page-hero">
       <span class="pts-chip mb-3">Admin</span>
       <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
-      <p class="text-on-surface-variant">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
+      <p class="text-on-surface-variant">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์ รูปใบประกาศ และการส่งอีเมล OTP</p>
     </section>
     <section id="panel" class="pts-panel"></section>
   </div>
@@ -1455,11 +1456,92 @@ async function renderMail() {
   };
 }
 
+async function renderCertAssets() {
+  const panel = document.getElementById('panel');
+  const { data } = await api('/api/admin/cert-assets');
+  const bySlot = Object.fromEntries((data || []).map((x) => [x.slot, x]));
+  const logo = bySlot.logo || { url: '/assets/2.png', filename: '2.png' };
+  const stamp = bySlot.stamp || { url: '/assets/2_2.png', filename: '2_2.png' };
+
+  panel.innerHTML = `
+    <div class="space-y-4">
+      <div class="pts-card p-5">
+        <h2 class="font-bold text-lg mb-1">รูปใบประกาศ</h2>
+        <p class="text-sm text-on-surface-variant mb-4">
+          อัปโหลดโลโก้และสแตมป์ไปที่โฟลเดอร์ <code>uploads/cert/</code>
+          — ไฟล์จะถูกบันทึกเป็น <code>2.png</code> (โลโก้) และ <code>2_2.png</code> (สแตมป์)
+        </p>
+        <div class="grid gap-4 md:grid-cols-2">
+          <div class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] p-4">
+            <h3 class="font-bold mb-2">โลโก้ (หัวใบประกาศ)</h3>
+            <div class="bg-[#f7f1f3] rounded-xl p-4 mb-3 flex items-center justify-center min-h-[160px]">
+              <img id="cert-logo-preview" src="${escapeHtml(logo.url)}" alt="Logo preview"
+                style="max-height:120px;max-width:100%;object-fit:contain"
+                onerror="this.onerror=null;this.src='/assets/2.png'">
+            </div>
+            <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(logo.filename || '2.png')}</code></p>
+            <input type="file" id="cert-logo-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
+            <button type="button" class="pts-btn pts-btn-primary" id="cert-logo-upload">อัปโหลดโลโก้</button>
+            <p id="cert-logo-msg" class="text-xs mt-2 text-on-surface-variant"></p>
+          </div>
+          <div class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] p-4">
+            <h3 class="font-bold mb-2">สแตมป์ (ท้ายใบประกาศ)</h3>
+            <div class="bg-[#f7f1f3] rounded-xl p-4 mb-3 flex items-center justify-center min-h-[160px]">
+              <img id="cert-stamp-preview" src="${escapeHtml(stamp.url)}" alt="Stamp preview"
+                style="max-height:120px;max-width:100%;object-fit:contain"
+                onerror="this.onerror=null;this.src='/assets/2_2.png'">
+            </div>
+            <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(stamp.filename || '2_2.png')}</code></p>
+            <input type="file" id="cert-stamp-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
+            <button type="button" class="pts-btn pts-btn-primary" id="cert-stamp-upload">อัปโหลดสแตมป์</button>
+            <p id="cert-stamp-msg" class="text-xs mt-2 text-on-surface-variant"></p>
+          </div>
+        </div>
+      </div>
+    </div>`;
+
+  const uploadSlot = async (slot, fileInputId, msgId, previewId) => {
+    const input = document.getElementById(fileInputId);
+    const msg = document.getElementById(msgId);
+    const file = input?.files?.[0];
+    if (!file) {
+      if (msg) msg.textContent = 'กรุณาเลือกไฟล์ก่อน';
+      return;
+    }
+    if (msg) msg.textContent = 'กำลังอัปโหลด...';
+    try {
+      const fd = new FormData();
+      fd.append('slot', slot);
+      fd.append('image', file);
+      const res = await fetch(`/api/admin/cert-assets/upload?slot=${encodeURIComponent(slot)}`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
+      const preview = document.getElementById(previewId);
+      if (preview && json.url) preview.src = json.url;
+      if (msg) msg.textContent = 'อัปโหลดแล้ว ✓ — เปิดหน้า Certificates เพื่อดูผล';
+    } catch (e) {
+      if (msg) msg.textContent = e.message || 'อัปโหลดไม่สำเร็จ';
+    }
+  };
+
+  document.getElementById('cert-logo-upload')?.addEventListener('click', () => {
+    uploadSlot('logo', 'cert-logo-file', 'cert-logo-msg', 'cert-logo-preview');
+  });
+  document.getElementById('cert-stamp-upload')?.addEventListener('click', () => {
+    uploadSlot('stamp', 'cert-stamp-file', 'cert-stamp-msg', 'cert-stamp-preview');
+  });
+}
+
 const tabs = {
   courses: renderCourses,
   lessons: renderLessons,
   schedules: renderSchedules,
   banners: renderBanners,
+  cert: renderCertAssets,
   users: renderUsers,
   posts: renderPosts,
   payments: renderPayments,

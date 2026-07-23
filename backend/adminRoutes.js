@@ -7,6 +7,12 @@ const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = r
 const { issueEmailOtp, getMailStatus } = require('./emailOtp');
 const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
 const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages } = require('./heroImages');
+const {
+    CERT_DIR,
+    CERT_SLOTS,
+    ensureCertDir,
+    listCertAssets
+} = require('./certAssets');
 
 const HERO_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const HERO_ICONS = new Set([
@@ -625,6 +631,54 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
             }
             res.json({ success: true, url: `/uploads/hero/${req.file.filename}` });
+        });
+    });
+
+    const certUpload = multer({
+        storage: multer.diskStorage({
+            destination: (_req, _file, cb) => {
+                ensureCertDir();
+                cb(null, CERT_DIR);
+            },
+            filename: (req, file, cb) => {
+                const slotKey = String(req.query.slot || req.body?.slot || '').trim().toLowerCase();
+                const slot = CERT_SLOTS[slotKey];
+                if (!slot) return cb(new Error('slot ต้องเป็น logo หรือ stamp'));
+                const dest = path.join(CERT_DIR, slot.filename);
+                try { if (fs.existsSync(dest)) fs.unlinkSync(dest); } catch (_) { /* ignore */ }
+                cb(null, slot.filename);
+            }
+        }),
+        limits: { fileSize: 5 * 1024 * 1024 },
+        fileFilter: (_req, file, cb) => {
+            if (HERO_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+            else cb(new Error('รองรับเฉพาะไฟล์รูป JPG, PNG, WEBP หรือ GIF'));
+        }
+    });
+
+    router.get('/cert-assets', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        res.json({ success: true, data: listCertAssets() });
+    });
+
+    router.post('/cert-assets/upload', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        certUpload.single('image')(req, res, (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
+            }
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
+            }
+            const slotKey = String(req.query.slot || req.body.slot || '').trim().toLowerCase();
+            const items = listCertAssets();
+            const item = items.find((x) => x.slot === slotKey) || items.find((x) => x.filename === req.file.filename);
+            res.json({
+                success: true,
+                message: `อัปโหลด${item?.label || ''}แล้ว`,
+                url: item?.url || `/uploads/cert/${req.file.filename}`,
+                data: items
+            });
         });
     });
 

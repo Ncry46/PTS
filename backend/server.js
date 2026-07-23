@@ -50,6 +50,12 @@ try {
     try { fs.mkdirSync(path.join(uploadsDir, 'hero'), { recursive: true }); } catch (__) {}
     try { fs.mkdirSync(path.join(uploadsDir, 'avatars'), { recursive: true }); } catch (__) {}
 }
+try {
+    const { ensureCertDir } = require('./certAssets');
+    ensureCertDir();
+} catch (_) {
+    try { fs.mkdirSync(path.join(uploadsDir, 'cert'), { recursive: true }); } catch (__) {}
+}
 
 // เสิร์ฟหน้าบ้านจาก frontend/
 app.use(express.static(frontendDir));

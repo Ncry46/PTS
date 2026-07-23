@@ -1,7 +1,13 @@
-# Certificate brand images (do not edit / recolor / regenerate):
-#   2.png   = logo (header) — Personal Assistant Academy
-#   2_2.png = stamp (footer seal) — scalloped PA seal
+# Place exact user-provided certificate images here (do not edit/recolor):
+#   2.png   = logo (header)
+#   2_2.png = stamp (footer seal)
 #
-# Paths used by Certificates.html:
+# Preferred (uploadable) paths used by Certificates.html:
+#   /uploads/cert/2.png
+#   /uploads/cert/2_2.png
+#
+# Fallback bundled copies:
 #   /assets/2.png
 #   /assets/2_2.png
+#
+# Admin can upload from: Admin → ใบประกาศ

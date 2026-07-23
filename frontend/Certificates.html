@@ -55,10 +55,13 @@
 </div>
 
 <script>
-/* Exact user assets — do not regenerate or edit these files */
-const PA_LOGO = '/assets/2.png';
-const PA_STAMP = '/assets/2_2.png';
+/* Prefer uploaded cert images; fall back to bundled assets */
+const PA_LOGO = '/uploads/cert/2.png';
+const PA_LOGO_FALLBACK = '/assets/2.png';
+const PA_STAMP = '/uploads/cert/2_2.png';
+const PA_STAMP_FALLBACK = '/assets/2_2.png';
 const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const imgFallback = (fallback) => `this.onerror=null;this.src='${fallback}'`;
 
 let userName = '';
 let allCerts = [];
@@ -103,7 +106,7 @@ function certificateHtml({ userName, courseName, issuedAt }) {
         <div class="pts-cert__bl-inner" aria-hidden="true"></div>
 
         <div class="pts-cert__logo-wrap">
-          <img class="pts-cert__logo" src="${PA_LOGO}" alt="Logo" decoding="async">
+          <img class="pts-cert__logo" src="${PA_LOGO}" alt="Logo" decoding="async" onerror="${imgFallback(PA_LOGO_FALLBACK)}">
         </div>
 
         <div class="pts-cert__content">
@@ -121,7 +124,7 @@ function certificateHtml({ userName, courseName, issuedAt }) {
         </div>
 
         <div class="pts-cert__footer">
-          <img class="pts-cert__stamp" src="${PA_STAMP}" alt="Stamp" decoding="async">
+          <img class="pts-cert__stamp" src="${PA_STAMP}" alt="Stamp" decoding="async" onerror="${imgFallback(PA_STAMP_FALLBACK)}">
           <div class="pts-cert__sign-line">PA ACADEMY</div>
         </div>
       </div>
