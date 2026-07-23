@@ -10,6 +10,7 @@ const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createProfileRouter } = require('./profileRoutes');
 const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
+const { createGoogleAuthRouter } = require('./googleAuthRoutes');
 const googleCalendar = require('./googleCalendar');
 const { syncAfterEnroll } = googleCalendar;
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
@@ -922,6 +923,7 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
 app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
+app.use('/api', createGoogleAuthRouter({ poolPromise }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {

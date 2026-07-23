@@ -4,10 +4,14 @@
  *
  * ขั้นตอนสั้นๆ:
  * 1) ไปที่ https://console.cloud.google.com/
- * 2) สร้างโปรเจกต์ → APIs & Services → Enable "Google Calendar API"
+ * 2) สร้างโปรเจกต์ → APIs & Services → Enable "Google Calendar API" (ถ้าใช้ปฏิทิน)
  * 3) Credentials → Create OAuth client ID (Web application)
- * 4) Authorized redirect URIs ใส่ค่า redirectUri ด้านล่าง
- * 5) ใส่ Client ID / Client Secret ที่นี่ หรือในไฟล์ .env
+ * 4) Authorized JavaScript origins: http://localhost:3000
+ * 5) Authorized redirect URIs ใส่ค่า redirectUri ด้านล่าง (ใช้ร่วม Login + Calendar)
+ * 6) ใส่ Client ID / Client Secret ที่นี่ หรือในไฟล์ .env
+ *
+ * เข้าสู่ระบบด้วย Gmail ใช้ endpoint:
+ *   /api/auth/google/start → callback เดิม /api/google/oauth/callback
  */
 module.exports = {
     clientId: '',

@@ -14,6 +14,7 @@ const fetch = require('node-fetch');
 const { createNotification } = require('./ensureSchema');
 
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events', 'openid', 'email', 'profile'];
+const LOGIN_SCOPES = ['openid', 'email', 'profile'];
 const TIMEZONE = 'Asia/Bangkok';
 
 function readLocalGoogle() {
@@ -157,23 +158,36 @@ function buildEventBody(schedule, options = {}) {
     };
 }
 
-function buildAuthUrl(state) {
+function buildAuthUrl(state, options = {}) {
     const c = getGoogleConfig();
     if (!c.clientId) throw new Error('ยังไม่ได้ตั้งค่า GOOGLE_CLIENT_ID');
+    const scopes = Array.isArray(options.scopes) && options.scopes.length
+        ? options.scopes
+        : SCOPES;
     const params = new URLSearchParams({
         client_id: c.clientId,
-        redirect_uri: c.redirectUri,
+        redirect_uri: options.redirectUri || c.redirectUri,
         response_type: 'code',
-        scope: SCOPES.join(' '),
-        access_type: 'offline',
-        prompt: 'consent',
+        scope: scopes.join(' '),
+        access_type: options.accessType || 'offline',
+        prompt: options.prompt || 'consent',
         include_granted_scopes: 'true',
         state
     });
+    if (options.loginHint) params.set('login_hint', options.loginHint);
     return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
 }
 
-async function exchangeCode(code) {
+/** OAuth สำหรับเข้าสู่ระบบด้วย Gmail (ไม่ขอสิทธิ์ Calendar) */
+function buildLoginAuthUrl(state) {
+    return buildAuthUrl(state, {
+        scopes: LOGIN_SCOPES,
+        accessType: 'online',
+        prompt: 'select_account'
+    });
+}
+
+async function exchangeCode(code, redirectUriOverride) {
     const c = getGoogleConfig();
     const res = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -182,7 +196,7 @@ async function exchangeCode(code) {
             code,
             client_id: c.clientId,
             client_secret: c.clientSecret,
-            redirect_uri: c.redirectUri,
+            redirect_uri: redirectUriOverride || c.redirectUri,
             grant_type: 'authorization_code'
         })
     });
@@ -213,13 +227,24 @@ async function refreshAccessToken(refreshToken) {
 }
 
 async function fetchGoogleEmail(accessToken) {
+    const profile = await fetchGoogleProfile(accessToken);
+    return profile && profile.email ? profile.email : null;
+}
+
+async function fetchGoogleProfile(accessToken) {
     try {
         const res = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
             headers: { Authorization: `Bearer ${accessToken}` }
         });
         if (!res.ok) return null;
         const data = await res.json();
-        return data.email || null;
+        return {
+            email: data.email || null,
+            name: data.name || data.given_name || null,
+            picture: data.picture || null,
+            sub: data.id || data.sub || null,
+            emailVerified: data.verified_email !== false
+        };
     } catch (_) {
         return null;
     }
@@ -638,8 +663,10 @@ module.exports = {
     diagnoseGoogleSetup,
     getGoogleConfig,
     buildAuthUrl,
+    buildLoginAuthUrl,
     exchangeCode,
     fetchGoogleEmail,
+    fetchGoogleProfile,
     saveLink,
     getLink,
     setRemindersEnabled,
@@ -648,5 +675,6 @@ module.exports = {
     syncScheduleToEnrolledUsers,
     removeScheduleFromAllCalendars,
     disconnectUser,
-    newOAuthState
+    newOAuthState,
+    LOGIN_SCOPES
 };

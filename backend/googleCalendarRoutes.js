@@ -13,6 +13,7 @@ const {
     disconnectUser,
     newOAuthState
 } = require('./googleCalendar');
+const { completeGoogleLogin } = require('./googleAuthRoutes');
 
 function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
@@ -62,6 +63,7 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         const state = newOAuthState();
         req.session.googleOAuthState = state;
         req.session.googleOAuthUserId = user.user_id;
+        req.session.googleOAuthPurpose = 'calendar';
 
         const finish = (url) => {
             const wantJson = req.query.redirect === '0'
@@ -90,7 +92,24 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
 
     router.get('/google/oauth/callback', async (req, res) => {
         const { code, state, error } = req.query;
+        const purpose = req.session && req.session.googleOAuthPurpose;
+        const loginUrl = '/Login.html?google=';
         const settingsUrl = '/Settings.html?gcal=';
+
+        // —— โหมดเข้าสู่ระบบด้วย Gmail ——
+        if (purpose === 'login') {
+            if (error) {
+                return res.redirect(`${loginUrl}error&msg=${encodeURIComponent(String(error))}`);
+            }
+            const sessionState = req.session && req.session.googleOAuthState;
+            if (sessionState && state && sessionState !== state) {
+                return res.redirect(`${loginUrl}error&msg=${encodeURIComponent('การยืนยัน Google ไม่สำเร็จ (state ไม่ตรง) กรุณาลองใหม่')}`);
+            }
+            if (!code) {
+                return res.redirect(`${loginUrl}error&msg=${encodeURIComponent('ไม่ได้รับรหัสยืนยันจาก Google')}`);
+            }
+            return completeGoogleLogin(req, res, { poolPromise, code: String(code) });
+        }
 
         if (error) {
             return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent(String(error))}`);
@@ -117,6 +136,7 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
 
             delete req.session.googleOAuthState;
             delete req.session.googleOAuthUserId;
+            delete req.session.googleOAuthPurpose;
 
             syncUserSchedules(pool, userId, { notify: true }).catch((err) => {
                 console.warn('[google-calendar] post-connect sync:', err.message);

@@ -20,13 +20,51 @@
     input.addEventListener('blur', () => { icon.style.color = ''; });
   });
 
-  document.getElementById('google-login-btn')?.addEventListener('click', () => {
+  document.getElementById('google-login-btn')?.addEventListener('click', async () => {
+    const loginMsg = document.getElementById('login-msg');
+    const btn = document.getElementById('google-login-btn');
+    if (loginMsg) {
+      loginMsg.textContent = '';
+      loginMsg.classList.add('hidden');
+      loginMsg.classList.remove('is-info');
+    }
+    if (btn) {
+      btn.disabled = true;
+      btn.dataset.label = btn.dataset.label || btn.textContent;
+      btn.textContent = 'กำลังเปิด Google...';
+    }
+    try {
+      const res = await fetch('/api/auth/google/status');
+      const status = await res.json().catch(() => ({}));
+      if (!status.configured) {
+        throw new Error('ยังไม่ได้ตั้งค่า Google OAuth — ใส่ Client ID/Secret ใน backend/google.local.js หรือไฟล์ .env');
+      }
+      // เด้งไป Google (เซิร์ฟเวอร์จะ redirect ต่อ)
+      window.location.href = '/api/auth/google/start';
+    } catch (err) {
+      if (loginMsg) {
+        loginMsg.textContent = err.message || 'เปิด Gmail Login ไม่สำเร็จ';
+        loginMsg.classList.remove('hidden');
+        loginMsg.classList.remove('is-info');
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = btn.dataset.label || 'เข้าสู่ระบบด้วย Gmail';
+      }
+    }
+  });
+
+  // แสดงข้อความ error จาก callback (?google=error&msg=...)
+  (function showGoogleCallbackMsg() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('google') !== 'error') return;
     const loginMsg = document.getElementById('login-msg');
     if (!loginMsg) return;
-    loginMsg.textContent = 'ขณะนี้เข้าสู่ระบบด้วยอีเมลได้เลย — Gmail OAuth กำลังเตรียมเปิดใช้งาน';
+    loginMsg.textContent = params.get('msg') || 'เข้าสู่ระบบด้วย Gmail ไม่สำเร็จ';
     loginMsg.classList.remove('hidden');
-    loginMsg.classList.add('is-info');
-  });
+    loginMsg.classList.remove('is-info');
+    history.replaceState(null, '', location.pathname);
+  })();
 
   function openResetModal() {
     const modal = document.getElementById('reset-modal');
