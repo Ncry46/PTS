@@ -17,8 +17,8 @@
   margin: 14px 0 18px;
 }
 .pay-method {
-  border: 1.5px solid rgba(151,66,88,.18);
-  background: #fff;
+  border: 1.5px solid var(--pts-border, rgba(151,66,88,.18));
+  background: var(--pts-surface, #fff);
   border-radius: 16px;
   padding: 14px 12px;
   cursor: pointer;
@@ -26,25 +26,25 @@
   font: inherit;
   transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
-.pay-method:hover { border-color: rgba(151,66,88,.4); }
+.pay-method:hover { border-color: color-mix(in srgb, var(--pts-primary, #974258) 40%, transparent); }
 .pay-method.is-active {
-  border-color: #974258;
-  background: #faf4f6;
-  box-shadow: 0 0 0 3px rgba(151,66,88,.12);
+  border-color: var(--pts-primary, #974258);
+  background: var(--pts-primary-soft, #faf4f6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pts-primary, #974258) 14%, transparent);
 }
 .pay-method strong {
   display: block;
   font-size: 14px;
-  color: #1c1520;
+  color: var(--pts-text, #1c1520);
   margin-bottom: 2px;
 }
 .pay-method span {
   font-size: 12px;
-  color: #5c4f55;
+  color: var(--pts-muted, #5c4f55);
   line-height: 1.35;
 }
 .pay-method .material-symbols-outlined {
-  color: #974258;
+  color: var(--pts-primary, #974258);
   font-size: 22px;
   margin-bottom: 6px;
   display: block;
@@ -57,15 +57,15 @@
   align-items: baseline;
   padding: 12px 14px;
   border-radius: 14px;
-  background: #f6e6ea;
+  background: var(--pts-primary-soft, #f6e6ea);
   margin-bottom: 14px;
 }
-.pay-summary__label { font-size: 13px; color: #5c4f55; font-weight: 600; }
+.pay-summary__label { font-size: 13px; color: var(--pts-muted, #5c4f55); font-weight: 600; }
 .pay-summary__amount {
   font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
   font-size: 1.35rem;
   font-weight: 700;
-  color: #974258;
+  color: var(--pts-primary, #974258);
 }
 
 .pay-qr-box {
@@ -90,11 +90,11 @@
 .pay-qr-frame img { max-width: 100%; height: auto; }
 .pay-qr-meta {
   font-size: 13px;
-  color: #5c4f55;
+  color: var(--pts-muted, #5c4f55);
   line-height: 1.55;
   margin: 0 0 14px;
 }
-.pay-qr-meta strong { color: #1c1520; }
+.pay-qr-meta strong { color: var(--pts-text, #1c1520); }
 
 .pay-card-box { display: none; }
 .pay-card-box.is-open { display: block; }
@@ -140,11 +140,20 @@
 .pay-page .text-sm { font-size: 14px; }
 .pay-page .text-xs { font-size: 12px; }
 .pay-page .font-bold { font-weight: 700; }
-.pay-page .text-primary { color: #974258; }
-.pay-page .text-on-surface-variant { color: #5c4f55; }
+.pay-page .text-primary { color: var(--pts-primary, #974258); }
+.pay-page .text-on-surface-variant { color: var(--pts-muted, #5c4f55); }
 .pay-page .max-w-xl { max-width: 36rem; }
 .pay-page .text-3xl { font-size: 1.875rem; line-height: 1.2; }
 .pay-page .text-4xl { font-size: 2.25rem; line-height: 1.15; }
 @media (min-width: 768px) {
   .pay-page .md\:text-4xl { font-size: 2.25rem; line-height: 1.15; }
 }
+
+html[data-theme="dark"] .pay-method.is-active {
+  background: rgba(232,149,168,.12);
+  border-color: var(--pts-primary, #e895a8);
+}
+html[data-theme="dark"] .pay-status--pending { background: rgba(154,103,0,.2); color: #fdba74; }
+html[data-theme="dark"] .pay-status--paid,
+html[data-theme="dark"] .pay-status--success { background: rgba(22,108,57,.22); color: #6ee7b7; }
+html[data-theme="dark"] .pay-status--failed { background: rgba(186,26,26,.2); color: #fca5a5; }

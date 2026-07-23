@@ -10,8 +10,8 @@
 .cert-page .text-sm { font-size: 14px; }
 .cert-page .text-xs { font-size: 12px; }
 .cert-page .font-bold { font-weight: 700; }
-.cert-page .text-primary { color: #974258; }
-.cert-page .text-on-surface-variant { color: #5c4f55; }
+.cert-page .text-primary { color: var(--pts-primary, #974258); }
+.cert-page .text-on-surface-variant { color: var(--pts-muted, #5c4f55); }
 .cert-page .max-w-2xl { max-width: 42rem; }
 .cert-page .text-3xl { font-size: 1.875rem; line-height: 1.2; }
 @media (min-width: 768px) {
@@ -34,23 +34,24 @@
   left: 14px;
   top: 50%;
   transform: translateY(-50%);
-  color: #867275;
+  color: var(--pts-muted, #867275);
   font-size: 20px;
   pointer-events: none;
 }
 .cert-search input {
   width: 100%;
-  border: 1px solid rgba(151,66,88,.18);
+  border: 1px solid var(--pts-border, rgba(151,66,88,.18));
   border-radius: 14px;
   padding: 12px 14px 12px 42px;
   font: inherit;
   font-size: 14px;
-  background: #fff;
+  background: var(--pts-surface, #fff);
+  color: var(--pts-text, #1c1520);
   outline: none;
 }
 .cert-search input:focus {
-  border-color: rgba(151,66,88,.45);
-  box-shadow: 0 0 0 3px rgba(151,66,88,.12);
+  border-color: color-mix(in srgb, var(--pts-primary, #974258) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pts-primary, #974258) 14%, transparent);
 }
 .cert-filters {
   display: flex;
@@ -58,9 +59,9 @@
   gap: 8px;
 }
 .cert-filter {
-  border: 1px solid rgba(151,66,88,.16);
-  background: #fff;
-  color: #5c4f55;
+  border: 1px solid var(--pts-border, rgba(151,66,88,.16));
+  background: var(--pts-surface, #fff);
+  color: var(--pts-muted, #5c4f55);
   border-radius: 999px;
   padding: 9px 14px;
   font: inherit;
@@ -72,9 +73,9 @@
   gap: 8px;
 }
 .cert-filter.is-active {
-  background: #eef5ea;
-  border-color: rgba(61,90,76,.28);
-  color: #2f4a3e;
+  background: color-mix(in srgb, var(--pts-accent, #3d5a4c) 16%, var(--pts-surface));
+  border-color: color-mix(in srgb, var(--pts-accent, #3d5a4c) 35%, transparent);
+  color: var(--pts-text, #2f4a3e);
 }
 .cert-filter__count {
   min-width: 22px;
@@ -100,22 +101,23 @@
 }
 
 .cert-card {
-  background: #fff;
-  border: 1px solid rgba(151,66,88,.12);
+  background: var(--pts-surface, #fff);
+  border: 1px solid var(--pts-border, rgba(151,66,88,.12));
   border-radius: 22px;
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(28,21,32,.06);
+  box-shadow: var(--pts-shadow-sm, 0 12px 32px rgba(28,21,32,.06));
   display: flex;
   flex-direction: column;
+  color: var(--pts-text, #1c1520);
 }
 .cert-card__preview {
   position: relative;
   aspect-ratio: 4 / 3;
   background:
-    radial-gradient(420px 180px at 20% 0%, rgba(151,66,88,.08), transparent 60%),
-    #f7f1f3;
+    radial-gradient(420px 180px at 20% 0%, color-mix(in srgb, var(--pts-primary) 12%, transparent), transparent 60%),
+    var(--pts-input-bg, #f7f1f3);
   overflow: hidden;
-  border-bottom: 1px solid rgba(151,66,88,.1);
+  border-bottom: 1px solid var(--pts-border, rgba(151,66,88,.1));
 }
 .cert-card__preview-scale {
   position: absolute;
@@ -154,13 +156,13 @@
   font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
   font-size: 1.02rem;
   font-weight: 700;
-  color: #1c1520;
+  color: var(--pts-text, #1c1520);
   line-height: 1.35;
 }
 .cert-card__meta {
   margin: 0;
   font-size: 13px;
-  color: #5c4f55;
+  color: var(--pts-muted, #5c4f55);
 }
 .cert-card__actions {
   display: flex;
@@ -173,9 +175,9 @@
   width: 46px;
   height: 46px;
   border-radius: 14px;
-  border: 1px solid rgba(151,66,88,.2);
-  background: #fff;
-  color: #974258;
+  border: 1px solid var(--pts-border, rgba(151,66,88,.2));
+  background: var(--pts-surface, #fff);
+  color: var(--pts-primary, #974258);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -434,3 +436,10 @@
   }
   @page { size: A4 landscape; margin: 10mm; }
 }
+
+html[data-theme="dark"] .cert-page .text-on-surface-variant { color: var(--pts-muted, #b8a8ae); }
+html[data-theme="dark"] .cert-page .text-primary { color: var(--pts-primary, #e895a8); }
+html[data-theme="dark"] .cert-tag--online { background: rgba(22,108,57,.22); color: #6ee7b7; }
+html[data-theme="dark"] .cert-tag--onsite { background: rgba(154,103,0,.22); color: #fdba74; }
+html[data-theme="dark"] .cert-tag--hybrid { background: rgba(61,90,76,.28); color: #b3ceab; }
+html[data-theme="dark"] .cert-tag--default { background: rgba(232,149,168,.16); color: #e895a8; }
