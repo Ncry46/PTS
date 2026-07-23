@@ -1,16 +1,24 @@
-<!DOCTYPE html><html lang="th" style=""><head>
+<!DOCTYPE html>
+<html lang="th">
+<head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>สมัครสมาชิก | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260722f">
+<link rel="stylesheet" href="site.css?v=20260723p">
+<link rel="stylesheet" href="register.css?v=20260723p">
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
+  body { font-family: 'IBM Plex Sans Thai', sans-serif; }
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    vertical-align: middle;
+  }
 </style>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -102,81 +110,8 @@
         }
       }
     </script>
-<style>
-        body {
-            font-family: 'IBM Plex Sans Thai', sans-serif;
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            vertical-align: middle;
-        }
-        .pts-auth-page {
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-            background:
-              radial-gradient(900px 520px at 12% -10%, rgba(151,66,88,.22), transparent 55%),
-              radial-gradient(700px 420px at 100% 0%, rgba(61,90,76,.14), transparent 50%),
-              radial-gradient(600px 380px at 70% 110%, rgba(151,66,88,.10), transparent 55%),
-              linear-gradient(165deg, #f7f2f4 0%, #efe8ea 45%, #e8eef0 100%);
-            position: relative;
-            overflow-x: hidden;
-            color: var(--pts-text, #1c1520);
-        }
-        html[data-theme="dark"] .pts-auth-page {
-            background:
-              radial-gradient(900px 520px at 12% -10%, rgba(151,66,88,.22), transparent 55%),
-              radial-gradient(700px 420px at 100% 0%, rgba(61,90,76,.12), transparent 50%),
-              linear-gradient(165deg, #1a1418 0%, #141218 45%, #100e14 100%);
-            color: var(--pts-text);
-        }
-        .pts-auth-page::before {
-            content: '';
-            position: absolute; inset: 0; pointer-events: none; opacity: .35;
-            background-image:
-              linear-gradient(rgba(151,66,88,.04) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(151,66,88,.04) 1px, transparent 1px);
-            background-size: 48px 48px;
-            mask-image: radial-gradient(ellipse at center, #000 30%, transparent 75%);
-        }
-        .pts-auth-shell {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: calc(var(--pts-nav-h, 68px) + 36px) 20px 48px;
-            position: relative;
-            z-index: 1;
-        }
-        .pts-auth-card {
-            width: 100%;
-            max-width: 460px;
-            background: color-mix(in srgb, var(--pts-surface, #fff) 94%, transparent);
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--pts-border, rgba(151,66,88,.14));
-            border-radius: 28px;
-            box-shadow: var(--pts-shadow, 0 24px 60px rgba(28,21,32,.10));
-            padding: 36px 28px 28px;
-            color: var(--pts-text, #1c1520);
-        }
-        html[data-theme="dark"] .pts-auth-card {
-            background: var(--pts-surface);
-            box-shadow: 0 24px 60px rgba(0,0,0,.4);
-        }
-        @media (min-width: 640px) {
-          .pts-auth-card { padding: 40px 36px 32px; }
-        }
-        .pts-auth-card .pts-auth-title { text-align: center; margin-bottom: 24px; }
-        html[data-theme="dark"] .pts-auth-card input:not([type="checkbox"]),
-        html[data-theme="dark"] .pts-auth-card textarea,
-        html[data-theme="dark"] .pts-auth-card select {
-          background: var(--pts-input-bg) !important;
-          color: var(--pts-text) !important;
-          border-color: var(--pts-border) !important;
-        }
-    </style>
 </head>
-<body class="pts-body pts-auth-page">
+<body class="pts-body pts-auth-page pts-register">
 <div id="app-navbar">
   <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);backdrop-filter:blur(12px);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
     <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
@@ -191,11 +126,61 @@
     </div>
   </nav>
 </div>
+
+<!-- Crystal dawn FX — distinct from Home hero & Login atelier -->
+<div class="pts-reg__fx" aria-hidden="true">
+  <div class="pts-reg__fx-wash"></div>
+  <div class="pts-reg__fx-veil pts-reg__fx-veil--a"></div>
+  <div class="pts-reg__fx-veil pts-reg__fx-veil--b"></div>
+  <div class="pts-reg__fx-bloom pts-reg__fx-bloom--a"></div>
+  <div class="pts-reg__fx-bloom pts-reg__fx-bloom--b"></div>
+  <div class="pts-reg__fx-bloom pts-reg__fx-bloom--c"></div>
+  <div class="pts-reg__fx-bloom pts-reg__fx-bloom--d"></div>
+  <div class="pts-reg__fx-spotlight"></div>
+  <div class="pts-reg__fx-arc"></div>
+  <div class="pts-reg__fx-grain"></div>
+  <span class="pts-reg__hex pts-reg__hex--1"></span>
+  <span class="pts-reg__hex pts-reg__hex--2"></span>
+  <span class="pts-reg__hex pts-reg__hex--3"></span>
+  <span class="pts-reg__hex pts-reg__hex--4"></span>
+  <span class="pts-reg__hex pts-reg__hex--5"></span>
+  <span class="pts-reg__hex pts-reg__hex--6"></span>
+  <span class="pts-reg__hex pts-reg__hex--7"></span>
+  <span class="pts-reg__hex pts-reg__hex--8"></span>
+  <span class="pts-reg__dash pts-reg__dash--1"></span>
+  <span class="pts-reg__dash pts-reg__dash--2"></span>
+  <span class="pts-reg__dash pts-reg__dash--3"></span>
+  <span class="pts-reg__dash pts-reg__dash--4"></span>
+  <span class="pts-reg__dash pts-reg__dash--5"></span>
+  <span class="pts-reg__dash pts-reg__dash--6"></span>
+  <span class="pts-reg__dash pts-reg__dash--7"></span>
+  <span class="pts-reg__dash pts-reg__dash--8"></span>
+  <span class="pts-reg__shard pts-reg__shard--1"></span>
+  <span class="pts-reg__shard pts-reg__shard--2"></span>
+  <span class="pts-reg__shard pts-reg__shard--3"></span>
+  <span class="pts-reg__shard pts-reg__shard--4"></span>
+  <span class="pts-reg__shard pts-reg__shard--5"></span>
+  <span class="pts-reg__bokeh pts-reg__bokeh--a"></span>
+  <span class="pts-reg__bokeh pts-reg__bokeh--b"></span>
+  <span class="pts-reg__bokeh pts-reg__bokeh--c"></span>
+  <span class="pts-reg__bokeh pts-reg__bokeh--d"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--1"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--2"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--3"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--4"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--5"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--6"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--7"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--8"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--9"></span>
+  <span class="pts-reg__twinkle pts-reg__twinkle--10"></span>
+</div>
+
 <main class="pts-auth-shell">
 <div class="pts-auth-card">
 <div class="pts-auth-title">
-<p class="text-xs font-bold tracking-[0.18em] uppercase text-primary mb-2">PTS Learning</p>
-<h1 class="text-2xl font-bold text-on-surface">สร้างบัญชีใหม่</h1>
+<p class="text-xs font-bold tracking-[0.18em] uppercase text-primary mb-2" style="font-family:Sora,sans-serif">PTS Learning</p>
+<h1 class="text-2xl font-bold text-on-surface" style="font-family:Sora,sans-serif">สร้างบัญชีใหม่</h1>
 <p class="text-sm text-on-surface-variant mt-1">กรอกข้อมูลเพื่อเริ่มต้นการเรียนรู้ของคุณ</p>
 </div>
 <form class="space-y-base" id="register-form">
@@ -249,7 +234,7 @@
 <p id="register-msg" class="text-sm text-center text-error hidden"></p>
 <div class="relative py-base flex items-center justify-center">
 <div class="w-full border-t border-outline-variant"></div>
-<span class="absolute bg-white px-md font-label-md text-label-md text-outline">หรือ</span>
+<span class="absolute pts-reg-or bg-white px-md font-label-md text-label-md text-outline">หรือ</span>
 </div>
 <button class="w-full py-3.5 rounded-full font-label-md text-label-md font-bold hover:bg-surface-container-low active:scale-[0.98] transition-all flex items-center justify-center gap-base border border-outline-variant bg-white text-on-surface-variant shadow-sm" type="button"><span class="material-symbols-outlined">mail</span>เข้าสู่ระบบด้วย Gmail</button>
 </div>
@@ -258,8 +243,10 @@
       เป็นสมาชิกอยู่แล้ว? <a class="text-primary font-bold hover:underline ml-xs" href="Login.html">เข้าสู่ระบบ</a>
 </p>
 <p class="mt-6 text-center text-xs text-on-surface-variant/70">© PTS Learning. All Rights Reserved.</p>
+
 </div>
 </main>
+
 <script>
         // ไอคอนการกรอกข้อมูล Focus Interaction
         document.querySelectorAll('input').forEach(input => {
