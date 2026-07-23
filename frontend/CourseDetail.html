@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายละเอียดคอร์ส | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722f">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
+</head>
+<body class="pts-body">
+<div id="app-navbar">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        PTS Learning
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
+<main class="pts-main pts-main--wide">
+  <div id="content"><div class="pts-empty">กำลังโหลด...</div></div>
+</main>
+<div class="pts-footer-note">© PTS Learning</div>
+<script>
+const courseId = new URLSearchParams(location.search).get('courseId');
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+(async () => {
+  if (!courseId) {
+    document.getElementById('content').innerHTML = '<div class="pts-empty">ไม่พบรหัสคอร์ส</div>';
+    return;
+  }
+  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
+  const res = await fetch(`/api/courses/${courseId}`, { credentials:'include' });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    document.getElementById('content').innerHTML = `<div class="pts-empty pts-msg--err">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
+    return;
+  }
+  const c = data.data;
+  const price = Number(c.price || 0);
+  const enrolled = Number(c.is_enrolled) === 1;
+  const loggedIn = !!me.loggedIn;
+  document.getElementById('content').innerHTML = `
+    <article class="pts-card overflow-hidden">
+      <div class="grid grid-cols-1 lg:grid-cols-2">
+        <div class="relative min-h-[240px] lg:min-h-[420px]">
+          <img class="absolute inset-0 w-full h-full object-cover" src="${c.cover_image_url || 'https://placehold.co/800x500/f8e8ec/974258?text=PTS+Course'}" alt="">
+        </div>
+        <div class="p-6 lg:p-8 flex flex-col">
+          <span class="pts-chip mb-3 w-fit">${escapeHtml(c.delivery_mode || 'course')}</span>
+          <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
+          <h1 class="text-3xl font-bold text-primary mb-2 pts-display">${escapeHtml(c.course_name)}</h1>
+          <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.difficulty_level||'-')}</p>
+          <p class="text-on-surface-variant mb-5 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายคอร์ส')}</p>
+          <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
+          <div class="flex flex-wrap gap-2 mb-6">
+            ${!loggedIn ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>` : enrolled
+              ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
+              : `<button id="enroll" class="pts-btn pts-btn-primary">สมัครเรียน</button>
+                 <a class="pts-btn pts-btn-outline" href="Payments.html?courseId=${c.course_id}">ชำระเงิน</a>`}
+            ${loggedIn ? `<button id="fav" class="pts-btn pts-btn-ghost">${Number(c.is_favorited)?'นำออกจากโปรด':'บันทึกโปรด'}</button>` : ''}
+            <a class="pts-btn pts-btn-outline" href="Courses.html">กลับรายการคอร์ส</a>
+          </div>
+          <h2 class="font-bold mb-3">บทเรียนในคอร์ส</h2>
+          <ul class="space-y-2">${(data.lessons||[]).length
+            ? (data.lessons||[]).map((l,i)=>`<li class="text-sm border border-[var(--pts-border)] rounded-xl px-3 py-2.5 flex justify-between gap-3"><span>${i+1}. ${escapeHtml(l.title)}</span><span class="text-on-surface-variant shrink-0">${l.duration_minutes||0} นาที</span></li>`).join('')
+            : '<li class="text-sm text-on-surface-variant">ยังไม่มีบทเรียน — รอแอดมินเพิ่มเนื้อหา</li>'}</ul>
+        </div>
+      </div>
+    </article>`;
+
+  document.getElementById('enroll')?.addEventListener('click', async () => {
+    const r = await fetch(`/api/courses/${courseId}/enroll`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    if (!r.ok) { console.error(j.message || 'สมัครเรียนไม่สำเร็จ'); return; }
+    location.href = `Learn.html?courseId=${courseId}`;
+  });
+  document.getElementById('fav')?.addEventListener('click', async () => {
+    const r = await fetch(`/api/courses/${courseId}/favorite`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    if (!r.ok) console.error(j.message || 'บันทึกโปรดไม่สำเร็จ');
+    location.reload();
+  });
+})();
+</script>
+<!-- PTS-NAV-INLINE-BOOT -->
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>

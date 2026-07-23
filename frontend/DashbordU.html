@@ -1,7 +1,11 @@
-<!DOCTYPE html><html class="light" lang="th" style="width: 1241px; height: 981px; overflow: hidden; position: relative;"><head>
+<!DOCTYPE html><html class="light" lang="th"><head>
 <meta charset="utf-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>PTS Learning Dashboard</title>
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722h">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -22,32 +26,32 @@
                     "tertiary-container": "#55a56b",
                     "inverse-surface": "#302e46",
                     "on-secondary-container": "#526b4d",
-                    "surface-container-low": "#f6f1ff",
+                    "surface-container-low": "#f7f2f3",
                     "primary": "#974258",
                     "on-primary-fixed-variant": "#7a2b41",
                     "secondary": "#4c6548",
                     "primary-container": "#d9778e",
                     "tertiary": "#166c39",
-                    "surface-container-highest": "#e3dfff",
+                    "surface-container-highest": "#ebe4e6",
                     "on-tertiary-container": "#003617",
                     "on-secondary-fixed-variant": "#354d31",
-                    "inverse-on-surface": "#f3eeff",
-                    "surface-container-high": "#eae5ff",
+                    "inverse-on-surface": "#f7f2f3",
+                    "surface-container-high": "#f0e9eb",
                     "on-primary-fixed": "#3f0017",
                     "primary-fixed": "#ffd9df",
                     "tertiary-fixed": "#a2f5b4",
                     "on-error": "#ffffff",
                     "on-surface-variant": "#544245",
-                    "surface-variant": "#e3dfff",
+                    "surface-variant": "#ebe4e6",
                     "on-secondary-fixed": "#0a2009",
                     "surface-tint": "#974258",
-                    "surface-dim": "#dbd6f6",
+                    "surface-dim": "#e8e2e4",
                     "on-primary": "#ffffff",
-                    "surface-bright": "#fcf8ff",
+                    "surface-bright": "#faf7f8",
                     "outline": "#867275",
-                    "background": "#fcf8ff",
-                    "surface-container": "#f0ebff",
-                    "surface": "#fcf8ff",
+                    "background": "#faf7f8",
+                    "surface-container": "#f3ecee",
+                    "surface": "#faf7f8",
                     "error": "#ba1a1a",
                     "on-tertiary": "#ffffff",
                     "on-tertiary-fixed-variant": "#005227",
@@ -108,27 +112,61 @@
     </script>
 <style>
         body {
-            background-color: #FAFAFA;
+            background-color: var(--pts-bg, #FAFAFA);
             font-family: 'IBM Plex Sans Thai', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
         .soft-shadow {
             box-shadow: 0 10px 30px -5px rgba(151, 66, 88, 0.05);
         }
+        html[data-theme="dark"] .soft-shadow {
+            box-shadow: var(--pts-shadow-sm);
+        }
         .glass-header {
             background: rgba(252, 248, 255, 0.8);
             backdrop-filter: blur(12px);
+        }
+        html[data-theme="dark"] .glass-header {
+            background: color-mix(in srgb, var(--pts-nav-bg) 88%, transparent);
         }
         .circular-progress {
             background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
                         conic-gradient(#974258 75%, #f4c7d3 0);
         }
+        html[data-theme="dark"] .circular-progress {
+            background: radial-gradient(closest-side, var(--pts-surface) 79%, transparent 80% 100%),
+                        conic-gradient(#e895a8 75%, rgba(232,149,168,.25) 0);
+        }
     </style>
 </head>
-<body class="text-on-surface">
+<body class="pts-body text-on-surface">
+<div id="app-navbar"></div>
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:#fff;border-bottom:1px solid #eadfe2">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+
+<script src="/comp/navbar.js?v=20260722g"></script>
+
 <div class="flex min-h-screen">
 <!-- SideNavBar -->
-<aside class="h-screen w-72 hidden lg:flex flex-col sticky left-0 top-0 bg-surface-container-lowest border-r border-outline-variant/30">
+<aside class="h-screen w-72 hidden lg:flex flex-col sticky left-0 top-[68px] bg-surface-container-lowest border-r border-outline-variant/30" style="height:calc(100vh - 68px)">
 <div class="flex flex-col gap-base p-md h-full">
 <!-- Brand Anchor -->
 <div class="flex items-center gap-sm mb-lg px-xs">
@@ -137,7 +175,7 @@
 </div>
 <div class="overflow-hidden">
 <h1 id="dash-sidebar-name" class="font-headline-sm text-headline-sm font-bold text-on-primary-container leading-tight truncate">กำลังโหลด...</h1>
-<p class="text-[10px] text-on-surface-variant truncate">Executive Assistant</p>
+<p class="text-[10px] text-on-surface-variant truncate">PTS Student</p>
 </div>
 </div>
 <!-- Navigation Links -->
@@ -153,9 +191,9 @@
 <span class="material-symbols-outlined">calendar_today</span>
 <span class="font-label-md text-label-md">ตารางเรียน</span>
 </a>
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Courses.html">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Favorites.html">
 <span class="material-symbols-outlined">bookmark</span>
-<span class="font-label-md text-label-md">หลักสูตรทั้งหมด</span>
+<span class="font-label-md text-label-md">รายการโปรด</span>
 </a>
 <a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Payments.html">
 <span class="material-symbols-outlined">payments</span>
@@ -167,7 +205,7 @@
 </a></nav>
 <!-- Footer Tab -->
 <div class="mt-auto border-t border-outline-variant/30 pt-md">
-<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98 mb-xs" href="#">
+<a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98 mb-xs" href="Settings.html">
 <span class="material-symbols-outlined">settings</span>
 <span class="font-label-md text-label-md">ตั้งค่า</span>
 </a><button id="dash-logout" class="w-full flex items-center gap-sm text-error hover:bg-error-container/20 rounded-xl px-md py-sm transition-all">
@@ -178,34 +216,7 @@
 </div>
 </aside>
 <!-- Main Content Canvas -->
-<main class="flex-grow min-w-0 pb-xl lg:pb-md">
-<!-- Top Bar / Header -->
-<header class="bg-white sticky top-0 z-50 border-b border-outline-variant/10">
-<div class="flex justify-between items-center w-full px-margin-mobile md:px-lg py-sm max-w-container-max mx-auto h-16">
-<div class="flex items-center gap-xl">
-<div class="flex items-center gap-md">
-<div class="flex items-center gap-2"><img src="https://lh3.googleusercontent.com/aida/AP1WRLt-sz504jrNcvfWLeUda4incT1iEaU21RRGLbFll2RyAA6vU5MSNSaRKv9-8BxwZyT5eRXjf-PfbRss04k05K51TK15JrRGFGESsDYnmDobY0oH1UlvYQz9uYU86g3Mtd4l4tmi9HevjdHgKUPk7y4VoGkwVFnUanSfzvq2D8e9Wv4CxCLppw5EXE3dXVB3sGxp4JUfoizfO0fKr3WI5s6b3Bb7FPqR3IFpzekgPHVQXhX2xsdhY2q1Zfph" alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain"></div>
-</div>
-<nav class="hidden lg:flex items-center gap-md font-body-md text-body-md">
-<a class="text-on-surface-variant hover:text-primary transition-colors" href="Home.html">หน้าแรก</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors" href="Courses.html">คอร์สเรียน</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors" href="Community.html">คอมมูนิตี้</a>
-</nav>
-</div>
-<div class="flex items-center gap-sm">
-<button class="p-2 hover:bg-surface-container-low rounded-full transition-all active:scale-95">
-<span class="material-symbols-outlined text-outline">notifications</span>
-</button>
-<div class="flex items-center gap-sm cursor-pointer hover:bg-surface-container-low p-1 rounded-full transition-all">
-<div class="flex flex-col items-end hidden md:flex">
-<span id="dash-header-name" class="text-label-md font-bold text-on-surface">กำลังโหลด...</span>
-<span class="text-[10px] text-on-surface-variant/60"><span style="color: rgb(151, 66, 88); font-weight: 600; letter-spacing: 0.5px; text-align: right; text-transform: uppercase; background-color: rgba(252, 248, 255, 0.9);" class="">Executive Assistant</span></span>
-</div>
-<img alt="User Profile" class="w-10 h-10 rounded-full border-2 border-primary/20 object-cover" src="https://lh3.googleusercontent.com/aida/AP1WRLuRlQEihIstMfcaCkBnQuwjKoebHnBkf6eAJ0qO6topKT4B7OI3sNS2gqSnhdbrI2mDONZaKH-Lmyt-xsMptOK2yFZ2EI4nPghjirtLlnFKqNapj9bM4TL7LcWwCmIX9HFT2paVcyon_bFYdvJ7A_ytAT2rOuhpQioENuNDvlC1Bz2gvMm-wnfQQckSMai9STrdwaKcpOHQjr03z1cMUZNCH_BbkigqMMYUB0ntPynWtz6jfVtISkgJn3cg">
-</div>
-</div>
-</div>
-</header>
+<main class="flex-grow min-w-0 pb-xl lg:pb-md" style="padding-top: calc(var(--pts-nav-h, 68px) + 8px);">
 <div class="px-margin-mobile md:px-lg py-md max-w-container-max mx-auto space-y-lg">
 <!-- Stats Overview (Asymmetric Layout) -->
 <section class="grid grid-cols-1 md:grid-cols-4 gap-md">
@@ -263,46 +274,24 @@
 <div>
 <div class="flex justify-between items-end mb-md">
 <h3 class="font-headline-sm text-headline-sm">ตารางเรียนที่กำลังจะมาถึง</h3>
+<a class="text-primary font-label-md text-label-md hover:underline" href="Schedule.html">ดูทั้งหมด</a>
 </div>
-<div class="space-y-sm">
-<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-primary" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
-<div class="flex items-center gap-md">
-<div class="text-center min-w-[50px]">
-<p class="text-[12px] text-on-surface-variant uppercase">พฤ.</p>
-<p class="font-headline-sm text-headline-sm text-primary">15</p>
-</div>
-<div>
-<p class="font-label-md text-label-md font-bold">Workshop: Time Management</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant">10:00 - 12:00 น. | ผ่าน Zoom</p>
-</div>
-</div>
-<button class="text-primary border border-primary/20 px-md py-1 rounded-full text-label-md hover:bg-primary/5 transition-colors">เข้าห้องเรียน</button>
-</div>
-<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-secondary" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
-<div class="flex items-center gap-md">
-<div class="text-center min-w-[50px]">
-<p class="text-[12px] text-on-surface-variant uppercase">ศ.</p>
-<p class="font-headline-sm text-headline-sm text-secondary">16</p>
-</div>
-<div>
-<p class="font-label-md text-label-md font-bold">Advanced Excel for Reports</p>
-<p class="font-body-sm text-body-sm text-on-surface-variant">13:30 - 15:30 น. | บทเรียนสด</p>
-</div>
-</div>
-<span class="text-on-surface-variant font-label-md text-label-md">รอดำเนินการ</span>
+<div id="dash-schedule" class="space-y-sm">
+<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow text-on-surface-variant">กำลังโหลดตารางเรียน...</div>
 </div>
 </div>
 </div>
-</div>
-<!-- Sidebar News/Notifications (R-Side) -->
-<div class="space-y-lg"><div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<!-- Sidebar News<!-- Sidebar News/Notifications (R-Side) -->
+<div class="space-y-lg">
+<div id="dash-attendance-qr" class="pts-attend-qr-panel"></div>
+<div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
 <div class="p-md">
 <div class="flex justify-between items-center mb-sm">
 <h3 class="font-label-md text-label-md font-bold text-primary flex items-center gap-xs">
 <span class="material-symbols-outlined text-[20px]">forum</span>
 Community Feed
 </h3>
-<span class="bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold">3 New</span>
+<span id="dash-community-badge" class="hidden bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold"></span>
 </div>
 <p class="font-body-sm text-body-sm text-on-surface-variant mb-md">ร่วมพูดคุยและแลกเปลี่ยนเทคนิคกับเพื่อนร่วมอาชีพในคอมมูนิตี้</p>
 <a href="Community.html" class="flex items-center justify-center gap-xs w-full bg-primary/5 text-primary py-2 rounded-xl font-bold text-label-md hover:bg-primary/10 transition-colors">
@@ -324,7 +313,7 @@ Community Feed
 <div class="relative z-10">
 <h4 class="font-headline-sm text-headline-sm mb-xs">ปลดล็อกศักยภาพสูงสุด</h4>
 <p class="font-body-sm text-body-sm opacity-90 mb-md">สมัครสมาชิก Pro เพื่อเข้าถึงคอร์สพิเศษมากกว่า 50 รายการ</p>
-<button class="bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูรายละเอียด</button>
+<a href="Courses.html" class="inline-block bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูหลักสูตร</a>
 </div>
 </div>
 </div>
@@ -332,19 +321,19 @@ Community Feed
 </div>
 <!-- Bottom Navigation (Mobile Only) -->
 <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/95 dark:bg-surface-dim/95 backdrop-blur-lg lg:hidden rounded-t-xl shadow-lg">
-<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform duration-200" href="#">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform duration-200" href="DashbordU.html">
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">home</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Courses.html">
 <span class="material-symbols-outlined">play_circle</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Schedule.html">
 <span class="material-symbols-outlined">event_note</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Notifications.html">
 <span class="material-symbols-outlined">notifications</span>
 </a>
-<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="#">
+<a class="flex flex-col items-center justify-center text-on-surface-variant active:bg-surface-variant rounded-xl p-2 transition-all" href="Settings.html">
 <span class="material-symbols-outlined">person</span>
 </a>
 </nav>
@@ -424,6 +413,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('img[alt="User Profile"]').forEach((img) => {
             img.src = avatar;
         });
+
+        if (window.PtsAttendanceQr && status.user.email) {
+          window.PtsAttendanceQr.mount('#dash-attendance-qr', {
+            email: status.user.email,
+            name: status.user.name || '',
+            compact: true
+          });
+        }
     } catch (error) {
         console.error('โหลดข้อมูลผู้ใช้แดชบอร์ดล้มเหลว:', error);
         window.location.href = 'Login.html';
@@ -433,7 +430,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const logoutBtn = document.getElementById('dash-logout');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
-            if (!confirm('คุณต้องการออกจากระบบใช่หรือไม่?')) return;
             try {
                 await fetch('/api/users/logout', { method: 'POST', credentials: 'include' });
             } catch (error) {
@@ -443,7 +439,48 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    const myCoursesEl = document.getElementById('dash-my-courses');
+    
+    // notifications badge
+    try {
+      const n = await fetch('/api/notifications', { credentials: 'include' }).then(r => r.json());
+      if (n.success && n.unread > 0) {
+        const badge = document.getElementById('notif-badge');
+        if (badge) badge.classList.remove('hidden');
+      }
+    } catch {}
+
+    // schedules
+    const scheduleEl = document.getElementById('dash-schedule');
+    if (scheduleEl) {
+      try {
+        const sres = await fetch('/api/my/schedules', { credentials: 'include' });
+        const sdata = await sres.json();
+        if (!sres.ok || !sdata.success) throw new Error(sdata.message || 'โหลดตารางไม่สำเร็จ');
+        const upcoming = (sdata.data || []).slice(0, 3);
+        if (!upcoming.length) {
+          scheduleEl.innerHTML = '<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow text-on-surface-variant">ยังไม่มีตารางเรียน · <a class="text-primary font-bold" href="Schedule.html">ดูหน้าตาราง</a></div>';
+        } else {
+          scheduleEl.innerHTML = upcoming.map(item => {
+            const d = new Date(item.start_at);
+            const day = d.toLocaleDateString('th-TH', { weekday: 'short' });
+            const dateNum = d.getDate();
+            const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            return `<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center justify-between border-l-4 border-primary">
+              <div class="flex items-center gap-md">
+                <div class="text-center min-w-[50px]"><p class="text-[12px] text-on-surface-variant uppercase">${day}</p><p class="font-headline-sm text-headline-sm text-primary">${dateNum}</p></div>
+                <div><p class="font-label-md text-label-md font-bold">${(item.title||'').replace(/</g,'&lt;')}</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">${time} | ${(item.location||item.delivery_mode||'').replace(/</g,'&lt;')}</p></div>
+              </div>
+              ${item.meeting_url ? `<a href="${item.meeting_url}" target="_blank" class="text-primary border border-primary/20 px-md py-1 rounded-full text-label-md">เข้าห้อง</a>` : '<span class="text-on-surface-variant text-label-md">รอลิงก์</span>'}
+            </div>`;
+          }).join('');
+        }
+      } catch (e) {
+        scheduleEl.innerHTML = `<div class="bg-error-container text-error p-md rounded-20px">${e.message}</div>`;
+      }
+    }
+
+const myCoursesEl = document.getElementById('dash-my-courses');
     try {
         const response = await fetch('/api/my/courses', { credentials: 'include' });
         const payload = await response.json();
@@ -532,7 +569,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (!response.ok || !result.success) throw new Error(result.message || 'อัปเดตไม่สำเร็จ');
             window.location.reload();
         } catch (error) {
-            alert(error.message);
+            console.error(error);
             btn.disabled = false;
         }
     });

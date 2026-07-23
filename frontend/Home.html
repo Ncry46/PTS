@@ -1,7 +1,9 @@
 <!DOCTYPE html><html lang="th" style="">
         <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
-        <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+        <script src="/comp/theme-boot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+        <link rel="stylesheet" href="site.css?v=20260722f">
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
                 tailwind.config = {
@@ -101,39 +103,54 @@
                         },
                 }
                 }catch(_e){}</script></head>
-<body class="bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed" data-mode="connect">
+<body class="pts-body bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed" data-mode="connect">
 <!-- TopNavBar -->
-<div id="app-navbar"></div>
+<div id="app-navbar">
+  <nav class="pts-topnav" aria-label="เมนูหลัก" style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        <span>
+          <div style="font-weight:700;font-size:15px;">PTS Learning</div>
+          <div style="font-size:11px;color:#6b5c62;">Personal Assistant Academy</div>
+        </span>
+      </a>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <a href="Login.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(151,66,88,.28);color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:#974258;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
 
 <main>
-<!-- Hero Section -->
-<section class="hero-gradient pt-xl pb-lg md:py-xl overflow-hidden">
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-2 items-center gap-lg">
-<div class="space-y-md">
-<span class="inline-block px-4 py-1 bg-secondary-container text-on-secondary-container rounded-full font-label-md text-label-md">Best for Professionals</span>
-<h1 class="font-headline-xl text-headline-xl text-on-surface md:text-[56px] md:leading-tight">เรียนรู้ทักษะ PA ได้ทุกที่ <span class="text-primary">Online, Onsite &amp; Hybrid</span></h1>
-<p class="font-body-lg text-body-lg text-on-surface-variant max-w-lg">แพลตฟอร์มการเรียนรู้สำหรับ Personal Assistant ที่รองรับการเรียนทั้งออนไลน์ ออนไซต์ และไฮบริด ภายในระบบเดียว</p>
-<div class="flex flex-wrap gap-md pt-sm">
-<button class="px-xl py-4 bg-primary text-on-primary rounded-full font-headline-sm text-headline-sm hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20" onclick="location.href='Courses.html'">ดูหลักสูตร</button>
-<button class="px-xl py-4 bg-secondary-container text-on-secondary-container rounded-full font-headline-sm text-headline-sm border border-secondary/20 hover:bg-secondary-fixed active:scale-95 transition-all" onclick="location.href='Courses.html'">สมัครเรียน</button>
-</div>
-</div>
-<div class="relative">
-<div class="absolute -top-10 -left-10 w-48 h-48 bg-primary-container/20 rounded-full blur-3xl"></div>
-<div class="relative z-10 rounded-2xl overflow-hidden soft-shadow rotate-2 hover:rotate-0 transition-transform duration-500">
-<img alt="Professional Woman" class="w-full h-[500px] object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAL1bLgj4_cdFQwufD7fHr7mIzwwLX1eg6KHtRGNWkUYTSFBNEzOkfgN5Bpvqx4pzCO1HDdnOeKyf9kSglaEJZ0oilzaKD-actnGqN9yHVSPnMsVEePg6HbyhjRFyukb2cFtg15dFQG8pw7GhjRJ6qCiFxBqsOU9FtRQjAWKZJHfKjZIdK__xUHPQGyylmAfalj9Psv-EiJd16IvIbdHQRwdmdkZQgSL50gh22cqBbgCWExhU_x5NFwAg">
-</div>
-<div class="absolute -bottom-6 -right-6 bg-surface-bright p-md rounded-2xl soft-shadow z-20 flex items-center gap-sm border border-outline-variant/30">
-<div class="w-12 h-12 bg-tertiary-container rounded-full flex items-center justify-center">
-<span class="material-symbols-outlined text-on-tertiary">check_circle</span>
-</div>
-<div>
-<p class="font-headline-sm text-headline-sm text-primary">Certified</p>
-<p class="font-label-md text-label-md text-on-surface-variant">หลักสูตรรับรองวิชาชีพ</p>
-</div>
-</div>
-</div>
-</div>
+<!-- Hero Banner Carousel — loaded from /api/hero-slides (admin-managed) -->
+<section class="pts-hero-banner" data-theme="rose" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+  <div class="pts-hero-banner__wash" aria-hidden="true">
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--a"></span>
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--b"></span>
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--c"></span>
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--d"></span>
+    <span class="pts-hero-banner__beam"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--1"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--2"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--3"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--4"></span>
+    <span class="pts-hero-banner__ring pts-hero-banner__ring--a"></span>
+    <span class="pts-hero-banner__ring pts-hero-banner__ring--b"></span>
+  </div>
+  <div class="pts-hero-banner__stage">
+    <div class="pts-hero-banner__viewport" id="hero-stage"></div>
+    <div class="pts-hero-banner__nav" role="group" aria-label="สลับแบนเนอร์">
+      <button type="button" class="pts-hero-banner__arrow" id="hero-prev" aria-label="แบนเนอร์ก่อนหน้า">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <div class="pts-hero-banner__dots" id="hero-dots" role="tablist" aria-label="เลือกแบนเนอร์"></div>
+      <button type="button" class="pts-hero-banner__arrow" id="hero-next" aria-label="แบนเนอร์ถัดไป">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+    </div>
+  </div>
 </section>
 <!-- Choose Learning Type Section -->
 <section class="py-xl bg-surface">
@@ -212,165 +229,27 @@
 </div>
 </section>
 <!-- Featured Courses (Recommended) -->
-<section class="py-xl bg-[#FAFAFA]">
+<section class="py-xl pts-section-alt">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
 <div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
 <div class="text-left">
-<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำยอดนิยม</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">คัดสรรคอร์สที่ PA มือโปรเลือกเรียนมากที่สุด</p>
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำ</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ข้อมูลจากระบบจริง อัปเดตตามคอร์สในฐานข้อมูล</p>
 </div>
-<button class="flex items-center gap-sm text-primary font-bold group">
+<a href="Courses.html" class="flex items-center gap-sm text-primary font-bold group">
                 ดูทั้งหมด
                 <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
+</a>
 </div>
-<!-- Filter Bar -->
-<div class="flex flex-wrap gap-sm mb-lg">
-<button class="px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
-<button class="px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
-<button class="px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
-<button class="px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
-</div>
-</div>
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-3 gap-md">
-<!-- Course Card 1 - Online -->
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group">
-<div class="relative h-48 overflow-hidden">
-<img alt="Course Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoE_X4kYMkw_iYwgRzwBkG9Oa33uRz2rijqQNaApCZDsw_bEdcAcNx_SapIwAfI5WohfB-c6jGR6so7GWLYxgx2JivmI-UZmfqzMlTBjN5qxDgWf9cF-zrFXqRj_yMa8R8sLnphyBMkIhBYYS0apFEXHuhxA0KPCtto_MuC_I9fK0Y1L2SAxHonjK0rqT1Z-XThwiPZ0355LxthVeVNLl6LEpV6AnOg6EEsmyYBCNcWEfTjsu4BbeW3g">
-<div class="absolute top-4 left-4 flex gap-xs">
-<div class="bg-primary text-white px-3 py-1 rounded-full font-label-md text-label-md">ยอดนิยม</div>
-<div class="bg-tertiary text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-<span class="w-2 h-2 rounded-full bg-white"></span> Online
+<div class="flex flex-wrap gap-sm mb-lg" id="home-course-filters">
+<button type="button" data-mode="" class="home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
+<button type="button" data-mode="online" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
+<button type="button" data-mode="onsite" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
+<button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
 </div>
 </div>
-</div>
-<div class="p-md">
-<div class="flex items-center gap-xs mb-sm">
-<span class="material-symbols-outlined text-sm text-primary">person</span>
-<span class="font-label-md text-label-md text-on-surface-variant">อ.วิภาวดี สมิธ</span>
-<span class="mx-2 text-outline-variant">|</span>
-<span class="material-symbols-outlined text-sm text-primary">schedule</span>
-<span class="font-label-md text-label-md text-on-surface-variant">12 ชม.</span>
-</div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">ทักษะการจัดการตารางงานขั้นเทพสำหรับ PA</h4>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-primary font-bold text-headline-sm">฿2,900</span>
-<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">รายละเอียด</button>
-</div>
-</div>
-</div>
-<!-- Course Card 2 - Onsite -->
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group">
-<div class="relative h-48 overflow-hidden">
-<img alt="Course Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4O1r-aydnJrPx7HOipnmPoKfAo6a8Pqr2QXXC_IBbDwwSRxocwMMFQ43AQNufqlTNxpxsOx4emP6jvNJokbFCWU7bYqVsAK_v0AnA-relHFlLjzWMXaUsVKFxZGayQqgyHu9UeYo-6s6qZ7WgjV7RYUfp8tNS3uqK1dc-n5FBKfWw54olMYJMwIXX_jkB8SWAqVDYX_t7A-Iglh1y52ozXxiGk1trf1Q8iIBnYOvAu8p5Q8reZyL8Qg">
-<div class="absolute top-4 left-4">
-<div class="bg-[#f59e0b] text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-<span class="w-2 h-2 rounded-full bg-white"></span> Onsite
-</div>
-</div>
-</div>
-<div class="p-md">
-<div class="flex items-center gap-xs mb-sm">
-<span class="material-symbols-outlined text-sm text-primary">person</span>
-<span class="font-label-md text-label-md text-on-surface-variant">Mr. James Wilson</span>
-<span class="mx-2 text-outline-variant">|</span>
-<span class="material-symbols-outlined text-sm text-primary">schedule</span>
-<span class="font-label-md text-label-md text-on-surface-variant">15 ชม.</span>
-</div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">ภาษาอังกฤษเพื่อการสื่อสารธุรกิจระดับสากล</h4>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-primary font-bold text-headline-sm">฿3,500</span>
-<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">รายละเอียด</button>
-</div>
-</div>
-</div>
-<!-- Course Card 3 - Hybrid -->
-<div class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group">
-<div class="relative h-48 overflow-hidden">
-<img alt="Course Image" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDbpCLw_9AriY1-iGCcA2nCyy4Hv6DWP7K1IikaIhtn7dEt6p9gZ19xpYlI57fEmoRsWhpoiTixDKwsoqhJiBg2gYBVlV4OkyLhERYw5U__wrsj4EAbcvTvWhuL2BoSmIdjuRGhfIs0TbnO7E6FPJ827S8t5h1cl5ufI9JjHM2fUkY8OWeZ2XxsHDj-DU_xmW0l_5y7jb8XBRnjMRBKzG9GH5uQWHyH0RhxauqdfmFrsVHDjN-XRc2dVA">
-<div class="absolute top-4 left-4">
-<div class="bg-secondary text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-<span class="w-2 h-2 rounded-full bg-white"></span> Hybrid
-</div>
-</div>
-</div>
-<div class="p-md">
-<div class="flex items-center gap-xs mb-sm">
-<span class="material-symbols-outlined text-sm text-primary">person</span>
-<span class="font-label-md text-label-md text-on-surface-variant">คุณธนพล ดิจิทัล</span>
-<span class="mx-2 text-outline-variant">|</span>
-<span class="material-symbols-outlined text-sm text-primary">schedule</span>
-<span class="font-label-md text-label-md text-on-surface-variant">8 ชม.</span>
-</div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">Advanced AI Tools สำหรับงานเลขาฯ</h4>
-<div class="flex items-center justify-between mt-auto">
-<span class="text-primary font-bold text-headline-sm">฿4,200</span>
-<button class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md hover:bg-primary hover:text-white transition-colors">รายละเอียด</button>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Upcoming Courses Section -->
-<section class="py-xl bg-surface">
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
-<div class="flex items-center gap-md mb-base">
-<h2 class="font-headline-lg text-headline-lg text-on-background">หลักสูตรที่กำลังจะเปิดเร็วๆ นี้</h2>
-<span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-[12px] font-bold">เปิดรับสมัคร</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant">จองที่นั่งก่อนใคร พร้อมรับส่วนลด Early Bird พิเศษเฉพาะคุณ</p>
-</div>
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg space-y-md">
-<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
-<div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
-<div class="bg-primary-fixed p-4 rounded-2xl text-primary text-center min-w-[100px]">
-<p class="font-label-md text-label-md uppercase">ธันวาคม</p>
-<p class="font-headline-lg text-headline-lg">15</p>
-</div>
-<div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface">Professional Protocol &amp; Etiquette 2025</h4>
-<div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-primary">groups</span> เหลือเพียง 5 ที่นั่ง
-                            </span>
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-primary">location_on</span> โรงแรมสยามเคมพินสกี้ (Onsite)
-                            </span>
-</div>
-</div>
-</div>
-<div class="flex gap-sm w-full md:w-auto">
-<button class="flex-1 md:flex-none px-md py-3 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-lg shadow-primary/20">ลงทะเบียนล่วงหน้า</button>
-<button class="p-3 border border-outline-variant rounded-full text-on-surface-variant hover:bg-surface-variant transition-colors">
-<span class="material-symbols-outlined">calendar_add_on</span>
-</button>
-</div>
-</div>
-<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col md:flex-row items-center justify-between gap-md">
-<div class="flex flex-col md:flex-row items-center gap-lg w-full md:w-auto text-center md:text-left">
-<div class="bg-secondary-fixed p-4 rounded-2xl text-secondary text-center min-w-[100px]">
-<p class="font-label-md text-label-md uppercase">มกราคม</p>
-<p class="font-headline-lg text-headline-lg">10</p>
-</div>
-<div>
-<h4 class="font-headline-sm text-headline-sm text-on-surface">Executive Mindset for Modern Secretary</h4>
-<div class="flex flex-wrap justify-center md:justify-start gap-md mt-sm">
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-secondary">groups</span> เหลือเพียง 12 ที่นั่ง
-                            </span>
-<span class="flex items-center gap-xs font-label-md text-label-md text-on-surface-variant">
-<span class="material-symbols-outlined text-sm text-secondary">videocam</span> Online (Zoom Live)
-                            </span>
-</div>
-</div>
-</div>
-<div class="flex gap-sm w-full md:w-auto">
-<button class="flex-1 md:flex-none px-md py-3 bg-secondary text-on-secondary rounded-full font-label-md text-label-md shadow-lg shadow-secondary/20">ลงทะเบียนล่วงหน้า</button>
-<button class="p-3 border border-outline-variant rounded-full text-on-surface-variant hover:bg-surface-variant transition-colors">
-<span class="material-symbols-outlined">calendar_add_on</span>
-</button>
-</div>
-</div>
+<div id="home-courses" class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-3 gap-md">
+  <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
 </div>
 </section>
 <!-- Learning Steps (How to Start) -->
@@ -534,9 +413,9 @@
 <p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ เพื่อความก้าวหน้าในสายงานอย่างยั่งยืน</p>
 </div>
 <div class="flex flex-wrap justify-center gap-md">
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">เกี่ยวกับเรา</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">นโยบายความเป็นส่วนตัว</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">ติดต่อเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">เกี่ยวกับเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">นโยบายความเป็นส่วนตัว</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">ติดต่อเรา</a>
 <a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">LINE OA Support</a>
 </div>
 <div class="flex gap-sm">
@@ -567,6 +446,302 @@
 </button>
 </div>
 
-<script src="/comp/navbar.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const grid = document.getElementById('home-courses');
+  let allCourses = [];
+  let activeMode = '';
+
+  // Hero banner — load from admin-managed API then init carousel
+  (async function loadHeroBanner() {
+    const stage = document.getElementById('hero-stage');
+    const dotsBox = document.getElementById('hero-dots');
+    const prevBtn = document.getElementById('hero-prev');
+    const nextBtn = document.getElementById('hero-next');
+    const banner = document.querySelector('.pts-hero-banner');
+    const nav = document.querySelector('.pts-hero-banner__nav');
+    if (!stage || !dotsBox) return;
+
+    const ALLOWED_ICONS = new Set([
+      'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
+      'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
+    ]);
+    const ALLOWED_THEMES = new Set(['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset']);
+
+    function normalizeTheme(theme) {
+      const t = String(theme || '').trim().toLowerCase();
+      return ALLOWED_THEMES.has(t) ? t : 'rose';
+    }
+
+    function applyTheme(theme) {
+      if (!banner) return;
+      banner.dataset.theme = normalizeTheme(theme);
+    }
+
+    function renderTitle(title, highlight) {
+      const raw = String(title || '');
+      const h = String(highlight || '').trim();
+      if (!h) return escapeHtml(raw);
+      const idx = raw.indexOf(h);
+      if (idx < 0) return escapeHtml(raw);
+      return escapeHtml(raw.slice(0, idx))
+        + '<span>' + escapeHtml(h) + '</span>'
+        + escapeHtml(raw.slice(idx + h.length));
+    }
+
+    function isRegisterHref(href) {
+      return /Register\.html/i.test(String(href || ''));
+    }
+
+    function panelHtml(slide, index) {
+      const icon = ALLOWED_ICONS.has(slide.badge_icon) ? slide.badge_icon : 'check_circle';
+      const actions = [];
+      if (slide.cta_primary_label && slide.cta_primary_href) {
+        actions.push(`<a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="${escapeHtml(slide.cta_primary_href)}">${escapeHtml(slide.cta_primary_label)}</a>`);
+      }
+      if (slide.cta_secondary_label && slide.cta_secondary_href) {
+        const reg = isRegisterHref(slide.cta_secondary_href) ? ' home-register-btn' : '';
+        actions.push(`<a class="pts-btn pts-btn-outline${reg}" href="${escapeHtml(slide.cta_secondary_href)}">${escapeHtml(slide.cta_secondary_label)}</a>`);
+      }
+      const badge = (slide.badge_title || slide.badge_subtitle) ? `
+        <div class="pts-hero-banner__badge">
+          <span class="pts-hero-banner__badge-icon">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">${icon}</span>
+          </span>
+          <span>
+            <strong>${escapeHtml(slide.badge_title || '')}</strong>
+            <small>${escapeHtml(slide.badge_subtitle || '')}</small>
+          </span>
+        </div>` : '';
+
+      return `
+        <article class="pts-hero-banner__panel${index === 0 ? ' is-active' : ''}" data-slide="${index}" aria-hidden="${index === 0 ? 'false' : 'true'}">
+          <div class="pts-hero-banner__inner">
+            <div class="pts-hero-banner__copy">
+              ${slide.eyebrow ? `<p class="pts-hero-banner__eyebrow">${escapeHtml(slide.eyebrow)}</p>` : ''}
+              <h1 class="pts-hero-banner__title">${renderTitle(slide.title, slide.title_highlight)}</h1>
+              ${slide.lead ? `<p class="pts-hero-banner__lead">${escapeHtml(slide.lead)}</p>` : ''}
+              ${actions.length ? `<div class="pts-hero-banner__actions">${actions.join('')}</div>` : ''}
+            </div>
+            <div class="pts-hero-banner__media">
+              <figure class="pts-hero-banner__frame">
+                <img
+                  src="${escapeHtml(slide.image_url || '')}"
+                  alt="${escapeHtml(slide.image_alt || '')}"
+                  width="1200" height="1200" decoding="async"
+                  ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+              </figure>
+              ${badge}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    let slidesData = [];
+    try {
+      const res = await fetch('/api/hero-slides').then((r) => r.json());
+      if (res.success && Array.isArray(res.data)) slidesData = res.data;
+    } catch (err) {
+      console.error('hero slides', err);
+    }
+
+    if (!slidesData.length) {
+      if (nav) nav.hidden = true;
+      applyTheme('rose');
+      stage.innerHTML = `
+        <article class="pts-hero-banner__panel is-active" data-slide="0" aria-hidden="false">
+          <div class="pts-hero-banner__inner">
+            <div class="pts-hero-banner__copy">
+              <p class="pts-hero-banner__eyebrow">PTS Learning</p>
+              <h1 class="pts-hero-banner__title">ยกระดับทักษะ <span>Personal Assistant</span></h1>
+              <p class="pts-hero-banner__lead">กำลังเตรียมแบนเนอร์ — แอดมินสามารถเพิ่มได้ที่หน้า Admin</p>
+              <div class="pts-hero-banner__actions">
+                <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Courses.html">ดูหลักสูตร</a>
+              </div>
+            </div>
+          </div>
+        </article>`;
+      return;
+    }
+
+    stage.innerHTML = slidesData.map(panelHtml).join('');
+    applyTheme(slidesData[0].theme);
+
+    const slides = Array.from(stage.querySelectorAll('.pts-hero-banner__panel'));
+    if (slides.length < 2) {
+      if (nav) nav.hidden = true;
+      return;
+    }
+
+    let index = 0;
+    let timer = null;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const INTERVAL = 6500;
+
+    dotsBox.innerHTML = '';
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'pts-hero-banner__dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', 'แบนเนอร์ที่ ' + (i + 1));
+      dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      dot.addEventListener('click', () => goTo(i, true));
+      dotsBox.appendChild(dot);
+    });
+
+    const dots = Array.from(dotsBox.querySelectorAll('.pts-hero-banner__dot'));
+
+    function goTo(next, userAction) {
+      index = (next + slides.length) % slides.length;
+      slides.forEach((slide, i) => {
+        const on = i === index;
+        slide.classList.toggle('is-active', on);
+        slide.setAttribute('aria-hidden', on ? 'false' : 'true');
+      });
+      dots.forEach((dot, i) => {
+        const on = i === index;
+        dot.classList.toggle('is-active', on);
+        dot.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      applyTheme(slidesData[index]?.theme);
+      if (userAction) restart();
+    }
+
+    function next() { goTo(index + 1, false); }
+    function prev() { goTo(index - 1, false); }
+
+    function stop() {
+      if (timer) { clearInterval(timer); timer = null; }
+    }
+
+    function start() {
+      if (reduceMotion) return;
+      stop();
+      timer = setInterval(next, INTERVAL);
+    }
+
+    function restart() { stop(); start(); }
+
+    prevBtn?.addEventListener('click', () => { prev(); restart(); });
+    nextBtn?.addEventListener('click', () => { next(); restart(); });
+    banner?.addEventListener('mouseenter', stop);
+    banner?.addEventListener('mouseleave', start);
+    banner?.addEventListener('focusin', stop);
+    banner?.addEventListener('focusout', (e) => {
+      if (!banner.contains(e.relatedTarget)) start();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else start();
+    });
+    start();
+  })();
+
+  // ซ่อนปุ่มสมัครสมาชิกใน hero เมื่อล็อกอินแล้ว
+  try {
+    const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+    if (me.loggedIn) {
+      document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
+    }
+  } catch (_) {}
+
+  // Re-hide register buttons after hero loads (hero is async)
+  setTimeout(() => {
+    fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).then((me) => {
+      if (me.loggedIn) document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
+    }).catch(() => {});
+  }, 800);
+
+  const modeBadge = (mode) => {
+    const m = String(mode || 'online').toLowerCase();
+    if (m === 'onsite') return 'bg-[#f59e0b]';
+    if (m === 'hybrid') return 'bg-secondary';
+    return 'bg-tertiary';
+  };
+
+  const renderCourses = () => {
+    if (!grid) return;
+    const list = allCourses.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
+    if (!list.length) {
+      grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">ยังไม่มีหลักสูตรในระบบ · <a class="text-primary font-bold" href="Courses.html">ดูหน้าหลักสูตร</a></div>';
+      return;
+    }
+    grid.innerHTML = list.map(c => {
+      const mode = String(c.delivery_mode || 'online');
+      const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
+      const price = Number(c.price || 0).toLocaleString('th-TH');
+      const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
+      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group block">
+        <div class="relative h-48 overflow-hidden">
+          <img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${img}">
+          <div class="absolute top-4 left-4">
+            <div class="${modeBadge(mode)} text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
+              <span class="w-2 h-2 rounded-full bg-white"></span> ${escapeHtml(mode)}
+            </div>
+          </div>
+        </div>
+        <div class="p-md">
+          <div class="flex items-center gap-xs mb-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm text-primary">person</span>
+            <span class="font-label-md text-label-md">${escapeHtml(c.instructor_name || '-')}</span>
+            <span class="mx-2 text-outline-variant">|</span>
+            <span class="material-symbols-outlined text-sm text-primary">schedule</span>
+            <span class="font-label-md text-label-md">${escapeHtml(hours)}</span>
+          </div>
+          <h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">${escapeHtml(c.course_name)}</h4>
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-primary font-bold text-headline-sm">฿${price}</span>
+            <span class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md">รายละเอียด</span>
+          </div>
+        </div>
+      </a>`;
+    }).join('');
+  };
+
+  document.querySelectorAll('.home-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMode = btn.dataset.mode || '';
+      document.querySelectorAll('.home-filter').forEach(b => {
+        b.className = 'home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md';
+      });
+      btn.className = 'home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm';
+      renderCourses();
+    });
+  });
+
+  try {
+    const res = await fetch('/api/courses', { credentials: 'include' });
+    const data = await res.json();
+    allCourses = data.success ? (data.data || []) : [];
+    renderCourses();
+  } catch {
+    if (grid) grid.innerHTML = '<div class="col-span-full text-center text-error py-8">โหลดหลักสูตรไม่สำเร็จ</div>';
+  }
+});
+</script>
+<!-- PTS-NAV-INLINE-BOOT -->
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+<script src="/comp/navbar.js?v=20260722g"></script>
 </body>
 </html>

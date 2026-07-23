@@ -2,43 +2,90 @@ const express = require('express');
 const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const session = require('express-session');
-const { ensureLearningSchema } = require('./ensureSchema');
+try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
+const { ensureLearningSchema, createNotification } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
+const { createProfileRouter } = require('./profileRoutes');
+const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
+const googleCalendar = require('./googleCalendar');
+const { syncAfterEnroll } = googleCalendar;
+const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
+const { writeSecretsFile } = require('./mailSecrets');
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+    app.set('trust proxy', 1);
+}
 
 app.use(cors());
 app.use(express.json());
 
 // 🌟 2. เปิดใช้งานระบบจำสิทธิ์ (Session) ยึดตามเบราว์เซอร์
 app.use(session({
-    secret: 'your-secret-key-pts-academy', // เปลี่ยนคีย์ความปลอดภัยได้ตามใจชอบ
+    secret: process.env.SESSION_SECRET || 'your-secret-key-pts-academy',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // อยู่ได้นาน 24 ชั่วโมง
+    cookie: {
+        secure: process.env.COOKIE_SECURE === 'true' || process.env.COOKIE_SECURE === '1',
+        maxAge: 24 * 60 * 60 * 1000 // อยู่ได้นาน 24 ชั่วโมง
+    }
 }));
 
-// 1. ตัวเปิดสิทธิ์โฟลเดอร์หน้าบ้านเดิมของคุณ (ดึงจากระดับโฟลเดอร์ชั้นนอก)
-app.use(express.static(path.join(__dirname, '..', 'frontend')));
-// 2. 🌟 เพิ่มบรรทัดนี้: เปิดสิทธิ์ให้เบราว์เซอร์เข้าถึงโฟลเดอร์ components ข้างนอกได้
-app.use('/comp', express.static(path.join(__dirname, '..', 'components')));
+const frontendDir = path.join(__dirname, '..', 'frontend');
+const componentsDir = path.join(__dirname, '..', 'components');
 
-// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
+// เสิร์ฟหน้าบ้านจาก frontend/
+app.use(express.static(frontendDir));
+// shared UI (navbar.js ฯลฯ) อยู่ที่ components/ — เสิร์ฟที่ / และ /comp
+app.use(express.static(componentsDir));
+app.use('/comp', express.static(componentsDir));
+app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
+// รูปโปรไฟล์ที่อัปโหลดจากเครื่อง
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server (override ได้ด้วย env / Docker)
 const dbConfig = {
-    user: 'uinet',                       
-    password: 'p@$$w0rd', // ⚠️ ตรวจสอบรหัสผ่าน SQL Server ของคุณให้ถูกต้องตรงนี้ครับ
-    server: 'tvsdb2.thanvasupos.com',    
-    port: 28914,                         
-    database: 'BD_PTS',                  
+    user: process.env.DB_USER || 'uinet',
+    password: process.env.DB_PASSWORD || 'p@$$w0rd',
+    server: process.env.DB_SERVER || 'tvsdb2.thanvasupos.com',
+    port: Number(process.env.DB_PORT) || 28914,
+    database: process.env.DB_NAME || 'BD_PTS',
     options: {
-        encrypt: true,
-        trustServerCertificate: true     
+        encrypt: process.env.DB_ENCRYPT !== 'false',
+        trustServerCertificate: process.env.DB_TRUST_CERT !== 'false'
     },
     pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
 };
+
+// 📧 ตั้งค่าส่ง Email OTP — แนะนำตั้งผ่าน .env (SMTP_*) เมื่อรัน Docker
+// ค่าด้านล่างเป็น fallback สำหรับรันในเครื่อง; mailSecrets อ่าน process.env ก่อน
+const mailConfig = {
+    mode: process.env.MAIL_MODE || 'smtp',
+    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+    smtpPort: Number(process.env.SMTP_PORT) || 587,
+    smtpSecure: process.env.SMTP_SECURE === 'true',
+    smtpUser: process.env.SMTP_USER || 'businessdev@thanvasu.com',
+    smtpPass: process.env.SMTP_PASS || '',
+    fromName: process.env.MAIL_FROM_NAME || 'PTS Learning',
+    fromEmail: process.env.MAIL_FROM_EMAIL || process.env.MAIL_FROM || 'businessdev@thanvasu.com',
+    brevoApiKey: process.env.BREVO_API_KEY || ''
+};
+
+try {
+    if (mailConfig.smtpPass) {
+        writeSecretsFile(mailConfig);
+        console.log('📧 บันทึกค่า Email OTP จาก env/server.js → mail.local.js / mail.secrets.json');
+    } else {
+        console.log('📧 SMTP_PASS ว่าง — ใช้ mail.local.js / .env ที่มีอยู่ (ถ้ามี)');
+    }
+} catch (e) {
+    console.error('⚠️ บันทึกค่าอีเมลไม่สำเร็จ:', e.message);
+}
 
 const poolPromise = new sql.ConnectionPool(dbConfig)
     .connect()
@@ -49,6 +96,14 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
             console.log('📚 Learning schema ready');
         } catch (schemaErr) {
             console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
+        }
+        const mail = getMailStatus();
+        const localPath = path.join(__dirname, 'mail.local.js');
+        console.log('📁 mail.local.js =', localPath, fs.existsSync(localPath) ? '(มีไฟล์)' : '(ไม่พบ)');
+        if (mail.ready) {
+            console.log(`📧 Email OTP ready → ส่งจาก ${mail.fromEmail || '-'} ผ่าน ${mail.smtpHost || mail.mode}`);
+        } else {
+            console.warn('⚠️ Email OTP ยังไม่พร้อม — ตรวจ mailConfig.smtpPass ใน server.js');
         }
         return pool;
     })
@@ -64,9 +119,6 @@ function requireLogin(req, res) {
     }
     return req.session.user;
 }
-
-// 📦 ตัวเก็บข้อมูล Token สำหรับเช็ก OTP จริงผ่านเครือข่าย
-const smsTokenCache = new Map();
 
 // 🎯 ตั้งหน้าแรกสุด
 app.get('/', (req, res) => {
@@ -168,6 +220,23 @@ app.post('/api/users/register', async (req, res) => {
                 VALUES (@email, @fullName, @phone, @pass, 'student', 'Y')
             `);
 
+        const created = await pool.request()
+            .input('email', sql.VarChar, email)
+            .query(`SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email`);
+        if (created.recordset[0]) {
+            try {
+                await createNotification(
+                    pool,
+                    created.recordset[0].user_id,
+                    'ยินดีต้อนรับสู่ PTS Learning',
+                    'บัญชีของคุณพร้อมใช้งานแล้ว เริ่มเลือกหลักสูตรและเข้าร่วมคอมมูนิตี้ได้เลย',
+                    'Courses.html'
+                );
+            } catch (notifyErr) {
+                console.error('notify register:', notifyErr.message);
+            }
+        }
+
         res.json({ success: true, message: 'ลงทะเบียนสมาชิกสำเร็จแล้ว! กรุณาเข้าสู่ระบบ' });
     } catch (error) {
         console.error('❌ Register failed:', error.message);
@@ -179,117 +248,85 @@ app.post('/api/users/register', async (req, res) => {
 });
 
 // -------------------------------------------------------------------------
-// 📲 [API ส่งจริง] 1/2: ตรวจอีเมล และสั่ง Thaibulksms ยิง SMS เข้ามือถือจริง
+// 📧 ลืมรหัสผ่าน: ส่ง OTP ทางอีเมล
 // -------------------------------------------------------------------------
 app.post('/api/users/request-otp', async (req, res) => {
-    const { email, phone } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
+    }
 
     try {
         const pool = await poolPromise;
-        // 1. ตรวจสอบข้อมูลอีเมลในระบบก่อน
         const userCheck = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+            .query('SELECT user_id, email FROM BD_PTS.dbo.users_main WHERE email = @email');
 
         if (userCheck.recordset.length === 0) {
-            return res.status(404).json({ success: false, message: 'ไม่พบข้อมูลผู้ใช้งานที่ตรงกับอีเมลนี้ในระบบ' });
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งานที่ตรงกับอีเมลนี้' });
         }
 
-        // 🔑 ใช้คีย์จริงของคุณที่ผูกไว้กับหน้าเว็บ Thaibulksms
-        const APP_KEY = 'NImQmVKGGJGNQY0CeoTuoDnMFcQVWm';
-        const APP_SECRET = 'mRt76fWfedjje9tmydEUN7NXN3kCVe';
-        const authKey = Buffer.from(`${APP_KEY}:${APP_SECRET}`).toString('base64');
-
-        console.log(`📡 Sending actual SMS via Thaibulksms API to: ${phone}`);
-
-        // 📲 2. ยิงตรงหา Server ของ Thaibulksms โดยตรงเพื่อส่งข้อความเข้าเบอร์มือถือจริง
-        const smsResponse = await fetch('https://api.thaibulksms.com/v2/otp/request', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${authKey}`
-            },
-            body: JSON.stringify({
-                key: APP_KEY,
-                phone: phone, 
-                digit: 6,
-                expire: 300   // รหัสมีอายุ 5 นาที
-            })
+        const userEmail = String(userCheck.recordset[0].email || email).trim();
+        const issued = await issueEmailOtp(userEmail, 'reset');
+        res.json({
+            success: true,
+            message: `ส่งรหัส OTP ไปที่อีเมลของผู้ใช้ ${issued.masked} แล้ว (ใช้ได้กับทุกอีเมลที่สมัครในระบบ) — ตรวจ inbox/สแปม หมดอายุใน 5 นาที`,
+            masked_email: issued.masked,
+            recipient_email: issued.masked,
+            delivered: issued.delivered,
+            expires_in_seconds: issued.expires_in_seconds
         });
-
-        const smsData = await smsResponse.json();
-
-        if (smsData && (smsData.token || (smsData.data && smsData.data.token))) {
-            const activeToken = smsData.token || smsData.data.token;
-            smsTokenCache.set(email, activeToken); // บันทึกไว้สอบด่านสอง
-            
-            res.json({ 
-                success: true, 
-                message: 'รหัส OTP ถูกส่งไปยังเบอร์มือถือจริงของคุณแล้ว!',
-                token: activeToken 
-            });
-        } else {
-            console.error("❌ Gateway Error Detail:", smsData);
-            const errorMsg = smsData.errors ? smsData.errors[0].description : 'พารามิเตอร์ของระบบ API ไม่ถูกต้อง หรือเครดิต SMS หมด';
-            res.status(400).json({ success: false, message: 'SMS Gateway ปฏิเสธการส่ง: ' + errorMsg });
-        }
-
     } catch (error) {
-        console.error("❌ Network Error:", error.message);
-        res.status(500).json({ success: false, message: 'ระบบเครือข่ายหลังบ้านขัดข้อง: ' + error.message });
+        console.error('❌ request email OTP:', error.message);
+        const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING'].includes(error.code)
+            ? 503
+            : 500;
+        res.status(status).json({
+            success: false,
+            message: error.message || 'ส่งอีเมล OTP ไม่สำเร็จ',
+            code: error.code || null
+        });
     }
 });
 
 // -------------------------------------------------------------------------
-// 🔐 [API ส่งจริง] 2/2: ตรวจสอบ OTP ผ่าน Gateway และสั่งอัปเดตรหัสผ่านใหม่ลง SQL Server
+// 🔐 ลืมรหัสผ่าน: ยืนยัน OTP จากอีเมล แล้วตั้งรหัสผ่านใหม่
 // -------------------------------------------------------------------------
 app.post('/api/users/verify-otp-reset', async (req, res) => {
-    const { email, phone, token, otp, new_password } = req.body;
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const otp = String(req.body.otp || '').trim();
+    const newPassword = String(req.body.new_password || '');
+
+    if (!email || !otp || !newPassword) {
+        return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล รหัส OTP และรหัสผ่านใหม่' });
+    }
+    if (newPassword.length < 4) {
+        return res.status(400).json({ success: false, message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร' });
+    }
 
     try {
-        const APP_KEY = 'NImQmVKGGJGNQY0CeoTuoDnMFcQVWm';
-        const APP_SECRET = 'mRt76fWfedjje9tmydEUN7NXN3kCVe';
-        const authKey = Buffer.from(`${APP_KEY}:${APP_SECRET}`).toString('base64');
-
-        const savedToken = smsTokenCache.get(email);
-        const tokenToVerify = token || savedToken;
-
-        if (!tokenToVerify) {
-            return res.status(400).json({ success: false, message: 'ไม่พบรหัสอ้างอิง Token กรุณากดขอ OTP ใหม่อีกครั้ง' });
+        const checked = verifyEmailOtp(email, otp, 'reset');
+        if (!checked.ok) {
+            return res.status(400).json({ success: false, message: checked.message });
         }
 
-        // ส่งให้ Thaibulksms ตรวจความถูกต้องของตัวเลข
-        const verifyResponse = await fetch('https://api.thaibulksms.com/v2/otp/verify', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Basic ${authKey}`
-            },
-            body: JSON.stringify({
-                token: tokenToVerify,
-                pin: otp
-            })
-        });
-
-        const verifyData = await verifyResponse.json();
-
-        if (verifyData.status === 'success' && verifyData.code === 200) {
-            const pool = await poolPromise;
-            // ทำการ UPDATE รหัสผ่านจริงลงฐานข้อมูล
-            await pool.request()
-                .input('email', sql.VarChar, email)
-                .input('phone', sql.VarChar, phone)
-                .input('newPass', sql.VarChar, new_password)
-                .query('UPDATE BD_PTS.dbo.users_main SET password_hash = @newPass WHERE email = @email');
-
-            smsTokenCache.delete(email); // ลบ Token ทิ้งป้องกันการส่งซ้ำ
-            res.json({ success: true, message: 'ยืนยันรหัส OTP ถูกต้อง และอัปเดตรหัสผ่านใหม่ลงระบบสำเร็จแล้ว!' });
-        } else {
-            res.status(400).json({ success: false, message: 'รหัส OTP ไม่ถูกต้อง หรือหมดเวลาการใช้งานแล้ว' });
+        const pool = await poolPromise;
+        const userCheck = await pool.request()
+            .input('email', sql.VarChar, email)
+            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+        if (!userCheck.recordset.length) {
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งาน' });
         }
 
+        await pool.request()
+            .input('email', sql.VarChar, email)
+            .input('newPass', sql.VarChar, newPassword)
+            .query('UPDATE BD_PTS.dbo.users_main SET password_hash = @newPass WHERE email = @email');
+
+        res.json({ success: true, message: 'ยืนยัน OTP สำเร็จ และตั้งรหัสผ่านใหม่เรียบร้อยแล้ว' });
     } catch (error) {
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดภายในระบบฐานข้อมูลหลังบ้าน' });
+        console.error('❌ verify email OTP reset:', error.message);
+        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการรีเซ็ตรหัสผ่าน' });
     }
 });
 // -------------------------------------------------------------------------
@@ -297,32 +334,47 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
 // -------------------------------------------------------------------------
 app.get('/api/courses', async (req, res) => {
     try {
-        // 1. เรียกใช้งาน Pool การเชื่อมต่อ SQL Server ตัวเดิมของคุณ
         const pool = await poolPromise;
-        
-        // 2. ยิงคำสั่ง SELECT เพื่อดึงข้อมูลฟิลด์ที่ต้องการใช้งาน
-        // (แนะนำให้เลือกเฉพาะคอลัมน์ที่จำเป็น เพื่อความเร็วในการโหลด)
+        const userId = req.session?.user?.user_id || null;
+
         const result = await pool.request()
+            .input('userId', sql.Int, userId)
             .query(`
                 SELECT 
-                    course_id, 
-                    course_name, 
-                    instructor_name, 
-                    delivery_mode, 
-                    difficulty_level, 
-                    total_hours, 
-                    average_rating, 
-                    total_reviews, 
-                    cover_image_url, -- 🌟 ตรงนี้เก็บ Absolute URL ของรูปปกคอร์สเรียนไว้แล้ว
-                    is_featured
-                FROM BD_PTS.dbo.courses_main
-                ORDER BY created_at DESC -- ดึงคอร์สที่สร้างใหม่ขึ้นก่อน
+                    c.course_id, 
+                    c.course_name, 
+                    c.instructor_name, 
+                    c.delivery_mode, 
+                    c.difficulty_level, 
+                    c.total_hours, 
+                    c.average_rating, 
+                    c.total_reviews, 
+                    c.cover_image_url,
+                    c.is_featured,
+                    c.price,
+                    c.description,
+                    CASE
+                        WHEN @userId IS NULL THEN 0
+                        WHEN EXISTS (
+                            SELECT 1 FROM BD_PTS.dbo.course_favorites f
+                            WHERE f.user_id = @userId AND f.course_id = c.course_id
+                        ) THEN 1 ELSE 0
+                    END AS is_favorited,
+                    CASE
+                        WHEN @userId IS NULL THEN 0
+                        WHEN EXISTS (
+                            SELECT 1 FROM BD_PTS.dbo.course_enrollments e
+                            WHERE e.user_id = @userId AND e.course_id = c.course_id
+                        ) THEN 1 ELSE 0
+                    END AS is_enrolled
+                FROM BD_PTS.dbo.courses_main c
+                ORDER BY c.created_at DESC
             `);
 
-        // 3. ส่งข้อมูลกลับไปให้หน้าบ้านเป็นรูปแบบ JSON Array
         res.json({
             success: true,
-            data: result.recordset // ข้อมูลคอร์สทั้งหมดจะอยู่ในนี้
+            loggedIn: !!userId,
+            data: result.recordset
         });
 
     } catch (error) {
@@ -340,38 +392,40 @@ app.get('/api/courses', async (req, res) => {
 // =========================================================================
 app.get('/api/community', async (req, res) => {
     try {
-        // 1. เชื่อมต่อฐานข้อมูล SQL Server
-        const pool = await poolPromise; 
-        
-        // 2. ส่งคิวรีดึงข้อมูลโพสต์พร้อม JOIN ตารางผู้ใช้เพื่อเอารูปโปรไฟล์และชื่อ
-        const result = await pool.request().query(`
+        const pool = await poolPromise;
+        const userId = req.session?.user?.user_id || null;
+
+        const result = await pool.request()
+            .input('userId', sql.Int, userId)
+            .query(`
             SELECT 
                 p.post_id,
                 p.content,
                 p.created_at,
                 u.full_name AS author_name,
-                
-                -- 🌟 ดึงลิงก์รูปโปรไฟล์จำลองหรือรูปจริงที่เราทำไว้ระดับ SQL 
                 ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
-                
-                -- 🌟 นับจำนวน Likes สด ๆ จากตารางความสัมพันธ์
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
-                
-                -- 🌟 นับจำนวน Comments สด ๆ จากตารางความสัมพันธ์
-                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
+                CASE
+                    WHEN @userId IS NULL THEN 0
+                    WHEN EXISTS (
+                        SELECT 1 FROM post_likes pl
+                        WHERE pl.post_id = p.post_id AND pl.user_id = @userId
+                    ) THEN 1 ELSE 0
+                END AS liked_by_me
             FROM 
                 community_posts p
             INNER JOIN 
                 users_main u ON p.user_id = u.user_id
             WHERE 
-                p.flag_use = 1 -- ดึงเฉพาะโพสต์ที่ยังไม่ถูกลบ
+                p.flag_use = 1
             ORDER BY 
-                p.created_at DESC; -- โพสต์ล่าสุดขึ้นก่อน
+                p.created_at DESC;
         `);
 
-        // 3. ส่งข้อมูลกลับไปหาหน้าบ้านในรูปแบบ JSON format สำเร็จรูป
         res.json({ 
             success: true, 
+            loggedIn: !!userId,
             data: result.recordset 
         });
 
@@ -383,6 +437,101 @@ app.get('/api/community', async (req, res) => {
         });
     }
 });
+
+// โพสต์ที่ฉันกดถูกใจ
+app.get('/api/my/liked-posts', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .query(`
+                SELECT
+                    p.post_id,
+                    p.content,
+                    p.created_at,
+                    u.full_name AS author_name,
+                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
+                    (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
+                    (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
+                    1 AS liked_by_me
+                FROM BD_PTS.dbo.post_likes pl
+                INNER JOIN BD_PTS.dbo.community_posts p ON p.post_id = pl.post_id
+                INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
+                WHERE pl.user_id = @userId AND p.flag_use = 1
+                ORDER BY p.created_at DESC
+            `);
+        res.json({ success: true, data: result.recordset });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// คอร์สโปรด
+app.get('/api/my/favorite-courses', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .query(`
+                SELECT
+                    c.course_id, c.course_name, c.instructor_name, c.delivery_mode,
+                    c.difficulty_level, c.total_hours, c.average_rating, c.total_reviews,
+                    c.cover_image_url, c.is_featured, 1 AS is_favorited,
+                    CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
+                FROM BD_PTS.dbo.course_favorites f
+                INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = f.course_id
+                LEFT JOIN BD_PTS.dbo.course_enrollments e
+                    ON e.course_id = c.course_id AND e.user_id = @userId
+                WHERE f.user_id = @userId
+                ORDER BY f.created_at DESC
+            `);
+        res.json({ success: true, data: result.recordset });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+app.post('/api/courses/:courseId/favorite', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    const courseId = parseInt(req.params.courseId, 10);
+    if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+
+    try {
+        const pool = await poolPromise;
+        const existing = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .input('courseId', sql.Int, courseId)
+            .query(`SELECT COUNT(*) AS cnt FROM BD_PTS.dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
+
+        let favorited = false;
+        if (existing.recordset[0].cnt > 0) {
+            await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, courseId)
+                .query(`DELETE FROM BD_PTS.dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
+            favorited = false;
+        } else {
+            await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, courseId)
+                .query(`INSERT INTO BD_PTS.dbo.course_favorites (user_id, course_id) VALUES (@userId, @courseId)`);
+            favorited = true;
+        }
+
+        res.json({ success: true, favorited, message: favorited ? 'บันทึกคอร์สโปรดแล้ว' : 'นำออกจากคอร์สโปรดแล้ว' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // =========================================================================
 // 🎯 API สำหรับดึงข้อมูลแฮชแท็กยอดนิยม (Trending Topics)
 // =========================================================================
@@ -630,6 +779,9 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
                 VALUES (@userId, @courseId, 0, 'in_progress')
             `);
 
+        // ซิงค์ตารางเรียนเข้า Google Calendar (ถ้าผู้ใช้เชื่อมไว้แล้ว)
+        syncAfterEnroll(pool, user.user_id, courseId).catch(() => {});
+
         res.json({
             success: true,
             already_enrolled: false,
@@ -741,6 +893,8 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 // เครื่อง Kiosk จริงให้ POST มาที่ endpoint นี้ด้วย payload เดียวกัน
 // -------------------------------------------------------------------------
 app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
+app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
+app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {
@@ -820,4 +974,19 @@ app.post('/api/attendance/scan', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => console.log(`🚀 Server running on http://localhost:${PORT}`));
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+    try {
+        const configured = typeof googleCalendar.isGoogleConfigured === 'function'
+            && googleCalendar.isGoogleConfigured();
+        const status = typeof googleCalendar.publicGoogleStatus === 'function'
+            ? googleCalendar.publicGoogleStatus()
+            : {};
+        console.log(`📅 Google Calendar: ${configured ? 'configured ✓' : 'NOT configured — สร้าง backend/google.local.js'}`);
+        if (status.redirectUri) console.log(`   redirectUri = ${status.redirectUri}`);
+        const localG = path.join(__dirname, 'google.local.js');
+        console.log(`   google.local.js = ${localG} ${fs.existsSync(localG) ? '(มีไฟล์)' : '(ไม่พบ)'}`);
+    } catch (err) {
+        console.warn('📅 Google Calendar status unavailable:', err.message);
+    }
+});

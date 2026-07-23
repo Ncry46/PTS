@@ -1,0 +1,159 @@
+/* User payments — QR PromptPay + credit card checkout */
+.pay-layout {
+  display: grid;
+  gap: 18px;
+}
+@media (min-width: 980px) {
+  .pay-layout {
+    grid-template-columns: minmax(0, 1.15fr) minmax(280px, .85fr);
+    align-items: start;
+  }
+}
+
+.pay-methods {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 14px 0 18px;
+}
+.pay-method {
+  border: 1.5px solid var(--pts-border, rgba(151,66,88,.18));
+  background: var(--pts-surface, #fff);
+  border-radius: 16px;
+  padding: 14px 12px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+}
+.pay-method:hover { border-color: color-mix(in srgb, var(--pts-primary, #974258) 40%, transparent); }
+.pay-method.is-active {
+  border-color: var(--pts-primary, #974258);
+  background: var(--pts-primary-soft, #faf4f6);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pts-primary, #974258) 14%, transparent);
+}
+.pay-method strong {
+  display: block;
+  font-size: 14px;
+  color: var(--pts-text, #1c1520);
+  margin-bottom: 2px;
+}
+.pay-method span {
+  font-size: 12px;
+  color: var(--pts-muted, #5c4f55);
+  line-height: 1.35;
+}
+.pay-method .material-symbols-outlined {
+  color: var(--pts-primary, #974258);
+  font-size: 22px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.pay-summary {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--pts-primary-soft, #f6e6ea);
+  margin-bottom: 14px;
+}
+.pay-summary__label { font-size: 13px; color: var(--pts-muted, #5c4f55); font-weight: 600; }
+.pay-summary__amount {
+  font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--pts-primary, #974258);
+}
+
+.pay-qr-box {
+  display: none;
+  text-align: center;
+  padding: 8px 0 4px;
+}
+.pay-qr-box.is-open { display: block; }
+.pay-qr-frame {
+  width: 220px;
+  height: 220px;
+  margin: 0 auto 12px;
+  padding: 12px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid rgba(151,66,88,.16);
+  box-shadow: 0 12px 28px rgba(151,66,88,.1);
+  display: grid;
+  place-items: center;
+}
+.pay-qr-frame canvas,
+.pay-qr-frame img { max-width: 100%; height: auto; }
+.pay-qr-meta {
+  font-size: 13px;
+  color: var(--pts-muted, #5c4f55);
+  line-height: 1.55;
+  margin: 0 0 14px;
+}
+.pay-qr-meta strong { color: var(--pts-text, #1c1520); }
+
+.pay-card-box { display: none; }
+.pay-card-box.is-open { display: block; }
+.pay-card-grid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+@media (min-width: 560px) {
+  .pay-card-grid--split { grid-template-columns: 1fr 1fr; }
+}
+
+.pay-history-method {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #974258;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.pay-status {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.pay-status--paid { background: #e8f6ec; color: #166c39; }
+.pay-status--pending { background: #fff4e5; color: #9a6700; }
+
+/* Local layout helpers (page no longer loads Tailwind) */
+.pay-page .w-full { width: 100%; }
+.pay-page .mb-1 { margin-bottom: 4px; }
+.pay-page .mb-2 { margin-bottom: 8px; }
+.pay-page .mb-3 { margin-bottom: 12px; }
+.pay-page .mb-4 { margin-bottom: 16px; }
+.pay-page .mt-1 { margin-top: 4px; }
+.pay-page .mt-2 { margin-top: 8px; }
+.pay-page .text-sm { font-size: 14px; }
+.pay-page .text-xs { font-size: 12px; }
+.pay-page .font-bold { font-weight: 700; }
+.pay-page .text-primary { color: var(--pts-primary, #974258); }
+.pay-page .text-on-surface-variant { color: var(--pts-muted, #5c4f55); }
+.pay-page .max-w-xl { max-width: 36rem; }
+.pay-page .text-3xl { font-size: 1.875rem; line-height: 1.2; }
+.pay-page .text-4xl { font-size: 2.25rem; line-height: 1.15; }
+@media (min-width: 768px) {
+  .pay-page .md\:text-4xl { font-size: 2.25rem; line-height: 1.15; }
+}
+
+html[data-theme="dark"] .pay-method.is-active {
+  background: rgba(232,149,168,.12);
+  border-color: var(--pts-primary, #e895a8);
+}
+html[data-theme="dark"] .pay-status--pending { background: rgba(154,103,0,.2); color: #fdba74; }
+html[data-theme="dark"] .pay-status--paid,
+html[data-theme="dark"] .pay-status--success { background: rgba(22,108,57,.22); color: #6ee7b7; }
+html[data-theme="dark"] .pay-status--failed { background: rgba(186,26,26,.2); color: #fca5a5; }

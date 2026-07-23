@@ -4,27 +4,109 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722f">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
-<style>body{font-family:'IBM Plex Sans Thai',sans-serif;padding-top:80px;background:#fcf8ff}.tab-btn.active{background:#974258;color:#fff}</style>
+<style>
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
+  body{font-family:'IBM Plex Sans Thai',sans-serif}
+  .admin-shell {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .admin-shell {
+      grid-template-columns: 220px minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+  }
+  .admin-side {
+    background: var(--pts-surface, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 20px;
+    padding: 14px 12px;
+    box-shadow: var(--pts-shadow-sm, 0 8px 24px rgba(28,21,32,.05));
+  }
+  @media (min-width: 900px) {
+    .admin-side { position: sticky; top: calc(var(--pts-nav-h, 68px) + 16px); }
+  }
+  .admin-side__label {
+    margin: 0 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--pts-primary, #974258);
+  }
+  .admin-side__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  @media (min-width: 900px) {
+    .admin-side__nav { flex-direction: column; flex-wrap: nowrap; }
+  }
+  .tab-btn {
+    border: 1px solid var(--pts-border, rgba(151,66,88,.18));
+    background: var(--pts-surface, #fff);
+    color: var(--pts-text, #1c1520);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  @media (min-width: 900px) {
+    .tab-btn { width: 100%; border-radius: 12px; }
+  }
+  .tab-btn.active { background: #974258; color: #fff; border-color: #974258; }
+  html[data-theme="dark"] .tab-btn.active { background: #b85a70; border-color: #b85a70; }
+  .admin-main { min-width: 0; }
+</style>
 </head>
-<body class="text-on-surface">
-<div id="app-navbar"></div>
-<main class="max-w-6xl mx-auto px-4 py-6">
-  <h1 class="text-3xl font-bold text-primary mb-2">แผงควบคุมแอดมิน</h1>
-  <p class="text-on-surface-variant mb-4">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ และการชำระเงิน</p>
-  <div id="stats" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6"></div>
-  <div class="flex flex-wrap gap-2 mb-4">
-    <button class="tab-btn active px-4 py-2 rounded-full border text-sm font-bold" data-tab="courses">คอร์ส</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="lessons">บทเรียน</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="schedules">ตารางเรียน</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="users">ผู้ใช้</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="posts">โพสต์</button>
-    <button class="tab-btn px-4 py-2 rounded-full border text-sm font-bold" data-tab="payments">ชำระเงิน</button>
+<body class="pts-body text-on-surface">
+<div id="app-navbar">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        PTS Learning
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
+<main class="pts-main pts-main--wide admin-shell">
+  <aside class="admin-side" aria-label="เมนูแอดมิน">
+    <p class="admin-side__label">จัดการระบบ</p>
+    <nav class="admin-side__nav">
+      <button type="button" class="tab-btn active" data-tab="courses">คอร์ส</button>
+      <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
+      <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
+      <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
+      <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
+      <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
+      <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
+      <button type="button" class="tab-btn" data-tab="mail">อีเมล OTP</button>
+    </nav>
+  </aside>
+  <div class="admin-main">
+    <section class="pts-page-hero">
+      <span class="pts-chip mb-3">Admin</span>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
+      <p class="text-on-surface-variant">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
+    </section>
+    <section id="panel" class="pts-panel"></section>
   </div>
-  <section id="panel" class="bg-white rounded-2xl border border-pink-100 p-5"></section>
 </main>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -34,26 +116,9 @@ async function api(url, options = {}) {
   const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) { location.href = 'Login.html'; throw new Error('unauthorized'); }
-  if (res.status === 403) { alert(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
+  if (res.status === 403) { console.error(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
   if (!res.ok || data.success === false) throw new Error(data.message || 'คำขอล้มเหลว');
   return data;
-}
-
-async function loadStats() {
-  const { data } = await api('/api/admin/stats');
-  document.getElementById('stats').innerHTML = [
-    ['ผู้ใช้', data.users_count],
-    ['คอร์ส', data.courses_count],
-    ['การสมัครเรียน', data.enrollments_count],
-    ['โพสต์', data.posts_count],
-    ['ชำระแล้ว', data.paid_count],
-    ['รายได้ (บาท)', Number(data.revenue || 0).toLocaleString('th-TH')]
-  ].map(([label, value]) => `
-    <div class="bg-white rounded-2xl border p-3 text-center">
-      <p class="text-xs text-on-surface-variant">${label}</p>
-      <p class="text-xl font-bold text-primary">${value}</p>
-    </div>
-  `).join('');
 }
 
 async function renderCourses() {
@@ -91,9 +156,7 @@ async function renderCourses() {
         is_featured: false
       })
     });
-    alert('สร้างคอร์สสำเร็จ');
-    await loadStats();
-    renderCourses();
+    await renderCourses();
   };
 
   document.querySelectorAll('.feature-btn').forEach(btn => {
@@ -151,7 +214,6 @@ async function renderLessons() {
         duration_minutes: Number(document.getElementById('l-duration').value || 15)
       })
     });
-    alert('เพิ่มบทเรียนแล้ว');
     loadLessons();
   };
   if (coursesCache.length) loadLessons();
@@ -166,45 +228,233 @@ async function renderSchedules() {
   const now = new Date();
   const start = new Date(now.getTime() + 86400000); start.setMinutes(0,0,0);
   const end = new Date(start.getTime() + 2*3600000);
+  const toLocalInput = (d) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
   document.getElementById('panel').innerHTML = `
+    <h2 class="font-bold text-lg mb-3">เพิ่มตารางเรียน</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="s-title" class="border rounded-xl px-3 py-2" placeholder="หัวข้อคลาส">
-      <select id="s-course" class="border rounded-xl px-3 py-2"><option value="">ไม่ผูกคอร์ส</option>${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
-      <input id="s-start" type="datetime-local" class="border rounded-xl px-3 py-2" value="${start.toISOString().slice(0,16)}">
-      <input id="s-end" type="datetime-local" class="border rounded-xl px-3 py-2" value="${end.toISOString().slice(0,16)}">
-      <input id="s-location" class="border rounded-xl px-3 py-2" placeholder="สถานที่">
-      <input id="s-meeting" class="border rounded-xl px-3 py-2" placeholder="Meeting URL">
-      <select id="s-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
+        <input id="s-title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับคอร์ส (จำเป็น — ต้องเป็นคอร์สที่นักเรียนสมัครไว้)
+        <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
+          <option value="">-- เลือกคอร์ส --</option>
+          ${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+        </select>
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">วันเวลาเริ่ม
+        <input id="s-start" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(start)}">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">วันเวลาจบ
+        <input id="s-end" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(end)}">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">สถานที่
+        <input id="s-location" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="สถานที่ (onsite)">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">Meeting URL
+        <input id="s-meeting" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="https://meet.google.com/...">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">รูปแบบ
+        <select id="s-mode" class="mt-1 w-full border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      </label>
     </div>
-    <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มตาราง</button>
+    <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-2">เพิ่มตาราง</button>
+    <p id="schedule-form-msg" class="pts-msg mb-4"></p>
+    <h3 class="font-bold mb-2">ตารางที่มีอยู่</h3>
     <div class="space-y-2">${data.map(s => `
       <div class="border rounded-xl p-3 flex justify-between gap-2">
         <div>
           <p class="font-bold">${escapeHtml(s.title)}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')} – ${new Date(s.end_at).toLocaleString('th-TH')}</p>
         </div>
         <button class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
       </div>`).join('') || '<p>ยังไม่มีตาราง</p>'}
     </div>`;
 
   document.getElementById('add-schedule').onclick = async () => {
-    await api('/api/admin/schedules', {
-      method: 'POST',
-      body: JSON.stringify({
-        title: document.getElementById('s-title').value,
-        course_id: document.getElementById('s-course').value || null,
-        start_at: document.getElementById('s-start').value,
-        end_at: document.getElementById('s-end').value,
-        location: document.getElementById('s-location').value,
-        meeting_url: document.getElementById('s-meeting').value,
-        delivery_mode: document.getElementById('s-mode').value
-      })
-    });
-    alert('เพิ่มตารางแล้ว');
-    renderSchedules();
+    const formMsg = document.getElementById('schedule-form-msg');
+    const showErr = (t) => { formMsg.textContent = t; formMsg.className = 'pts-msg pts-msg--err mb-4'; };
+    const title = document.getElementById('s-title').value.trim();
+    const courseId = document.getElementById('s-course').value;
+    if (!title) return showErr('กรุณาใส่หัวข้อคลาส');
+    if (!courseId) return showErr('กรุณาเลือกคอร์สที่ผูกตาราง (จำเป็นสำหรับซิงค์ Google Calendar)');
+    formMsg.textContent = 'กำลังบันทึก...';
+    formMsg.className = 'pts-msg mb-4';
+    try {
+      await api('/api/admin/schedules', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          course_id: courseId,
+          start_at: document.getElementById('s-start').value,
+          end_at: document.getElementById('s-end').value,
+          location: document.getElementById('s-location').value,
+          meeting_url: document.getElementById('s-meeting').value,
+          delivery_mode: document.getElementById('s-mode').value
+        })
+      });
+      renderSchedules();
+    } catch (e) {
+      showErr(e.message || 'เพิ่มตารางไม่สำเร็จ');
+    }
   };
   document.querySelectorAll('.del-schedule').forEach(btn => {
     btn.onclick = async () => { await api(`/api/admin/schedules/${btn.dataset.id}`, { method: 'DELETE' }); renderSchedules(); };
+  });
+}
+
+async function renderBanners() {
+  const { data } = await api('/api/admin/hero-slides');
+  const iconOptions = [
+    'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
+    'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
+  ];
+  const themeOptions = [
+    { value: 'rose', label: 'Rose — ชมพูโรสโกลด์' },
+    { value: 'sage', label: 'Sage — เขียวเซจ' },
+    { value: 'gold', label: 'Gold — ทองอุ่น' },
+    { value: 'ink', label: 'Ink — ดำหมึก' },
+    { value: 'ocean', label: 'Ocean — ทะเลเทียล' },
+    { value: 'sunset', label: 'Sunset — พระอาทิตย์ตก' }
+  ];
+  const themeLabel = (t) => (themeOptions.find((x) => x.value === t) || themeOptions[0]).label;
+
+  const formHtml = (s = {}) => `
+    <input type="hidden" id="b-id" value="${s.slide_id || ''}">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+      <input id="b-sort" type="number" class="border rounded-xl px-3 py-2" placeholder="ลำดับ" value="${s.sort_order || data.length + 1}">
+      <select id="b-theme" class="border rounded-xl px-3 py-2">
+        ${themeOptions.map((t) => `<option value="${t.value}" ${(s.theme || 'rose') === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
+      </select>
+      <input id="b-eyebrow" class="border rounded-xl px-3 py-2" placeholder="ข้อความเล็กเหนือหัวข้อ" value="${escapeHtml(s.eyebrow || '')}">
+      <input id="b-title" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="หัวข้อหลัก *" value="${escapeHtml(s.title || '')}">
+      <input id="b-highlight" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="คำในหัวข้อที่อยากไฮไลต์สี (ต้องตรงกับข้อความในหัวข้อ)" value="${escapeHtml(s.title_highlight || '')}">
+      <textarea id="b-lead" class="border rounded-xl px-3 py-2 md:col-span-2" rows="2" placeholder="คำอธิบายสั้น">${escapeHtml(s.lead || '')}</textarea>
+      <input id="b-cta1-label" class="border rounded-xl px-3 py-2" placeholder="ปุ่มหลัก — ข้อความ" value="${escapeHtml(s.cta_primary_label || '')}">
+      <input id="b-cta1-href" class="border rounded-xl px-3 py-2" placeholder="ปุ่มหลัก — ลิงก์ เช่น Courses.html" value="${escapeHtml(s.cta_primary_href || '')}">
+      <input id="b-cta2-label" class="border rounded-xl px-3 py-2" placeholder="ปุ่มรอง — ข้อความ" value="${escapeHtml(s.cta_secondary_label || '')}">
+      <input id="b-cta2-href" class="border rounded-xl px-3 py-2" placeholder="ปุ่มรอง — ลิงก์ เช่น Register.html" value="${escapeHtml(s.cta_secondary_href || '')}">
+      <input id="b-image" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="URL รูป (หรืออัปโหลดด้านล่าง)" value="${escapeHtml(s.image_url || '')}">
+      <div class="md:col-span-2 flex flex-wrap items-center gap-2">
+        <input id="b-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="text-sm">
+        <button type="button" id="b-upload" class="border px-3 py-1.5 rounded-full text-sm font-bold">อัปโหลดรูป</button>
+        <span id="b-upload-msg" class="text-xs text-on-surface-variant"></span>
+      </div>
+      <input id="b-alt" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="คำอธิบายรูป (alt)" value="${escapeHtml(s.image_alt || '')}">
+      <select id="b-icon" class="border rounded-xl px-3 py-2">${iconOptions.map(i => `<option value="${i}" ${s.badge_icon === i ? 'selected' : ''}>${i}</option>`).join('')}</select>
+      <input id="b-badge-title" class="border rounded-xl px-3 py-2" placeholder="ข้อความแบดจ์ เช่น Certificate" value="${escapeHtml(s.badge_title || '')}">
+      <input id="b-badge-sub" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="คำอธิบายใต้แบดจ์" value="${escapeHtml(s.badge_subtitle || '')}">
+      <label class="flex items-center gap-2 text-sm md:col-span-2"><input id="b-active" type="checkbox" ${s.flag_use === 0 || s.flag_use === false ? '' : 'checked'}> แสดงบนหน้าแรก</label>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button type="button" id="b-save" class="bg-primary text-white px-5 py-2 rounded-full font-bold">${s.slide_id ? 'บันทึกการแก้ไข' : 'เพิ่มแบนเนอร์'}</button>
+      ${s.slide_id ? '<button type="button" id="b-cancel" class="border px-5 py-2 rounded-full font-bold">ยกเลิกแก้ไข</button>' : ''}
+    </div>
+    <p id="b-msg" class="text-sm mb-4"></p>
+  `;
+
+  document.getElementById('panel').innerHTML = `
+    <h2 class="font-bold text-lg mb-1" id="b-form-title">เพิ่มแบนเนอร์หน้าแรก</h2>
+    <p class="text-sm text-on-surface-variant mb-4">สไลด์ที่เปิดใช้จะหมุนบนหน้าแรกตามลำดับ — เลือกธีมสีพื้นหลังต่างกันได้ทุกสไลด์</p>
+    <div id="b-form">${formHtml()}</div>
+    <h3 class="font-bold mb-2">รายการแบนเนอร์</h3>
+    <div class="space-y-3">${data.map(s => `
+      <div class="border rounded-xl p-3 flex flex-col md:flex-row gap-3 ${s.flag_use ? '' : 'opacity-50'}">
+        <img src="${escapeHtml(s.image_url || '')}" alt="" class="w-full md:w-36 h-24 object-cover rounded-lg bg-gray-100" onerror="this.style.display='none'">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-on-surface-variant">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'} · ${themeLabel(s.theme)}</p>
+          <p class="font-bold truncate">${escapeHtml(s.eyebrow || '')}</p>
+          <p class="text-sm">${escapeHtml(s.title)}</p>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button class="edit-banner border px-3 py-1 rounded-full text-sm font-bold" data-id="${s.slide_id}">แก้ไข</button>
+          ${s.flag_use ? `<button class="hide-banner text-red-600 font-bold text-sm" data-id="${s.slide_id}">ซ่อน</button>` : ''}
+        </div>
+      </div>`).join('') || '<p>ยังไม่มีแบนเนอร์</p>'}
+    </div>
+  `;
+
+  const readForm = () => ({
+    sort_order: Number(document.getElementById('b-sort').value || 1),
+    theme: document.getElementById('b-theme').value,
+    eyebrow: document.getElementById('b-eyebrow').value,
+    title: document.getElementById('b-title').value,
+    title_highlight: document.getElementById('b-highlight').value,
+    lead: document.getElementById('b-lead').value,
+    cta_primary_label: document.getElementById('b-cta1-label').value,
+    cta_primary_href: document.getElementById('b-cta1-href').value,
+    cta_secondary_label: document.getElementById('b-cta2-label').value,
+    cta_secondary_href: document.getElementById('b-cta2-href').value,
+    image_url: document.getElementById('b-image').value,
+    image_alt: document.getElementById('b-alt').value,
+    badge_icon: document.getElementById('b-icon').value,
+    badge_title: document.getElementById('b-badge-title').value,
+    badge_subtitle: document.getElementById('b-badge-sub').value,
+    flag_use: document.getElementById('b-active').checked
+  });
+
+  const wireForm = () => {
+    document.getElementById('b-upload').onclick = async () => {
+      const file = document.getElementById('b-file').files?.[0];
+      const msg = document.getElementById('b-upload-msg');
+      if (!file) { msg.textContent = 'เลือกไฟล์ก่อน'; return; }
+      msg.textContent = 'กำลังอัปโหลด...';
+      try {
+        const fd = new FormData();
+        fd.append('image', file);
+        const res = await fetch('/api/admin/hero-slides/upload', { method: 'POST', credentials: 'include', body: fd });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
+        document.getElementById('b-image').value = json.url;
+        msg.textContent = 'อัปโหลดแล้ว';
+      } catch (e) {
+        msg.textContent = e.message;
+      }
+    };
+
+    document.getElementById('b-save').onclick = async () => {
+      const msg = document.getElementById('b-msg');
+      const id = document.getElementById('b-id').value;
+      const payload = readForm();
+      try {
+        if (!payload.title.trim()) throw new Error('กรุณาระบุหัวข้อแบนเนอร์');
+        if (id) {
+          await api(`/api/admin/hero-slides/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+        } else {
+          await api('/api/admin/hero-slides', { method: 'POST', body: JSON.stringify(payload) });
+        }
+        msg.className = 'text-sm mb-4 text-emerald-700';
+        msg.textContent = 'บันทึกแล้ว';
+        renderBanners();
+      } catch (e) {
+        msg.className = 'text-sm mb-4 text-red-600';
+        msg.textContent = e.message;
+      }
+    };
+
+    document.getElementById('b-cancel')?.addEventListener('click', () => renderBanners());
+  };
+
+  wireForm();
+
+  document.querySelectorAll('.edit-banner').forEach(btn => {
+    btn.onclick = () => {
+      const slide = data.find(s => String(s.slide_id) === btn.dataset.id);
+      if (!slide) return;
+      document.getElementById('b-form-title').textContent = `แก้ไขแบนเนอร์ #${slide.slide_id}`;
+      document.getElementById('b-form').innerHTML = formHtml(slide);
+      wireForm();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  });
+
+  document.querySelectorAll('.hide-banner').forEach(btn => {
+    btn.onclick = async () => {
+      await api(`/api/admin/hero-slides/${btn.dataset.id}`, { method: 'DELETE' });
+      renderBanners();
+    };
   });
 }
 
@@ -263,34 +513,169 @@ async function renderPayments() {
     </div>`;
 }
 
+async function renderMail() {
+  const data = await api('/api/admin/mail');
+  const f = data.form || {};
+  const s = data.status || {};
+  document.getElementById('panel').innerHTML = `
+    <div class="mb-5 p-4 rounded-2xl ${s.ready ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}">
+      <p class="font-bold ${s.ready ? 'text-emerald-800' : 'text-amber-800'}">${s.ready ? 'พร้อมส่งอีเมล OTP จริง' : 'ยังไม่พร้อม — กรุณาตั้งค่าด้านล่าง'}</p>
+      <p class="text-sm mt-1 text-on-surface-variant">SMTP: ${s.smtpConfigured ? 'ตั้งแล้ว' : 'ยังไม่ตั้ง'} · Brevo: ${s.brevoConfigured ? 'ตั้งแล้ว' : 'ยังไม่ตั้ง'} · From: ${escapeHtml(s.fromEmail || '-')}</p>
+    </div>
+    <h2 class="font-bold text-lg mb-2">ตั้งค่าอีเมลผู้ส่งของระบบ</h2>
+    <p class="text-sm text-on-surface-variant mb-4">
+      <strong>thanvasu.com ใช้ Google Workspace</strong> — SMTP <code>smtp.gmail.com</code><br>
+      อีเมลด้านล่างคือ<strong>ผู้ส่งของระบบ (กล่องเดียว)</strong> แต่ OTP จะถูกส่งไปหา<strong>อีเมลของผู้ใช้ทุกคน</strong>ที่มีในฐานข้อมูล (Gmail, Hotmail, เมลบริษัท ฯลฯ ไม่จำกัด)<br>
+      สร้าง App Password ที่ <a class="text-primary font-bold underline" href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>
+      หรือแก้ <code>backend/mail.local.js</code>
+    </p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <label class="text-sm">โหมด
+        <select id="m-mode" class="mt-1 w-full border rounded-xl px-3 py-2">
+          <option value="auto" ${f.mode==='auto'?'selected':''}>auto (Brevo ก่อน แล้ว SMTP)</option>
+          <option value="smtp" ${f.mode==='smtp'?'selected':''}>smtp เท่านั้น</option>
+          <option value="brevo" ${f.mode==='brevo'?'selected':''}>brevo เท่านั้น</option>
+        </select>
+      </label>
+      <label class="text-sm">ชื่อผู้ส่ง
+        <input id="m-from-name" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.fromName||'PTS Learning')}">
+      </label>
+      <label class="text-sm">อีเมลผู้ส่งของระบบ (From — กล่องเดียว)
+        <input id="m-from-email" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="noreply@thanvasu.com" value="${escapeHtml(f.fromEmail||'')}">
+      </label>
+      <label class="text-sm">SMTP Host
+        <input id="m-host" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.smtpHost||'smtp.office365.com')}">
+      </label>
+      <label class="text-sm">SMTP Port
+        <input id="m-port" type="number" class="mt-1 w-full border rounded-xl px-3 py-2" value="${Number(f.smtpPort||587)}">
+      </label>
+      <label class="text-sm">SMTP User (อีเมลล็อกอิน)
+        <input id="m-user" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="you@thanvasu.com" value="${escapeHtml(f.smtpUser||'')}">
+      </label>
+      <label class="text-sm">SMTP Password / App Password ${f.hasSmtpPass ? '<span class="text-emerald-700">(มีรหัสบันทึกไว้แล้ว — เว้นว่างถ้าไม่เปลี่ยน)</span>' : ''}
+        <div class="pts-pw-wrap relative mt-1">
+          <input id="m-pass" type="password" class="w-full border rounded-xl px-3 py-2 pr-12 pts-pw-input" data-pts-pw-field="1" placeholder="${f.hasSmtpPass ? '••••••••' : 'รหัสผ่านอีเมล'}">
+        </div>
+      </label>
+      <label class="text-sm">Brevo API Key ${f.hasBrevoKey ? '<span class="text-emerald-700">(มีคีย์แล้ว — เว้นว่างถ้าไม่เปลี่ยน)</span>' : ''}
+        <div class="pts-pw-wrap relative mt-1">
+          <input id="m-brevo" type="password" class="w-full border rounded-xl px-3 py-2 pr-12 pts-pw-input" data-pts-pw-field="1" placeholder="${f.hasBrevoKey ? '••••••••' : 'xkeysib-...'}">
+        </div>
+      </label>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button id="save-mail" class="pts-btn pts-btn-primary">บันทึกการตั้งค่าอีเมล</button>
+    </div>
+    <h3 class="font-bold mb-2">ทดสอบส่ง OTP ไปอีเมลใดก็ได้</h3>
+    <p class="text-sm text-on-surface-variant mb-2">ใส่เมลผู้รับทดสอบ (ไม่ต้องเป็นเมล thanvasu) เพื่อยืนยันว่าส่งถึงทุกอีเมลได้</p>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <input id="m-test-email" class="flex-1 border rounded-xl px-3 py-2" placeholder="อีเมลปลายทางทดสอบ">
+      <button id="test-mail" class="pts-btn pts-btn-outline">ส่ง OTP ทดสอบ</button>
+    </div>
+    <p id="mail-msg" class="pts-msg"></p>`;
+
+  if (window.PtsPasswordToggle) window.PtsPasswordToggle.bindAll(document.getElementById('panel'));
+
+  document.getElementById('save-mail').onclick = async () => {
+    const msg = document.getElementById('mail-msg');
+    try {
+      const body = {
+        mode: document.getElementById('m-mode').value,
+        fromName: document.getElementById('m-from-name').value,
+        fromEmail: document.getElementById('m-from-email').value,
+        smtpHost: document.getElementById('m-host').value,
+        smtpPort: Number(document.getElementById('m-port').value || 587),
+        smtpUser: document.getElementById('m-user').value,
+        smtpPass: document.getElementById('m-pass').value,
+        brevoApiKey: document.getElementById('m-brevo').value
+      };
+      const res = await api('/api/admin/mail', { method: 'PUT', body: JSON.stringify(body) });
+      msg.textContent = res.message;
+      msg.className = 'pts-msg pts-msg--ok';
+      renderMail();
+    } catch (e) {
+      msg.textContent = e.message;
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  };
+
+  document.getElementById('test-mail').onclick = async () => {
+    const msg = document.getElementById('mail-msg');
+    try {
+      const res = await api('/api/admin/mail/test', {
+        method: 'POST',
+        body: JSON.stringify({ email: document.getElementById('m-test-email').value })
+      });
+      msg.textContent = res.message;
+      msg.className = 'pts-msg pts-msg--ok';
+    } catch (e) {
+      msg.textContent = e.message;
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  };
+}
+
 const tabs = {
   courses: renderCourses,
   lessons: renderLessons,
   schedules: renderSchedules,
+  banners: renderBanners,
   users: renderUsers,
   posts: renderPosts,
-  payments: renderPayments
+  payments: renderPayments,
+  mail: renderMail
 };
 
+function activateTab(name) {
+  const key = tabs[name] ? name : 'courses';
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === key);
+  });
+  tabs[key]();
+  if (location.hash !== '#' + key) {
+    history.replaceState(null, '', '#' + key);
+  }
+}
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    tabs[btn.dataset.tab]();
-  };
+  btn.onclick = () => activateTab(btn.dataset.tab);
+});
+
+window.addEventListener('hashchange', () => {
+  activateTab((location.hash || '').replace(/^#/, ''));
 });
 
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
   if ((me.user.role || '').toLowerCase() !== 'admin') {
-    alert('หน้านี้สำหรับแอดมินเท่านั้น');
     return location.href = 'Home.html';
   }
-  await loadStats();
-  await renderCourses();
+  activateTab((location.hash || '').replace(/^#/, '') || 'courses');
 })().catch(err => console.error(err));
 </script>
-<script src="/comp/navbar.js"></script>
+<!-- PTS-NAV-INLINE-BOOT -->
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+<script src="password-toggle.js?v=20260720e"></script>
+<script src="/comp/navbar.js?v=20260722g"></script>
 </body>
 </html>
