@@ -3,7 +3,7 @@
         <script src="/comp/theme-boot.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260722j">
+        <link rel="stylesheet" href="site.css?v=20260722k">
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
                 tailwind.config = {
@@ -132,6 +132,7 @@
     <span class="pts-hero-banner__orb pts-hero-banner__orb--c"></span>
     <span class="pts-hero-banner__orb pts-hero-banner__orb--d"></span>
     <span class="pts-hero-banner__beam"></span>
+    <span class="pts-hero-banner__mesh"></span>
     <span class="pts-hero-banner__spark pts-hero-banner__spark--1"></span>
     <span class="pts-hero-banner__spark pts-hero-banner__spark--2"></span>
     <span class="pts-hero-banner__spark pts-hero-banner__spark--3"></span>
@@ -140,10 +141,13 @@
     <span class="pts-hero-banner__spark pts-hero-banner__spark--6"></span>
     <span class="pts-hero-banner__ring pts-hero-banner__ring--a"></span>
     <span class="pts-hero-banner__ring pts-hero-banner__ring--b"></span>
-    <span class="pts-hero-banner__dust" aria-hidden="true"></span>
+    <span class="pts-hero-banner__dust"></span>
+    <span class="pts-hero-banner__flare" id="hero-flare"></span>
+    <span class="pts-hero-banner__burst" id="hero-burst"></span>
   </div>
   <div class="pts-hero-banner__stage" id="hero-stage-wrap" data-pts-hero-tilt>
     <div class="pts-hero-banner__shine" aria-hidden="true"></div>
+    <div class="pts-hero-banner__glint" aria-hidden="true"></div>
     <div class="pts-hero-banner__viewport" id="hero-stage"></div>
     <div class="pts-hero-banner__nav" role="group" aria-label="สลับแบนเนอร์">
       <button type="button" class="pts-hero-banner__arrow" id="hero-prev" aria-label="แบนเนอร์ก่อนหน้า">
@@ -153,7 +157,7 @@
       <button type="button" class="pts-hero-banner__arrow" id="hero-next" aria-label="แบนเนอร์ถัดไป">
         <span class="material-symbols-outlined">chevron_right</span>
       </button>
-      <p class="pts-hero-banner__count" id="hero-count" aria-live="polite">01</p>
+      <p class="pts-hero-banner__count" id="hero-count" aria-live="polite"><span>01</span></p>
     </div>
     <div class="pts-hero-banner__progress" aria-hidden="true">
       <span class="pts-hero-banner__progress-bar" id="hero-progress"></span>
@@ -647,14 +651,42 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function updateCount(i) {
       if (!countEl) return;
-      countEl.textContent = String(i + 1).padStart(2, '0');
+      const label = String(i + 1).padStart(2, '0');
+      countEl.innerHTML = `<span>${label}</span>`;
+      countEl.classList.remove('is-flip');
+      void countEl.offsetWidth;
+      countEl.classList.add('is-flip');
+    }
+
+    function spawnBurst() {
+      const box = document.getElementById('hero-burst');
+      if (!box || reduceMotion) return;
+      box.innerHTML = '';
+      for (let n = 0; n < 14; n++) {
+        const d = document.createElement('span');
+        d.className = 'pts-hero-banner__burst-dot';
+        const x = 20 + Math.random() * 60;
+        const y = 25 + Math.random() * 50;
+        const bx = (Math.random() * 160 - 80).toFixed(0) + 'px';
+        const by = (Math.random() * -120 - 20).toFixed(0) + 'px';
+        d.style.left = x + '%';
+        d.style.top = y + '%';
+        d.style.setProperty('--bx', bx);
+        d.style.setProperty('--by', by);
+        d.style.animationDelay = (Math.random() * 0.18).toFixed(2) + 's';
+        d.style.width = (4 + Math.random() * 5).toFixed(0) + 'px';
+        d.style.height = d.style.width;
+        box.appendChild(d);
+      }
+      window.setTimeout(() => { box.innerHTML = ''; }, 1100);
     }
 
     function pulseSwitch() {
       if (!banner || reduceMotion) return;
       banner.classList.add('is-switching');
+      spawnBurst();
       window.clearTimeout(pulseSwitch._t);
-      pulseSwitch._t = window.setTimeout(() => banner.classList.remove('is-switching'), 480);
+      pulseSwitch._t = window.setTimeout(() => banner.classList.remove('is-switching'), 780);
     }
 
     function goTo(nextIdx, userAction, forcedDir) {
@@ -754,7 +786,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       restart();
     }, { passive: true });
 
-    // Pointer tilt + layered parallax + light follow
+    // Pointer tilt + layered parallax + light follow + magnetic arrows
     if (stageWrap && !reduceMotion) {
       let raf = 0;
       stageWrap.addEventListener('pointermove', (e) => {
@@ -763,11 +795,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         const py = (e.clientY - rect.top) / rect.height;
         cancelAnimationFrame(raf);
         raf = requestAnimationFrame(() => {
-          const rx = (0.5 - py) * 6;
-          const ry = (px - 0.5) * 8;
-          const parx = (px - 0.5) * 18;
-          const pary = (py - 0.5) * 12;
-          stageWrap.style.transform = `perspective(1200px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg)`;
+          const rx = (0.5 - py) * 8;
+          const ry = (px - 0.5) * 11;
+          const parx = (px - 0.5) * 26;
+          const pary = (py - 0.5) * 16;
+          stageWrap.style.transform = `perspective(1100px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(8px)`;
           stageWrap.style.setProperty('--hero-mx', (px * 100).toFixed(1) + '%');
           stageWrap.style.setProperty('--hero-my', (py * 100).toFixed(1) + '%');
           stageWrap.style.setProperty('--hero-parx', parx.toFixed(1) + 'px');
@@ -779,6 +811,17 @@ document.addEventListener('DOMContentLoaded', async () => {
         stageWrap.style.transform = '';
         stageWrap.style.setProperty('--hero-parx', '0px');
         stageWrap.style.setProperty('--hero-pary', '0px');
+      });
+
+      [prevBtn, nextBtn].forEach((btn) => {
+        if (!btn) return;
+        btn.addEventListener('pointermove', (e) => {
+          const r = btn.getBoundingClientRect();
+          const x = ((e.clientX - r.left) / r.width - 0.5) * 10;
+          const y = ((e.clientY - r.top) / r.height - 0.5) * 10;
+          btn.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(1.08)`;
+        });
+        btn.addEventListener('pointerleave', () => { btn.style.transform = ''; });
       });
     }
 
