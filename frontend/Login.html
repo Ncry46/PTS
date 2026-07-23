@@ -5,44 +5,64 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>เข้าสู่ระบบ | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260723j">
-<link rel="stylesheet" href="login.css?v=20260723j">
+<link rel="stylesheet" href="site.css?v=20260723q">
+<link rel="stylesheet" href="auth-campus.css?v=20260723q">
+<link rel="stylesheet" href="login.css?v=20260723q">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
 <body class="pts-body pts-login">
 <div id="app-navbar"></div>
 
-<!-- Light atelier backdrop (distinct from Home hero FX) -->
-<div class="pts-login__fx" aria-hidden="true">
-  <div class="pts-login__fx-wash"></div>
-  <div class="pts-login__fx-bloom pts-login__fx-bloom--a"></div>
-  <div class="pts-login__fx-bloom pts-login__fx-bloom--b"></div>
-  <div class="pts-login__fx-bloom pts-login__fx-bloom--c"></div>
-  <div class="pts-login__fx-spotlight"></div>
-  <div class="pts-login__fx-silk pts-login__fx-silk--a"></div>
-  <div class="pts-login__fx-silk pts-login__fx-silk--b"></div>
-  <div class="pts-login__fx-grain"></div>
-  <span class="pts-login__petal pts-login__petal--1"></span>
-  <span class="pts-login__petal pts-login__petal--2"></span>
-  <span class="pts-login__petal pts-login__petal--3"></span>
-  <span class="pts-login__petal pts-login__petal--4"></span>
-  <span class="pts-login__petal pts-login__petal--5"></span>
-  <span class="pts-login__petal pts-login__petal--6"></span>
-  <span class="pts-login__filament pts-login__filament--a"></span>
-  <span class="pts-login__filament pts-login__filament--b"></span>
-  <span class="pts-login__filament pts-login__filament--c"></span>
-  <span class="pts-login__diamond pts-login__diamond--1"></span>
-  <span class="pts-login__diamond pts-login__diamond--2"></span>
-  <span class="pts-login__diamond pts-login__diamond--3"></span>
-  <span class="pts-login__diamond pts-login__diamond--4"></span>
-  <span class="pts-login__diamond pts-login__diamond--5"></span>
-  <span class="pts-login__diamond pts-login__diamond--6"></span>
-  <span class="pts-login__diamond pts-login__diamond--7"></span>
-  <span class="pts-login__diamond pts-login__diamond--8"></span>
-  <span class="pts-login__orb pts-login__orb--a"></span>
-  <span class="pts-login__orb pts-login__orb--b"></span>
-  <span class="pts-login__orb pts-login__orb--c"></span>
+<!-- Academy campus FX — course/learning motifs (shared with Register) -->
+<div class="pts-campus__fx" aria-hidden="true">
+  <div class="pts-campus__wash"></div>
+  <div class="pts-campus__bloom pts-campus__bloom--a"></div>
+  <div class="pts-campus__bloom pts-campus__bloom--b"></div>
+  <div class="pts-campus__bloom pts-campus__bloom--c"></div>
+  <div class="pts-campus__bloom pts-campus__bloom--d"></div>
+  <div class="pts-campus__spotlight"></div>
+  <div class="pts-campus__path">
+    <span class="pts-campus__path-dot pts-campus__path-dot--1"></span>
+    <span class="pts-campus__path-dot pts-campus__path-dot--2"></span>
+    <span class="pts-campus__path-dot pts-campus__path-dot--3"></span>
+    <span class="pts-campus__path-dot pts-campus__path-dot--4"></span>
+    <span class="pts-campus__path-dot pts-campus__path-dot--5"></span>
+  </div>
+  <div class="pts-campus__grain"></div>
+  <span class="pts-campus__book pts-campus__book--1"></span>
+  <span class="pts-campus__book pts-campus__book--2"></span>
+  <span class="pts-campus__book pts-campus__book--3"></span>
+  <span class="pts-campus__book pts-campus__book--4"></span>
+  <span class="pts-campus__tile pts-campus__tile--1"></span>
+  <span class="pts-campus__tile pts-campus__tile--2"></span>
+  <span class="pts-campus__tile pts-campus__tile--3"></span>
+  <span class="pts-campus__tile pts-campus__tile--4"></span>
+  <span class="pts-campus__play pts-campus__play--1"></span>
+  <span class="pts-campus__play pts-campus__play--2"></span>
+  <span class="pts-campus__play pts-campus__play--3"></span>
+  <span class="pts-campus__cap pts-campus__cap--1"></span>
+  <span class="pts-campus__cap pts-campus__cap--2"></span>
+  <span class="pts-campus__cap pts-campus__cap--3"></span>
+  <span class="pts-campus__cert pts-campus__cert--1"></span>
+  <span class="pts-campus__cert pts-campus__cert--2"></span>
+  <span class="pts-campus__cert pts-campus__cert--3"></span>
+  <span class="pts-campus__mark pts-campus__mark--1"></span>
+  <span class="pts-campus__mark pts-campus__mark--2"></span>
+  <span class="pts-campus__mark pts-campus__mark--3"></span>
+  <span class="pts-campus__star pts-campus__star--1"></span>
+  <span class="pts-campus__star pts-campus__star--2"></span>
+  <span class="pts-campus__star pts-campus__star--3"></span>
+  <span class="pts-campus__star pts-campus__star--4"></span>
+  <span class="pts-campus__star pts-campus__star--5"></span>
+  <span class="pts-campus__star pts-campus__star--6"></span>
+  <span class="pts-campus__star pts-campus__star--7"></span>
+  <span class="pts-campus__star pts-campus__star--8"></span>
+  <span class="pts-campus__check pts-campus__check--1"></span>
+  <span class="pts-campus__check pts-campus__check--2"></span>
+  <span class="pts-campus__orb pts-campus__orb--a"></span>
+  <span class="pts-campus__orb pts-campus__orb--b"></span>
+  <span class="pts-campus__orb pts-campus__orb--c"></span>
 </div>
 
 <main class="pts-login__stage">

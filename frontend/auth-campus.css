@@ -1,0 +1,408 @@
+/* Shared light “Academy Campus” FX for Login + Register
+   Course-learning motifs — not Home aurora/mesh, not abstract petals/hex. */
+
+.pts-campus__fx {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.pts-campus__wash {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(125deg, rgba(255, 255, 255, 0.62) 0%, transparent 42%),
+    linear-gradient(310deg, rgba(255, 248, 242, 0.5) 0%, transparent 46%),
+    /* soft notebook ruling hint */
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 27px,
+      rgba(151, 66, 88, 0.035) 27px,
+      rgba(151, 66, 88, 0.035) 28px
+    );
+  mask-image: radial-gradient(ellipse 85% 70% at 50% 45%, #000 20%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 45%, #000 20%, transparent 78%);
+}
+
+.pts-campus__bloom {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(58px);
+  opacity: 0.82;
+  animation: pts-campus-bloom 14s ease-in-out infinite;
+}
+.pts-campus__bloom--a {
+  width: min(58vw, 520px); height: min(58vw, 520px);
+  top: -10%; left: -10%;
+  background: rgba(255, 178, 198, 0.55);
+}
+.pts-campus__bloom--b {
+  width: min(48vw, 440px); height: min(48vw, 440px);
+  top: 4%; right: -8%;
+  background: rgba(240, 205, 150, 0.48);
+  animation-delay: -4s;
+}
+.pts-campus__bloom--c {
+  width: min(52vw, 480px); height: min(52vw, 480px);
+  bottom: -14%; left: 22%;
+  background: rgba(165, 210, 190, 0.42);
+  animation-delay: -8s;
+}
+.pts-campus__bloom--d {
+  width: min(40vw, 360px); height: min(40vw, 360px);
+  bottom: 20%; right: 6%;
+  background: rgba(175, 205, 240, 0.38);
+  animation-delay: -11s;
+}
+
+.pts-campus__spotlight {
+  position: absolute;
+  left: 50%; top: 48%;
+  width: min(90vw, 900px);
+  height: min(75vh, 620px);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.94) 0%, rgba(255,255,255,.28) 46%, transparent 72%);
+  animation: pts-campus-spotlight 9s ease-in-out infinite;
+}
+
+.pts-campus__path {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  top: 58%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(151,66,88,.22), rgba(212,168,90,.28), rgba(100,160,130,.2), transparent);
+  opacity: 0.7;
+  animation: pts-campus-path 10s ease-in-out infinite;
+}
+.pts-campus__path-dot {
+  position: absolute;
+  top: 50%;
+  width: 10px; height: 10px;
+  margin-top: -5px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid rgba(151, 66, 88, 0.45);
+  box-shadow: 0 0 0 4px rgba(255, 210, 220, 0.35);
+  animation: pts-campus-dot 3.2s ease-in-out infinite;
+}
+.pts-campus__path-dot--1 { left: 12%; }
+.pts-campus__path-dot--2 { left: 32%; animation-delay: -0.6s; border-color: rgba(200,150,70,.55); }
+.pts-campus__path-dot--3 { left: 52%; animation-delay: -1.2s; border-color: rgba(90,150,120,.55); }
+.pts-campus__path-dot--4 { left: 72%; animation-delay: -1.8s; }
+.pts-campus__path-dot--5 { left: 88%; animation-delay: -2.4s; border-color: rgba(200,150,70,.55); }
+
+.pts-campus__grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.24;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+  background-size: 170px 170px;
+  mix-blend-mode: soft-light;
+  animation: pts-campus-grain 12s steps(6) infinite;
+}
+
+/* Open book cards */
+.pts-campus__book {
+  position: absolute;
+  width: 72px;
+  height: 52px;
+  display: flex;
+  filter: drop-shadow(0 14px 24px rgba(151, 66, 88, 0.14));
+  animation: pts-campus-float 15s ease-in-out infinite;
+  z-index: 2;
+}
+.pts-campus__book::before,
+.pts-campus__book::after {
+  content: "";
+  flex: 1;
+  background: linear-gradient(180deg, #fffefb, #fff5f7);
+  border: 1px solid rgba(151, 66, 88, 0.14);
+}
+.pts-campus__book::before {
+  border-radius: 6px 2px 2px 6px;
+  background:
+    linear-gradient(90deg, rgba(151,66,88,.08), transparent 18%),
+    linear-gradient(180deg, #fff, #fff6f8);
+  box-shadow: inset -4px 0 0 rgba(151, 66, 88, 0.06);
+}
+.pts-campus__book::after {
+  border-radius: 2px 6px 6px 2px;
+  background:
+    repeating-linear-gradient(180deg, transparent 0 7px, rgba(151,66,88,.1) 7px 8px),
+    linear-gradient(180deg, #fffefc, #fff8ee);
+}
+.pts-campus__book--1 { top: 14%; left: 6%; }
+.pts-campus__book--2 { top: 22%; right: 7%; width: 58px; height: 42px; animation-delay: -3s; }
+.pts-campus__book--3 { bottom: 18%; left: 10%; width: 50px; height: 36px; animation-delay: -7s; }
+.pts-campus__book--4 { bottom: 24%; right: 11%; width: 64px; height: 46px; animation-delay: -5s; }
+
+/* Mini lesson / course tiles */
+.pts-campus__tile {
+  position: absolute;
+  width: 78px;
+  height: 56px;
+  border-radius: 12px;
+  background:
+    linear-gradient(160deg, rgba(255,255,255,.92), rgba(255,240,244,.75)),
+    #fff;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 16px 36px rgba(151, 66, 88, 0.12);
+  overflow: hidden;
+  animation: pts-campus-float 17s ease-in-out infinite;
+  z-index: 2;
+}
+.pts-campus__tile::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 38%;
+  background: linear-gradient(90deg, rgba(151,66,88,.55), rgba(217,119,142,.45), rgba(232,184,109,.4));
+}
+.pts-campus__tile::after {
+  content: "";
+  position: absolute;
+  left: 10px; right: 10px; bottom: 10px;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(151,66,88,.35), rgba(151,66,88,.08));
+  box-shadow: 0 8px 0 rgba(151,66,88,.12), 0 16px 0 rgba(151,66,88,.08);
+}
+.pts-campus__tile--1 { top: 38%; left: 4%; animation-delay: -2s; }
+.pts-campus__tile--2 { top: 12%; left: 38%; width: 64px; height: 46px; animation-delay: -6s; }
+.pts-campus__tile--3 { top: 48%; right: 5%; width: 70px; height: 50px; animation-delay: -9s; background: linear-gradient(160deg, #fff, rgba(240,250,245,.85)); }
+.pts-campus__tile--3::before { background: linear-gradient(90deg, rgba(90,150,120,.5), rgba(197,218,245,.45)); }
+.pts-campus__tile--4 { bottom: 12%; left: 36%; width: 60px; height: 44px; animation-delay: -4s; }
+
+/* Video play discs (online lessons) */
+.pts-campus__play {
+  position: absolute;
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(255,255,255,.95), rgba(255,220,230,.7));
+  border: 1px solid rgba(151, 66, 88, 0.16);
+  box-shadow: 0 12px 28px rgba(151, 66, 88, 0.14);
+  animation: pts-campus-pulse 5.5s ease-in-out infinite;
+  z-index: 3;
+}
+.pts-campus__play::after {
+  content: "";
+  position: absolute;
+  left: 17px; top: 13px;
+  border-style: solid;
+  border-width: 9px 0 9px 14px;
+  border-color: transparent transparent transparent rgba(151, 66, 88, 0.75);
+}
+.pts-campus__play--1 { top: 28%; left: 16%; }
+.pts-campus__play--2 { top: 62%; right: 18%; animation-delay: -2s; width: 36px; height: 36px; }
+.pts-campus__play--2::after { left: 14px; top: 10px; border-width: 8px 0 8px 12px; }
+.pts-campus__play--3 { top: 18%; right: 28%; animation-delay: -3.5s; width: 30px; height: 30px; }
+.pts-campus__play--3::after { left: 12px; top: 8px; border-width: 7px 0 7px 10px; }
+
+/* Graduation caps */
+.pts-campus__cap {
+  position: absolute;
+  width: 48px;
+  height: 28px;
+  animation: pts-campus-float 13s ease-in-out infinite;
+  z-index: 2;
+  filter: drop-shadow(0 10px 16px rgba(151, 66, 88, 0.12));
+}
+.pts-campus__cap::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: 8px;
+  width: 46px; height: 12px;
+  transform: translateX(-50%) rotate(0deg);
+  background: #974258;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+.pts-campus__cap::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 18px;
+  width: 22px; height: 10px;
+  transform: translateX(-50%);
+  background: #7a3145;
+  border-radius: 0 0 4px 4px;
+  box-shadow: 10px 8px 0 -4px #d4a84a;
+}
+.pts-campus__cap--1 { top: 16%; right: 14%; }
+.pts-campus__cap--2 { bottom: 28%; left: 20%; animation-delay: -5s; transform: scale(0.85); }
+.pts-campus__cap--3 { top: 54%; right: 10%; animation-delay: -8s; transform: scale(0.75); }
+
+/* Certificate mini cards */
+.pts-campus__cert {
+  position: absolute;
+  width: 54px;
+  height: 70px;
+  border-radius: 6px;
+  background:
+    radial-gradient(circle at 50% 72%, rgba(212,168,90,.35), transparent 42%),
+    linear-gradient(180deg, #fffefb, #fff7f0);
+  border: 1px solid rgba(151, 66, 88, 0.18);
+  box-shadow: 0 14px 30px rgba(151, 66, 88, 0.12);
+  animation: pts-campus-float 16s ease-in-out infinite;
+  z-index: 2;
+}
+.pts-campus__cert::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border: 1px solid rgba(151, 66, 88, 0.2);
+  border-radius: 3px;
+}
+.pts-campus__cert::after {
+  content: "";
+  position: absolute;
+  left: 50%; top: 14px;
+  width: 16px; height: 16px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #f0d28a, #b08d57);
+  box-shadow: 0 28px 0 -5px rgba(151,66,88,.2), 0 34px 0 -5px rgba(151,66,88,.12);
+}
+.pts-campus__cert--1 { top: 30%; right: 6%; }
+.pts-campus__cert--2 { bottom: 16%; right: 24%; width: 44px; height: 58px; animation-delay: -4s; }
+.pts-campus__cert--3 { top: 66%; left: 6%; width: 40px; height: 52px; animation-delay: -7s; }
+
+/* Bookmark ribbons */
+.pts-campus__mark {
+  position: absolute;
+  width: 18px;
+  height: 46px;
+  background: linear-gradient(180deg, #e53955, #974258);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
+  box-shadow: 0 10px 20px rgba(151, 66, 88, 0.18);
+  animation: pts-campus-float 12s ease-in-out infinite;
+  z-index: 3;
+}
+.pts-campus__mark--1 { top: 20%; left: 24%; }
+.pts-campus__mark--2 { top: 44%; right: 22%; background: linear-gradient(180deg, #e8c98a, #c9a227); animation-delay: -3s; }
+.pts-campus__mark--3 { bottom: 22%; left: 28%; width: 14px; height: 38px; animation-delay: -6s; }
+
+/* Achievement stars */
+.pts-campus__star {
+  position: absolute;
+  width: 14px; height: 14px;
+  background: #e8c98a;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  filter: drop-shadow(0 0 8px rgba(232, 201, 138, 0.7));
+  animation: pts-campus-twinkle 4.2s ease-in-out infinite;
+  z-index: 3;
+}
+.pts-campus__star--1 { top: 12%; left: 18%; }
+.pts-campus__star--2 { top: 26%; right: 20%; animation-delay: -0.8s; width: 11px; height: 11px; }
+.pts-campus__star--3 { top: 50%; left: 12%; animation-delay: -1.6s; }
+.pts-campus__star--4 { bottom: 30%; right: 14%; animation-delay: -2.2s; width: 12px; height: 12px; }
+.pts-campus__star--5 { bottom: 14%; left: 42%; animation-delay: -3s; width: 10px; height: 10px; }
+.pts-campus__star--6 { top: 18%; right: 40%; animation-delay: -1.1s; }
+.pts-campus__star--7 { top: 72%; left: 48%; animation-delay: -2.7s; width: 11px; height: 11px; }
+.pts-campus__star--8 { top: 40%; right: 32%; animation-delay: -3.5s; width: 9px; height: 9px; }
+
+/* Soft check badges */
+.pts-campus__check {
+  position: absolute;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, #7dba95, #4d8f6d);
+  box-shadow: 0 10px 22px rgba(77, 143, 109, 0.28);
+  animation: pts-campus-pulse 6s ease-in-out infinite;
+  z-index: 3;
+}
+.pts-campus__check::after {
+  content: "";
+  position: absolute;
+  left: 9px; top: 7px;
+  width: 7px; height: 12px;
+  border: solid #fff;
+  border-width: 0 2.5px 2.5px 0;
+  transform: rotate(40deg);
+}
+.pts-campus__check--1 { top: 34%; left: 28%; }
+.pts-campus__check--2 { bottom: 34%; right: 28%; animation-delay: -2.5s; width: 24px; height: 24px; }
+.pts-campus__check--2::after { left: 8px; top: 5px; width: 6px; height: 10px; }
+
+/* Soft glowing orbs */
+.pts-campus__orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1.5px);
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.95), rgba(255,190,205,.4) 48%, transparent 72%);
+  animation: pts-campus-float 14s ease-in-out infinite;
+  z-index: 1;
+}
+.pts-campus__orb--a { width: 120px; height: 120px; top: 18%; left: 22%; opacity: 0.5; }
+.pts-campus__orb--b { width: 88px; height: 88px; bottom: 18%; right: 16%; opacity: 0.42; animation-delay: -4s; background: radial-gradient(circle at 35% 30%, #fff, rgba(232,184,109,.4) 50%, transparent 72%); }
+.pts-campus__orb--c { width: 70px; height: 70px; top: 60%; left: 10%; opacity: 0.38; animation-delay: -7s; background: radial-gradient(circle at 35% 30%, #fff, rgba(170,210,186,.45) 50%, transparent 72%); }
+
+@keyframes pts-campus-bloom {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(16px, -12px) scale(1.07); }
+}
+@keyframes pts-campus-spotlight {
+  0%, 100% { opacity: 0.72; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -52%) scale(1.04); }
+}
+@keyframes pts-campus-grain {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-1%, 1%); }
+}
+@keyframes pts-campus-float {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  40% { transform: translateY(-16px) rotate(4deg); }
+  70% { transform: translateY(8px) rotate(-2deg); }
+}
+@keyframes pts-campus-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+@keyframes pts-campus-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.75) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.2) rotate(12deg); }
+}
+@keyframes pts-campus-path {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 0.85; }
+}
+@keyframes pts-campus-dot {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); box-shadow: 0 0 0 6px rgba(255, 210, 220, 0.45); }
+}
+
+@media (max-width: 720px) {
+  .pts-campus__book--3,
+  .pts-campus__book--4,
+  .pts-campus__tile--2,
+  .pts-campus__tile--4,
+  .pts-campus__cap--3,
+  .pts-campus__cert--3,
+  .pts-campus__play--3,
+  .pts-campus__star--7,
+  .pts-campus__star--8,
+  .pts-campus__path-dot--5 { display: none; }
+  .pts-campus__book,
+  .pts-campus__tile { opacity: 0.8; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pts-campus__bloom,
+  .pts-campus__spotlight,
+  .pts-campus__grain,
+  .pts-campus__book,
+  .pts-campus__tile,
+  .pts-campus__play,
+  .pts-campus__cap,
+  .pts-campus__cert,
+  .pts-campus__mark,
+  .pts-campus__star,
+  .pts-campus__check,
+  .pts-campus__orb,
+  .pts-campus__path,
+  .pts-campus__path-dot {
+    animation: none !important;
+  }
+}
