@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตารางเรียน | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260722f">
+<link rel="stylesheet" href="site.css?v=20260722h">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/comp/attendance-qr.js?v=20260722h"></script>
 </head>
 <body class="pts-body">
 <div id="app-navbar">
@@ -29,7 +31,7 @@
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">My Schedule</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตารางเรียนของฉัน</h1>
-    <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากคอร์สที่คุณสมัครไว้เท่านั้น</p>
+    <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากคอร์สที่คุณสมัครไว้เท่านั้น — คลาส Onsite ให้ใช้ QR จากอีเมลด้านล่าง</p>
     <div id="gcal-bar" class="mt-4 flex flex-wrap items-center gap-2 hidden">
       <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google Calendar</a>
       <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ไปยังปฏิทิน</button>
@@ -37,6 +39,7 @@
       <span id="gcal-note" class="text-sm text-on-surface-variant"></span>
     </div>
   </section>
+  <div id="schedule-attendance-qr" class="pts-attend-qr-panel"></div>
   <div id="schedule-list" class="space-y-3">
     <div class="pts-empty">กำลังโหลดตาราง...</div>
   </div>
@@ -112,6 +115,12 @@ document.getElementById('gcal-connect').onclick = async (e) => {
 async function load() {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
+  if (window.PtsAttendanceQr && me.user && me.user.email) {
+    window.PtsAttendanceQr.mount('#schedule-attendance-qr', {
+      email: me.user.email,
+      name: me.user.name || ''
+    });
+  }
   await loadGcalBar();
   const res = await fetch('/api/my/schedules', { credentials: 'include' });
   const data = await res.json();

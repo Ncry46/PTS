@@ -348,8 +348,8 @@
           <a href="Certificates.html">ใบประกาศ</a>
           <a href="Payments.html">ชำระเงิน</a>
           <a href="Favorites.html">รายการโปรด</a>
-          <a href="Settings.html">ตั้งค่า</a>
-          <a href="Schedule.html">ตารางเรียน</a>`;
+          <a href="Schedule.html">ตารางเรียน / QR Onsite</a>
+          <a href="Settings.html">ตั้งค่า</a>`;
 
     const adminLinks = `
           <a href="Home.html">หน้าแรก</a>

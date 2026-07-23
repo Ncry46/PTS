@@ -3,7 +3,9 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>PTS Learning Dashboard</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260722f">
+<link rel="stylesheet" href="site.css?v=20260722h">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
@@ -280,7 +282,9 @@
 </div>
 </div>
 <!-- Sidebar News<!-- Sidebar News/Notifications (R-Side) -->
-<div class="space-y-lg"><div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="space-y-lg">
+<div id="dash-attendance-qr" class="pts-attend-qr-panel"></div>
+<div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
 <div class="p-md">
 <div class="flex justify-between items-center mb-sm">
 <h3 class="font-label-md text-label-md font-bold text-primary flex items-center gap-xs">
@@ -409,6 +413,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.querySelectorAll('img[alt="User Profile"]').forEach((img) => {
             img.src = avatar;
         });
+
+        if (window.PtsAttendanceQr && status.user.email) {
+          window.PtsAttendanceQr.mount('#dash-attendance-qr', {
+            email: status.user.email,
+            name: status.user.name || '',
+            compact: true
+          });
+        }
     } catch (error) {
         console.error('โหลดข้อมูลผู้ใช้แดชบอร์ดล้มเหลว:', error);
         window.location.href = 'Login.html';

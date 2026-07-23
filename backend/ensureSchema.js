@@ -115,6 +115,16 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
         `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL
          ALTER TABLE dbo.courses_main ADD description NVARCHAR(MAX) NULL`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
+         CREATE TABLE dbo.attendance_logs (
+            log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            employee_id NVARCHAR(255) NOT NULL,
+            scan_timestamp DATETIME NOT NULL CONSTRAINT DF_attendance_scan_ts DEFAULT (GETDATE()),
+            scan_type NVARCHAR(16) NOT NULL,
+            kiosk_device_id NVARCHAR(100) NULL,
+            status NVARCHAR(32) NOT NULL CONSTRAINT DF_attendance_status DEFAULT ('NORMAL'),
+            created_at DATETIME NOT NULL CONSTRAINT DF_attendance_created DEFAULT (GETDATE())
+         )`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'hero_slides')
          CREATE TABLE dbo.hero_slides (
             slide_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

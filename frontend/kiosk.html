@@ -3,64 +3,126 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
-    <title>ตู้ Kiosk ลงเวลาทำงาน</title>
+    <title>ตู้ Kiosk เช็กอิน Onsite | PTS Learning</title>
     <script src="https://unpkg.com/html5-qrcode"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #eceff1; padding: 20px; }
-        .kiosk-box { max-width: 500px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; text-align: center; background: #eceff1; padding: 20px; color: #1c1520; }
+        .kiosk-box { max-width: 520px; margin: auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         #reader { width: 100%; border-radius: 8px; overflow: hidden; }
-        .result { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; display: none; }
+        .result { margin-top: 15px; padding: 15px; border-radius: 8px; font-size: 15px; font-weight: 600; display: none; line-height: 1.5; text-align: left; }
         .success { background: #d4edda; color: #155724; display: block; }
         .error { background: #f8d7da; color: #721c24; display: block; }
+        .warn { background: #fff3cd; color: #856404; display: block; }
+        code { background: #f1f3f5; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+        #api-status { margin: 0 0 12px; padding: 10px 12px; border-radius: 8px; font-size: 13px; text-align: left; line-height: 1.45; }
+        #api-status.ok { background: #e8f5e9; color: #1b5e20; }
+        #api-status.bad { background: #ffebee; color: #b71c1c; }
+        #api-status.checking { background: #eceff1; color: #455a64; }
     </style>
 </head>
 <body>
 
 <div class="kiosk-box">
-    <p style="background:#fff3cd;color:#856404;padding:10px;border-radius:8px;margin-bottom:12px;font-size:14px;">
-        ตัวจำลองสำหรับทดสอบ API เท่านั้น — ตอนใช้งานจริงจะใช้เครื่อง Kiosk ของจริง<br>
-        โดยเครื่องจริงจะเรียก <code>POST /api/attendance/scan</code> ด้วยรูปแบบเดียวกัน
+    <div id="api-status" class="checking">กำลังตรวจการเชื่อมต่อเซิร์ฟเวอร์...</div>
+    <p style="background:#fff3cd;color:#856404;padding:10px;border-radius:8px;margin-bottom:12px;font-size:14px;text-align:left;line-height:1.5;">
+        ตัวจำลองสำหรับทดสอบ API เท่านั้น — ใช้งานจริงใช้เครื่อง Kiosk<br>
+        ต้องเปิดผ่าน <code>http://localhost:3000/kiosk.html</code> และรัน <code>npm start</code> ก่อน<br>
+        สแกน <strong>QR จากอีเมลผู้เรียน</strong> (หน้าแดชบอร์ด / ตารางเรียน)
     </p>
-    <h2>📸 ตู้สแกนลงเวลาเข้า-ออกงาน (Simulator)</h2>
+    <h2>เช็กอินคลาส Onsite</h2>
+    <p style="color:#546e7a;font-size:14px;margin-top:0;">สแกน QR ของผู้เรียนเพื่อบันทึกเข้า/ออก</p>
     <div id="reader"></div>
     <div id="scan-result" class="result"></div>
 </div>
 
 <script>
-    const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-    html5QrcodeScanner.render(onScanSuccess);
+    const resultDiv = document.getElementById('scan-result');
+    const statusEl = document.getElementById('api-status');
+    let scanning = false;
+
+    function showResult(type, html) {
+        resultDiv.className = 'result ' + type;
+        resultDiv.innerHTML = html;
+    }
+
+    async function checkApi() {
+        try {
+            const res = await fetch('/api/users/me', { credentials: 'include' });
+            if (!res.ok && res.status >= 500) throw new Error('server ' + res.status);
+            statusEl.className = 'ok';
+            statusEl.innerHTML = 'เชื่อมต่อเซิร์ฟเวอร์ได้แล้ว — พร้อมสแกน QR';
+            return true;
+        } catch (err) {
+            statusEl.className = 'bad';
+            statusEl.innerHTML =
+                'ติดต่อเซิร์ฟเวอร์ไม่ได้<br>' +
+                '1) ในโฟลเดอร์โปรเจกต์รัน <code>npm start</code><br>' +
+                '2) เปิดหน้านี้ที่ <code>http://localhost:3000/kiosk.html</code><br>' +
+                'อย่าเปิดไฟล์ <code>kiosk.html</code> ตรงจากโฟลเดอร์ (file://)';
+            return false;
+        }
+    }
 
     async function onScanSuccess(decodedText) {
-        // decodedText คือค่าลิงก์ไลน์ที่สแกนได้
-        const resultDiv = document.getElementById('scan-result');
-        
+        if (scanning) return;
+        scanning = true;
+        const email = String(decodedText || '').trim();
+        if (!email) {
+            showResult('error', 'QR ว่างเปล่า');
+            scanning = false;
+            return;
+        }
+
+        showResult('warn', 'กำลังส่งอีเมลไปบันทึก: <code>' + email.replace(/</g, '&lt;') + '</code>');
+
         try {
             const response = await fetch('/api/attendance/scan', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    employee_id: decodedText,
+                    employee_id: email,
                     kiosk_device_id: 'KIOSK_MAIN_CAMERA'
                 })
             });
-            const resData = await response.json();
+
+            let resData = {};
+            try {
+                resData = await response.json();
+            } catch (_) {
+                showResult('error', 'เซิร์ฟเวอร์ตอบกลับไม่ใช่ JSON (HTTP ' + response.status + ')');
+                scanning = false;
+                return;
+            }
 
             if (resData.success) {
-                resultDiv.className = "result success";
-                resultDiv.innerHTML = `✅ บันทึกสำเร็จ!<br>
-                                       👤 คุณ: ${resData.data.employee_name}<br>
-                                       🆔 รหัส: ${resData.data.employee_code} (${resData.data.department})<br>
-                                       ⏰ เวลา: ${resData.data.scan_time} [${resData.data.scan_type}]<br>
-                                       📢 สถานะ: ${resData.data.status}`;
+                showResult('success',
+                    'บันทึกสำเร็จ<br>' +
+                    'คุณ: ' + (resData.data.employee_name || '-') + '<br>' +
+                    'อีเมล: ' + (resData.data.employee_code || email) + ' (' + (resData.data.department || '-') + ')<br>' +
+                    'เวลา: ' + (resData.data.scan_time || '-') + ' [' + (resData.data.scan_type || '-') + ']<br>' +
+                    'สถานะ: ' + (resData.data.status || '-')
+                );
             } else {
-                resultDiv.className = "result error";
-                resultDiv.innerHTML = `❌ ล้มเหลว: ${resData.message}`;
+                showResult('error', 'ล้มเหลว: ' + (resData.message || ('HTTP ' + response.status)));
             }
         } catch (err) {
-            resultDiv.className = "result error";
-            resultDiv.innerHTML = "❌ ไม่สามารถติดต่อเซิร์ฟเวอร์หลังบ้านได้";
+            showResult(
+                'error',
+                'ไม่สามารถติดต่อเซิร์ฟเวอร์หลังบ้านได้<br>' +
+                'ตรวจว่าได้รัน <code>npm start</code> และเปิดหน้านี้ผ่าน<br>' +
+                '<code>http://localhost:3000/kiosk.html</code>'
+            );
+            checkApi();
+        } finally {
+            setTimeout(() => { scanning = false; }, 1200);
         }
     }
+
+    checkApi().then((ok) => {
+        if (!ok) return;
+        const html5QrcodeScanner = new Html5QrcodeScanner('reader', { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
+    });
 </script>
 </body>
 </html>

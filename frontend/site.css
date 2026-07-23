@@ -1349,6 +1349,98 @@ input.pts-pw-input::-ms-clear {
   }
 }
 
+/* —— Onsite attendance QR (email) —— */
+.pts-attend-qr {
+  background: var(--pts-surface, #fff);
+  border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+  border-radius: 22px;
+  box-shadow: var(--pts-shadow-sm, 0 10px 28px rgba(28,21,32,.06));
+  padding: 18px 16px 16px;
+  text-align: center;
+  color: var(--pts-text, #1c1520);
+}
+.pts-attend-qr--empty {
+  padding: 20px;
+  color: var(--pts-muted, #5c4f55);
+  font-size: 14px;
+}
+.pts-attend-qr__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--pts-primary-soft, #f6e6ea);
+  color: var(--pts-primary, #974258);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.pts-attend-qr__chip .material-symbols-outlined { font-size: 16px; }
+.pts-attend-qr__title {
+  margin: 0 0 6px;
+  font-family: var(--pts-display, 'Sora', 'IBM Plex Sans Thai', sans-serif);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--pts-primary, #974258);
+}
+.pts-attend-qr__lead {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--pts-muted, #5c4f55);
+}
+.pts-attend-qr__frame {
+  width: 212px;
+  height: 212px;
+  margin: 0 auto 12px;
+  padding: 8px;
+  border-radius: 18px;
+  background: #fff;
+  border: 1px solid var(--pts-border, rgba(151,66,88,.16));
+  box-shadow: 0 10px 24px rgba(151,66,88,.1);
+  display: grid;
+  place-items: center;
+}
+.pts-attend-qr__frame img,
+.pts-attend-qr__frame canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.pts-attend-qr__meta { margin-bottom: 8px; }
+.pts-attend-qr__name {
+  margin: 0 0 2px;
+  font-size: 14px;
+  font-weight: 700;
+}
+.pts-attend-qr__email {
+  margin: 0;
+  font-size: 13px;
+  color: var(--pts-muted, #5c4f55);
+  word-break: break-all;
+}
+.pts-attend-qr__hint {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--pts-muted, #867275);
+}
+.pts-attend-qr__err {
+  margin: 0;
+  font-size: 13px;
+  color: #ba1a1a;
+}
+.pts-attend-qr--compact .pts-attend-qr__frame {
+  width: 180px;
+  height: 180px;
+}
+.pts-attend-qr-panel {
+  margin-bottom: 20px;
+}
+
 /* —— Light / Dark theme system —— */
 .pts-section-alt {
   background: #fafafa;
