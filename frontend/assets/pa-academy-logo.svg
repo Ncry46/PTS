@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 140" role="img" aria-label="Personal Assistant Academy">
+  <defs>
+    <linearGradient id="paRed" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#e53935"/>
+      <stop offset="100%" stop-color="#b71c1c"/>
+    </linearGradient>
+  </defs>
+  <!-- stylized PA mark -->
+  <path fill="url(#paRed)" d="M28 118 V22 h46 c28 0 46 14 46 38 0 24-18 38-46 38 H52 v20 H28zm24-44 h20 c12 0 20-6 20-14s-8-14-20-14 H52 v28z"/>
+  <path fill="url(#paRed)" d="M128 118 V22 h24 v72 h36 v24 H128z"/>
+  <circle cx="168" cy="30" r="10" fill="#c9a227"/>
+</svg>
