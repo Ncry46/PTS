@@ -132,10 +132,19 @@ function fitCertPreview(root) {
   if (!root) return;
   const cert = root.querySelector('.pts-cert');
   if (!cert) return;
-  const avail = Math.max(280, root.clientWidth - 8);
-  const scale = Math.min(1, avail / 1122);
+  const slot = root.parentElement && root.parentElement.classList.contains('cert-card__preview')
+    ? root.parentElement
+    : root;
+  const availW = Math.max(240, slot.clientWidth || root.clientWidth || 0);
+  const availH = Math.max(0, slot.clientHeight || 0);
+  // Scale certificate to fill the preview/modal slot
+  let scale = availW / 1122;
+  if (availH > 40) {
+    scale = Math.min(availW / 1122, availH / 794);
+  }
   cert.style.transform = `scale(${scale})`;
   cert.style.transformOrigin = 'top center';
+  root.style.width = '100%';
   root.style.height = `${Math.ceil(794 * scale)}px`;
 }
 
