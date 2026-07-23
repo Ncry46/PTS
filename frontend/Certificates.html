@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ใบประกาศนียบัตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260723s">
-<link rel="stylesheet" href="certificates.css?v=20260723s">
+<link rel="stylesheet" href="site.css?v=20260723t">
+<link rel="stylesheet" href="certificates.css?v=20260723t">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&amp;family=Sarabun:wght@300;400;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
@@ -55,8 +55,9 @@
 </div>
 
 <script>
-const PA_LOGO = '/assets/pa-cert-logo.png';
-const PA_STAMP = '/assets/pa-cert-stamp.png';
+/* Exact user assets — do not regenerate or edit these files */
+const PA_LOGO = '/assets/2.png';
+const PA_STAMP = '/assets/2_2.png';
 const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 let userName = '';
@@ -102,7 +103,7 @@ function certificateHtml({ userName, courseName, issuedAt }) {
         <div class="pts-cert__bl-inner" aria-hidden="true"></div>
 
         <div class="pts-cert__logo-wrap">
-          <img class="pts-cert__logo" src="${PA_LOGO}" alt="Personal Assistant Academy" width="220" height="80" decoding="async">
+          <img class="pts-cert__logo" src="${PA_LOGO}" alt="Logo" decoding="async">
         </div>
 
         <div class="pts-cert__content">
@@ -120,7 +121,7 @@ function certificateHtml({ userName, courseName, issuedAt }) {
         </div>
 
         <div class="pts-cert__footer">
-          <img class="pts-cert__stamp" src="${PA_STAMP}" alt="PA Academy stamp" width="120" height="120" decoding="async">
+          <img class="pts-cert__stamp" src="${PA_STAMP}" alt="Stamp" decoding="async">
           <div class="pts-cert__sign-line">PA ACADEMY</div>
         </div>
       </div>
