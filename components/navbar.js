@@ -348,8 +348,6 @@
           <a href="Settings.html" role="menuitem">ตั้งค่า</a>`;
 
     const adminLinks = `
-          <a href="Home.html" role="menuitem">หน้าแรก</a>
-          <a href="Admin.html#courses" role="menuitem">หลักสูตร</a>
           <a href="Admin.html#lessons" role="menuitem">บทเรียน</a>
           <a href="Admin.html#schedules" role="menuitem">ตารางเรียน</a>
           <a href="Admin.html#banners" role="menuitem">แบนเนอร์</a>
