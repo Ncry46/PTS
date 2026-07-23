@@ -1418,6 +1418,8 @@ input.pts-pw-input::-ms-clear {
 .pts-hero-banner__panel.is-active .pts-hero-banner__lead { animation-delay: .24s; }
 .pts-hero-banner__panel.is-active .pts-hero-banner__actions { animation-delay: .34s; }
 .pts-hero-banner__panel.is-active .pts-hero-banner__media {
+  opacity: 1;
+  visibility: visible;
   animation: pts-hero-media-in .9s cubic-bezier(.22,1,.36,1) both;
   animation-delay: .12s;
 }
@@ -1555,11 +1557,13 @@ input.pts-pw-input::-ms-clear {
 .pts-hero-banner__frame img {
   width: 100%;
   height: 100%;
+  min-height: 240px;
   object-fit: cover;
   /* จัดโฟกัสไปที่ใบหน้า/ส่วนบน — ไม่ตัดหัว */
   object-position: center 14%;
   display: block;
   border-radius: 23px;
+  background: #2a1820;
   transform: scale(1.02);
   transform-origin: center 20%;
   transition: transform 1.15s cubic-bezier(.22,1,.36,1);
