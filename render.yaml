@@ -1,0 +1,58 @@
+# Render Blueprint — ขึ้นออนไลน์จาก GitHub ได้ทันที
+# เอกสาร: https://render.com/docs/blueprint-spec
+# วิธีใช้: Dashboard → New → Blueprint → เลือก repo นี้ → branch cursor/go-online-eb8c
+
+services:
+  - type: web
+    name: pts-learning
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /api/health
+    dockerContext: .
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: TRUST_PROXY
+        value: "1"
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: APP_BASE_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SERVER
+        sync: false
+      - key: DB_PORT
+        value: "28914"
+      - key: DB_NAME
+        value: BD_PTS
+      - key: DB_ENCRYPT
+        value: "true"
+      - key: DB_TRUST_CERT
+        value: "true"
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM_NAME
+        value: PTS Learning
+      - key: MAIL_FROM_EMAIL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
