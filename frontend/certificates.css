@@ -592,11 +592,11 @@
     border-radius: 0;
   }
   .pts-cert {
-    width: 297mm !important;
-    height: 210mm !important;
+    width: 1122px !important;
+    height: 794px !important;
     max-width: none !important;
     box-shadow: none !important;
-    padding: 6mm !important;
+    padding: 25px !important;
     page-break-inside: avoid;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
