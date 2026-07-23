@@ -1,0 +1,947 @@
+<!DOCTYPE html><html lang="th" style="">
+        <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
+        <script src="/comp/theme-boot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
+        <link rel="stylesheet" href="site.css?v=20260722k">
+        <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+        <script id="tailwind-config">try{
+                tailwind.config = {
+                        darkMode: "class",
+                        theme: {
+                        extend: {
+                        "colors": {
+                                "surface-container-lowest": "#ffffff",
+                                "on-primary-container": "#591128",
+                                "secondary-fixed-dim": "#b3ceab",
+                                "primary-fixed-dim": "#ffb1c1",
+                                "on-secondary": "#ffffff",
+                                "on-background": "#1a1930",
+                                "tertiary-container": "#55a56b",
+                                "inverse-surface": "#302e46",
+                                "on-secondary-container": "#526b4d",
+                                "surface-container-low": "#f6f1ff",
+                                "primary": "#974258",
+                                "on-primary-fixed-variant": "#7a2b41",
+                                "secondary": "#4c6548",
+                                "primary-container": "#d9778e",
+                                "tertiary": "#166c39",
+                                "surface-container-highest": "#e3dfff",
+                                "on-tertiary-container": "#003617",
+                                "on-secondary-fixed-variant": "#354d31",
+                                "inverse-on-surface": "#f3eeff",
+                                "surface-container-high": "#eae5ff",
+                                "on-primary-fixed": "#3f0017",
+                                "primary-fixed": "#ffd9df",
+                                "tertiary-fixed": "#a2f5b4",
+                                "on-error": "#ffffff",
+                                "on-surface-variant": "#544245",
+                                "surface-variant": "#e3dfff",
+                                "on-secondary-fixed": "#0a2009",
+                                "surface-tint": "#974258",
+                                "surface-dim": "#dbd6f6",
+                                "on-primary": "#ffffff",
+                                "surface-bright": "#fcf8ff",
+                                "outline": "#867275",
+                                "background": "#fcf8ff",
+                                "surface-container": "#f0ebff",
+                                "surface": "#fcf8ff",
+                                "error": "#ba1a1a",
+                                "on-tertiary": "#ffffff",
+                                "on-tertiary-fixed-variant": "#005227",
+                                "on-surface": "#1a1930",
+                                "on-error-container": "#93000a",
+                                "inverse-primary": "#ffb1c1",
+                                "outline-variant": "#d9c1c4",
+                                "on-tertiary-fixed": "#00210c",
+                                "error-container": "#ffdad6",
+                                "secondary-container": "#ceeac5",
+                                "tertiary-fixed-dim": "#87d899",
+                                "secondary-fixed": "#ceeac5"
+                        },
+                        "borderRadius": {
+                                "DEFAULT": "0.25rem",
+                                "lg": "0.5rem",
+                                "xl": "0.75rem",
+                                "2xl": "24px",
+                                "full": "9999px"
+                        },
+                        "spacing": {
+                                "xs": "4px",
+                                "xl": "80px",
+                                "container-max": "1200px",
+                                "lg": "48px",
+                                "sm": "12px",
+                                "md": "24px",
+                                "gutter": "24px",
+                                "margin-mobile": "16px",
+                                "base": "8px"
+                        },
+                        "fontFamily": {
+                                "body-lg": ["IBM Plex Sans Thai"],
+                                "body-sm": ["IBM Plex Sans Thai"],
+                                "body-md": ["IBM Plex Sans Thai"],
+                                "label-md": ["IBM Plex Sans Thai"],
+                                "headline-md": ["IBM Plex Sans Thai"],
+                                "headline-xl": ["IBM Plex Sans Thai"],
+                                "headline-lg": ["IBM Plex Sans Thai"],
+                                "headline-lg-mobile": ["IBM Plex Sans Thai"],
+                                "headline-sm": ["IBM Plex Sans Thai"]
+                        },
+                        "fontSize": {
+                                "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                                "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                                "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                                "label-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}],
+                                "headline-md": ["24px", {"lineHeight": "34px", "fontWeight": "600"}],
+                                "headline-xl": ["40px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                                "headline-lg": ["32px", {"lineHeight": "44px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                                "headline-lg-mobile": ["28px", {"lineHeight": "38px", "fontWeight": "600"}],
+                                "headline-sm": ["20px", {"lineHeight": "28px", "fontWeight": "600"}]
+                        }
+                        },
+                        },
+                }
+                }catch(_e){}</script></head>
+<body class="pts-body bg-background text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed" data-mode="connect">
+<!-- TopNavBar -->
+<div id="app-navbar">
+  <nav class="pts-topnav" aria-label="เมนูหลัก" style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        <span>
+          <div style="font-weight:700;font-size:15px;">PTS Learning</div>
+          <div style="font-size:11px;color:#6b5c62;">Personal Assistant Academy</div>
+        </span>
+      </a>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <a href="Login.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(151,66,88,.28);color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:#974258;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<main>
+<!-- Hero Banner Carousel — loaded from /api/hero-slides (admin-managed) -->
+<section class="pts-hero-banner" data-theme="rose" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+  <div class="pts-hero-banner__wash" aria-hidden="true">
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--a"></span>
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--b"></span>
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--c"></span>
+    <span class="pts-hero-banner__orb pts-hero-banner__orb--d"></span>
+    <span class="pts-hero-banner__beam"></span>
+    <span class="pts-hero-banner__mesh"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--1"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--2"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--3"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--4"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--5"></span>
+    <span class="pts-hero-banner__spark pts-hero-banner__spark--6"></span>
+    <span class="pts-hero-banner__ring pts-hero-banner__ring--a"></span>
+    <span class="pts-hero-banner__ring pts-hero-banner__ring--b"></span>
+    <span class="pts-hero-banner__dust"></span>
+    <span class="pts-hero-banner__flare" id="hero-flare"></span>
+    <span class="pts-hero-banner__burst" id="hero-burst"></span>
+  </div>
+  <div class="pts-hero-banner__stage" id="hero-stage-wrap" data-pts-hero-tilt>
+    <div class="pts-hero-banner__shine" aria-hidden="true"></div>
+    <div class="pts-hero-banner__glint" aria-hidden="true"></div>
+    <div class="pts-hero-banner__viewport" id="hero-stage"></div>
+    <div class="pts-hero-banner__nav" role="group" aria-label="สลับแบนเนอร์">
+      <button type="button" class="pts-hero-banner__arrow" id="hero-prev" aria-label="แบนเนอร์ก่อนหน้า">
+        <span class="material-symbols-outlined">chevron_left</span>
+      </button>
+      <div class="pts-hero-banner__dots" id="hero-dots" role="tablist" aria-label="เลือกแบนเนอร์"></div>
+      <button type="button" class="pts-hero-banner__arrow" id="hero-next" aria-label="แบนเนอร์ถัดไป">
+        <span class="material-symbols-outlined">chevron_right</span>
+      </button>
+      <p class="pts-hero-banner__count" id="hero-count" aria-live="polite"><span>01</span></p>
+    </div>
+    <div class="pts-hero-banner__progress" aria-hidden="true">
+      <span class="pts-hero-banner__progress-bar" id="hero-progress"></span>
+    </div>
+  </div>
+</section>
+<!-- Choose Learning Type Section -->
+<section class="py-xl bg-surface">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl">เลือกประเภทการเรียน</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<!-- Card 1: Online -->
+<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+<div class="w-16 h-16 bg-tertiary-container/10 rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-tertiary text-[32px]">laptop_mac</span>
+</div>
+<div class="flex items-center gap-xs mb-sm">
+<span class="w-3 h-3 rounded-full bg-tertiary"></span>
+<span class="font-headline-sm text-headline-sm text-tertiary">Online</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา ดูวิดีโอและ Live ผ่านระบบ</p>
+
+</div>
+<!-- Card 2: Onsite -->
+<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+<div class="w-16 h-16 bg-primary-container/10 rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-primary text-[32px]">business</span>
+</div>
+<div class="flex items-center gap-xs mb-sm">
+<span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span>
+<span class="font-headline-sm text-headline-sm text-[#f59e0b]">Onsite</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">เรียนที่ PTS Academy เช็กอินและเช็กเอาต์ผ่าน QR Code ได้รับใบประกาศเมื่อเรียนครบ</p>
+
+</div>
+<!-- Card 3: Hybrid -->
+<div class="bg-surface-container-lowest p-lg rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center group hover:-translate-y-1 transition-transform">
+<div class="w-16 h-16 bg-secondary-container/20 rounded-full flex items-center justify-center mb-md">
+<span class="material-symbols-outlined text-secondary text-[32px]">sync_alt</span>
+</div>
+<div class="flex items-center gap-xs mb-sm">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="font-headline-sm text-headline-sm text-secondary">Hybrid</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">เรียนออนไลน์ควบคู่กับการเข้าเรียนที่สถานที่จริง มีทั้งวิดีโอ บทเรียน และกิจกรรมภาคปฏิบัติ</p>
+
+</div>
+</div>
+</div>
+</section>
+<!-- Why Choose PTS Learning Section -->
+<section class="py-xl bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl">ทำไมต้องเลือก PTS Learning</h2>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
+<div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined text-primary">diversity_3</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">รองรับ Online, Onsite และ Hybrid</h3>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-secondary-container/5 transition-colors">
+<div class="w-14 h-14 bg-secondary-container rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined text-secondary">database</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">เรียนผ่านระบบเดียว</h3>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-tertiary-container/5 transition-colors">
+<div class="w-14 h-14 bg-tertiary-container text-white rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined">trending_up</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">ติดตามความก้าวหน้าการเรียน</h3>
+</div>
+<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
+<div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
+<span class="material-symbols-outlined text-primary">verified</span>
+</div>
+<h3 class="font-label-md text-label-md font-bold text-on-surface">รับใบประกาศอัตโนมัติเมื่อผ่านเงื่อนไข</h3>
+</div>
+</div>
+</div>
+</section>
+<!-- Featured Courses (Recommended) -->
+<section class="py-xl pts-section-alt">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
+<div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
+<div class="text-left">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำ</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ข้อมูลจากระบบจริง อัปเดตตามหลักสูตรในฐานข้อมูล</p>
+</div>
+<a href="Courses.html" class="flex items-center gap-sm text-primary font-bold group">
+                ดูทั้งหมด
+                <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</a>
+</div>
+<div class="flex flex-wrap gap-sm mb-lg" id="home-course-filters">
+<button type="button" data-mode="" class="home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
+<button type="button" data-mode="online" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
+<button type="button" data-mode="onsite" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
+<button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
+</div>
+</div>
+<div id="home-courses" class="max-w-container-max mx-auto px-margin-mobile md:px-lg grid grid-cols-1 md:grid-cols-3 gap-md">
+  <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
+</div>
+</section>
+<!-- Learning Steps (How to Start) -->
+<section class="py-xl bg-surface">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-background">เริ่มต้นเรียนได้ 3 รูปแบบ</h2>
+</div>
+<div class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md">
+<!-- Step 1 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">1</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">เลือกหลักสูตร</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">เลือกวิชาที่คุณสนใจ</p>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">2</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">ลงทะเบียน</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ชำระเงินผ่านระบบ QR Code</p>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">3</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">Online / Onsite / Hybrid</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">เข้าเรียนตามรูปแบบที่เลือก</p>
+</div>
+<!-- Step 4 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">4</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">เรียนจบ</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ผ่านเกณฑ์แบบทดสอบ</p>
+</div>
+<!-- Step 5 -->
+<div class="flex flex-col items-center text-center">
+<div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">5</div>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface">รับใบประกาศ</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant">ขอรับใบเซอร์ฯ ดิจิทัลได้ทันที</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Testimonials -->
+<section class="py-xl bg-surface-container-low">
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">เสียงจากผู้เรียนของเรา</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">ความประทับใจจริงจากศิษย์เก่า PTS Learning</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
+<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
+<div class="flex gap-xs mb-md">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"เนื้อหาเข้าใจง่ายมากค่ะ นำไปปรับใช้กับการทำงานจริงได้ทันที โดยเฉพาะเรื่องการจัดตารางงานที่เคยเป็นจุดอ่อน ตอนนี้ทำงานได้เป็นระบบขึ้นมาก"</p>
+<div class="flex items-center gap-sm">
+<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-t9bUuCZPS8uXr-TWSmidD9sEyP8awhLxcxOvGCt7LtTpwAyU6rAY4FMlyzpCaBt5Szxq_rx8QrGYwmEXOqiSMyZvrC1UCcBGEGBIxsvd4NnPNQuy2aez2u5T_7X2yl-9UlYa8aX6jil8ErQGoKR9K2XWCk13Z2rpf7cNUQKnIEXoyGuwKumYSxrcRXDsg69Elgsb77tcqvMISdMeYj_G-ZlU2sEXMjvhfawBexuxv3VveUmHgTdJeA">
+<div>
+<p class="font-label-md text-label-md font-bold">คุณแพรววา</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Personal Assistant @ Tech Startup</p>
+</div>
+</div>
+</div>
+<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
+<div class="flex gap-xs mb-md">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"ชอบระบบตารางเรียนมากค่ะ ทำให้คนทำงานประจำอย่างเราจัดเวลาเรียนได้เอง ไม่กดดัน แถมใบเซอร์ฯ ยังช่วยให้ได้ปรับตำแหน่งด้วยค่ะ"</p>
+<div class="flex items-center gap-sm">
+<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxbws15uj-fkCaFv6ZWYGvYgp68J0dauCLb-Pux4LNfs_MBDCk9g_176-lMyqVI4NY6eGXvZ_HCSBhZW5mg-eDhTr7vUF3O7Rh8CgGTpjyOesTk9Q5vxdkZrwnrzoEFcbkmH_BEJX9DyrHhyAJrAwfcTFV88ZV2qGv0aEKbYCShZPK6ok-0OjH1o8FR7XWaJuwqnafvLQbin7jxLwOjOJduuRbJ0DjSFs8cy7fILfbGSWdC1lOArecDA">
+<div>
+<p class="font-label-md text-label-md font-bold">คุณมินตรา</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Executive Secretary</p>
+</div>
+</div>
+</div>
+<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
+<div class="flex gap-xs mb-md">
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"ความรู้ที่ได้จากหลักสูตร Digital Tools ช่วยประหยัดเวลาทำงานได้เยอะมากค่ะ ระบบเว็บก็ใช้งานง่าย ลื่นไหลมาก แนะนำเลยค่ะ"</p>
+<div class="flex items-center gap-sm">
+<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2CSIg4SXi-ZVHfhgpezFcUa2tM_LG2RTz_t1-rEh7S6nYVKc9lzNE5DHVdV7pUrdwk5Zaj9f9dMC6wtPgMTNQYEY6gFFWbVa5Uoh94JYu6YwEAYZ_kSgnPH4imKG9WsqpW_3k4BG7P-dLk4qdF92dvXFhIXOm_OP3fJ4D4zZx4ZfvsgpBZvQAVPZMU7t1wIJV1khHZ7S-nu7cShoTkjohP0TCLi5oVWf-6KdInNLAKaTbBuxL0n4IRQ">
+<div>
+<p class="font-label-md text-label-md font-bold">คุณรินรดา</p>
+<p class="font-label-md text-label-md text-on-surface-variant italic">Virtual Assistant (Freelance)</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- FAQ Section -->
+<section class="py-xl bg-surface">
+<div class="max-w-2xl mx-auto px-margin-mobile md:px-lg">
+<div class="text-center mb-xl">
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">คำถามที่พบบ่อย (FAQ)</h2>
+</div>
+<div class="space-y-sm">
+<details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
+<summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
+<span class="font-headline-sm text-headline-sm text-on-surface">หลักสูตรมีอายุการใช้งานกี่วัน?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+                        คุณสามารถเข้าเรียนได้ตลอดชีพ (Lifetime Access) ไม่มีวันหมดอายุ เพื่อให้คุณได้กลับมาทบทวนความรู้ได้เสมอ
+                    </div>
+</details>
+<details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
+<summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
+<span class="font-headline-sm text-headline-sm text-on-surface">มีการสอบเพื่อรับใบประกาศหรือไม่?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+                        ใช่ค่ะ ในแต่ละหลักสูตรจะมีแบบทดสอบหลังเรียนจบ คุณต้องทำคะแนนให้ผ่านเกณฑ์ที่กำหนดเพื่อขอรับใบประกาศนียบัตรดิจิทัล
+                    </div>
+</details>
+<details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
+<summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
+<span class="font-headline-sm text-headline-sm text-on-surface">สามารถขอใบกำกับภาษีได้ไหม?</span>
+<span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
+</summary>
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+                        ได้ค่ะ ท่านสามารถระบุข้อมูลการขอใบกำกับภาษีได้ในขั้นตอนการชำระเงิน หรือติดต่อทีมงาน Support ผ่าน Line OA
+                    </div>
+</details>
+</div>
+</div>
+</section>
+<!-- Final CTA Section -->
+<section class="py-xl max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
+<div class="bg-primary text-on-primary rounded-2xl p-lg md:p-xl flex flex-col md:flex-row items-center justify-between gap-lg relative overflow-hidden">
+<div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+<div class="relative z-10 text-center md:text-left space-y-sm">
+<h2 class="font-headline-lg text-headline-lg">พร้อมยกระดับอาชีพของคุณแล้วหรือยัง?</h2>
+<p class="font-body-lg text-body-lg text-white/80">เริ่มเรียนรู้วันนี้เพื่อก้าวสู่การเป็นมืออาชีพที่ใครๆ ก็ต้องการตัว</p>
+</div>
+<div class="relative z-10">
+<button class="px-xl py-4 bg-white text-primary rounded-full font-headline-sm text-headline-sm hover:bg-surface-bright active:scale-95 transition-all shadow-xl" onclick="location.href='Courses.html'">สมัครเรียนตอนนี้</button>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-highest w-full py-lg mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-lg gap-md max-w-container-max mx-auto">
+<div class="space-y-sm text-center md:text-left">
+<img alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain mx-auto md:mx-0" src="https://lh3.googleusercontent.com/aida/AP1WRLuMaoVMkkHPOqMuezhx_admymCweA1objiv0OHkPk-lTEzaUuVOlfWWBzt6yMdTNnZqQKzwO1q6jfoIdrhA_MQbNDdQvtgUzkqwMzriL4RqAW25IS6Kog1IFRW-TPC7jBiZb5CpAYL_V06l4Xekg0kGPa_LoMJwbVOmGSgp4FsJkui_aupBGRggcJ-Z2bc784Hf3Rz-g401nq9ei08h0a64KIgoSi5j1LwgO5ZBAIf0vHREbfvD0R5v2sc">
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ เพื่อความก้าวหน้าในสายงานอย่างยั่งยืน</p>
+</div>
+<div class="flex flex-wrap justify-center gap-md">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">เกี่ยวกับเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">นโยบายความเป็นส่วนตัว</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">ติดต่อเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="#">LINE OA Support</a>
+</div>
+<div class="flex gap-sm">
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary">public</span>
+</div>
+<div class="w-10 h-10 bg-surface rounded-full flex items-center justify-center hover:bg-primary-fixed transition-colors cursor-pointer">
+<span class="material-symbols-outlined text-primary">mail</span>
+</div>
+</div>
+</div>
+<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mt-lg pt-md border-t border-outline-variant/30 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant/70">© 2024 PTS Learning. All Rights Reserved.</p>
+</div>
+</footer>
+<!-- BottomNavBar for Mobile -->
+<div class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface/95 backdrop-blur-lg lg:hidden rounded-t-xl shadow-lg">
+<button class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full p-2 w-12 h-12 active:scale-90 transition-transform">
+<span class="material-symbols-outlined">home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-1">
+<span class="material-symbols-outlined">play_circle</span>
+<span class="text-[10px] font-label-md">เรียน</span>
+</button>
+<button class="flex flex-col items-center justify-center text-on-surface-variant p-1">
+<span class="material-symbols-outlined">event_note</span>
+<span class="text-[10px] font-label-md">ปฏิทิน</span>
+</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', async () => {
+  const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const grid = document.getElementById('home-courses');
+  let allCourses = [];
+  let activeMode = '';
+
+  // Hero banner — premium sliding carousel from /api/hero-slides
+  (async function loadHeroBanner() {
+    const stage = document.getElementById('hero-stage');
+    const stageWrap = document.getElementById('hero-stage-wrap');
+    const dotsBox = document.getElementById('hero-dots');
+    const prevBtn = document.getElementById('hero-prev');
+    const nextBtn = document.getElementById('hero-next');
+    const progressBar = document.getElementById('hero-progress');
+    const countEl = document.getElementById('hero-count');
+    const banner = document.querySelector('.pts-hero-banner');
+    const nav = document.querySelector('.pts-hero-banner__nav');
+    if (!stage || !dotsBox) return;
+
+    const ALLOWED_ICONS = new Set([
+      'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
+      'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
+    ]);
+    const ALLOWED_THEMES = new Set(['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset', 'custom']);
+    const INTERVAL = 7000;
+
+    function normalizeTheme(theme) {
+      const t = String(theme || '').trim().toLowerCase();
+      return ALLOWED_THEMES.has(t) ? t : 'rose';
+    }
+
+    function parseHexColor(value) {
+      const m = String(value || '').trim().match(/^#?([0-9a-fA-F]{6})$/);
+      if (!m) return null;
+      const hex = `#${m[1].toLowerCase()}`;
+      const n = parseInt(m[1], 16);
+      return {
+        hex,
+        r: (n >> 16) & 255,
+        g: (n >> 8) & 255,
+        b: n & 255
+      };
+    }
+
+    function applyTheme(theme, themeColor) {
+      if (!banner) return;
+      const t = normalizeTheme(theme);
+      const custom = t === 'custom' ? parseHexColor(themeColor) : null;
+      if (custom) {
+        banner.dataset.theme = 'custom';
+        banner.style.setProperty('--hero-c', custom.hex);
+        banner.style.setProperty('--hero-c-rgb', `${custom.r}, ${custom.g}, ${custom.b}`);
+      } else {
+        banner.dataset.theme = t === 'custom' ? 'rose' : t;
+        banner.style.removeProperty('--hero-c');
+        banner.style.removeProperty('--hero-c-rgb');
+      }
+    }
+
+    function renderTitle(title, highlight) {
+      const raw = String(title || '');
+      const h = String(highlight || '').trim();
+      if (!h) return escapeHtml(raw);
+      const idx = raw.indexOf(h);
+      if (idx < 0) return escapeHtml(raw);
+      return escapeHtml(raw.slice(0, idx))
+        + '<span>' + escapeHtml(h) + '</span>'
+        + escapeHtml(raw.slice(idx + h.length));
+    }
+
+    function isRegisterHref(href) {
+      return /Register\.html/i.test(String(href || ''));
+    }
+
+    function panelHtml(slide, index) {
+      const icon = ALLOWED_ICONS.has(slide.badge_icon) ? slide.badge_icon : 'check_circle';
+      const actions = [];
+      if (slide.cta_primary_label && slide.cta_primary_href) {
+        actions.push(`<a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="${escapeHtml(slide.cta_primary_href)}">${escapeHtml(slide.cta_primary_label)}</a>`);
+      }
+      if (slide.cta_secondary_label && slide.cta_secondary_href) {
+        const reg = isRegisterHref(slide.cta_secondary_href) ? ' home-register-btn' : '';
+        actions.push(`<a class="pts-btn pts-btn-outline${reg}" href="${escapeHtml(slide.cta_secondary_href)}">${escapeHtml(slide.cta_secondary_label)}</a>`);
+      }
+      const badge = (slide.badge_title || slide.badge_subtitle) ? `
+        <div class="pts-hero-banner__badge">
+          <span class="pts-hero-banner__badge-icon">
+            <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">${icon}</span>
+          </span>
+          <span>
+            <strong>${escapeHtml(slide.badge_title || '')}</strong>
+            <small>${escapeHtml(slide.badge_subtitle || '')}</small>
+          </span>
+        </div>` : '';
+
+      return `
+        <article class="pts-hero-banner__panel${index === 0 ? ' is-active' : ''}" data-slide="${index}" data-dir="next" aria-hidden="${index === 0 ? 'false' : 'true'}">
+          <div class="pts-hero-banner__inner">
+            <div class="pts-hero-banner__copy">
+              ${slide.eyebrow ? `<p class="pts-hero-banner__eyebrow">${escapeHtml(slide.eyebrow)}</p>` : ''}
+              <h1 class="pts-hero-banner__title">${renderTitle(slide.title, slide.title_highlight)}</h1>
+              ${slide.lead ? `<p class="pts-hero-banner__lead">${escapeHtml(slide.lead)}</p>` : ''}
+              ${actions.length ? `<div class="pts-hero-banner__actions">${actions.join('')}</div>` : ''}
+            </div>
+            <div class="pts-hero-banner__media">
+              <figure class="pts-hero-banner__frame">
+                <img
+                  src="${escapeHtml(slide.image_url || '')}"
+                  alt="${escapeHtml(slide.image_alt || '')}"
+                  width="960" height="1200" decoding="async"
+                  style="object-position:center 14%"
+                  ${index === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}>
+              </figure>
+              ${badge}
+            </div>
+          </div>
+        </article>`;
+    }
+
+    let slidesData = [];
+    try {
+      const res = await fetch('/api/hero-slides').then((r) => r.json());
+      if (res.success && Array.isArray(res.data)) slidesData = res.data;
+    } catch (err) {
+      console.error('hero slides', err);
+    }
+
+    if (!slidesData.length) {
+      if (nav) nav.hidden = true;
+      if (progressBar && progressBar.parentElement) progressBar.parentElement.hidden = true;
+      applyTheme('rose');
+      stage.innerHTML = `
+        <article class="pts-hero-banner__panel is-active" data-slide="0" aria-hidden="false">
+          <div class="pts-hero-banner__inner">
+            <div class="pts-hero-banner__copy">
+              <p class="pts-hero-banner__eyebrow">PTS Learning</p>
+              <h1 class="pts-hero-banner__title">ยกระดับทักษะ <span>Personal Assistant</span></h1>
+              <p class="pts-hero-banner__lead">กำลังเตรียมแบนเนอร์ — แอดมินสามารถเพิ่มได้ที่หน้า Admin</p>
+              <div class="pts-hero-banner__actions">
+                <a class="pts-btn pts-btn-primary pts-hero-banner__cta" href="Courses.html">ดูหลักสูตร</a>
+              </div>
+            </div>
+          </div>
+        </article>`;
+      return;
+    }
+
+    stage.innerHTML = slidesData.map(panelHtml).join('');
+    applyTheme(slidesData[0].theme, slidesData[0].theme_color);
+
+    const slides = Array.from(stage.querySelectorAll('.pts-hero-banner__panel'));
+    if (slides.length < 2) {
+      if (nav) nav.hidden = true;
+      if (progressBar && progressBar.parentElement) progressBar.parentElement.hidden = true;
+      if (countEl) countEl.hidden = true;
+      return;
+    }
+
+    let index = 0;
+    let timer = null;
+    let animLock = false;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (banner) banner.style.setProperty('--hero-interval', INTERVAL + 'ms');
+
+    dotsBox.innerHTML = '';
+    slides.forEach((_, i) => {
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.className = 'pts-hero-banner__dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('role', 'tab');
+      dot.setAttribute('aria-label', 'แบนเนอร์ที่ ' + (i + 1));
+      dot.setAttribute('aria-selected', i === 0 ? 'true' : 'false');
+      dot.addEventListener('click', () => goTo(i, true));
+      dotsBox.appendChild(dot);
+    });
+
+    const dots = Array.from(dotsBox.querySelectorAll('.pts-hero-banner__dot'));
+
+    function restartProgress() {
+      if (!progressBar || reduceMotion) return;
+      progressBar.classList.remove('is-running', 'is-paused');
+      void progressBar.offsetWidth;
+      progressBar.classList.add('is-running');
+    }
+
+    function pauseProgress(paused) {
+      if (!progressBar) return;
+      progressBar.classList.toggle('is-paused', !!paused);
+    }
+
+    function updateCount(i) {
+      if (!countEl) return;
+      const label = String(i + 1).padStart(2, '0');
+      countEl.innerHTML = `<span>${label}</span>`;
+      countEl.classList.remove('is-flip');
+      void countEl.offsetWidth;
+      countEl.classList.add('is-flip');
+    }
+
+    function spawnBurst() {
+      const box = document.getElementById('hero-burst');
+      if (!box || reduceMotion) return;
+      box.innerHTML = '';
+      for (let n = 0; n < 14; n++) {
+        const d = document.createElement('span');
+        d.className = 'pts-hero-banner__burst-dot';
+        const x = 20 + Math.random() * 60;
+        const y = 25 + Math.random() * 50;
+        const bx = (Math.random() * 160 - 80).toFixed(0) + 'px';
+        const by = (Math.random() * -120 - 20).toFixed(0) + 'px';
+        d.style.left = x + '%';
+        d.style.top = y + '%';
+        d.style.setProperty('--bx', bx);
+        d.style.setProperty('--by', by);
+        d.style.animationDelay = (Math.random() * 0.18).toFixed(2) + 's';
+        d.style.width = (4 + Math.random() * 5).toFixed(0) + 'px';
+        d.style.height = d.style.width;
+        box.appendChild(d);
+      }
+      window.setTimeout(() => { box.innerHTML = ''; }, 1100);
+    }
+
+    function pulseSwitch() {
+      if (!banner || reduceMotion) return;
+      banner.classList.add('is-switching');
+      spawnBurst();
+      window.clearTimeout(pulseSwitch._t);
+      pulseSwitch._t = window.setTimeout(() => banner.classList.remove('is-switching'), 780);
+    }
+
+    function goTo(nextIdx, userAction, forcedDir) {
+      if (animLock) return;
+      const target = (nextIdx + slides.length) % slides.length;
+      if (target === index) {
+        if (userAction) restart();
+        return;
+      }
+
+      const delta = ((target - index) % slides.length + slides.length) % slides.length;
+      const direction = forcedDir || (delta <= slides.length / 2 ? 'next' : 'prev');
+
+      animLock = true;
+      const current = slides[index];
+      const incoming = slides[target];
+
+      current.classList.remove('is-active');
+      current.classList.add('is-leaving');
+      current.dataset.dir = direction;
+      current.setAttribute('aria-hidden', 'true');
+
+      incoming.dataset.dir = direction;
+      incoming.dataset.prep = direction;
+      void incoming.offsetWidth;
+      incoming.classList.add('is-active');
+      incoming.setAttribute('aria-hidden', 'false');
+
+      dots.forEach((dot, i) => {
+        const on = i === target;
+        dot.classList.toggle('is-active', on);
+        dot.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+
+      applyTheme(slidesData[target]?.theme, slidesData[target]?.theme_color);
+      index = target;
+      updateCount(index);
+      pulseSwitch();
+      restartProgress();
+
+      window.setTimeout(() => {
+        current.classList.remove('is-leaving');
+        delete current.dataset.prep;
+        delete incoming.dataset.prep;
+        animLock = false;
+      }, reduceMotion ? 0 : 720);
+
+      if (userAction) restart();
+    }
+
+    function next() { goTo(index + 1, false, 'next'); }
+    function prev() { goTo(index - 1, false, 'prev'); }
+
+    function stop() {
+      if (timer) { clearInterval(timer); timer = null; }
+      pauseProgress(true);
+    }
+
+    function start() {
+      if (reduceMotion) return;
+      stop();
+      pauseProgress(false);
+      restartProgress();
+      timer = setInterval(next, INTERVAL);
+    }
+
+    function restart() { stop(); start(); }
+
+    prevBtn?.addEventListener('click', () => { prev(); restart(); });
+    nextBtn?.addEventListener('click', () => { next(); restart(); });
+    banner?.addEventListener('mouseenter', stop);
+    banner?.addEventListener('mouseleave', start);
+    banner?.addEventListener('focusin', stop);
+    banner?.addEventListener('focusout', (e) => {
+      if (!banner.contains(e.relatedTarget)) start();
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) stop();
+      else start();
+    });
+
+    // Touch swipe
+    let touchX = 0;
+    let touchY = 0;
+    stage.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0];
+      touchX = t.clientX;
+      touchY = t.clientY;
+    }, { passive: true });
+    stage.addEventListener('touchend', (e) => {
+      const t = e.changedTouches[0];
+      const dx = t.clientX - touchX;
+      const dy = t.clientY - touchY;
+      if (Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy)) return;
+      if (dx < 0) next();
+      else prev();
+      restart();
+    }, { passive: true });
+
+    // Pointer tilt + layered parallax + light follow + magnetic arrows
+    if (stageWrap && !reduceMotion) {
+      let raf = 0;
+      stageWrap.addEventListener('pointermove', (e) => {
+        const rect = stageWrap.getBoundingClientRect();
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          const rx = (0.5 - py) * 8;
+          const ry = (px - 0.5) * 11;
+          const parx = (px - 0.5) * 26;
+          const pary = (py - 0.5) * 16;
+          stageWrap.style.transform = `perspective(1100px) rotateX(${rx.toFixed(2)}deg) rotateY(${ry.toFixed(2)}deg) translateZ(8px)`;
+          stageWrap.style.setProperty('--hero-mx', (px * 100).toFixed(1) + '%');
+          stageWrap.style.setProperty('--hero-my', (py * 100).toFixed(1) + '%');
+          stageWrap.style.setProperty('--hero-parx', parx.toFixed(1) + 'px');
+          stageWrap.style.setProperty('--hero-pary', pary.toFixed(1) + 'px');
+        });
+      });
+      stageWrap.addEventListener('pointerleave', () => {
+        cancelAnimationFrame(raf);
+        stageWrap.style.transform = '';
+        stageWrap.style.setProperty('--hero-parx', '0px');
+        stageWrap.style.setProperty('--hero-pary', '0px');
+      });
+
+      [prevBtn, nextBtn].forEach((btn) => {
+        if (!btn) return;
+        btn.addEventListener('pointermove', (e) => {
+          const r = btn.getBoundingClientRect();
+          const x = ((e.clientX - r.left) / r.width - 0.5) * 10;
+          const y = ((e.clientY - r.top) / r.height - 0.5) * 10;
+          btn.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scale(1.08)`;
+        });
+        btn.addEventListener('pointerleave', () => { btn.style.transform = ''; });
+      });
+    }
+
+    // Keyboard arrows when hero is in view
+    document.addEventListener('keydown', (e) => {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+      const tag = (e.target && e.target.tagName) || '';
+      if (/INPUT|TEXTAREA|SELECT/.test(tag)) return;
+      if (e.key === 'ArrowLeft') prev();
+      else next();
+      restart();
+    });
+
+    updateCount(0);
+    start();
+  })();
+
+  // ซ่อนปุ่มสมัครสมาชิกใน hero เมื่อล็อกอินแล้ว
+  try {
+    const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+    if (me.loggedIn) {
+      document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
+    }
+  } catch (_) {}
+
+  // Re-hide register buttons after hero loads (hero is async)
+  setTimeout(() => {
+    fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).then((me) => {
+      if (me.loggedIn) document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
+    }).catch(() => {});
+  }, 800);
+
+  const modeBadge = (mode) => {
+    const m = String(mode || 'online').toLowerCase();
+    if (m === 'onsite') return 'bg-[#f59e0b]';
+    if (m === 'hybrid') return 'bg-secondary';
+    return 'bg-tertiary';
+  };
+
+  const renderCourses = () => {
+    if (!grid) return;
+    const list = allCourses.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
+    if (!list.length) {
+      grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">ยังไม่มีหลักสูตรในระบบ · <a class="text-primary font-bold" href="Courses.html">ดูหน้าหลักสูตร</a></div>';
+      return;
+    }
+    grid.innerHTML = list.map(c => {
+      const mode = String(c.delivery_mode || 'online');
+      const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
+      const price = Number(c.price || 0).toLocaleString('th-TH');
+      const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
+      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group block">
+        <div class="relative h-48 overflow-hidden">
+          <img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${img}">
+          <div class="absolute top-4 left-4">
+            <div class="${modeBadge(mode)} text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
+              <span class="w-2 h-2 rounded-full bg-white"></span> ${escapeHtml(mode)}
+            </div>
+          </div>
+        </div>
+        <div class="p-md">
+          <div class="flex items-center gap-xs mb-sm text-on-surface-variant">
+            <span class="material-symbols-outlined text-sm text-primary">person</span>
+            <span class="font-label-md text-label-md">${escapeHtml(c.instructor_name || '-')}</span>
+            <span class="mx-2 text-outline-variant">|</span>
+            <span class="material-symbols-outlined text-sm text-primary">schedule</span>
+            <span class="font-label-md text-label-md">${escapeHtml(hours)}</span>
+          </div>
+          <h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">${escapeHtml(c.course_name)}</h4>
+          <div class="flex items-center justify-between mt-auto">
+            <span class="text-primary font-bold text-headline-sm">฿${price}</span>
+            <span class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md">รายละเอียด</span>
+          </div>
+        </div>
+      </a>`;
+    }).join('');
+  };
+
+  document.querySelectorAll('.home-filter').forEach(btn => {
+    btn.addEventListener('click', () => {
+      activeMode = btn.dataset.mode || '';
+      document.querySelectorAll('.home-filter').forEach(b => {
+        b.className = 'home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md';
+      });
+      btn.className = 'home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm';
+      renderCourses();
+    });
+  });
+
+  try {
+    const res = await fetch('/api/courses', { credentials: 'include' });
+    const data = await res.json();
+    allCourses = data.success ? (data.data || []) : [];
+    renderCourses();
+  } catch {
+    if (grid) grid.innerHTML = '<div class="col-span-full text-center text-error py-8">โหลดหลักสูตรไม่สำเร็จ</div>';
+  }
+});
+</script>
+<!-- PTS-NAV-INLINE-BOOT -->
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>

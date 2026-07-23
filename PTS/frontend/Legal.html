@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>นโยบายและเงื่อนไข | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260722f">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245'}}}}</script>
+</head>
+<body class="pts-body">
+<div id="app-navbar">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        PTS Learning
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
+<main class="pts-main" style="max-width:800px">
+  <section class="pts-page-hero">
+    <h1 class="text-3xl font-bold text-primary mb-2">นโยบายและเงื่อนไขการใช้งาน</h1>
+    <p class="text-on-surface-variant">ข้อมูลสำคัญเกี่ยวกับการใช้บริการ PTS Learning</p>
+  </section>
+  <article class="pts-card p-6 space-y-4 leading-relaxed text-on-surface-variant">
+    <h2 class="text-xl font-bold text-primary">เงื่อนไขการใช้งาน</h2>
+    <p>การสมัครใช้งาน PTS Learning ถือว่าผู้ใช้ยอมรับเงื่อนไขการใช้งาน ระบบจัดเก็บข้อมูลบัญชีเพื่อให้บริการเรียนออนไลน์ ออนไซต์ และไฮบริด</p>
+    <h2 class="text-xl font-bold text-primary">นโยบายความเป็นส่วนตัว</h2>
+    <p>เราเก็บข้อมูลชื่อ อีเมล เบอร์โทร และประวัติการเรียนเพื่อปรับปรุงประสบการณ์ผู้ใช้ ข้อมูลจะไม่ถูกเปิดเผยแก่บุคคลภายนอกโดยไม่จำเป็น</p>
+    <h2 class="text-xl font-bold text-primary">การชำระเงิน</h2>
+    <p>ระบบรองรับการชำระเงินผ่านช่องทางที่กำหนด การยืนยันชำระเงินจะเปิดสิทธิ์เข้าเรียนตามหลักสูตรที่เลือก</p>
+    <h2 class="text-xl font-bold text-primary">ติดต่อเรา</h2>
+    <p>สอบถามเพิ่มเติมได้ที่ทีม PTS Academy / LINE OA Support</p>
+    <a class="pts-btn pts-btn-primary inline-flex" href="Home.html">กลับหน้าแรก</a>
+  </article>
+</main>
+<!-- PTS-NAV-INLINE-BOOT -->
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>

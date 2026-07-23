@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>รายการโปรด | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260722f">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+</head>
+<body class="pts-body">
+<div id="app-navbar">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        PTS Learning
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
+<main class="pts-main">
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Favorites</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">รายการโปรด</h1>
+    <p class="text-on-surface-variant">รวมหลักสูตรโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว</p>
+  </section>
+
+  <div class="flex flex-wrap gap-2 mb-5" role="tablist">
+    <button type="button" id="tab-courses" class="fav-tab pts-btn pts-btn-primary" data-tab="courses">หลักสูตรโปรด</button>
+    <button type="button" id="tab-posts" class="fav-tab pts-btn pts-btn-outline" data-tab="posts">โพสต์โปรด</button>
+  </div>
+
+  <section id="panel-courses">
+    <div id="course-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+  </section>
+  <section id="panel-posts" class="hidden">
+    <div id="post-list" class="space-y-4"></div>
+  </section>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+function setTab(tab) {
+  const courses = tab === 'courses';
+  document.getElementById('panel-courses').classList.toggle('hidden', !courses);
+  document.getElementById('panel-posts').classList.toggle('hidden', courses);
+  document.getElementById('tab-courses').className = 'fav-tab pts-btn ' + (courses ? 'pts-btn-primary' : 'pts-btn-outline');
+  document.getElementById('tab-posts').className = 'fav-tab pts-btn ' + (!courses ? 'pts-btn-primary' : 'pts-btn-outline');
+  history.replaceState({}, '', courses ? 'Favorites.html' : 'Favorites.html#posts');
+}
+
+document.getElementById('tab-courses').onclick = () => setTab('courses');
+document.getElementById('tab-posts').onclick = () => setTab('posts');
+
+(async () => {
+  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+
+  const courseBox = document.getElementById('course-list');
+  const postBox = document.getElementById('post-list');
+
+  const [courseRes, postRes] = await Promise.all([
+    fetch('/api/my/favorite-courses', { credentials:'include' }),
+    fetch('/api/my/liked-posts', { credentials:'include' })
+  ]);
+  const courseData = await courseRes.json();
+  const postData = await postRes.json();
+
+  if (!courseRes.ok || !courseData.success) {
+    courseBox.innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(courseData.message||'โหลดหลักสูตรโปรดไม่สำเร็จ')}</div>`;
+  } else if (!courseData.data.length) {
+    courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
+  } else {
+    courseBox.innerHTML = courseData.data.map(c => `
+      <article class="pts-card overflow-hidden">
+        <img class="w-full h-40 object-cover" src="${c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course'}" alt="">
+        <div class="p-4">
+          <p class="text-xs font-bold text-primary uppercase mb-1">${escapeHtml(c.delivery_mode||'')}</p>
+          <h2 class="font-bold text-lg mb-1">${escapeHtml(c.course_name)}</h2>
+          <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name||'-')}</p>
+          <div class="flex flex-wrap gap-2">
+            ${Number(c.is_enrolled) ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>` : `<a class="pts-btn pts-btn-primary" href="CourseDetail.html?courseId=${c.course_id}">สมัครเรียน</a>`}
+            <button class="unfav pts-btn pts-btn-outline" data-id="${c.course_id}">นำออกจากโปรด</button>
+          </div>
+        </div>
+      </article>`).join('');
+  }
+
+  if (!postRes.ok || !postData.success) {
+    postBox.innerHTML = `<div class="pts-card p-5 text-error">${escapeHtml(postData.message||'โหลดโพสต์โปรดไม่สำเร็จ')}</div>`;
+  } else if (!postData.data.length) {
+    postBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ<br><a class="text-primary font-bold" href="Community.html">ไปสำรวจคอมมูนิตี้</a></div>`;
+  } else {
+    postBox.innerHTML = postData.data.map(p => `
+      <article class="pts-card p-5">
+        <div class="flex items-start justify-between gap-3 mb-3">
+          <div class="flex items-center gap-3">
+            <img class="w-10 h-10 rounded-full object-cover" src="${p.author_avatar||''}" alt="">
+            <div>
+              <p class="font-bold">${escapeHtml(p.author_name||'')}</p>
+              <p class="text-xs text-on-surface-variant">${new Date(p.created_at).toLocaleString('th-TH')}</p>
+            </div>
+          </div>
+          <button class="unlike pts-btn pts-btn-ghost pts-like-active" data-id="${p.post_id}">
+            <span class="material-symbols-outlined">favorite</span> เลิกถูกใจ
+          </button>
+        </div>
+        <p class="whitespace-pre-line text-on-surface-variant mb-3">${escapeHtml(p.content||'')}</p>
+        <a class="text-sm font-bold text-primary" href="Community.html">ดูในคอมมูนิตี้ →</a>
+      </article>`).join('');
+  }
+
+  courseBox.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.unfav');
+    if (!btn) return;
+    const r = await fetch(`/api/courses/${btn.dataset.id}/favorite`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
+    btn.closest('article').remove();
+    if (!courseBox.querySelector('article')) {
+      courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีหลักสูตรโปรด</div>`;
+    }
+  });
+
+  postBox.addEventListener('click', async (e) => {
+    const btn = e.target.closest('.unlike');
+    if (!btn) return;
+    const r = await fetch(`/api/community/${btn.dataset.id}/like`, { method:'POST', credentials:'include' });
+    const j = await r.json();
+    if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
+    btn.closest('article').remove();
+    if (!postBox.querySelector('article')) {
+      postBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ</div>`;
+    }
+  });
+
+  setTab(location.hash === '#posts' ? 'posts' : 'courses');
+})();
+</script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>

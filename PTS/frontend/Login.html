@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html class="light" lang="th">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>เข้าสู่ระบบ | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722f">
+<link rel="stylesheet" href="login.css?v=20260722f">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+</head>
+<body class="pts-body pts-login">
+<div id="app-navbar"></div>
+
+<div class="pts-login__blob pts-login__blob--a" aria-hidden="true"></div>
+<div class="pts-login__blob pts-login__blob--b" aria-hidden="true"></div>
+<div class="pts-login__blob pts-login__blob--c" aria-hidden="true"></div>
+
+<main class="pts-login__stage">
+  <div class="pts-login__shell" id="login-shell">
+    <aside class="pts-login__visual">
+      <img class="pts-login__visual-img" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&amp;fit=crop&amp;w=1200&amp;q=80" alt="ผู้เรียน Personal Assistant Academy" width="800" height="1000">
+      <div class="pts-login__visual-shade"></div>
+      <span class="pts-login__visual-spark" aria-hidden="true"></span>
+      <span class="pts-login__visual-spark" aria-hidden="true"></span>
+      <span class="pts-login__visual-spark" aria-hidden="true"></span>
+      <div class="pts-login__visual-copy">
+        <span class="pts-login__visual-kicker">
+          <span class="material-symbols-outlined pts-login__kicker-ico">auto_awesome</span>
+          Personal Assistant Academy
+        </span>
+        <h1 class="pts-login__visual-title">ยกระดับทักษะการเป็นผู้ช่วยมืออาชีพ</h1>
+        <p class="pts-login__visual-lead">เนื้อหาคุณภาพสูง พร้อมใบรับรอง และคอมมูนิตี้ที่ช่วยให้คุณเติบโตได้จริงในจังหวะของตัวเอง</p>
+      </div>
+    </aside>
+
+    <section class="pts-login__panel">
+      <div class="pts-login__brand-row">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="">
+        <span>PTS Learning</span>
+      </div>
+
+      <header>
+        <p class="pts-login__eyebrow">Welcome back</p>
+        <h2 class="pts-login__title">เข้าสู่ระบบ</h2>
+        <p class="pts-login__sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
+      </header>
+
+      <form class="pts-login__form" id="login-form">
+        <div class="pts-login__field">
+          <label for="email">อีเมล</label>
+          <div class="pts-login__control pts-pw-wrap">
+            <span class="material-symbols-outlined pts-login__ico">mail</span>
+            <input class="pts-login__input" id="email" name="email" placeholder="example@email.com" type="email" required autocomplete="email">
+          </div>
+        </div>
+
+        <div class="pts-login__field">
+          <div class="pts-login__field-row">
+            <label for="password">รหัสผ่าน</label>
+            <button type="button" id="forgot-password-btn" class="pts-login__link">ลืมรหัสผ่าน?</button>
+          </div>
+          <div class="pts-login__control pts-pw-wrap">
+            <span class="material-symbols-outlined pts-login__ico">lock</span>
+            <input class="pts-login__input pts-login__input--pw" id="password" name="password" placeholder="••••••••" type="password" required autocomplete="current-password" data-pts-pw-field="1">
+            <button class="pts-pw-toggle hidden" type="button" id="toggle-password-btn" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+              <span class="material-symbols-outlined" id="password-icon" aria-hidden="true">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <label class="pts-login__remember" for="remember">
+          <input id="remember" type="checkbox">
+          <span>จำการเข้าสู่ระบบ</span>
+        </label>
+
+        <button class="pts-login__submit" type="submit" id="submit-btn">
+          เข้าสู่ระบบ
+          <span class="material-symbols-outlined pts-login__submit-ico">login</span>
+        </button>
+        <p id="login-msg" class="pts-login__msg hidden"></p>
+      </form>
+
+      <div class="pts-login__divider">หรือ</div>
+
+      <button type="button" class="pts-login__google" id="google-login-btn" aria-label="เข้าสู่ระบบด้วย Gmail">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#EA4335" d="M12 10.2v3.6h5.1c-.2 1.2-.9 2.2-1.9 2.9l3.1 2.4c1.8-1.7 2.9-4.1 2.9-7 0-.7-.1-1.3-.2-1.9H12z"/>
+          <path fill="#34A853" d="M6.6 14.3l-.8.6-2.5 1.9C5.1 19.5 8.3 21.5 12 21.5c2.7 0 5-.9 6.7-2.4l-3.1-2.4c-.8.6-1.9.9-3.6.9-2.8 0-5.1-1.9-6-4.4z"/>
+          <path fill="#4A90E2" d="M3.3 7.2C2.5 8.7 2 10.3 2 12s.5 3.3 1.3 4.8l3.3-2.5C6.2 13.4 6 12.7 6 12s.2-1.4.6-2.3L3.3 7.2z"/>
+          <path fill="#FBBC05" d="M12 5.5c1.5 0 2.8.5 3.9 1.5l2.9-2.9C16.9 2.4 14.7 1.5 12 1.5 8.3 1.5 5.1 3.5 3.3 7.2l3.3 2.5C7 7.4 9.2 5.5 12 5.5z"/>
+        </svg>
+        เข้าสู่ระบบด้วย Gmail
+      </button>
+
+      <p class="pts-login__foot">ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a></p>
+      <nav class="pts-login__legal" aria-label="ลิงก์เพิ่มเติม">
+        <a href="Home.html">About Us</a>
+        <a href="Legal.html">Privacy Policy</a>
+        <a href="Legal.html#contact">Contact Us</a>
+      </nav>
+    </section>
+  </div>
+</main>
+
+<div id="reset-modal" class="pts-login-modal hidden">
+  <div class="pts-login-modal__card" role="dialog" aria-modal="true" aria-labelledby="reset-title">
+    <h3 id="reset-title">กู้คืนรหัสผ่านด้วย Email OTP</h3>
+    <p>กรอกอีเมลที่สมัครไว้ ระบบจะส่งรหัส 6 หลักไปที่อีเมลนั้นโดยตรง (ใช้ได้ทุกโดเมน เช่น Gmail / Hotmail / เมลบริษัท)</p>
+
+    <div class="pts-login-modal__body">
+      <div>
+        <label for="reset-email">อีเมลในระบบ</label>
+        <div class="pts-login-modal__row">
+          <input type="email" id="reset-email" placeholder="example@email.com" autocomplete="email">
+          <button type="button" id="otp-btn" class="pts-login-modal__otp-btn">ขอรหัส OTP</button>
+        </div>
+      </div>
+
+      <div class="pts-login-modal__otp-zone is-locked" id="otp-verification-zone">
+        <div class="pts-login-modal__dash"></div>
+        <div class="pts-login-modal__otp-field">
+          <label for="reset-otp" class="pts-login-modal__otp-label">
+            <span class="material-symbols-outlined">mail</span> รหัส OTP 6 หลักจากอีเมล
+          </label>
+          <input class="pts-login-modal__otp-input" type="text" id="reset-otp" placeholder="••••••" maxlength="6" inputmode="numeric">
+        </div>
+        <div>
+          <label for="reset-new-password">ตั้งรหัสผ่านใหม่</label>
+          <div class="pts-pw-wrap pts-login-modal__pw">
+            <input type="password" id="reset-new-password" placeholder="••••••••" data-pts-pw-field="1">
+            <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
+              <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="pts-login-modal__actions">
+      <button type="button" id="reset-cancel-btn" class="pts-login-modal__cancel">ยกเลิก</button>
+      <button type="button" id="confirm-reset-btn" disabled class="pts-login-modal__confirm is-disabled">ยืนยันเปลี่ยนรหัส</button>
+    </div>
+    <p id="reset-msg" class="pts-login__msg hidden pts-login-modal__msg"></p>
+  </div>
+</div>
+
+<script src="login.js?v=20260721a"></script>
+<script src="password-toggle.js?v=20260720e"></script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>

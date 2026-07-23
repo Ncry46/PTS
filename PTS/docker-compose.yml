@@ -1,0 +1,34 @@
+# รัน PTS Learning จาก image ที่ build เอง หรือจาก Docker Hub
+# ตัวอย่าง: docker compose up -d
+services:
+  web:
+    build: .
+    image: ${DOCKER_IMAGE:-pts-learning:latest}
+    container_name: pts-learning
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    env_file:
+      - .env
+    environment:
+      PORT: 3000
+      HOST: 0.0.0.0
+      NODE_ENV: production
+      # ถ้ามี reverse proxy HTTPS ให้เปิดสองบรรทัดนี้
+      # TRUST_PROXY: "1"
+      # COOKIE_SECURE: "true"
+    volumes:
+      # เก็บไฟล์อัปโหลดไว้บนเครื่องโฮสต์
+      - pts_uploads:/app/uploads
+    restart: unless-stopped
+<<<<<<< HEAD
+=======
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+>>>>>>> cursor/premium-banner-fx-eb8c
+
+volumes:
+  pts_uploads:

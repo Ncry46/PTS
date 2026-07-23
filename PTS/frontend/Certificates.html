@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ใบประกาศนียบัตร | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722f">
+<link rel="stylesheet" href="certificates.css?v=20260722f">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+</head>
+<body class="pts-body cert-page">
+<div id="app-navbar"></div>
+
+<main class="pts-main">
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Certificates</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ใบประกาศนียบัตรของคุณ</h1>
+    <p class="text-on-surface-variant max-w-2xl">ใบประกาศมาตรฐาน PTS Learning ออกอัตโนมัติเมื่อเรียนจบหลักสูตร — เปลี่ยนเฉพาะชื่อผู้เรียนและชื่อหลักสูตรในฟอร์แมตเดียวกันทุกใบ</p>
+  </section>
+
+  <div class="cert-toolbar no-print">
+    <div class="cert-search">
+      <span class="material-symbols-outlined" aria-hidden="true">search</span>
+      <input id="cert-q" type="search" placeholder="ค้นหาตามชื่อหลักสูตร..." autocomplete="off">
+    </div>
+    <div class="cert-filters" role="tablist" aria-label="ตัวกรองใบประกาศ">
+      <button type="button" class="cert-filter is-active" data-filter="all">ทั้งหมด <span class="cert-filter__count" id="count-all">0</span></button>
+      <button type="button" class="cert-filter" data-filter="latest">ล่าสุด</button>
+      <button type="button" class="cert-filter" data-filter="az">ตามชื่อหลักสูตร</button>
+    </div>
+  </div>
+
+  <div id="cert-grid" class="cert-grid no-print">
+    <div class="pts-empty" style="grid-column:1/-1">กำลังโหลด...</div>
+  </div>
+</main>
+
+<div class="pts-footer-note no-print">© PTS Learning</div>
+
+<!-- Full certificate viewer / print target -->
+<div id="cert-modal" class="cert-modal" aria-hidden="true">
+  <div class="cert-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cert-modal-title">
+    <div class="cert-modal__bar no-print">
+      <button type="button" class="pts-btn pts-btn-primary" id="cert-print-btn">
+        <span class="material-symbols-outlined" style="font-size:18px">download</span>
+        ดาวน์โหลด / พิมพ์ PDF
+      </button>
+      <button type="button" class="pts-btn pts-btn-outline" id="cert-close-btn">ปิด</button>
+    </div>
+    <h2 id="cert-modal-title" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">ใบประกาศนียบัตร</h2>
+    <div id="cert-print-root"></div>
+  </div>
+</div>
+
+<script>
+const PTS_LOGO = 'https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog';
+const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+
+let userName = '';
+let allCerts = [];
+let filterMode = 'all';
+let query = '';
+
+/** Shared certificate format — only userName + courseName (+ date/code/instructor) change */
+function certificateHtml({ userName, courseName, issuedAt, certificateCode, instructorName }) {
+  const dateText = issuedAt
+    ? new Date(issuedAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })
+    : '-';
+  const instructor = instructorName || 'PTS Instructor';
+  return `
+    <article class="pts-cert" aria-label="ใบประกาศนียบัตร">
+      <div class="pts-cert__inner">
+        <div class="pts-cert__brand">
+          <img class="pts-cert__logo" src="${PTS_LOGO}" alt="PTS Learning">
+          <div class="pts-cert__brand-name">PTS Learning</div>
+        </div>
+
+        <div>
+          <p class="pts-cert__eyebrow">Certificate of Completion</p>
+          <div class="pts-cert__rule" aria-hidden="true"></div>
+        </div>
+
+        <p class="pts-cert__lead">This is to certify that</p>
+        <h3 class="pts-cert__name">${escapeHtml(userName || 'ผู้เรียน')}</h3>
+        <p class="pts-cert__course-label">has successfully completed the course</p>
+        <p class="pts-cert__course">${escapeHtml(courseName || '')}</p>
+
+        <div class="pts-cert__foot">
+          <div class="pts-cert__sign">
+            <div class="pts-cert__sign-line"></div>
+            <strong>${escapeHtml(instructor)}</strong>
+            <span>Instructor</span>
+          </div>
+          <div class="pts-cert__seal" aria-hidden="true">
+            <span class="material-symbols-outlined">workspace_premium</span>
+          </div>
+          <div class="pts-cert__sign">
+            <div class="pts-cert__sign-line"></div>
+            <strong>PTS Academy</strong>
+            <span>Director</span>
+          </div>
+        </div>
+
+        <p class="pts-cert__meta">Issued ${escapeHtml(dateText)} · Code ${escapeHtml(certificateCode || '')}</p>
+      </div>
+    </article>`;
+}
+
+function modeTag(mode) {
+  const m = String(mode || '').toLowerCase();
+  if (m === 'online') return { cls: 'cert-tag--online', label: 'Online' };
+  if (m === 'onsite') return { cls: 'cert-tag--onsite', label: 'Onsite' };
+  if (m === 'hybrid') return { cls: 'cert-tag--hybrid', label: 'Hybrid' };
+  return { cls: 'cert-tag--default', label: 'หลักสูตร PTS' };
+}
+
+function filteredList() {
+  let list = allCerts.slice();
+  if (query) {
+    const q = query.toLowerCase();
+    list = list.filter((c) => String(c.course_name || '').toLowerCase().includes(q));
+  }
+  if (filterMode === 'az') {
+    list.sort((a, b) => String(a.course_name || '').localeCompare(String(b.course_name || ''), 'th'));
+  } else {
+    list.sort((a, b) => new Date(b.issued_at) - new Date(a.issued_at));
+  }
+  return list;
+}
+
+function openCert(cert) {
+  const root = document.getElementById('cert-print-root');
+  root.innerHTML = certificateHtml({
+    userName,
+    courseName: cert.course_name,
+    issuedAt: cert.issued_at,
+    certificateCode: cert.certificate_code,
+    instructorName: cert.instructor_name
+  });
+  const modal = document.getElementById('cert-modal');
+  modal.classList.add('is-open');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCert() {
+  const modal = document.getElementById('cert-modal');
+  modal.classList.remove('is-open');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
+}
+
+async function shareCert(cert) {
+  const text = `ฉันได้รับใบประกาศนียบัตรหลักสูตร “${cert.course_name}” จาก PTS Learning (รหัส ${cert.certificate_code})`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'PTS Certificate', text });
+      return;
+    }
+  } catch (_) { /* user cancelled */ }
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('คัดลอกข้อความแชร์แล้ว');
+  } catch (_) {
+    prompt('คัดลอกข้อความนี้', text);
+  }
+}
+
+function render() {
+  const grid = document.getElementById('cert-grid');
+  document.getElementById('count-all').textContent = String(allCerts.length);
+  const list = filteredList();
+
+  if (!allCerts.length) {
+    grid.innerHTML = `
+      <div class="pts-empty" style="grid-column:1/-1">
+        <div class="pts-empty__icon"><span class="material-symbols-outlined">workspace_premium</span></div>
+        <p class="font-bold mb-1">ยังไม่มีใบประกาศนียบัตร</p>
+        <p class="text-sm mb-4">เรียนให้จบหลักสูตร ระบบจะออกใบประกาศฟอร์แมตมาตรฐานให้อัตโนมัติ</p>
+        <a class="pts-btn pts-btn-primary" href="Courses.html">ไปที่หลักสูตร</a>
+      </div>`;
+    return;
+  }
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="pts-empty" style="grid-column:1/-1"><p>ไม่พบหลักสูตรที่ตรงกับคำค้นหา</p></div>`;
+    return;
+  }
+
+  const cards = list.map((c) => {
+    const tag = modeTag(c.delivery_mode);
+    const dateText = new Date(c.issued_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+    const preview = certificateHtml({
+      userName,
+      courseName: c.course_name,
+      issuedAt: c.issued_at,
+      certificateCode: c.certificate_code,
+      instructorName: c.instructor_name
+    });
+    return `
+      <article class="cert-card">
+        <div class="cert-card__preview">
+          <div class="cert-card__preview-scale">${preview}</div>
+        </div>
+        <div class="cert-card__body">
+          <span class="cert-tag ${tag.cls}">${tag.label}</span>
+          <h3 class="cert-card__title">${escapeHtml(c.course_name)}</h3>
+          <p class="cert-card__meta">ได้รับเมื่อ: ${escapeHtml(dateText)}</p>
+          <div class="cert-card__actions">
+            <button type="button" class="pts-btn pts-btn-primary cert-download" data-id="${c.certificate_id}">
+              <span class="material-symbols-outlined" style="font-size:18px">download</span>
+              ดาวน์โหลด PDF
+            </button>
+            <button type="button" class="cert-share" data-id="${c.certificate_id}" aria-label="แชร์ใบประกาศ">
+              <span class="material-symbols-outlined">share</span>
+            </button>
+          </div>
+        </div>
+      </article>`;
+  }).join('');
+
+  const teaser = `
+    <aside class="cert-teaser">
+      <div class="cert-teaser__icon"><span class="material-symbols-outlined">school</span></div>
+      <p>ยังรอคุณอยู่! เรียนให้จบอีกหลักสูตรเพื่อรับใบประกาศถัดไป</p>
+      <a href="DashbordU.html">ไปที่หลักสูตรของฉัน</a>
+    </aside>`;
+
+  grid.innerHTML = cards + teaser;
+
+  grid.querySelectorAll('.cert-download').forEach((btn) => {
+    btn.onclick = () => {
+      const cert = allCerts.find((c) => String(c.certificate_id) === btn.dataset.id);
+      if (!cert) return;
+      openCert(cert);
+    };
+  });
+  grid.querySelectorAll('.cert-share').forEach((btn) => {
+    btn.onclick = () => {
+      const cert = allCerts.find((c) => String(c.certificate_id) === btn.dataset.id);
+      if (cert) shareCert(cert);
+    };
+  });
+}
+
+async function init() {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+  userName = me.user?.name || me.user?.full_name || 'ผู้เรียน';
+
+  const res = await fetch('/api/my/certificates', { credentials: 'include' });
+  const data = await res.json();
+  if (!res.ok || data.success === false) {
+    document.getElementById('cert-grid').innerHTML =
+      `<div class="pts-empty" style="grid-column:1/-1"><p class="pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</p></div>`;
+    return;
+  }
+  allCerts = data.data || [];
+  render();
+
+  document.getElementById('cert-q').addEventListener('input', (e) => {
+    query = String(e.target.value || '').trim();
+    render();
+  });
+  document.querySelectorAll('.cert-filter').forEach((btn) => {
+    btn.onclick = () => {
+      document.querySelectorAll('.cert-filter').forEach((b) => b.classList.remove('is-active'));
+      btn.classList.add('is-active');
+      filterMode = btn.dataset.filter || 'all';
+      render();
+    };
+  });
+  document.getElementById('cert-close-btn').onclick = closeCert;
+  document.getElementById('cert-print-btn').onclick = () => window.print();
+  document.getElementById('cert-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'cert-modal') closeCert();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeCert();
+  });
+}
+
+init().catch((err) => {
+  document.getElementById('cert-grid').innerHTML =
+    `<div class="pts-empty" style="grid-column:1/-1"><p class="pts-msg--err">${escapeHtml(err.message)}</p></div>`;
+});
+</script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>

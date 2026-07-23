@@ -1,0 +1,1512 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link rel="stylesheet" href="site.css?v=20260722f">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258',background:'#fcf8ff','on-surface':'#1a1930','on-surface-variant':'#544245'}}}}</script>
+<style>
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
+  body{font-family:'IBM Plex Sans Thai',sans-serif}
+  .admin-shell {
+    display: grid;
+    gap: 16px;
+  }
+  @media (min-width: 900px) {
+    .admin-shell {
+      grid-template-columns: 220px minmax(0, 1fr);
+      align-items: start;
+      gap: 20px;
+    }
+  }
+  .admin-side {
+    background: var(--pts-surface, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 20px;
+    padding: 14px 12px;
+    box-shadow: var(--pts-shadow-sm, 0 8px 24px rgba(28,21,32,.05));
+  }
+  @media (min-width: 900px) {
+    .admin-side { position: sticky; top: calc(var(--pts-nav-h, 68px) + 16px); }
+  }
+  .admin-side__label {
+    margin: 0 8px 10px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--pts-primary, #974258);
+  }
+  .admin-side__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  @media (min-width: 900px) {
+    .admin-side__nav { flex-direction: column; flex-wrap: nowrap; }
+  }
+  .tab-btn {
+    border: 1px solid var(--pts-border, rgba(151,66,88,.18));
+    background: var(--pts-surface, #fff);
+    color: var(--pts-text, #1c1520);
+    border-radius: 999px;
+    padding: 10px 14px;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: left;
+    cursor: pointer;
+  }
+  @media (min-width: 900px) {
+    .tab-btn { width: 100%; border-radius: 12px; }
+  }
+  .tab-btn.active { background: #974258; color: #fff; border-color: #974258; }
+  html[data-theme="dark"] .tab-btn.active { background: #b85a70; border-color: #b85a70; }
+  .admin-main { min-width: 0; }
+
+  /* —— Banner admin (easy add + color picker) —— */
+  .ban-wrap { display:grid; gap:18px; }
+  .ban-card {
+    background: var(--pts-surface, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 20px;
+    padding: 18px 16px;
+    box-shadow: var(--pts-shadow-sm, 0 8px 24px rgba(28,21,32,.05));
+  }
+  .ban-steps {
+    display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px;
+    font-size:12px; font-weight:700; color:var(--pts-muted,#5c4f55);
+  }
+  .ban-steps span {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 10px; border-radius:999px;
+    background:var(--pts-primary-soft,#f6e6ea); color:var(--pts-primary,#974258);
+  }
+  .ban-theme-grid {
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); gap:10px;
+  }
+  .ban-theme {
+    appearance:none; border:2px solid transparent; border-radius:14px;
+    padding:0; cursor:pointer; overflow:hidden; text-align:left;
+    background:#fff; box-shadow:0 4px 14px rgba(0,0,0,.08);
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .ban-theme:hover { transform:translateY(-2px); }
+  .ban-theme.is-active {
+    border-color:#974258;
+    box-shadow:0 0 0 3px rgba(151,66,88,.2), 0 8px 20px rgba(0,0,0,.12);
+  }
+  .ban-theme__swatch { display:block; height:44px; width:100%; }
+  .ban-theme__label {
+    display:block; padding:7px 8px 8px; font-size:11px; font-weight:700;
+    color:var(--pts-text,#1c1520); line-height:1.2;
+  }
+  .ban-theme[data-theme="rose"] .ban-theme__swatch {
+    background: linear-gradient(135deg,#5c2436,#8a3550 45%,#ffb1c1);
+  }
+  .ban-theme[data-theme="sage"] .ban-theme__swatch {
+    background: linear-gradient(135deg,#1f3d2e,#3d5a4c 45%,#85be96);
+  }
+  .ban-theme[data-theme="gold"] .ban-theme__swatch {
+    background: linear-gradient(135deg,#5c3a18,#a67b32 45%,#e8c478);
+  }
+  .ban-theme[data-theme="ink"] .ban-theme__swatch {
+    background: linear-gradient(135deg,#0c1016,#2c3a48 45%,#8c9cb4);
+  }
+  .ban-theme[data-theme="ocean"] .ban-theme__swatch {
+    background: linear-gradient(135deg,#0e1e24,#2a6a72 45%,#64bec8);
+  }
+  .ban-theme[data-theme="sunset"] .ban-theme__swatch {
+    background: linear-gradient(135deg,#6e2e28,#c45a3a 45%,#ffc08c);
+  }
+  .ban-theme[data-theme="custom"] .ban-theme__swatch {
+    background:
+      conic-gradient(from 90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #1dd1a1, #ff6b6b);
+  }
+  .ban-preview[data-theme="custom"] {
+    background: linear-gradient(135deg, #1a1216, var(--ban-c, #974258) 48%, #2a1a22);
+  }
+  .ban-rgb {
+    display:grid; gap:12px; margin-top:12px; padding:14px;
+    border:1px solid var(--pts-border,rgba(151,66,88,.16));
+    border-radius:14px; background:rgba(151,66,88,.04);
+  }
+  .ban-rgb.is-hidden { display:none; }
+  .ban-rgb__row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+  .ban-rgb__row .ban-field { flex:1 1 72px; min-width:72px; }
+  .ban-rgb__picker {
+    width:52px; height:40px; padding:0; border:0; border-radius:10px;
+    background:transparent; cursor:pointer;
+  }
+  .ban-wheel-layout {
+    display:grid; gap:14px; align-items:center;
+  }
+  @media (min-width:640px) {
+    .ban-wheel-layout { grid-template-columns: auto minmax(0,1fr); }
+  }
+  .ban-wheel-stage {
+    position:relative; width:220px; height:220px; margin:0 auto;
+    touch-action:none; user-select:none;
+  }
+  .ban-wheel-stage canvas {
+    display:block; width:220px; height:220px; border-radius:50%;
+    box-shadow:0 10px 28px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.35);
+    cursor:crosshair;
+  }
+  .ban-wheel-marker {
+    position:absolute; width:18px; height:18px; margin:-9px 0 0 -9px;
+    border:2px solid #fff; border-radius:999px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.25);
+    pointer-events:none; left:50%; top:50%;
+  }
+  .ban-wheel-side { display:grid; gap:10px; }
+  .ban-wheel-swatch {
+    width:100%; height:48px; border-radius:12px;
+    border:1px solid rgba(0,0,0,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .ban-wheel-side label { font-size:12px; font-weight:700; color:var(--pts-muted,#5c4f55); }
+  .ban-wheel-side input[type="range"] { width:100%; accent-color:#974258; }
+  .ban-mini-themes button[data-theme="custom"] {
+    background: conic-gradient(from 90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #1dd1a1, #ff6b6b);
+  }
+  .ban-drop {
+    border:2px dashed rgba(151,66,88,.35);
+    border-radius:16px; padding:18px; text-align:center;
+    background:rgba(151,66,88,.04); cursor:pointer;
+    transition: border-color .15s ease, background .15s ease;
+  }
+  .ban-drop.is-drag { border-color:#974258; background:rgba(151,66,88,.1); }
+  .ban-drop__hint { margin:0; font-size:13px; color:var(--pts-muted,#5c4f55); }
+  .ban-drop__hint strong { color:var(--pts-primary,#974258); }
+  .ban-preview {
+    border-radius:18px; padding:18px; min-height:160px; color:#fff;
+    display:grid; gap:14px; align-items:center;
+    background: linear-gradient(135deg,#5c2436,#8a3550 45%,#3d5a4c);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 16px 36px rgba(0,0,0,.18);
+  }
+  @media (min-width:720px) {
+    .ban-preview { grid-template-columns: 1.2fr .8fr; }
+  }
+  .ban-preview[data-theme="rose"] { background: linear-gradient(135deg,#5c2436,#8a3550 45%,#ffb1c1); }
+  .ban-preview[data-theme="sage"] { background: linear-gradient(135deg,#1f3d2e,#3d5a4c 50%,#85be96); }
+  .ban-preview[data-theme="gold"] { background: linear-gradient(135deg,#5c3a18,#a67b32 50%,#e8c478); }
+  .ban-preview[data-theme="ink"] { background: linear-gradient(135deg,#0c1016,#2c3a48 50%,#8c9cb4); }
+  .ban-preview[data-theme="ocean"] { background: linear-gradient(135deg,#0e1e24,#2a6a72 50%,#64bec8); }
+  .ban-preview[data-theme="sunset"] { background: linear-gradient(135deg,#6e2e28,#c45a3a 50%,#ffc08c); }
+  .ban-preview__eyebrow {
+    display:inline-flex; padding:4px 10px; border-radius:999px; margin:0 0 8px;
+    background:rgba(255,255,255,.18); font-size:11px; font-weight:700;
+  }
+  .ban-preview__title { margin:0 0 6px; font-size:1.25rem; font-weight:800; line-height:1.25; }
+  .ban-preview__title em { font-style:normal; color:#ffd0da; }
+  .ban-preview__lead { margin:0; font-size:13px; opacity:.88; line-height:1.45; }
+  .ban-preview__img {
+    width:100%; aspect-ratio:4/5; max-height:180px; object-fit:cover; object-position:center 14%;
+    border-radius:14px; background:rgba(255,255,255,.15); display:block;
+  }
+  .ban-field { display:grid; gap:6px; }
+  .ban-field label { font-size:12px; font-weight:700; color:var(--pts-muted,#5c4f55); }
+  .ban-field input, .ban-field textarea, .ban-field select {
+    width:100%; border:1px solid var(--pts-border,rgba(151,66,88,.18));
+    border-radius:12px; padding:10px 12px; font:inherit; background:var(--pts-surface,#fff);
+    color:var(--pts-text,#1c1520);
+  }
+  .ban-grid { display:grid; gap:12px; }
+  @media (min-width:720px) {
+    .ban-grid-2 { grid-template-columns:1fr 1fr; }
+  }
+  .ban-adv {
+    border:1px solid var(--pts-border,rgba(151,66,88,.14));
+    border-radius:14px; padding:10px 12px; background:rgba(151,66,88,.03);
+  }
+  .ban-adv summary {
+    cursor:pointer; font-weight:700; font-size:14px; color:var(--pts-primary,#974258);
+    list-style:none;
+  }
+  .ban-adv summary::-webkit-details-marker { display:none; }
+  .ban-adv[open] summary { margin-bottom:12px; }
+  .ban-list-item {
+    display:grid; gap:12px; align-items:center;
+    border:1px solid var(--pts-border,rgba(151,66,88,.14));
+    border-radius:16px; padding:12px; background:var(--pts-surface,#fff);
+  }
+  @media (min-width:800px) {
+    .ban-list-item { grid-template-columns: 120px minmax(0,1fr) auto; }
+  }
+  .ban-list-item.is-hidden { opacity:.55; }
+  .ban-mini-themes { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .ban-mini-themes button {
+    width:22px; height:22px; border-radius:999px; border:2px solid #fff;
+    box-shadow:0 0 0 1px rgba(0,0,0,.15); cursor:pointer; padding:0;
+  }
+  .ban-mini-themes button.is-active { box-shadow:0 0 0 2px #974258; transform:scale(1.12); }
+  .ban-mini-themes button[data-theme="rose"] { background:linear-gradient(135deg,#8a3550,#ffb1c1); }
+  .ban-mini-themes button[data-theme="sage"] { background:linear-gradient(135deg,#3d5a4c,#85be96); }
+  .ban-mini-themes button[data-theme="gold"] { background:linear-gradient(135deg,#a67b32,#e8c478); }
+  .ban-mini-themes button[data-theme="ink"] { background:linear-gradient(135deg,#2c3a48,#8c9cb4); }
+  .ban-mini-themes button[data-theme="ocean"] { background:linear-gradient(135deg,#2a6a72,#64bec8); }
+  .ban-mini-themes button[data-theme="sunset"] { background:linear-gradient(135deg,#c45a3a,#ffc08c); }
+</style>
+</head>
+<body class="pts-body text-on-surface">
+<div id="app-navbar">
+  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
+    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
+      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
+        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        PTS Learning
+      </a>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+      </div>
+    </div>
+  </nav>
+</div>
+<main class="pts-main pts-main--wide admin-shell">
+  <aside class="admin-side" aria-label="เมนูแอดมิน">
+    <p class="admin-side__label">จัดการระบบ</p>
+    <nav class="admin-side__nav">
+      <button type="button" class="tab-btn active" data-tab="courses">หลักสูตร</button>
+      <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
+      <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
+      <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
+      <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
+      <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
+      <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
+      <button type="button" class="tab-btn" data-tab="mail">อีเมล OTP</button>
+    </nav>
+  </aside>
+  <div class="admin-main">
+    <section class="pts-page-hero">
+      <span class="pts-chip mb-3">Admin</span>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
+      <p class="text-on-surface-variant">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
+    </section>
+    <section id="panel" class="pts-panel"></section>
+  </div>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+let coursesCache = [];
+
+async function api(url, options = {}) {
+  const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 401) { location.href = 'Login.html'; throw new Error('unauthorized'); }
+  if (res.status === 403) { console.error(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
+  if (!res.ok || data.success === false) throw new Error(data.message || 'คำขอล้มเหลว');
+  return data;
+}
+
+async function renderCourses() {
+  const { data } = await api('/api/admin/courses');
+  coursesCache = data;
+  document.getElementById('panel').innerHTML = `
+    <h2 class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร">
+      <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
+      <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      <input id="c-hours" type="number" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง" value="4">
+      <input id="c-cover" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="URL รูปปก">
+    </div>
+    <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-6">สร้างหลักสูตร</button>
+    <div class="space-y-2">${data.map(c => `
+      <div class="border rounded-xl p-3 flex justify-between gap-3 items-start">
+        <div>
+          <p class="font-bold">${escapeHtml(c.course_name)}</p>
+          <p class="text-sm text-on-surface-variant">#${c.course_id} · ${escapeHtml(c.delivery_mode)} · ${escapeHtml(c.instructor_name || '-')}</p>
+        </div>
+        <button class="text-sm text-primary font-bold feature-btn" data-id="${c.course_id}" data-featured="${c.is_featured ? 0 : 1}">${c.is_featured ? 'เลิกแนะนำ' : 'ตั้งแนะนำ'}</button>
+      </div>`).join('') || '<p>ยังไม่มีหลักสูตร</p>'}
+    </div>`;
+
+  document.getElementById('create-course').onclick = async () => {
+    await api('/api/admin/courses', {
+      method: 'POST',
+      body: JSON.stringify({
+        course_name: document.getElementById('c-name').value,
+        instructor_name: document.getElementById('c-instructor').value,
+        delivery_mode: document.getElementById('c-mode').value,
+        total_hours: Number(document.getElementById('c-hours').value || 1),
+        cover_image_url: document.getElementById('c-cover').value,
+        is_featured: false
+      })
+    });
+    await renderCourses();
+  };
+
+  document.querySelectorAll('.feature-btn').forEach(btn => {
+    btn.onclick = async () => {
+      await api(`/api/admin/courses/${btn.dataset.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ is_featured: btn.dataset.featured === '1' })
+      });
+      renderCourses();
+    };
+  });
+}
+
+async function renderLessons() {
+  if (!coursesCache.length) {
+    const { data } = await api('/api/admin/courses');
+    coursesCache = data;
+  }
+  document.getElementById('panel').innerHTML = `
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <select id="l-course" class="border rounded-xl px-3 py-2">${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
+      <input id="l-title" class="border rounded-xl px-3 py-2" placeholder="ชื่อบทเรียน">
+      <input id="l-video" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="Video embed URL (เช่น YouTube embed)">
+      <textarea id="l-content" class="border rounded-xl px-3 py-2 md:col-span-2" rows="4" placeholder="เนื้อหา HTML/ข้อความ"></textarea>
+      <input id="l-sort" type="number" class="border rounded-xl px-3 py-2" value="1" placeholder="ลำดับ">
+      <input id="l-duration" type="number" class="border rounded-xl px-3 py-2" value="15" placeholder="นาที">
+    </div>
+    <button id="add-lesson" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มบทเรียน</button>
+    <div id="lesson-admin-list" class="space-y-2 text-sm text-on-surface-variant">เลือกหลักสูตรแล้วกดโหลด...</div>
+  `;
+
+  const loadLessons = async () => {
+    const courseId = document.getElementById('l-course').value;
+    const { data } = await api(`/api/admin/courses/${courseId}/lessons`);
+    document.getElementById('lesson-admin-list').innerHTML = data.map(l => `
+      <div class="border rounded-xl p-3 flex justify-between gap-2 ${l.flag_use ? '' : 'opacity-50'}">
+        <div><p class="font-bold">${escapeHtml(l.title)}</p><p class="text-xs">#${l.lesson_id} · ลำดับ ${l.sort_order} · ${l.duration_minutes} นาที</p></div>
+        ${l.flag_use ? `<button class="del-lesson text-red-600 font-bold" data-id="${l.lesson_id}">ปิดใช้</button>` : '<span>ปิดแล้ว</span>'}
+      </div>`).join('') || '<p>ยังไม่มีบทเรียน</p>';
+    document.querySelectorAll('.del-lesson').forEach(btn => {
+      btn.onclick = async () => { await api(`/api/admin/lessons/${btn.dataset.id}`, { method: 'DELETE' }); loadLessons(); };
+    });
+  };
+
+  document.getElementById('l-course').onchange = loadLessons;
+  document.getElementById('add-lesson').onclick = async () => {
+    const courseId = document.getElementById('l-course').value;
+    await api(`/api/admin/courses/${courseId}/lessons`, {
+      method: 'POST',
+      body: JSON.stringify({
+        title: document.getElementById('l-title').value,
+        content_html: document.getElementById('l-content').value,
+        video_url: document.getElementById('l-video').value,
+        sort_order: Number(document.getElementById('l-sort').value || 1),
+        duration_minutes: Number(document.getElementById('l-duration').value || 15)
+      })
+    });
+    loadLessons();
+  };
+  if (coursesCache.length) loadLessons();
+}
+
+async function renderSchedules() {
+  if (!coursesCache.length) {
+    const { data } = await api('/api/admin/courses');
+    coursesCache = data;
+  }
+  const { data } = await api('/api/admin/schedules');
+  const now = new Date();
+  const start = new Date(now.getTime() + 86400000); start.setMinutes(0,0,0);
+  const end = new Date(start.getTime() + 2*3600000);
+  const toLocalInput = (d) => {
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  document.getElementById('panel').innerHTML = `
+    <h2 class="font-bold text-lg mb-3">เพิ่มตารางเรียน</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
+        <input id="s-title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับหลักสูตร (จำเป็น — ต้องเป็นหลักสูตรที่นักเรียนสมัครไว้)
+        <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
+          <option value="">-- เลือกหลักสูตร --</option>
+          ${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+        </select>
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">วันเวลาเริ่ม
+        <input id="s-start" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(start)}">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">วันเวลาจบ
+        <input id="s-end" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2" value="${toLocalInput(end)}">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">สถานที่
+        <input id="s-location" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="สถานที่ (onsite)">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">Meeting URL
+        <input id="s-meeting" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="https://meet.google.com/...">
+      </label>
+      <label class="text-sm font-semibold text-on-surface-variant">รูปแบบ
+        <select id="s-mode" class="mt-1 w-full border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
+      </label>
+    </div>
+    <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-2">เพิ่มตาราง</button>
+    <p id="schedule-form-msg" class="pts-msg mb-4"></p>
+    <h3 class="font-bold mb-2">ตารางที่มีอยู่</h3>
+    <div class="space-y-2">${data.map(s => `
+      <div class="border rounded-xl p-3 flex justify-between gap-2">
+        <div>
+          <p class="font-bold">${escapeHtml(s.title)}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')} – ${new Date(s.end_at).toLocaleString('th-TH')}</p>
+        </div>
+        <button class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
+      </div>`).join('') || '<p>ยังไม่มีตาราง</p>'}
+    </div>`;
+
+  document.getElementById('add-schedule').onclick = async () => {
+    const formMsg = document.getElementById('schedule-form-msg');
+    const showErr = (t) => { formMsg.textContent = t; formMsg.className = 'pts-msg pts-msg--err mb-4'; };
+    const title = document.getElementById('s-title').value.trim();
+    const courseId = document.getElementById('s-course').value;
+    if (!title) return showErr('กรุณาใส่หัวข้อคลาส');
+    if (!courseId) return showErr('กรุณาเลือกหลักสูตรที่ผูกตาราง (จำเป็นสำหรับซิงค์ Google Calendar)');
+    formMsg.textContent = 'กำลังบันทึก...';
+    formMsg.className = 'pts-msg mb-4';
+    try {
+      await api('/api/admin/schedules', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          course_id: courseId,
+          start_at: document.getElementById('s-start').value,
+          end_at: document.getElementById('s-end').value,
+          location: document.getElementById('s-location').value,
+          meeting_url: document.getElementById('s-meeting').value,
+          delivery_mode: document.getElementById('s-mode').value
+        })
+      });
+      renderSchedules();
+    } catch (e) {
+      showErr(e.message || 'เพิ่มตารางไม่สำเร็จ');
+    }
+  };
+  document.querySelectorAll('.del-schedule').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/schedules/${btn.dataset.id}`, { method: 'DELETE' }); renderSchedules(); };
+  });
+}
+
+async function renderBanners() {
+  const { data } = await api('/api/admin/hero-slides');
+  const iconOptions = [
+    'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
+    'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
+  ];
+  const themeOptions = [
+    { value: 'rose', label: 'Rose' },
+    { value: 'sage', label: 'Sage' },
+    { value: 'gold', label: 'Gold' },
+    { value: 'ink', label: 'Ink' },
+    { value: 'ocean', label: 'Ocean' },
+    { value: 'sunset', label: 'Sunset' },
+    { value: 'custom', label: 'กำหนดเอง' }
+  ];
+  const themeLabel = (s) => {
+    if (String(s?.theme || '').toLowerCase() === 'custom') {
+      return `กำหนดเอง ${s.theme_color || ''}`.trim();
+    }
+    return (themeOptions.find((x) => x.value === s?.theme) || themeOptions[0]).label;
+  };
+
+  function parseHex(value) {
+    const m = String(value || '').trim().match(/^#?([0-9a-fA-F]{6})$/);
+    if (!m) return null;
+    const hex = `#${m[1].toLowerCase()}`;
+    const n = parseInt(m[1], 16);
+    return { hex, r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function toHex(r, g, b) {
+    return '#' + [r, g, b].map((x) => Math.max(0, Math.min(255, Number(x) || 0)).toString(16).padStart(2, '0')).join('');
+  }
+  function hsvToRgb(h, s, v) {
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    let rp = 0, gp = 0, bp = 0;
+    if (h < 60) { rp = c; gp = x; }
+    else if (h < 120) { rp = x; gp = c; }
+    else if (h < 180) { gp = c; bp = x; }
+    else if (h < 240) { gp = x; bp = c; }
+    else if (h < 300) { rp = x; bp = c; }
+    else { rp = c; bp = x; }
+    return {
+      r: Math.round((rp + m) * 255),
+      g: Math.round((gp + m) * 255),
+      b: Math.round((bp + m) * 255)
+    };
+  }
+  function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    if (d !== 0) {
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    const s = max === 0 ? 0 : d / max;
+    return { h, s, v: max };
+  }
+  const presets = [
+    {
+      key: 'cert',
+      label: 'ใบประกาศ',
+      fill: {
+        eyebrow: 'พร้อมใบประกาศ',
+        title: 'จบหลักสูตรได้ใบประกาศนียบัตรที่นำไปใช้ต่อได้จริง',
+        title_highlight: 'ใบประกาศนียบัตร',
+        lead: 'เก็บใบประกาศในระบบได้ทันทีหลังเรียนครบ และแชร์ต่อในโปรไฟล์ได้',
+        cta_primary_label: 'ดูใบประกาศ',
+        cta_primary_href: 'Certificates.html',
+        cta_secondary_label: 'เข้าคอมมูนิตี้',
+        cta_secondary_href: 'Community.html',
+        badge_icon: 'workspace_premium',
+        badge_title: 'Certificate',
+        badge_subtitle: 'เก็บใบประกาศในระบบได้ทันที',
+        theme: 'gold'
+      }
+    },
+    {
+      key: 'mode',
+      label: 'โหมดเรียน',
+      fill: {
+        eyebrow: 'เรียนได้ทุกที่',
+        title: 'เลือกสไตล์การเรียน Online • Onsite • Hybrid ได้ตามชีวิตคุณ',
+        title_highlight: 'Online • Onsite • Hybrid',
+        lead: 'จัดตารางเรียน เช็กอิน QR Onsite และเรียนออนไลน์ในระบบเดียว',
+        cta_primary_label: 'เริ่มเลือกโหมดเรียน',
+        cta_primary_href: 'Courses.html',
+        cta_secondary_label: 'สมัครสมาชิก',
+        cta_secondary_href: 'Register.html',
+        badge_icon: 'schedule',
+        badge_title: 'Flexible',
+        badge_subtitle: 'เลือกโหมดเรียนได้ตามไลฟ์สไตล์',
+        theme: 'sage'
+      }
+    },
+    {
+      key: 'start',
+      label: 'เริ่มต้น',
+      fill: {
+        eyebrow: 'PTS Learning',
+        title: 'ยกระดับทักษะ Personal Assistant',
+        title_highlight: 'Personal Assistant',
+        lead: 'หลักสูตรคุณภาพสำหรับเลขาและผู้ช่วยส่วนตัว พร้อมใบประกาศและคอมมูนิตี้',
+        cta_primary_label: 'ดูหลักสูตร',
+        cta_primary_href: 'Courses.html',
+        cta_secondary_label: 'สมัครสมาชิก',
+        cta_secondary_href: 'Register.html',
+        badge_icon: 'auto_awesome',
+        badge_title: 'PTS',
+        badge_subtitle: 'เริ่มเรียนได้ทันที',
+        theme: 'rose'
+      }
+    }
+  ];
+
+  const themePickerHtml = (selected, color) => themeOptions.map((t) => `
+    <button type="button" class="ban-theme${(selected || 'rose') === t.value ? ' is-active' : ''}"
+      data-theme="${t.value}" data-ban-theme title="${t.label}">
+      <span class="ban-theme__swatch" style="${t.value === 'custom' && color ? `background:${escapeHtml(color)}` : ''}" aria-hidden="true"></span>
+      <span class="ban-theme__label">${t.label}</span>
+    </button>
+  `).join('');
+
+  const formHtml = (s = {}) => {
+    const custom = parseHex(s.theme_color) || { hex: '#974258', r: 151, g: 66, b: 88 };
+    const theme = s.theme || 'rose';
+    return `
+    <input type="hidden" id="b-id" value="${s.slide_id || ''}">
+    <input type="hidden" id="b-theme" value="${escapeHtml(theme)}">
+    <input type="hidden" id="b-theme-color" value="${escapeHtml(theme === 'custom' ? (s.theme_color || custom.hex) : (s.theme_color || ''))}">
+    <input type="hidden" id="b-image" value="${escapeHtml(s.image_url || '')}">
+
+    <div class="ban-steps">
+      <span>1 เลือกสี</span>
+      <span>2 อัปโหลดรูป</span>
+      <span>3 ใส่ข้อความ</span>
+      <span>4 บันทึก</span>
+    </div>
+
+    <div class="ban-field mb-3">
+      <label>สีแบนเนอร์ (พรีเซ็ตเดิม หรือกำหนดเองด้วย RGB)</label>
+      <div class="ban-theme-grid" id="b-theme-picker">${themePickerHtml(theme, s.theme_color || custom.hex)}</div>
+      <div class="ban-rgb${theme === 'custom' ? '' : ' is-hidden'}" id="b-rgb-box">
+        <p class="text-sm font-bold m-0" style="color:var(--pts-primary,#974258)">กงล้อสี RGB — คลิกหรือลากเพื่อเลือกสี</p>
+        <div class="ban-wheel-layout">
+          <div class="ban-wheel-stage" id="b-wheel-stage">
+            <canvas id="b-wheel" width="220" height="220" aria-label="กงล้อสี"></canvas>
+            <span class="ban-wheel-marker" id="b-wheel-marker" aria-hidden="true"></span>
+          </div>
+          <div class="ban-wheel-side">
+            <div class="ban-wheel-swatch" id="b-wheel-swatch" style="background:${escapeHtml(custom.hex)}"></div>
+            <div>
+              <label for="b-bright">ความสว่าง</label>
+              <input type="range" id="b-bright" min="20" max="100" value="85">
+            </div>
+            <p class="text-xs text-on-surface-variant m-0">ลากบนกงล้อ = โทนสีและความเข้ม · สไลเดอร์ = ความสว่าง</p>
+          </div>
+        </div>
+        <div class="ban-rgb__row">
+          <div class="ban-field">
+            <label>R</label>
+            <input type="number" id="b-r" min="0" max="255" value="${custom.r}">
+          </div>
+          <div class="ban-field">
+            <label>G</label>
+            <input type="number" id="b-g" min="0" max="255" value="${custom.g}">
+          </div>
+          <div class="ban-field">
+            <label>B</label>
+            <input type="number" id="b-b" min="0" max="255" value="${custom.b}">
+          </div>
+          <div class="ban-field" style="flex:1.4 1 100px">
+            <label>HEX</label>
+            <input type="text" id="b-hex" maxlength="7" value="${escapeHtml(custom.hex)}" placeholder="#974258">
+          </div>
+          <div class="ban-field">
+            <label>สำรอง</label>
+            <input type="color" id="b-color" class="ban-rgb__picker" value="${escapeHtml(custom.hex)}" title="เปิดตัวเลือกสีของระบบ">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ban-preview mb-4" id="b-preview" data-theme="${escapeHtml(theme)}" style="${theme === 'custom' ? `--ban-c:${escapeHtml(s.theme_color || custom.hex)}` : ''}">
+      <div>
+        <p class="ban-preview__eyebrow" id="bp-eyebrow">${escapeHtml(s.eyebrow || 'ข้อความเล็ก')}</p>
+        <h3 class="ban-preview__title" id="bp-title"></h3>
+        <p class="ban-preview__lead" id="bp-lead">${escapeHtml(s.lead || 'คำอธิบายสั้นจะโผล่ตรงนี้')}</p>
+      </div>
+      <img class="ban-preview__img" id="bp-img" alt="" src="${escapeHtml(s.image_url || '')}"
+        onerror="this.style.opacity='0.35'">
+    </div>
+
+    <div class="ban-field mb-3">
+      <label>รูปแบนเนอร์</label>
+      <div class="ban-drop" id="b-drop" tabindex="0" role="button" aria-label="อัปโหลดรูปแบนเนอร์">
+        <p class="ban-drop__hint"><strong>คลิกหรือลากรูปมาวาง</strong> · JPG / PNG / WEBP · สูงสุด 5MB</p>
+        <input id="b-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" hidden>
+        <p id="b-upload-msg" class="text-xs mt-2 text-on-surface-variant"></p>
+      </div>
+    </div>
+
+    <div class="ban-grid ban-grid-2 mb-3">
+      <div class="ban-field" style="grid-column:1/-1">
+        <label>หัวข้อหลัก *</label>
+        <input id="b-title" placeholder="เช่น จบหลักสูตรได้ใบประกาศนียบัตรที่นำไปใช้ต่อได้จริง" value="${escapeHtml(s.title || '')}">
+      </div>
+      <div class="ban-field" style="grid-column:1/-1">
+        <label>คำที่อยากเน้นสีในหัวข้อ (พิมพ์ให้ตรงกับข้อความในหัวข้อ)</label>
+        <input id="b-highlight" placeholder="เช่น ใบประกาศนียบัตร" value="${escapeHtml(s.title_highlight || '')}">
+      </div>
+      <div class="ban-field">
+        <label>ข้อความเล็กเหนือหัวข้อ</label>
+        <input id="b-eyebrow" placeholder="เช่น พร้อมใบประกาศ" value="${escapeHtml(s.eyebrow || '')}">
+      </div>
+      <div class="ban-field">
+        <label>ลำดับการแสดง</label>
+        <input id="b-sort" type="number" min="1" value="${s.sort_order || data.length + 1}">
+      </div>
+      <div class="ban-field" style="grid-column:1/-1">
+        <label>คำอธิบายสั้น</label>
+        <textarea id="b-lead" rows="2" placeholder="อธิบายสั้นๆ 1–2 ประโยค">${escapeHtml(s.lead || '')}</textarea>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2 mb-3">
+      <span class="text-xs font-bold text-on-surface-variant self-center">เติมเร็ว:</span>
+      ${presets.map((p) => `<button type="button" class="border px-3 py-1.5 rounded-full text-sm font-bold" data-ban-preset="${p.key}">${p.label}</button>`).join('')}
+    </div>
+
+    <details class="ban-adv mb-4">
+      <summary>รายละเอียดเพิ่มเติม (ปุ่ม / แบดจ์ / alt)</summary>
+      <div class="ban-grid ban-grid-2">
+        <div class="ban-field">
+          <label>ปุ่มหลัก — ข้อความ</label>
+          <input id="b-cta1-label" value="${escapeHtml(s.cta_primary_label || '')}" placeholder="ดูหลักสูตร">
+        </div>
+        <div class="ban-field">
+          <label>ปุ่มหลัก — ลิงก์</label>
+          <input id="b-cta1-href" value="${escapeHtml(s.cta_primary_href || '')}" placeholder="Courses.html">
+        </div>
+        <div class="ban-field">
+          <label>ปุ่มรอง — ข้อความ</label>
+          <input id="b-cta2-label" value="${escapeHtml(s.cta_secondary_label || '')}" placeholder="สมัครสมาชิก">
+        </div>
+        <div class="ban-field">
+          <label>ปุ่มรอง — ลิงก์</label>
+          <input id="b-cta2-href" value="${escapeHtml(s.cta_secondary_href || '')}" placeholder="Register.html">
+        </div>
+        <div class="ban-field">
+          <label>ไอคอนแบดจ์</label>
+          <select id="b-icon">${iconOptions.map((i) => `<option value="${i}" ${s.badge_icon === i ? 'selected' : ''}>${i}</option>`).join('')}</select>
+        </div>
+        <div class="ban-field">
+          <label>ข้อความแบดจ์</label>
+          <input id="b-badge-title" value="${escapeHtml(s.badge_title || '')}" placeholder="Certificate">
+        </div>
+        <div class="ban-field" style="grid-column:1/-1">
+          <label>คำอธิบายใต้แบดจ์</label>
+          <input id="b-badge-sub" value="${escapeHtml(s.badge_subtitle || '')}" placeholder="เก็บใบประกาศในระบบได้ทันที">
+        </div>
+        <div class="ban-field" style="grid-column:1/-1">
+          <label>คำอธิบายรูป (alt)</label>
+          <input id="b-alt" value="${escapeHtml(s.image_alt || '')}" placeholder="ภาพประกอบแบนเนอร์">
+        </div>
+      </div>
+    </details>
+
+    <label class="flex items-center gap-2 text-sm mb-4">
+      <input id="b-active" type="checkbox" ${s.flag_use === 0 || s.flag_use === false ? '' : 'checked'}>
+      แสดงบนหน้าแรกทันทีหลังบันทึก
+    </label>
+
+    <div class="flex flex-wrap gap-2 mb-2">
+      <button type="button" id="b-save" class="bg-primary text-white px-5 py-2.5 rounded-full font-bold">
+        ${s.slide_id ? 'บันทึกการแก้ไข' : 'เพิ่มแบนเนอร์'}
+      </button>
+      ${s.slide_id ? '<button type="button" id="b-cancel" class="border px-5 py-2.5 rounded-full font-bold">ยกเลิก</button>' : ''}
+      <a href="Home.html" target="_blank" rel="noopener" class="border px-5 py-2.5 rounded-full font-bold text-sm self-center">ดูหน้าแรก</a>
+    </div>
+    <p id="b-msg" class="text-sm"></p>
+  `;
+  };
+
+  document.getElementById('panel').innerHTML = `
+    <div class="ban-wrap">
+      <div class="ban-card">
+        <h2 class="font-bold text-lg mb-1" id="b-form-title">เพิ่มแบนเนอร์หน้าแรก</h2>
+        <p class="text-sm text-on-surface-variant mb-4">เลือกสี → อัปโหลดรูป → ใส่หัวข้อ → กดบันทึก · เปลี่ยนสีจากรายการด้านล่างได้ทันทีโดยไม่ต้องเปิดแก้ไข</p>
+        <div id="b-form">${formHtml()}</div>
+      </div>
+      <div class="ban-card">
+        <h3 class="font-bold mb-3">รายการแบนเนอร์ (${data.length})</h3>
+        <div class="space-y-3">${data.map((s) => `
+          <div class="ban-list-item${!s.flag_use ? ' is-hidden' : ''}" data-slide-id="${s.slide_id}">
+            <img src="${escapeHtml(s.image_url || '')}" alt="" class="w-full h-28 object-cover rounded-xl bg-gray-100" style="object-position:center 14%" onerror="this.style.display='none'">
+            <div class="min-w-0">
+              <p class="text-xs text-on-surface-variant mb-1">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'} · ${themeLabel(s)}</p>
+              <p class="font-bold truncate">${escapeHtml(s.eyebrow || '—')}</p>
+              <p class="text-sm truncate">${escapeHtml(s.title)}</p>
+              <div class="ban-mini-themes" role="group" aria-label="เปลี่ยนสีแบนเนอร์">
+                ${themeOptions.filter((t) => t.value !== 'custom').map((t) => `
+                  <button type="button" data-theme="${t.value}" data-quick-theme="${s.slide_id}"
+                    class="${(s.theme || 'rose') === t.value ? 'is-active' : ''}" title="${t.label}" aria-label="สี ${t.label}"></button>
+                `).join('')}
+                <label class="inline-flex items-center" title="กำหนดสีเอง">
+                  <input type="color" data-quick-custom="${s.slide_id}" value="${escapeHtml(parseHex(s.theme_color)?.hex || '#974258')}"
+                    style="width:28px;height:22px;padding:0;border:0;border-radius:999px;cursor:pointer;background:transparent">
+                </label>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 shrink-0">
+              <button class="edit-banner border px-3 py-1.5 rounded-full text-sm font-bold" data-id="${s.slide_id}">แก้ไข</button>
+              ${s.flag_use
+                ? `<button class="hide-banner text-red-600 font-bold text-sm" data-id="${s.slide_id}">ซ่อน</button>`
+                : `<button class="show-banner border px-3 py-1.5 rounded-full text-sm font-bold" data-id="${s.slide_id}">แสดง</button>`}
+            </div>
+          </div>`).join('') || '<p class="text-on-surface-variant">ยังไม่มีแบนเนอร์ — เพิ่มอันแรกด้านบนได้เลย</p>'}
+        </div>
+      </div>
+    </div>
+  `;
+
+  const readForm = () => ({
+    sort_order: Number(document.getElementById('b-sort').value || 1),
+    theme: document.getElementById('b-theme').value || 'rose',
+    theme_color: document.getElementById('b-theme-color').value || null,
+    eyebrow: document.getElementById('b-eyebrow').value,
+    title: document.getElementById('b-title').value,
+    title_highlight: document.getElementById('b-highlight').value,
+    lead: document.getElementById('b-lead').value,
+    cta_primary_label: document.getElementById('b-cta1-label').value,
+    cta_primary_href: document.getElementById('b-cta1-href').value,
+    cta_secondary_label: document.getElementById('b-cta2-label').value,
+    cta_secondary_href: document.getElementById('b-cta2-href').value,
+    image_url: document.getElementById('b-image').value,
+    image_alt: document.getElementById('b-alt').value,
+    badge_icon: document.getElementById('b-icon').value,
+    badge_title: document.getElementById('b-badge-title').value,
+    badge_subtitle: document.getElementById('b-badge-sub').value,
+    flag_use: document.getElementById('b-active').checked
+  });
+
+  const renderPreviewTitle = (title, highlight) => {
+    const el = document.getElementById('bp-title');
+    if (!el) return;
+    const raw = String(title || 'หัวข้อแบนเนอร์');
+    const h = String(highlight || '').trim();
+    if (!h || raw.indexOf(h) < 0) {
+      el.textContent = raw;
+      return;
+    }
+    const idx = raw.indexOf(h);
+    el.innerHTML = `${escapeHtml(raw.slice(0, idx))}<em>${escapeHtml(h)}</em>${escapeHtml(raw.slice(idx + h.length))}`;
+  };
+
+  const syncPreview = () => {
+    const theme = document.getElementById('b-theme')?.value || 'rose';
+    const color = document.getElementById('b-theme-color')?.value || '#974258';
+    const preview = document.getElementById('b-preview');
+    const rgbBox = document.getElementById('b-rgb-box');
+    if (preview) {
+      preview.dataset.theme = theme;
+      if (theme === 'custom') preview.style.setProperty('--ban-c', color);
+      else preview.style.removeProperty('--ban-c');
+    }
+    if (rgbBox) rgbBox.classList.toggle('is-hidden', theme !== 'custom');
+    if (theme === 'custom') {
+      requestAnimationFrame(() => initColorWheel(true));
+    }
+    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
+    if (customBtn && theme === 'custom') customBtn.style.background = color;
+    const swatch = document.getElementById('b-wheel-swatch');
+    if (swatch) swatch.style.background = color;
+    const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
+    const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
+    const img = document.getElementById('b-image')?.value || '';
+    const bpEyebrow = document.getElementById('bp-eyebrow');
+    const bpLead = document.getElementById('bp-lead');
+    const bpImg = document.getElementById('bp-img');
+    if (bpEyebrow) bpEyebrow.textContent = eyebrow;
+    if (bpLead) bpLead.textContent = lead;
+    if (bpImg) {
+      bpImg.style.opacity = '1';
+      bpImg.src = img || '';
+    }
+    renderPreviewTitle(
+      document.getElementById('b-title')?.value,
+      document.getElementById('b-highlight')?.value
+    );
+  };
+
+  let wheelState = { h: 340, s: 0.55, v: 0.85, drawing: false, bound: false };
+
+  const drawColorWheel = () => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    const cx = size / 2;
+    const cy = size / 2;
+    const radius = size / 2 - 2;
+    const image = ctx.createImageData(size, size);
+    const data = image.data;
+    const v = wheelState.v;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const i = (y * size + x) * 4;
+        if (dist > radius) {
+          data[i + 3] = 0;
+          continue;
+        }
+        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        const sat = Math.min(1, dist / radius);
+        const rgb = hsvToRgb(angle, sat, v);
+        data[i] = rgb.r;
+        data[i + 1] = rgb.g;
+        data[i + 2] = rgb.b;
+        data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+
+    // center hole soft white for readability
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(8, radius * 0.08), 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.15 + (1 - v) * 0.35})`;
+    ctx.fill();
+
+    const marker = document.getElementById('b-wheel-marker');
+    if (marker) {
+      const mr = wheelState.s * radius;
+      const rad = wheelState.h * Math.PI / 180;
+      const mx = cx + Math.cos(rad) * mr;
+      const my = cy + Math.sin(rad) * mr;
+      marker.style.left = `${(mx / size) * 100}%`;
+      marker.style.top = `${(my / size) * 100}%`;
+      marker.style.background = toHex(
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).r,
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).g,
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).b
+      );
+    }
+  };
+
+  const colorFromWheelEvent = (e) => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const size = canvas.width;
+    const scaleX = size / rect.width;
+    const scaleY = size / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const cx = size / 2;
+    const cy = size / 2;
+    const dx = x - cx;
+    const dy = y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const radius = size / 2 - 2;
+    let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (angle < 0) angle += 360;
+    const sat = Math.min(1, dist / radius);
+    wheelState.h = angle;
+    wheelState.s = sat;
+    return hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
+  };
+
+  const applyCustomColor = (hexOrParts, opts = {}) => {
+    let parsed = null;
+    if (typeof hexOrParts === 'string') parsed = parseHex(hexOrParts);
+    else if (hexOrParts && typeof hexOrParts === 'object') {
+      parsed = parseHex(toHex(hexOrParts.r, hexOrParts.g, hexOrParts.b));
+    }
+    if (!parsed) return;
+    const colorEl = document.getElementById('b-theme-color');
+    const picker = document.getElementById('b-color');
+    const hex = document.getElementById('b-hex');
+    const r = document.getElementById('b-r');
+    const g = document.getElementById('b-g');
+    const b = document.getElementById('b-b');
+    if (colorEl) colorEl.value = parsed.hex;
+    if (picker) picker.value = parsed.hex;
+    if (hex) hex.value = parsed.hex;
+    if (r) r.value = parsed.r;
+    if (g) g.value = parsed.g;
+    if (b) b.value = parsed.b;
+
+    if (!opts.fromWheel) {
+      const hsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
+      wheelState.h = hsv.h;
+      wheelState.s = hsv.s;
+      wheelState.v = Math.max(0.2, hsv.v || 0.85);
+      const bright = document.getElementById('b-bright');
+      if (bright) bright.value = String(Math.round(wheelState.v * 100));
+    }
+    drawColorWheel();
+
+    const swatch = document.getElementById('b-wheel-swatch');
+    if (swatch) swatch.style.background = parsed.hex;
+
+    // sync preview without re-init wheel loop
+    const theme = 'custom';
+    const preview = document.getElementById('b-preview');
+    const rgbBox = document.getElementById('b-rgb-box');
+    if (preview) {
+      preview.dataset.theme = theme;
+      preview.style.setProperty('--ban-c', parsed.hex);
+    }
+    if (rgbBox) rgbBox.classList.remove('is-hidden');
+    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
+    if (customBtn) customBtn.style.background = parsed.hex;
+    const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
+    const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
+    const img = document.getElementById('b-image')?.value || '';
+    const bpEyebrow = document.getElementById('bp-eyebrow');
+    const bpLead = document.getElementById('bp-lead');
+    const bpImg = document.getElementById('bp-img');
+    if (bpEyebrow) bpEyebrow.textContent = eyebrow;
+    if (bpLead) bpLead.textContent = lead;
+    if (bpImg) {
+      bpImg.style.opacity = '1';
+      bpImg.src = img || '';
+    }
+    renderPreviewTitle(
+      document.getElementById('b-title')?.value,
+      document.getElementById('b-highlight')?.value
+    );
+  };
+
+  const initColorWheel = (onlyRedraw) => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return;
+    if (!onlyRedraw) {
+      const current = parseHex(document.getElementById('b-theme-color')?.value || '#974258')
+        || { r: 151, g: 66, b: 88, hex: '#974258' };
+      const hsv = rgbToHsv(current.r, current.g, current.b);
+      wheelState.h = hsv.h;
+      wheelState.s = hsv.s;
+      wheelState.v = Math.max(0.2, hsv.v || 0.85);
+      const bright = document.getElementById('b-bright');
+      if (bright) bright.value = String(Math.round(wheelState.v * 100));
+    }
+    drawColorWheel();
+
+    if (wheelState.bound) return;
+    wheelState.bound = true;
+
+    const onMove = (e) => {
+      if (!wheelState.drawing) return;
+      e.preventDefault();
+      const rgb = colorFromWheelEvent(e);
+      if (!rgb) return;
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      applyCustomColor(rgb, { fromWheel: true });
+    };
+    const onUp = () => { wheelState.drawing = false; };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      wheelState.drawing = true;
+      canvas.setPointerCapture?.(e.pointerId);
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
+        btn.classList.toggle('is-active', btn.dataset.theme === 'custom');
+      });
+      const rgb = colorFromWheelEvent(e);
+      if (rgb) applyCustomColor(rgb, { fromWheel: true });
+    });
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerup', onUp);
+    canvas.addEventListener('pointercancel', onUp);
+
+    document.getElementById('b-bright')?.addEventListener('input', (e) => {
+      wheelState.v = Math.max(0.2, Math.min(1, (Number(e.target.value) || 85) / 100));
+      const rgb = hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      applyCustomColor(rgb, { fromWheel: true });
+    });
+  };
+
+  const setTheme = (theme) => {
+    const t = themeOptions.some((x) => x.value === theme) ? theme : 'rose';
+    const hidden = document.getElementById('b-theme');
+    if (hidden) hidden.value = t;
+    document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.theme === t);
+    });
+    if (t === 'custom') {
+      const current = document.getElementById('b-theme-color')?.value || '#974258';
+      applyCustomColor(current);
+      initColorWheel(false);
+    } else {
+      syncPreview();
+    }
+  };
+
+  const fillFields = (obj) => {
+    const map = {
+      'b-eyebrow': 'eyebrow',
+      'b-title': 'title',
+      'b-highlight': 'title_highlight',
+      'b-lead': 'lead',
+      'b-cta1-label': 'cta_primary_label',
+      'b-cta1-href': 'cta_primary_href',
+      'b-cta2-label': 'cta_secondary_label',
+      'b-cta2-href': 'cta_secondary_href',
+      'b-badge-title': 'badge_title',
+      'b-badge-sub': 'badge_subtitle',
+      'b-icon': 'badge_icon'
+    };
+    Object.entries(map).forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (el && obj[key] != null) el.value = obj[key];
+    });
+    if (obj.theme_color) {
+      const colorEl = document.getElementById('b-theme-color');
+      if (colorEl) colorEl.value = obj.theme_color;
+    }
+    if (obj.theme) setTheme(obj.theme);
+    else syncPreview();
+  };
+
+  const uploadFile = async (file) => {
+    const msg = document.getElementById('b-upload-msg');
+    if (!file) { if (msg) msg.textContent = 'เลือกไฟล์ก่อน'; return; }
+    if (msg) msg.textContent = 'กำลังอัปโหลด...';
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/admin/hero-slides/upload', { method: 'POST', credentials: 'include', body: fd });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
+      document.getElementById('b-image').value = json.url;
+      if (msg) msg.textContent = 'อัปโหลดแล้ว ✓';
+      syncPreview();
+    } catch (e) {
+      if (msg) msg.textContent = e.message;
+    }
+  };
+
+  const wireForm = () => {
+    wheelState.bound = false;
+    syncPreview();
+    if (document.getElementById('b-theme')?.value === 'custom') {
+      initColorWheel(false);
+    }
+
+    document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
+      btn.onclick = () => setTheme(btn.dataset.theme);
+    });
+
+    document.getElementById('b-color')?.addEventListener('input', (e) => {
+      setTheme('custom');
+      applyCustomColor(e.target.value);
+    });
+    document.getElementById('b-hex')?.addEventListener('change', (e) => {
+      setTheme('custom');
+      applyCustomColor(e.target.value);
+    });
+    ['b-r', 'b-g', 'b-b'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('change', () => {
+        setTheme('custom');
+        applyCustomColor({
+          r: document.getElementById('b-r').value,
+          g: document.getElementById('b-g').value,
+          b: document.getElementById('b-b').value
+        });
+      });
+    });
+
+    ['b-title', 'b-highlight', 'b-eyebrow', 'b-lead'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('input', syncPreview);
+    });
+
+    document.querySelectorAll('[data-ban-preset]').forEach((btn) => {
+      btn.onclick = () => {
+        const preset = presets.find((p) => p.key === btn.dataset.banPreset);
+        if (preset) fillFields(preset.fill);
+      };
+    });
+
+    const drop = document.getElementById('b-drop');
+    const fileInput = document.getElementById('b-file');
+    drop?.addEventListener('click', () => fileInput?.click());
+    drop?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput?.click(); }
+    });
+    fileInput?.addEventListener('change', () => uploadFile(fileInput.files?.[0]));
+    ['dragenter', 'dragover'].forEach((ev) => {
+      drop?.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('is-drag'); });
+    });
+    ['dragleave', 'drop'].forEach((ev) => {
+      drop?.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('is-drag'); });
+    });
+    drop?.addEventListener('drop', (e) => {
+      const file = e.dataTransfer?.files?.[0];
+      if (file) uploadFile(file);
+    });
+
+    document.getElementById('b-save').onclick = async () => {
+      const msg = document.getElementById('b-msg');
+      const id = document.getElementById('b-id').value;
+      const payload = readForm();
+      try {
+        if (!payload.title.trim()) throw new Error('กรุณาระบุหัวข้อแบนเนอร์');
+        if (id) {
+          await api(`/api/admin/hero-slides/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
+        } else {
+          await api('/api/admin/hero-slides', { method: 'POST', body: JSON.stringify(payload) });
+        }
+        msg.className = 'text-sm text-emerald-700';
+        msg.textContent = 'บันทึกแล้ว — เปิดหน้าแรกเพื่อดูผล';
+        renderBanners();
+      } catch (e) {
+        msg.className = 'text-sm text-red-600';
+        msg.textContent = e.message;
+      }
+    };
+
+    document.getElementById('b-cancel')?.addEventListener('click', () => renderBanners());
+  };
+
+  wireForm();
+
+  document.querySelectorAll('.edit-banner').forEach((btn) => {
+    btn.onclick = () => {
+      const slide = data.find((s) => String(s.slide_id) === btn.dataset.id);
+      if (!slide) return;
+      document.getElementById('b-form-title').textContent = `แก้ไขแบนเนอร์ #${slide.slide_id}`;
+      document.getElementById('b-form').innerHTML = formHtml(slide);
+      wireForm();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+  });
+
+  document.querySelectorAll('.hide-banner').forEach((btn) => {
+    btn.onclick = async () => {
+      await api(`/api/admin/hero-slides/${btn.dataset.id}`, { method: 'DELETE' });
+      renderBanners();
+    };
+  });
+
+  document.querySelectorAll('.show-banner').forEach((btn) => {
+    btn.onclick = async () => {
+      await api(`/api/admin/hero-slides/${btn.dataset.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ flag_use: 1 })
+      });
+      renderBanners();
+    };
+  });
+
+  document.querySelectorAll('[data-quick-theme]').forEach((btn) => {
+    btn.onclick = async () => {
+      const id = btn.dataset.quickTheme;
+      const theme = btn.dataset.theme;
+      try {
+        await api(`/api/admin/hero-slides/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ theme })
+        });
+        renderBanners();
+      } catch (e) {
+        alert(e.message || 'เปลี่ยนสีไม่สำเร็จ');
+      }
+    };
+  });
+
+  document.querySelectorAll('[data-quick-custom]').forEach((input) => {
+    input.addEventListener('change', async () => {
+      const id = input.dataset.quickCustom;
+      const theme_color = parseHex(input.value)?.hex;
+      if (!theme_color) return;
+      try {
+        await api(`/api/admin/hero-slides/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ theme: 'custom', theme_color })
+        });
+        renderBanners();
+      } catch (e) {
+        alert(e.message || 'เปลี่ยนสีไม่สำเร็จ');
+      }
+    });
+  });
+}
+
+async function renderUsers() {
+  const { data } = await api('/api/admin/users');
+  document.getElementById('panel').innerHTML = `
+    <div class="space-y-2">${data.map(u => `
+      <div class="border rounded-xl p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div>
+          <p class="font-bold">${escapeHtml(u.full_name || '-')}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(u.email)} · ${escapeHtml(u.Role || 'student')} · Flag ${escapeHtml(u.FlagUse || '-')}</p>
+        </div>
+        <div class="flex gap-2">
+          <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="student">student</button>
+          <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="admin">admin</button>
+          <button class="set-flag border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-flag="Y">เปิดใช้</button>
+          <button class="set-flag border px-3 py-1 rounded-full text-sm text-red-600" data-id="${u.user_id}" data-flag="N">ระงับ</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  document.querySelectorAll('.set-role').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/users/${btn.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ role: btn.dataset.role }) }); renderUsers(); };
+  });
+  document.querySelectorAll('.set-flag').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/users/${btn.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ flag_use: btn.dataset.flag }) }); renderUsers(); };
+  });
+}
+
+async function renderPosts() {
+  const { data } = await api('/api/admin/posts');
+  document.getElementById('panel').innerHTML = `
+    <div class="space-y-2">${data.map(p => `
+      <div class="border rounded-xl p-3 ${p.flag_use ? '' : 'opacity-50'}">
+        <div class="flex justify-between gap-2">
+          <div>
+            <p class="font-bold">${escapeHtml(p.author_name)} <span class="text-xs font-normal text-on-surface-variant">${escapeHtml(p.email)}</span></p>
+            <p class="text-sm whitespace-pre-line mt-1">${escapeHtml(p.content)}</p>
+          </div>
+          ${p.flag_use ? `<button class="hide-post text-red-600 font-bold h-fit" data-id="${p.post_id}">ซ่อน</button>` : '<span class="text-xs">ซ่อนแล้ว</span>'}
+        </div>
+      </div>`).join('') || '<p>ไม่มีโพสต์</p>'}
+    </div>`;
+  document.querySelectorAll('.hide-post').forEach(btn => {
+    btn.onclick = async () => { await api(`/api/admin/posts/${btn.dataset.id}`, { method: 'DELETE' }); renderPosts(); };
+  });
+}
+
+async function renderPayments() {
+  const { data } = await api('/api/admin/payments');
+  document.getElementById('panel').innerHTML = `
+    <div class="space-y-2">${data.map(p => `
+      <div class="border rounded-xl p-3">
+        <p class="font-bold">${escapeHtml(p.full_name)} · ${escapeHtml(p.course_name)}</p>
+        <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} บาท · ${escapeHtml(p.status)} · ${escapeHtml(p.reference_code || '')}</p>
+      </div>`).join('') || '<p>ยังไม่มีรายการชำระเงิน</p>'}
+    </div>`;
+}
+
+async function renderMail() {
+  const data = await api('/api/admin/mail');
+  const f = data.form || {};
+  const s = data.status || {};
+  document.getElementById('panel').innerHTML = `
+    <div class="mb-5 p-4 rounded-2xl ${s.ready ? 'bg-emerald-50 border border-emerald-200' : 'bg-amber-50 border border-amber-200'}">
+      <p class="font-bold ${s.ready ? 'text-emerald-800' : 'text-amber-800'}">${s.ready ? 'พร้อมส่งอีเมล OTP จริง' : 'ยังไม่พร้อม — กรุณาตั้งค่าด้านล่าง'}</p>
+      <p class="text-sm mt-1 text-on-surface-variant">SMTP: ${s.smtpConfigured ? 'ตั้งแล้ว' : 'ยังไม่ตั้ง'} · Brevo: ${s.brevoConfigured ? 'ตั้งแล้ว' : 'ยังไม่ตั้ง'} · From: ${escapeHtml(s.fromEmail || '-')}</p>
+    </div>
+    <h2 class="font-bold text-lg mb-2">ตั้งค่าอีเมลผู้ส่งของระบบ</h2>
+    <p class="text-sm text-on-surface-variant mb-4">
+      <strong>thanvasu.com ใช้ Google Workspace</strong> — SMTP <code>smtp.gmail.com</code><br>
+      อีเมลด้านล่างคือ<strong>ผู้ส่งของระบบ (กล่องเดียว)</strong> แต่ OTP จะถูกส่งไปหา<strong>อีเมลของผู้ใช้ทุกคน</strong>ที่มีในฐานข้อมูล (Gmail, Hotmail, เมลบริษัท ฯลฯ ไม่จำกัด)<br>
+      สร้าง App Password ที่ <a class="text-primary font-bold underline" href="https://myaccount.google.com/apppasswords" target="_blank" rel="noopener">myaccount.google.com/apppasswords</a>
+      หรือแก้ <code>backend/mail.local.js</code>
+    </p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
+      <label class="text-sm">โหมด
+        <select id="m-mode" class="mt-1 w-full border rounded-xl px-3 py-2">
+          <option value="auto" ${f.mode==='auto'?'selected':''}>auto (Brevo ก่อน แล้ว SMTP)</option>
+          <option value="smtp" ${f.mode==='smtp'?'selected':''}>smtp เท่านั้น</option>
+          <option value="brevo" ${f.mode==='brevo'?'selected':''}>brevo เท่านั้น</option>
+        </select>
+      </label>
+      <label class="text-sm">ชื่อผู้ส่ง
+        <input id="m-from-name" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.fromName||'PTS Learning')}">
+      </label>
+      <label class="text-sm">อีเมลผู้ส่งของระบบ (From — กล่องเดียว)
+        <input id="m-from-email" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="noreply@thanvasu.com" value="${escapeHtml(f.fromEmail||'')}">
+      </label>
+      <label class="text-sm">SMTP Host
+        <input id="m-host" class="mt-1 w-full border rounded-xl px-3 py-2" value="${escapeHtml(f.smtpHost||'smtp.office365.com')}">
+      </label>
+      <label class="text-sm">SMTP Port
+        <input id="m-port" type="number" class="mt-1 w-full border rounded-xl px-3 py-2" value="${Number(f.smtpPort||587)}">
+      </label>
+      <label class="text-sm">SMTP User (อีเมลล็อกอิน)
+        <input id="m-user" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="you@thanvasu.com" value="${escapeHtml(f.smtpUser||'')}">
+      </label>
+      <label class="text-sm">SMTP Password / App Password ${f.hasSmtpPass ? '<span class="text-emerald-700">(มีรหัสบันทึกไว้แล้ว — เว้นว่างถ้าไม่เปลี่ยน)</span>' : ''}
+        <div class="pts-pw-wrap relative mt-1">
+          <input id="m-pass" type="password" class="w-full border rounded-xl px-3 py-2 pr-12 pts-pw-input" data-pts-pw-field="1" placeholder="${f.hasSmtpPass ? '••••••••' : 'รหัสผ่านอีเมล'}">
+        </div>
+      </label>
+      <label class="text-sm">Brevo API Key ${f.hasBrevoKey ? '<span class="text-emerald-700">(มีคีย์แล้ว — เว้นว่างถ้าไม่เปลี่ยน)</span>' : ''}
+        <div class="pts-pw-wrap relative mt-1">
+          <input id="m-brevo" type="password" class="w-full border rounded-xl px-3 py-2 pr-12 pts-pw-input" data-pts-pw-field="1" placeholder="${f.hasBrevoKey ? '••••••••' : 'xkeysib-...'}">
+        </div>
+      </label>
+    </div>
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button id="save-mail" class="pts-btn pts-btn-primary">บันทึกการตั้งค่าอีเมล</button>
+    </div>
+    <h3 class="font-bold mb-2">ทดสอบส่ง OTP ไปอีเมลใดก็ได้</h3>
+    <p class="text-sm text-on-surface-variant mb-2">ใส่เมลผู้รับทดสอบ (ไม่ต้องเป็นเมล thanvasu) เพื่อยืนยันว่าส่งถึงทุกอีเมลได้</p>
+    <div class="flex flex-col sm:flex-row gap-2">
+      <input id="m-test-email" class="flex-1 border rounded-xl px-3 py-2" placeholder="อีเมลปลายทางทดสอบ">
+      <button id="test-mail" class="pts-btn pts-btn-outline">ส่ง OTP ทดสอบ</button>
+    </div>
+    <p id="mail-msg" class="pts-msg"></p>`;
+
+  if (window.PtsPasswordToggle) window.PtsPasswordToggle.bindAll(document.getElementById('panel'));
+
+  document.getElementById('save-mail').onclick = async () => {
+    const msg = document.getElementById('mail-msg');
+    try {
+      const body = {
+        mode: document.getElementById('m-mode').value,
+        fromName: document.getElementById('m-from-name').value,
+        fromEmail: document.getElementById('m-from-email').value,
+        smtpHost: document.getElementById('m-host').value,
+        smtpPort: Number(document.getElementById('m-port').value || 587),
+        smtpUser: document.getElementById('m-user').value,
+        smtpPass: document.getElementById('m-pass').value,
+        brevoApiKey: document.getElementById('m-brevo').value
+      };
+      const res = await api('/api/admin/mail', { method: 'PUT', body: JSON.stringify(body) });
+      msg.textContent = res.message;
+      msg.className = 'pts-msg pts-msg--ok';
+      renderMail();
+    } catch (e) {
+      msg.textContent = e.message;
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  };
+
+  document.getElementById('test-mail').onclick = async () => {
+    const msg = document.getElementById('mail-msg');
+    try {
+      const res = await api('/api/admin/mail/test', {
+        method: 'POST',
+        body: JSON.stringify({ email: document.getElementById('m-test-email').value })
+      });
+      msg.textContent = res.message;
+      msg.className = 'pts-msg pts-msg--ok';
+    } catch (e) {
+      msg.textContent = e.message;
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  };
+}
+
+const tabs = {
+  courses: renderCourses,
+  lessons: renderLessons,
+  schedules: renderSchedules,
+  banners: renderBanners,
+  users: renderUsers,
+  posts: renderPosts,
+  payments: renderPayments,
+  mail: renderMail
+};
+
+function activateTab(name) {
+  const key = tabs[name] ? name : 'courses';
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === key);
+  });
+  tabs[key]();
+  if (location.hash !== '#' + key) {
+    history.replaceState(null, '', '#' + key);
+  }
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.onclick = () => activateTab(btn.dataset.tab);
+});
+
+window.addEventListener('hashchange', () => {
+  activateTab((location.hash || '').replace(/^#/, ''));
+});
+
+(async () => {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+  if ((me.user.role || '').toLowerCase() !== 'admin') {
+    return location.href = 'Home.html';
+  }
+  activateTab((location.hash || '').replace(/^#/, '') || 'courses');
+})().catch(err => console.error(err));
+</script>
+<!-- PTS-NAV-INLINE-BOOT -->
+<script>
+(function(){
+  var box = document.getElementById('app-navbar');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'app-navbar';
+    if (document.body) document.body.insertBefore(box, document.body.firstChild);
+  }
+  if (box && !box.querySelector('nav')) {
+    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
+      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
+      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
+      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
+      + '<div style="display:flex;gap:8px">'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '</div></div></nav>';
+  }
+})();
+</script>
+<script src="password-toggle.js?v=20260720e"></script>
+<script src="/comp/navbar.js?v=20260722g"></script>
+</body>
+</html>
