@@ -161,11 +161,11 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
         delete req.session.googleOAuthPurpose;
         delete req.session.googleOAuthUserId;
 
-        const role = req.session.user.role;
         let next = (req.session.googleLoginNext || '').trim();
         delete req.session.googleLoginNext;
         if (!next) {
-            next = role === 'admin' ? 'Admin.html' : 'DashbordU.html';
+            // หลังล็อกอินด้วย Gmail ไปหน้าแรกเสมอ
+            next = 'Home.html';
         }
 
         const finish = () => res.redirect(`/${next.replace(/^\//, '')}`);
