@@ -84,7 +84,7 @@ function renderAuthChrome() {
   const hero = document.getElementById('hero-actions');
   const sub = document.getElementById('hero-sub');
   if (currentUser) {
-    sub.textContent = 'สมัครเรียน บันทึกคอร์สโปรด และเข้าเรียนได้ทันทีหลังล็อกอิน';
+    sub.textContent = 'สมัครเรียน บันทึกหลักสูตรโปรด และเข้าเรียนได้ทันทีหลังล็อกอิน';
     hero.innerHTML = `
       <a class="pts-btn pts-btn-outline" href="Favorites.html">รายการโปรด</a>
       <a class="pts-btn pts-btn-primary" href="DashbordU.html">แดชบอร์ด</a>`;
@@ -109,7 +109,7 @@ function makeCourseCard(course) {
           <span class="px-3 py-1 rounded-full text-[12px] font-bold ${badge.classes}">${badge.label}</span>
         </div>
         ${currentUser ? `
-          <button type="button" class="fav-btn absolute top-3 right-3 w-10 h-10 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกคอร์สโปรด">
+          <button type="button" class="fav-btn absolute top-3 right-3 w-10 h-10 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด">
             <span class="material-symbols-outlined">favorite</span>
           </button>` : ''}
       </div>
@@ -149,9 +149,9 @@ function openCourseModal(course) {
         <div class="space-y-2">
           ${enrolled
             ? `<a class="pts-btn pts-btn-primary w-full" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
-            : `<button type="button" id="enroll-course-btn" class="pts-btn pts-btn-primary w-full">สมัครเรียนคอร์สนี้</button>`}
+            : `<button type="button" id="enroll-course-btn" class="pts-btn pts-btn-primary w-full">สมัครเรียนหลักสูตรนี้</button>`}
           <a class="pts-btn pts-btn-outline w-full" href="Payments.html?courseId=${course.course_id}">ชำระเงิน</a>
-          <button type="button" id="fav-course-btn" class="pts-btn pts-btn-ghost w-full">${Number(course.is_favorited) ? 'นำออกจากคอร์สโปรด' : 'บันทึกเป็นคอร์สโปรด'}</button>
+          <button type="button" id="fav-course-btn" class="pts-btn pts-btn-ghost w-full">${Number(course.is_favorited) ? 'นำออกจากหลักสูตรโปรด' : 'บันทึกเป็นหลักสูตรโปรด'}</button>
         </div>` : `
         <div class="flex gap-2 mt-4">
           <a class="pts-btn pts-btn-primary flex-1" href="Login.html">เข้าสู่ระบบ</a>
@@ -179,7 +179,7 @@ function openCourseModal(course) {
       } catch (err) {
         modal.querySelector('#enroll-message').textContent = err.message;
         enrollBtn.disabled = false;
-        enrollBtn.textContent = 'สมัครเรียนคอร์สนี้';
+        enrollBtn.textContent = 'สมัครเรียนหลักสูตรนี้';
       }
     };
   }
@@ -191,7 +191,7 @@ function openCourseModal(course) {
       const data = await res.json();
       if (!res.ok || !data.success) { console.error(data.message || 'ไม่สำเร็จ'); return; }
       course.is_favorited = data.favorited ? 1 : 0;
-      favBtn.textContent = data.favorited ? 'นำออกจากคอร์สโปรด' : 'บันทึกเป็นคอร์สโปรด';
+      favBtn.textContent = data.favorited ? 'นำออกจากหลักสูตรโปรด' : 'บันทึกเป็นหลักสูตรโปรด';
       renderCourses(allCourses);
     };
   }
@@ -234,7 +234,7 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
   const fav = e.target.closest('.fav-btn');
   const detail = e.target.closest('.course-detail-btn');
   if (fav) {
-    if (!requireAuth('บันทึกคอร์สโปรด')) return;
+    if (!requireAuth('บันทึกหลักสูตรโปรด')) return;
     const id = Number(fav.dataset.courseId);
     const res = await fetch(`/api/courses/${id}/favorite`, { method: 'POST', credentials: 'include' });
     const data = await res.json();
@@ -259,7 +259,7 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
     renderAuthChrome();
     const res = await fetch('/api/courses', { credentials: 'include' });
     const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.message || 'โหลดคอร์สไม่สำเร็จ');
+    if (!res.ok || !data.success) throw new Error(data.message || 'โหลดหลักสูตรไม่สำเร็จ');
     renderCourses(data.data || []);
     const urlFilter = new URLSearchParams(location.search).get('filter');
     if (urlFilter) {

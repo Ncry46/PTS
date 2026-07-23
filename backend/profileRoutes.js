@@ -263,7 +263,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
 
     router.get('/courses/:courseId', async (req, res) => {
         const courseId = parseInt(req.params.courseId, 10);
-        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
         try {
             const pool = await poolPromise;
             const userId = req.session?.user?.user_id || null;
@@ -283,7 +283,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     WHERE c.course_id = @courseId
                 `);
             if (!result.recordset.length) {
-                return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
             const lessons = await pool.request()
                 .input('courseId', sql.Int, courseId)

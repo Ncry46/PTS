@@ -185,7 +185,7 @@
 </a>
 <a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="#my-courses">
 <span class="material-symbols-outlined">menu_book</span>
-<span class="font-label-md text-label-md">คอร์สของฉัน</span>
+<span class="font-label-md text-label-md">หลักสูตรของฉัน</span>
 </a>
 <a class="flex items-center gap-sm text-on-surface-variant hover:bg-surface-container-high hover:translate-x-1 rounded-xl px-md py-sm transition-all active:scale-98" href="Schedule.html">
 <span class="material-symbols-outlined">calendar_today</span>
@@ -241,7 +241,7 @@
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">play_lesson</span>
 </div>
 <div>
-<h3 id="dash-in-progress" class="font-headline-sm text-headline-sm text-on-surface">0 คอร์ส</h3>
+<h3 id="dash-in-progress" class="font-headline-sm text-headline-sm text-on-surface">0 หลักสูตร</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant">กำลังเรียนอยู่</p>
 </div>
 </div>
@@ -250,7 +250,7 @@
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">task_alt</span>
 </div>
 <div>
-<h3 id="dash-completed" class="font-headline-sm text-headline-sm text-on-surface">0 คอร์ส</h3>
+<h3 id="dash-completed" class="font-headline-sm text-headline-sm text-on-surface">0 หลักสูตร</h3>
 <p class="font-body-sm text-body-sm text-on-surface-variant">เรียนจบแล้ว</p>
 </div>
 </div>
@@ -263,11 +263,11 @@
 <!-- Learning Card -->
 <div>
 <div class="flex justify-between items-end mb-md">
-<h3 class="font-headline-sm text-headline-sm">คอร์สของฉัน</h3>
+<h3 class="font-headline-sm text-headline-sm">หลักสูตรของฉัน</h3>
 <a class="text-primary font-label-md text-label-md hover:underline" href="Courses.html">ดูหลักสูตรทั้งหมด</a>
 </div>
 <div id="my-courses"></div><div id="dash-my-courses" class="space-y-md">
-<div class="bg-surface-container-lowest rounded-24px soft-shadow p-md text-on-surface-variant">กำลังโหลดคอร์สของฉัน...</div>
+<div class="bg-surface-container-lowest rounded-24px soft-shadow p-md text-on-surface-variant">กำลังโหลดหลักสูตรของฉัน...</div>
 </div>
 </div>
 <!-- Schedule List -->
@@ -312,7 +312,7 @@ Community Feed
 
 <div class="relative z-10">
 <h4 class="font-headline-sm text-headline-sm mb-xs">ปลดล็อกศักยภาพสูงสุด</h4>
-<p class="font-body-sm text-body-sm opacity-90 mb-md">สมัครสมาชิก Pro เพื่อเข้าถึงคอร์สพิเศษมากกว่า 50 รายการ</p>
+<p class="font-body-sm text-body-sm opacity-90 mb-md">สมัครสมาชิก Pro เพื่อเข้าถึงหลักสูตรพิเศษมากกว่า 50 รายการ</p>
 <a href="Courses.html" class="inline-block bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูหลักสูตร</a>
 </div>
 </div>
@@ -484,7 +484,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
     try {
         const response = await fetch('/api/my/courses', { credentials: 'include' });
         const payload = await response.json();
-        if (!response.ok || !payload.success) throw new Error(payload.message || 'โหลดคอร์สไม่สำเร็จ');
+        if (!response.ok || !payload.success) throw new Error(payload.message || 'โหลดหลักสูตรไม่สำเร็จ');
 
         const summary = payload.summary || {};
         const avg = Number(summary.average_progress || 0);
@@ -499,15 +499,15 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         const hoursEl = document.getElementById('dash-total-hours');
         if (hoursEl) hoursEl.textContent = `${Number(summary.total_hours || 0).toFixed(1).replace('.0', '')} ชม.`;
         const inProgressEl = document.getElementById('dash-in-progress');
-        if (inProgressEl) inProgressEl.textContent = `${summary.in_progress || 0} คอร์ส`;
+        if (inProgressEl) inProgressEl.textContent = `${summary.in_progress || 0} หลักสูตร`;
         const completedEl = document.getElementById('dash-completed');
-        if (completedEl) completedEl.textContent = `${summary.completed || 0} คอร์ส`;
+        if (completedEl) completedEl.textContent = `${summary.completed || 0} หลักสูตร`;
 
         const courses = payload.data || [];
         if (!courses.length) {
             myCoursesEl.innerHTML = `
                 <div class="bg-surface-container-lowest rounded-24px soft-shadow p-md text-center">
-                    <p class="text-on-surface-variant mb-md">คุณยังไม่ได้สมัครคอร์สใดๆ</p>
+                    <p class="text-on-surface-variant mb-md">คุณยังไม่ได้สมัครหลักสูตรใดๆ</p>
                     <a href="Courses.html" class="inline-block bg-primary text-white px-lg py-sm rounded-full font-bold">ไปเลือกหลักสูตร</a>
                 </div>`;
         } else {

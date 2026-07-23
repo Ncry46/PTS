@@ -349,7 +349,7 @@
 
     const adminLinks = `
           <a href="Home.html" role="menuitem">หน้าแรก</a>
-          <a href="Admin.html#courses" role="menuitem">คอร์ส</a>
+          <a href="Admin.html#courses" role="menuitem">หลักสูตร</a>
           <a href="Admin.html#lessons" role="menuitem">บทเรียน</a>
           <a href="Admin.html#schedules" role="menuitem">ตารางเรียน</a>
           <a href="Admin.html#banners" role="menuitem">แบนเนอร์</a>

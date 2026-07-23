@@ -18,7 +18,16 @@ CREATE TABLE dbo.hero_slides (
     badge_icon NVARCHAR(64) NULL,
     badge_title NVARCHAR(100) NULL,
     badge_subtitle NVARCHAR(255) NULL,
+    theme NVARCHAR(32) NOT NULL CONSTRAINT DF_hero_slides_theme DEFAULT ('rose'),
+    theme_color NVARCHAR(32) NULL,
     flag_use BIT NOT NULL CONSTRAINT DF_hero_slides_flag DEFAULT (1),
     created_at DATETIME NOT NULL CONSTRAINT DF_hero_slides_created DEFAULT (GETDATE()),
     updated_at DATETIME NOT NULL CONSTRAINT DF_hero_slides_updated DEFAULT (GETDATE())
 );
+
+IF COL_LENGTH('dbo.hero_slides', 'theme') IS NULL
+    ALTER TABLE dbo.hero_slides ADD theme NVARCHAR(32) NOT NULL
+        CONSTRAINT DF_hero_slides_theme_col DEFAULT ('rose');
+
+IF COL_LENGTH('dbo.hero_slides', 'theme_color') IS NULL
+    ALTER TABLE dbo.hero_slides ADD theme_color NVARCHAR(32) NULL;

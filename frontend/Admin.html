@@ -88,10 +88,7 @@
     background:var(--pts-primary-soft,#f6e6ea); color:var(--pts-primary,#974258);
   }
   .ban-theme-grid {
-    display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px;
-  }
-  @media (min-width:720px) {
-    .ban-theme-grid { grid-template-columns:repeat(6,minmax(0,1fr)); }
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(88px,1fr)); gap:10px;
   }
   .ban-theme {
     appearance:none; border:2px solid transparent; border-radius:14px;
@@ -126,6 +123,57 @@
   }
   .ban-theme[data-theme="sunset"] .ban-theme__swatch {
     background: linear-gradient(135deg,#6e2e28,#c45a3a 45%,#ffc08c);
+  }
+  .ban-theme[data-theme="custom"] .ban-theme__swatch {
+    background:
+      conic-gradient(from 90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #1dd1a1, #ff6b6b);
+  }
+  .ban-preview[data-theme="custom"] {
+    background: linear-gradient(135deg, #1a1216, var(--ban-c, #974258) 48%, #2a1a22);
+  }
+  .ban-rgb {
+    display:grid; gap:12px; margin-top:12px; padding:14px;
+    border:1px solid var(--pts-border,rgba(151,66,88,.16));
+    border-radius:14px; background:rgba(151,66,88,.04);
+  }
+  .ban-rgb.is-hidden { display:none; }
+  .ban-rgb__row { display:flex; flex-wrap:wrap; gap:10px; align-items:end; }
+  .ban-rgb__row .ban-field { flex:1 1 72px; min-width:72px; }
+  .ban-rgb__picker {
+    width:52px; height:40px; padding:0; border:0; border-radius:10px;
+    background:transparent; cursor:pointer;
+  }
+  .ban-wheel-layout {
+    display:grid; gap:14px; align-items:center;
+  }
+  @media (min-width:640px) {
+    .ban-wheel-layout { grid-template-columns: auto minmax(0,1fr); }
+  }
+  .ban-wheel-stage {
+    position:relative; width:220px; height:220px; margin:0 auto;
+    touch-action:none; user-select:none;
+  }
+  .ban-wheel-stage canvas {
+    display:block; width:220px; height:220px; border-radius:50%;
+    box-shadow:0 10px 28px rgba(0,0,0,.18), inset 0 0 0 1px rgba(255,255,255,.35);
+    cursor:crosshair;
+  }
+  .ban-wheel-marker {
+    position:absolute; width:18px; height:18px; margin:-9px 0 0 -9px;
+    border:2px solid #fff; border-radius:999px;
+    box-shadow:0 0 0 1px rgba(0,0,0,.35), 0 4px 10px rgba(0,0,0,.25);
+    pointer-events:none; left:50%; top:50%;
+  }
+  .ban-wheel-side { display:grid; gap:10px; }
+  .ban-wheel-swatch {
+    width:100%; height:48px; border-radius:12px;
+    border:1px solid rgba(0,0,0,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .ban-wheel-side label { font-size:12px; font-weight:700; color:var(--pts-muted,#5c4f55); }
+  .ban-wheel-side input[type="range"] { width:100%; accent-color:#974258; }
+  .ban-mini-themes button[data-theme="custom"] {
+    background: conic-gradient(from 90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #1dd1a1, #ff6b6b);
   }
   .ban-drop {
     border:2px dashed rgba(151,66,88,.35);
@@ -225,7 +273,7 @@
   <aside class="admin-side" aria-label="เมนูแอดมิน">
     <p class="admin-side__label">จัดการระบบ</p>
     <nav class="admin-side__nav">
-      <button type="button" class="tab-btn active" data-tab="courses">คอร์ส</button>
+      <button type="button" class="tab-btn active" data-tab="courses">หลักสูตร</button>
       <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
       <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
       <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
@@ -239,7 +287,7 @@
     <section class="pts-page-hero">
       <span class="pts-chip mb-3">Admin</span>
       <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แผงควบคุมแอดมิน</h1>
-      <p class="text-on-surface-variant">จัดการคอร์ส บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
+      <p class="text-on-surface-variant">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์หน้าแรก และการส่งอีเมล OTP</p>
     </section>
     <section id="panel" class="pts-panel"></section>
   </div>
@@ -261,15 +309,15 @@ async function renderCourses() {
   const { data } = await api('/api/admin/courses');
   coursesCache = data;
   document.getElementById('panel').innerHTML = `
-    <h2 class="font-bold text-lg mb-3">สร้างคอร์สใหม่</h2>
+    <h2 class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อคอร์ส">
+      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร">
       <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
       <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
       <input id="c-hours" type="number" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง" value="4">
       <input id="c-cover" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="URL รูปปก">
     </div>
-    <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-6">สร้างคอร์ส</button>
+    <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-6">สร้างหลักสูตร</button>
     <div class="space-y-2">${data.map(c => `
       <div class="border rounded-xl p-3 flex justify-between gap-3 items-start">
         <div>
@@ -277,7 +325,7 @@ async function renderCourses() {
           <p class="text-sm text-on-surface-variant">#${c.course_id} · ${escapeHtml(c.delivery_mode)} · ${escapeHtml(c.instructor_name || '-')}</p>
         </div>
         <button class="text-sm text-primary font-bold feature-btn" data-id="${c.course_id}" data-featured="${c.is_featured ? 0 : 1}">${c.is_featured ? 'เลิกแนะนำ' : 'ตั้งแนะนำ'}</button>
-      </div>`).join('') || '<p>ยังไม่มีคอร์ส</p>'}
+      </div>`).join('') || '<p>ยังไม่มีหลักสูตร</p>'}
     </div>`;
 
   document.getElementById('create-course').onclick = async () => {
@@ -321,7 +369,7 @@ async function renderLessons() {
       <input id="l-duration" type="number" class="border rounded-xl px-3 py-2" value="15" placeholder="นาที">
     </div>
     <button id="add-lesson" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มบทเรียน</button>
-    <div id="lesson-admin-list" class="space-y-2 text-sm text-on-surface-variant">เลือกคอร์สแล้วกดโหลด...</div>
+    <div id="lesson-admin-list" class="space-y-2 text-sm text-on-surface-variant">เลือกหลักสูตรแล้วกดโหลด...</div>
   `;
 
   const loadLessons = async () => {
@@ -374,9 +422,9 @@ async function renderSchedules() {
       <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
         <input id="s-title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
       </label>
-      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับคอร์ส (จำเป็น — ต้องเป็นคอร์สที่นักเรียนสมัครไว้)
+      <label class="text-sm font-semibold text-on-surface-variant">ผูกกับหลักสูตร (จำเป็น — ต้องเป็นหลักสูตรที่นักเรียนสมัครไว้)
         <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
-          <option value="">-- เลือกคอร์ส --</option>
+          <option value="">-- เลือกหลักสูตร --</option>
           ${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
         </select>
       </label>
@@ -415,7 +463,7 @@ async function renderSchedules() {
     const title = document.getElementById('s-title').value.trim();
     const courseId = document.getElementById('s-course').value;
     if (!title) return showErr('กรุณาใส่หัวข้อคลาส');
-    if (!courseId) return showErr('กรุณาเลือกคอร์สที่ผูกตาราง (จำเป็นสำหรับซิงค์ Google Calendar)');
+    if (!courseId) return showErr('กรุณาเลือกหลักสูตรที่ผูกตาราง (จำเป็นสำหรับซิงค์ Google Calendar)');
     formMsg.textContent = 'กำลังบันทึก...';
     formMsg.className = 'pts-msg mb-4';
     try {
@@ -453,9 +501,59 @@ async function renderBanners() {
     { value: 'gold', label: 'Gold' },
     { value: 'ink', label: 'Ink' },
     { value: 'ocean', label: 'Ocean' },
-    { value: 'sunset', label: 'Sunset' }
+    { value: 'sunset', label: 'Sunset' },
+    { value: 'custom', label: 'กำหนดเอง' }
   ];
-  const themeLabel = (t) => (themeOptions.find((x) => x.value === t) || themeOptions[0]).label;
+  const themeLabel = (s) => {
+    if (String(s?.theme || '').toLowerCase() === 'custom') {
+      return `กำหนดเอง ${s.theme_color || ''}`.trim();
+    }
+    return (themeOptions.find((x) => x.value === s?.theme) || themeOptions[0]).label;
+  };
+
+  function parseHex(value) {
+    const m = String(value || '').trim().match(/^#?([0-9a-fA-F]{6})$/);
+    if (!m) return null;
+    const hex = `#${m[1].toLowerCase()}`;
+    const n = parseInt(m[1], 16);
+    return { hex, r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
+  }
+  function toHex(r, g, b) {
+    return '#' + [r, g, b].map((x) => Math.max(0, Math.min(255, Number(x) || 0)).toString(16).padStart(2, '0')).join('');
+  }
+  function hsvToRgb(h, s, v) {
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    let rp = 0, gp = 0, bp = 0;
+    if (h < 60) { rp = c; gp = x; }
+    else if (h < 120) { rp = x; gp = c; }
+    else if (h < 180) { gp = c; bp = x; }
+    else if (h < 240) { gp = x; bp = c; }
+    else if (h < 300) { rp = x; bp = c; }
+    else { rp = c; bp = x; }
+    return {
+      r: Math.round((rp + m) * 255),
+      g: Math.round((gp + m) * 255),
+      b: Math.round((bp + m) * 255)
+    };
+  }
+  function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    if (d !== 0) {
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    const s = max === 0 ? 0 : d / max;
+    return { h, s, v: max };
+  }
   const presets = [
     {
       key: 'cert',
@@ -500,7 +598,7 @@ async function renderBanners() {
         eyebrow: 'PTS Learning',
         title: 'ยกระดับทักษะ Personal Assistant',
         title_highlight: 'Personal Assistant',
-        lead: 'คอร์สคุณภาพสำหรับเลขาและผู้ช่วยส่วนตัว พร้อมใบประกาศและคอมมูนิตี้',
+        lead: 'หลักสูตรคุณภาพสำหรับเลขาและผู้ช่วยส่วนตัว พร้อมใบประกาศและคอมมูนิตี้',
         cta_primary_label: 'ดูหลักสูตร',
         cta_primary_href: 'Courses.html',
         cta_secondary_label: 'สมัครสมาชิก',
@@ -513,17 +611,21 @@ async function renderBanners() {
     }
   ];
 
-  const themePickerHtml = (selected) => themeOptions.map((t) => `
+  const themePickerHtml = (selected, color) => themeOptions.map((t) => `
     <button type="button" class="ban-theme${(selected || 'rose') === t.value ? ' is-active' : ''}"
       data-theme="${t.value}" data-ban-theme title="${t.label}">
-      <span class="ban-theme__swatch" aria-hidden="true"></span>
+      <span class="ban-theme__swatch" style="${t.value === 'custom' && color ? `background:${escapeHtml(color)}` : ''}" aria-hidden="true"></span>
       <span class="ban-theme__label">${t.label}</span>
     </button>
   `).join('');
 
-  const formHtml = (s = {}) => `
+  const formHtml = (s = {}) => {
+    const custom = parseHex(s.theme_color) || { hex: '#974258', r: 151, g: 66, b: 88 };
+    const theme = s.theme || 'rose';
+    return `
     <input type="hidden" id="b-id" value="${s.slide_id || ''}">
-    <input type="hidden" id="b-theme" value="${escapeHtml(s.theme || 'rose')}">
+    <input type="hidden" id="b-theme" value="${escapeHtml(theme)}">
+    <input type="hidden" id="b-theme-color" value="${escapeHtml(theme === 'custom' ? (s.theme_color || custom.hex) : (s.theme_color || ''))}">
     <input type="hidden" id="b-image" value="${escapeHtml(s.image_url || '')}">
 
     <div class="ban-steps">
@@ -534,11 +636,50 @@ async function renderBanners() {
     </div>
 
     <div class="ban-field mb-3">
-      <label>สีแบนเนอร์ (พื้นหลังสไลด์)</label>
-      <div class="ban-theme-grid" id="b-theme-picker">${themePickerHtml(s.theme || 'rose')}</div>
+      <label>สีแบนเนอร์ (พรีเซ็ตเดิม หรือกำหนดเองด้วย RGB)</label>
+      <div class="ban-theme-grid" id="b-theme-picker">${themePickerHtml(theme, s.theme_color || custom.hex)}</div>
+      <div class="ban-rgb${theme === 'custom' ? '' : ' is-hidden'}" id="b-rgb-box">
+        <p class="text-sm font-bold m-0" style="color:var(--pts-primary,#974258)">กงล้อสี RGB — คลิกหรือลากเพื่อเลือกสี</p>
+        <div class="ban-wheel-layout">
+          <div class="ban-wheel-stage" id="b-wheel-stage">
+            <canvas id="b-wheel" width="220" height="220" aria-label="กงล้อสี"></canvas>
+            <span class="ban-wheel-marker" id="b-wheel-marker" aria-hidden="true"></span>
+          </div>
+          <div class="ban-wheel-side">
+            <div class="ban-wheel-swatch" id="b-wheel-swatch" style="background:${escapeHtml(custom.hex)}"></div>
+            <div>
+              <label for="b-bright">ความสว่าง</label>
+              <input type="range" id="b-bright" min="20" max="100" value="85">
+            </div>
+            <p class="text-xs text-on-surface-variant m-0">ลากบนกงล้อ = โทนสีและความเข้ม · สไลเดอร์ = ความสว่าง</p>
+          </div>
+        </div>
+        <div class="ban-rgb__row">
+          <div class="ban-field">
+            <label>R</label>
+            <input type="number" id="b-r" min="0" max="255" value="${custom.r}">
+          </div>
+          <div class="ban-field">
+            <label>G</label>
+            <input type="number" id="b-g" min="0" max="255" value="${custom.g}">
+          </div>
+          <div class="ban-field">
+            <label>B</label>
+            <input type="number" id="b-b" min="0" max="255" value="${custom.b}">
+          </div>
+          <div class="ban-field" style="flex:1.4 1 100px">
+            <label>HEX</label>
+            <input type="text" id="b-hex" maxlength="7" value="${escapeHtml(custom.hex)}" placeholder="#974258">
+          </div>
+          <div class="ban-field">
+            <label>สำรอง</label>
+            <input type="color" id="b-color" class="ban-rgb__picker" value="${escapeHtml(custom.hex)}" title="เปิดตัวเลือกสีของระบบ">
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="ban-preview mb-4" id="b-preview" data-theme="${escapeHtml(s.theme || 'rose')}">
+    <div class="ban-preview mb-4" id="b-preview" data-theme="${escapeHtml(theme)}" style="${theme === 'custom' ? `--ban-c:${escapeHtml(s.theme_color || custom.hex)}` : ''}">
       <div>
         <p class="ban-preview__eyebrow" id="bp-eyebrow">${escapeHtml(s.eyebrow || 'ข้อความเล็ก')}</p>
         <h3 class="ban-preview__title" id="bp-title"></h3>
@@ -637,6 +778,7 @@ async function renderBanners() {
     </div>
     <p id="b-msg" class="text-sm"></p>
   `;
+  };
 
   document.getElementById('panel').innerHTML = `
     <div class="ban-wrap">
@@ -651,14 +793,18 @@ async function renderBanners() {
           <div class="ban-list-item${!s.flag_use ? ' is-hidden' : ''}" data-slide-id="${s.slide_id}">
             <img src="${escapeHtml(s.image_url || '')}" alt="" class="w-full h-28 object-cover rounded-xl bg-gray-100" style="object-position:center 14%" onerror="this.style.display='none'">
             <div class="min-w-0">
-              <p class="text-xs text-on-surface-variant mb-1">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'} · ${themeLabel(s.theme)}</p>
+              <p class="text-xs text-on-surface-variant mb-1">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'} · ${themeLabel(s)}</p>
               <p class="font-bold truncate">${escapeHtml(s.eyebrow || '—')}</p>
               <p class="text-sm truncate">${escapeHtml(s.title)}</p>
               <div class="ban-mini-themes" role="group" aria-label="เปลี่ยนสีแบนเนอร์">
-                ${themeOptions.map((t) => `
+                ${themeOptions.filter((t) => t.value !== 'custom').map((t) => `
                   <button type="button" data-theme="${t.value}" data-quick-theme="${s.slide_id}"
                     class="${(s.theme || 'rose') === t.value ? 'is-active' : ''}" title="${t.label}" aria-label="สี ${t.label}"></button>
                 `).join('')}
+                <label class="inline-flex items-center" title="กำหนดสีเอง">
+                  <input type="color" data-quick-custom="${s.slide_id}" value="${escapeHtml(parseHex(s.theme_color)?.hex || '#974258')}"
+                    style="width:28px;height:22px;padding:0;border:0;border-radius:999px;cursor:pointer;background:transparent">
+                </label>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 shrink-0">
@@ -676,6 +822,7 @@ async function renderBanners() {
   const readForm = () => ({
     sort_order: Number(document.getElementById('b-sort').value || 1),
     theme: document.getElementById('b-theme').value || 'rose',
+    theme_color: document.getElementById('b-theme-color').value || null,
     eyebrow: document.getElementById('b-eyebrow').value,
     title: document.getElementById('b-title').value,
     title_highlight: document.getElementById('b-highlight').value,
@@ -707,8 +854,22 @@ async function renderBanners() {
 
   const syncPreview = () => {
     const theme = document.getElementById('b-theme')?.value || 'rose';
+    const color = document.getElementById('b-theme-color')?.value || '#974258';
     const preview = document.getElementById('b-preview');
-    if (preview) preview.dataset.theme = theme;
+    const rgbBox = document.getElementById('b-rgb-box');
+    if (preview) {
+      preview.dataset.theme = theme;
+      if (theme === 'custom') preview.style.setProperty('--ban-c', color);
+      else preview.style.removeProperty('--ban-c');
+    }
+    if (rgbBox) rgbBox.classList.toggle('is-hidden', theme !== 'custom');
+    if (theme === 'custom') {
+      requestAnimationFrame(() => initColorWheel(true));
+    }
+    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
+    if (customBtn && theme === 'custom') customBtn.style.background = color;
+    const swatch = document.getElementById('b-wheel-swatch');
+    if (swatch) swatch.style.background = color;
     const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
     const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
     const img = document.getElementById('b-image')?.value || '';
@@ -727,6 +888,201 @@ async function renderBanners() {
     );
   };
 
+  let wheelState = { h: 340, s: 0.55, v: 0.85, drawing: false, bound: false };
+
+  const drawColorWheel = () => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = canvas.width;
+    const cx = size / 2;
+    const cy = size / 2;
+    const radius = size / 2 - 2;
+    const image = ctx.createImageData(size, size);
+    const data = image.data;
+    const v = wheelState.v;
+    for (let y = 0; y < size; y++) {
+      for (let x = 0; x < size; x++) {
+        const dx = x - cx;
+        const dy = y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const i = (y * size + x) * 4;
+        if (dist > radius) {
+          data[i + 3] = 0;
+          continue;
+        }
+        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        const sat = Math.min(1, dist / radius);
+        const rgb = hsvToRgb(angle, sat, v);
+        data[i] = rgb.r;
+        data[i + 1] = rgb.g;
+        data[i + 2] = rgb.b;
+        data[i + 3] = 255;
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+
+    // center hole soft white for readability
+    ctx.beginPath();
+    ctx.arc(cx, cy, Math.max(8, radius * 0.08), 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${0.15 + (1 - v) * 0.35})`;
+    ctx.fill();
+
+    const marker = document.getElementById('b-wheel-marker');
+    if (marker) {
+      const mr = wheelState.s * radius;
+      const rad = wheelState.h * Math.PI / 180;
+      const mx = cx + Math.cos(rad) * mr;
+      const my = cy + Math.sin(rad) * mr;
+      marker.style.left = `${(mx / size) * 100}%`;
+      marker.style.top = `${(my / size) * 100}%`;
+      marker.style.background = toHex(
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).r,
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).g,
+        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).b
+      );
+    }
+  };
+
+  const colorFromWheelEvent = (e) => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return null;
+    const rect = canvas.getBoundingClientRect();
+    const size = canvas.width;
+    const scaleX = size / rect.width;
+    const scaleY = size / rect.height;
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+    const cx = size / 2;
+    const cy = size / 2;
+    const dx = x - cx;
+    const dy = y - cy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const radius = size / 2 - 2;
+    let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (angle < 0) angle += 360;
+    const sat = Math.min(1, dist / radius);
+    wheelState.h = angle;
+    wheelState.s = sat;
+    return hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
+  };
+
+  const applyCustomColor = (hexOrParts, opts = {}) => {
+    let parsed = null;
+    if (typeof hexOrParts === 'string') parsed = parseHex(hexOrParts);
+    else if (hexOrParts && typeof hexOrParts === 'object') {
+      parsed = parseHex(toHex(hexOrParts.r, hexOrParts.g, hexOrParts.b));
+    }
+    if (!parsed) return;
+    const colorEl = document.getElementById('b-theme-color');
+    const picker = document.getElementById('b-color');
+    const hex = document.getElementById('b-hex');
+    const r = document.getElementById('b-r');
+    const g = document.getElementById('b-g');
+    const b = document.getElementById('b-b');
+    if (colorEl) colorEl.value = parsed.hex;
+    if (picker) picker.value = parsed.hex;
+    if (hex) hex.value = parsed.hex;
+    if (r) r.value = parsed.r;
+    if (g) g.value = parsed.g;
+    if (b) b.value = parsed.b;
+
+    if (!opts.fromWheel) {
+      const hsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
+      wheelState.h = hsv.h;
+      wheelState.s = hsv.s;
+      wheelState.v = Math.max(0.2, hsv.v || 0.85);
+      const bright = document.getElementById('b-bright');
+      if (bright) bright.value = String(Math.round(wheelState.v * 100));
+    }
+    drawColorWheel();
+
+    const swatch = document.getElementById('b-wheel-swatch');
+    if (swatch) swatch.style.background = parsed.hex;
+
+    // sync preview without re-init wheel loop
+    const theme = 'custom';
+    const preview = document.getElementById('b-preview');
+    const rgbBox = document.getElementById('b-rgb-box');
+    if (preview) {
+      preview.dataset.theme = theme;
+      preview.style.setProperty('--ban-c', parsed.hex);
+    }
+    if (rgbBox) rgbBox.classList.remove('is-hidden');
+    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
+    if (customBtn) customBtn.style.background = parsed.hex;
+    const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
+    const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
+    const img = document.getElementById('b-image')?.value || '';
+    const bpEyebrow = document.getElementById('bp-eyebrow');
+    const bpLead = document.getElementById('bp-lead');
+    const bpImg = document.getElementById('bp-img');
+    if (bpEyebrow) bpEyebrow.textContent = eyebrow;
+    if (bpLead) bpLead.textContent = lead;
+    if (bpImg) {
+      bpImg.style.opacity = '1';
+      bpImg.src = img || '';
+    }
+    renderPreviewTitle(
+      document.getElementById('b-title')?.value,
+      document.getElementById('b-highlight')?.value
+    );
+  };
+
+  const initColorWheel = (onlyRedraw) => {
+    const canvas = document.getElementById('b-wheel');
+    if (!canvas) return;
+    if (!onlyRedraw) {
+      const current = parseHex(document.getElementById('b-theme-color')?.value || '#974258')
+        || { r: 151, g: 66, b: 88, hex: '#974258' };
+      const hsv = rgbToHsv(current.r, current.g, current.b);
+      wheelState.h = hsv.h;
+      wheelState.s = hsv.s;
+      wheelState.v = Math.max(0.2, hsv.v || 0.85);
+      const bright = document.getElementById('b-bright');
+      if (bright) bright.value = String(Math.round(wheelState.v * 100));
+    }
+    drawColorWheel();
+
+    if (wheelState.bound) return;
+    wheelState.bound = true;
+
+    const onMove = (e) => {
+      if (!wheelState.drawing) return;
+      e.preventDefault();
+      const rgb = colorFromWheelEvent(e);
+      if (!rgb) return;
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      applyCustomColor(rgb, { fromWheel: true });
+    };
+    const onUp = () => { wheelState.drawing = false; };
+
+    canvas.addEventListener('pointerdown', (e) => {
+      wheelState.drawing = true;
+      canvas.setPointerCapture?.(e.pointerId);
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
+        btn.classList.toggle('is-active', btn.dataset.theme === 'custom');
+      });
+      const rgb = colorFromWheelEvent(e);
+      if (rgb) applyCustomColor(rgb, { fromWheel: true });
+    });
+    canvas.addEventListener('pointermove', onMove);
+    canvas.addEventListener('pointerup', onUp);
+    canvas.addEventListener('pointercancel', onUp);
+
+    document.getElementById('b-bright')?.addEventListener('input', (e) => {
+      wheelState.v = Math.max(0.2, Math.min(1, (Number(e.target.value) || 85) / 100));
+      const rgb = hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
+      const themeEl = document.getElementById('b-theme');
+      if (themeEl) themeEl.value = 'custom';
+      applyCustomColor(rgb, { fromWheel: true });
+    });
+  };
+
   const setTheme = (theme) => {
     const t = themeOptions.some((x) => x.value === theme) ? theme : 'rose';
     const hidden = document.getElementById('b-theme');
@@ -734,7 +1090,13 @@ async function renderBanners() {
     document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
       btn.classList.toggle('is-active', btn.dataset.theme === t);
     });
-    syncPreview();
+    if (t === 'custom') {
+      const current = document.getElementById('b-theme-color')?.value || '#974258';
+      applyCustomColor(current);
+      initColorWheel(false);
+    } else {
+      syncPreview();
+    }
   };
 
   const fillFields = (obj) => {
@@ -755,6 +1117,10 @@ async function renderBanners() {
       const el = document.getElementById(id);
       if (el && obj[key] != null) el.value = obj[key];
     });
+    if (obj.theme_color) {
+      const colorEl = document.getElementById('b-theme-color');
+      if (colorEl) colorEl.value = obj.theme_color;
+    }
     if (obj.theme) setTheme(obj.theme);
     else syncPreview();
   };
@@ -778,10 +1144,33 @@ async function renderBanners() {
   };
 
   const wireForm = () => {
+    wheelState.bound = false;
     syncPreview();
+    if (document.getElementById('b-theme')?.value === 'custom') {
+      initColorWheel(false);
+    }
 
     document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
       btn.onclick = () => setTheme(btn.dataset.theme);
+    });
+
+    document.getElementById('b-color')?.addEventListener('input', (e) => {
+      setTheme('custom');
+      applyCustomColor(e.target.value);
+    });
+    document.getElementById('b-hex')?.addEventListener('change', (e) => {
+      setTheme('custom');
+      applyCustomColor(e.target.value);
+    });
+    ['b-r', 'b-g', 'b-b'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('change', () => {
+        setTheme('custom');
+        applyCustomColor({
+          r: document.getElementById('b-r').value,
+          g: document.getElementById('b-g').value,
+          b: document.getElementById('b-b').value
+        });
+      });
     });
 
     ['b-title', 'b-highlight', 'b-eyebrow', 'b-lead'].forEach((id) => {
@@ -880,6 +1269,23 @@ async function renderBanners() {
         alert(e.message || 'เปลี่ยนสีไม่สำเร็จ');
       }
     };
+  });
+
+  document.querySelectorAll('[data-quick-custom]').forEach((input) => {
+    input.addEventListener('change', async () => {
+      const id = input.dataset.quickCustom;
+      const theme_color = parseHex(input.value)?.hex;
+      if (!theme_color) return;
+      try {
+        await api(`/api/admin/hero-slides/${id}`, {
+          method: 'PATCH',
+          body: JSON.stringify({ theme: 'custom', theme_color })
+        });
+        renderBanners();
+      } catch (e) {
+        alert(e.message || 'เปลี่ยนสีไม่สำเร็จ');
+      }
+    });
   });
 }
 
