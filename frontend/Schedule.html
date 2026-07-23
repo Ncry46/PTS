@@ -31,7 +31,7 @@
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">My Schedule</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตารางเรียนของฉัน</h1>
-    <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากคอร์สที่คุณสมัครไว้เท่านั้น — คลาส Onsite ให้ใช้ QR จากอีเมลด้านล่าง</p>
+    <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากหลักสูตรที่คุณสมัครไว้เท่านั้น — คลาส Onsite ให้ใช้ QR จากอีเมลด้านล่าง</p>
     <div id="gcal-bar" class="mt-4 flex flex-wrap items-center gap-2 hidden">
       <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google Calendar</a>
       <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ไปยังปฏิทิน</button>
@@ -133,7 +133,7 @@ async function load() {
     el.innerHTML = `<div class="pts-empty">
       <div class="pts-empty__icon"><span class="material-symbols-outlined">event_busy</span></div>
       <p class="font-semibold mb-1">ยังไม่มีตารางเรียน</p>
-      <p class="text-sm mb-4">เมื่อสมัครคอร์สที่มีตาราง จะแสดงที่นี่</p>
+      <p class="text-sm mb-4">เมื่อสมัครหลักสูตรที่มีตาราง จะแสดงที่นี่</p>
       <a class="pts-btn pts-btn-primary" href="Courses.html">ดูหลักสูตร</a>
     </div>`;
     return;

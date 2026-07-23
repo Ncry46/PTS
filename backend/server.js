@@ -16,17 +16,26 @@ const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
+const HOST = process.env.HOST || '0.0.0.0';
+
+if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
+    app.set('trust proxy', 1);
+}
 
 app.use(cors());
 app.use(express.json());
 
 // 🌟 2. เปิดใช้งานระบบจำสิทธิ์ (Session) ยึดตามเบราว์เซอร์
 app.use(session({
-    secret: 'your-secret-key-pts-academy', // เปลี่ยนคีย์ความปลอดภัยได้ตามใจชอบ
+    secret: process.env.SESSION_SECRET || 'your-secret-key-pts-academy',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // อยู่ได้นาน 24 ชั่วโมง
+    cookie: {
+        secure: process.env.COOKIE_SECURE === 'true' || process.env.COOKIE_SECURE === '1',
+        sameSite: process.env.COOKIE_SAMESITE || 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // อยู่ได้นาน 24 ชั่วโมง
+    }
 }));
 
 const frontendDir = path.join(__dirname, '..', 'frontend');
@@ -40,37 +49,58 @@ app.use('/comp', express.static(componentsDir));
 app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
 // รูปโปรไฟล์ที่อัปโหลดจากเครื่อง
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server
+
+// Health check สำหรับ Docker / Render / โหลดบาลานเซอร์
+app.get('/api/health', async (req, res) => {
+    try {
+        const pool = await poolPromise;
+        await pool.request().query('SELECT 1 AS ok');
+        res.json({ ok: true, db: true, service: 'pts-learning' });
+    } catch (error) {
+        res.status(503).json({
+            ok: false,
+            db: false,
+            service: 'pts-learning',
+            message: error.message || 'database unavailable'
+        });
+    }
+});
+
+// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server (override ได้ด้วย env / Docker)
 const dbConfig = {
-    user: 'uinet',
-    password: 'p@$$w0rd', // ⚠️ ตรวจสอบรหัสผ่าน SQL Server ของคุณให้ถูกต้องตรงนี้ครับ
-    server: 'tvsdb2.thanvasupos.com',
-    port: 28914,
-    database: 'BD_PTS',
+    user: process.env.DB_USER || 'uinet',
+    password: process.env.DB_PASSWORD || 'p@$$w0rd',
+    server: process.env.DB_SERVER || 'tvsdb2.thanvasupos.com',
+    port: Number(process.env.DB_PORT) || 28914,
+    database: process.env.DB_NAME || 'BD_PTS',
     options: {
-        encrypt: true,
-        trustServerCertificate: true
+        encrypt: process.env.DB_ENCRYPT !== 'false',
+        trustServerCertificate: process.env.DB_TRUST_CERT !== 'false'
     },
     pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
 };
 
-// 📧 ตั้งค่าส่ง Email OTP (แก้ตรงนี้เหมือนรหัส SQL ด้านบน)
-// App Password จาก https://myaccount.google.com/apppasswords
+// 📧 ตั้งค่าส่ง Email OTP — แนะนำตั้งผ่าน .env (SMTP_*) เมื่อรัน Docker
+// ค่าด้านล่างเป็น fallback สำหรับรันในเครื่อง; mailSecrets อ่าน process.env ก่อน
 const mailConfig = {
-    mode: 'smtp',
-    smtpHost: 'smtp.gmail.com',
-    smtpPort: 587,
-    smtpSecure: false,
-    smtpUser: 'businessdev@thanvasu.com',
-    smtpPass: 'zwqmqqykmgrzqbcj',
-    fromName: 'PTS Learning',
-    fromEmail: 'businessdev@thanvasu.com',
-    brevoApiKey: ''
+    mode: process.env.MAIL_MODE || 'smtp',
+    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+    smtpPort: Number(process.env.SMTP_PORT) || 587,
+    smtpSecure: process.env.SMTP_SECURE === 'true',
+    smtpUser: process.env.SMTP_USER || 'businessdev@thanvasu.com',
+    smtpPass: process.env.SMTP_PASS || '',
+    fromName: process.env.MAIL_FROM_NAME || 'PTS Learning',
+    fromEmail: process.env.MAIL_FROM_EMAIL || process.env.MAIL_FROM || 'businessdev@thanvasu.com',
+    brevoApiKey: process.env.BREVO_API_KEY || ''
 };
 
 try {
-    writeSecretsFile(mailConfig);
-    console.log('📧 บันทึกค่า Email OTP จาก server.js → mail.local.js / mail.secrets.json');
+    if (mailConfig.smtpPass) {
+        writeSecretsFile(mailConfig);
+        console.log('📧 บันทึกค่า Email OTP จาก env/server.js → mail.local.js / mail.secrets.json');
+    } else {
+        console.log('📧 SMTP_PASS ว่าง — ใช้ mail.local.js / .env ที่มีอยู่ (ถ้ามี)');
+    }
 } catch (e) {
     console.error('⚠️ บันทึกค่าอีเมลไม่สำเร็จ:', e.message);
 }
@@ -318,7 +348,7 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
     }
 });
 // -------------------------------------------------------------------------
-// 📚 [API ดึงข้อมูลคอร์สเรียน] ดึงข้อมูลจากตาราง courses_main
+// 📚 [API ดึงข้อมูลหลักสูตร] ดึงข้อมูลจากตาราง courses_main
 // -------------------------------------------------------------------------
 app.get('/api/courses', async (req, res) => {
     try {
@@ -366,10 +396,10 @@ app.get('/api/courses', async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ ดึงข้อมูลคอร์สล้มเหลว:", error.message);
+        console.error("❌ ดึงข้อมูลหลักสูตรล้มเหลว:", error.message);
         res.status(500).json({ 
             success: false, 
-            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลคอร์สเรียนจากฐานข้อมูล' 
+            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลหลักสูตรจากฐานข้อมูล' 
         });
     }
 });
@@ -457,7 +487,7 @@ app.get('/api/my/liked-posts', async (req, res) => {
     }
 });
 
-// คอร์สโปรด
+// หลักสูตรโปรด
 app.get('/api/my/favorite-courses', async (req, res) => {
     const user = requireLogin(req, res);
     if (!user) return;
@@ -490,7 +520,7 @@ app.post('/api/courses/:courseId/favorite', async (req, res) => {
     if (!user) return;
 
     const courseId = parseInt(req.params.courseId, 10);
-    if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+    if (!courseId) return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
 
     try {
         const pool = await poolPromise;
@@ -514,7 +544,7 @@ app.post('/api/courses/:courseId/favorite', async (req, res) => {
             favorited = true;
         }
 
-        res.json({ success: true, favorited, message: favorited ? 'บันทึกคอร์สโปรดแล้ว' : 'นำออกจากคอร์สโปรดแล้ว' });
+        res.json({ success: true, favorited, message: favorited ? 'บันทึกหลักสูตรโปรดแล้ว' : 'นำออกจากหลักสูตรโปรดแล้ว' });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -719,7 +749,7 @@ app.post('/api/community/:postId/comments', async (req, res) => {
 });
 
 // =========================================================================
-// 📘 สมัครเรียน / คอร์สของฉัน
+// 📘 สมัครเรียน / หลักสูตรของฉัน
 // =========================================================================
 app.post('/api/courses/:courseId/enroll', async (req, res) => {
     const user = requireLogin(req, res);
@@ -727,7 +757,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
 
     const courseId = parseInt(req.params.courseId, 10);
     if (!courseId) {
-        return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
     }
 
     try {
@@ -738,7 +768,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
             .query('SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId');
 
         if (courseCheck.recordset.length === 0) {
-            return res.status(404).json({ success: false, message: 'ไม่พบคอร์สนี้ในระบบ' });
+            return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตรนี้ในระบบ' });
         }
 
         const existing = await pool.request()
@@ -753,7 +783,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
             return res.json({
                 success: true,
                 already_enrolled: true,
-                message: 'คุณสมัครคอร์สนี้ไว้แล้ว',
+                message: 'คุณสมัครหลักสูตรนี้ไว้แล้ว',
                 enrollment_id: existing.recordset[0].enrollment_id
             });
         }
@@ -831,8 +861,8 @@ app.get('/api/my/courses', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ ดึงคอร์สของฉันล้มเหลว:', error.message);
-        res.status(500).json({ success: false, message: 'ไม่สามารถดึงคอร์สของฉันได้: ' + error.message });
+        console.error('❌ ดึงหลักสูตรของฉันล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถดึงหลักสูตรของฉันได้: ' + error.message });
     }
 });
 
@@ -866,7 +896,7 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
             `);
 
         if (!result.recordset[0] || result.recordset[0].affected === 0) {
-            return res.status(404).json({ success: false, message: 'ยังไม่ได้สมัครคอร์สนี้' });
+            return res.status(404).json({ success: false, message: 'ยังไม่ได้สมัครหลักสูตรนี้' });
         }
 
         res.json({ success: true, message: 'อัปเดตความคืบหน้าแล้ว', progress_percent: progress, status });
@@ -962,8 +992,8 @@ app.post('/api/attendance/scan', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
+app.listen(PORT, HOST, () => {
+    console.log(`🚀 Server running on http://${HOST}:${PORT}`);
     try {
         const configured = typeof googleCalendar.isGoogleConfigured === 'function'
             && googleCalendar.isGoogleConfigured();

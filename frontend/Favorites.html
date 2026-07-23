@@ -30,11 +30,11 @@
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Favorites</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">รายการโปรด</h1>
-    <p class="text-on-surface-variant">รวมคอร์สโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว</p>
+    <p class="text-on-surface-variant">รวมหลักสูตรโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว</p>
   </section>
 
   <div class="flex flex-wrap gap-2 mb-5" role="tablist">
-    <button type="button" id="tab-courses" class="fav-tab pts-btn pts-btn-primary" data-tab="courses">คอร์สโปรด</button>
+    <button type="button" id="tab-courses" class="fav-tab pts-btn pts-btn-primary" data-tab="courses">หลักสูตรโปรด</button>
     <button type="button" id="tab-posts" class="fav-tab pts-btn pts-btn-outline" data-tab="posts">โพสต์โปรด</button>
   </div>
 
@@ -75,9 +75,9 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   const postData = await postRes.json();
 
   if (!courseRes.ok || !courseData.success) {
-    courseBox.innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(courseData.message||'โหลดคอร์สโปรดไม่สำเร็จ')}</div>`;
+    courseBox.innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(courseData.message||'โหลดหลักสูตรโปรดไม่สำเร็จ')}</div>`;
   } else if (!courseData.data.length) {
-    courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีคอร์สโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
+    courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
   } else {
     courseBox.innerHTML = courseData.data.map(c => `
       <article class="pts-card overflow-hidden">
@@ -126,7 +126,7 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
     if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
     btn.closest('article').remove();
     if (!courseBox.querySelector('article')) {
-      courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีคอร์สโปรด</div>`;
+      courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีหลักสูตรโปรด</div>`;
     }
   });
 

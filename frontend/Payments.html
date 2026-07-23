@@ -17,16 +17,16 @@
 <main class="pts-main">
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Payments</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ชำระเงินคอร์ส</h1>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ชำระเงินหลักสูตร</h1>
     <p class="text-on-surface-variant max-w-xl">เลือกชำระด้วย QR PromptPay หรือบัตรเครดิต — หลังชำระสำเร็จระบบจะเปิดสิทธิ์เรียนให้ทันที</p>
   </section>
 
   <div class="pay-layout">
     <section class="pts-panel">
       <h2 class="font-bold text-lg mb-1">ชำระเงิน</h2>
-      <p class="text-sm text-on-surface-variant mb-4">เลือกคอร์ส ช่องทางชำระ แล้วทำรายการให้เสร็จในหน้านี้</p>
+      <p class="text-sm text-on-surface-variant mb-4">เลือกหลักสูตร ช่องทางชำระ แล้วทำรายการให้เสร็จในหน้านี้</p>
 
-      <label class="pts-field"><span>เลือกคอร์ส</span><select id="course-select" class="pts-input"></select></label>
+      <label class="pts-field"><span>เลือกหลักสูตร</span><select id="course-select" class="pts-input"></select></label>
 
       <div class="pay-summary" aria-live="polite">
         <span class="pay-summary__label">ยอดชำระ</span>
@@ -51,7 +51,7 @@
       <!-- PromptPay QR -->
       <div class="pay-qr-box is-open" id="qr-panel">
         <div class="pay-qr-frame" id="qr-frame"><span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span></div>
-        <p class="pay-qr-meta" id="qr-meta">เลือกคอร์สแล้วกด “สร้าง QR PromptPay”</p>
+        <p class="pay-qr-meta" id="qr-meta">เลือกหลักสูตรแล้วกด “สร้าง QR PromptPay”</p>
         <button type="button" id="create-qr" class="pts-btn pts-btn-primary w-full">สร้าง QR PromptPay</button>
         <button type="button" id="confirm-qr" class="pts-btn pts-btn-outline w-full mt-2" hidden>ฉันโอนแล้ว — ยืนยันการชำระ</button>
       </div>
@@ -143,8 +143,8 @@ function formatExp(value) {
 async function createPayment(method) {
   const courseId = document.getElementById('course-select').value;
   const amount = Number(document.getElementById('amount').value || 0);
-  if (!courseId) throw new Error('กรุณาเลือกคอร์ส');
-  if (!(amount > 0)) throw new Error('คอร์สนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน');
+  if (!courseId) throw new Error('กรุณาเลือกหลักสูตร');
+  if (!(amount > 0)) throw new Error('หลักสูตรนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน');
 
   const res = await fetch(`/api/courses/${courseId}/pay`, {
     method: 'POST',
@@ -154,7 +154,7 @@ async function createPayment(method) {
   });
   const data = await res.json();
   if (!res.ok || data.success === false) throw new Error(data.message || 'สร้างรายการไม่สำเร็จ');
-  if (data.already_paid) throw new Error(data.message || 'ชำระคอร์สนี้แล้ว');
+  if (data.already_paid) throw new Error(data.message || 'ชำระหลักสูตรนี้แล้ว');
   return data;
 }
 
@@ -167,13 +167,13 @@ async function init() {
   const courseList = courses.data || [];
   select.innerHTML = courseList.length
     ? courseList.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price || 0)}" ${String(c.course_id) === String(presetCourseId) ? 'selected' : ''}>${escapeHtml(c.course_name)}</option>`).join('')
-    : '<option value="">ยังไม่มีคอร์ส</option>';
+    : '<option value="">ยังไม่มีหลักสูตร</option>';
   select.onchange = () => {
     syncAmount();
     activePaymentId = null;
     document.getElementById('confirm-qr').hidden = true;
     document.getElementById('qr-frame').innerHTML = '<span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span>';
-    document.getElementById('qr-meta').textContent = 'เลือกคอร์สแล้วกด “สร้าง QR PromptPay”';
+    document.getElementById('qr-meta').textContent = 'เลือกหลักสูตรแล้วกด “สร้าง QR PromptPay”';
   };
   syncAmount();
 

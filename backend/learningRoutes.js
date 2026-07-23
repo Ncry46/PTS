@@ -63,13 +63,13 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         return existing.recordset.length > 0;
     }
 
-    // บทเรียนของคอร์ส
+    // บทเรียนของหลักสูตร
     router.get('/courses/:courseId/lessons', async (req, res) => {
         const user = requireLogin(req, res);
         if (!user) return;
 
         const courseId = parseInt(req.params.courseId, 10);
-        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
 
         try {
             const pool = await poolPromise;
@@ -77,7 +77,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
             if (!course.recordset.length) {
-                return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
 
             const enrolled = await ensureEnrolled(pool, user.user_id, courseId);
@@ -138,7 +138,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const lesson = result.recordset[0];
             const enrolled = await ensureEnrolled(pool, user.user_id, lesson.course_id);
             if (!enrolled && user.role !== 'admin') {
-                return res.status(403).json({ success: false, message: 'กรุณาสมัครเรียนคอร์สนี้ก่อนเข้าเรียน' });
+                return res.status(403).json({ success: false, message: 'กรุณาสมัครเรียนหลักสูตรนี้ก่อนเข้าเรียน' });
             }
 
             const siblings = await pool.request()
@@ -177,7 +177,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const courseId = lesson.recordset[0].course_id;
             const enrolled = await ensureEnrolled(pool, user.user_id, courseId);
             if (!enrolled) {
-                return res.status(403).json({ success: false, message: 'ยังไม่ได้สมัครคอร์สนี้' });
+                return res.status(403).json({ success: false, message: 'ยังไม่ได้สมัครหลักสูตรนี้' });
             }
 
             await pool.request()
@@ -380,7 +380,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
 
         const courseId = parseInt(req.params.courseId, 10);
         if (!courseId) {
-            return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+            return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
         }
 
         const methodRaw = String(req.body.method || 'promptpay').toLowerCase();
@@ -392,7 +392,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
             if (!course.recordset.length) {
-                return res.status(404).json({ success: false, message: 'ไม่พบคอร์ส' });
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
 
             const amount = Number(req.body.amount != null ? req.body.amount : course.recordset[0].price || 990);
@@ -405,7 +405,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`SELECT TOP 1 payment_id FROM BD_PTS.dbo.payments WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'`);
             if (paid.recordset.length) {
-                return res.json({ success: true, already_paid: true, message: 'คุณชำระเงินคอร์สนี้แล้ว' });
+                return res.json({ success: true, already_paid: true, message: 'คุณชำระเงินหลักสูตรนี้แล้ว' });
             }
 
             // Reuse open pending row for same course+method when possible
@@ -588,7 +588,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 SELECT
                     slide_id, sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color
                 FROM BD_PTS.dbo.hero_slides
                 WHERE flag_use = 1
                 ORDER BY sort_order ASC, slide_id ASC

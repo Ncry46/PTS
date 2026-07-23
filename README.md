@@ -11,6 +11,29 @@ npm start
 
 เปิดเว็บที่ `http://localhost:3000`
 
+## ขึ้นออนไลน์ด้วย Docker / Docker Hub
+
+ดูคู่มือเต็มใน [`DOCKER.md`](DOCKER.md)
+
+สรุปสั้นๆ:
+
+```bash
+# 1) ตั้งค่า
+cp .env.example .env   # แล้วใส่ DB_PASSWORD, SMTP_PASS, SESSION_SECRET
+
+# 2) build + ทดสอบ
+docker build -t YOUR_DOCKERHUB_USER/pts-learning:latest .
+docker run --rm -p 3000:3000 --env-file .env YOUR_DOCKERHUB_USER/pts-learning:latest
+
+# 3) push ขึ้น Docker Hub
+docker login
+docker push YOUR_DOCKERHUB_USER/pts-learning:latest
+
+# 4) บนเซิร์ฟเวอร์: docker pull แล้ว docker run (ดู DOCKER.md)
+```
+
+Docker Hub เก็บ image — ต้องมีเครื่อง/VPS ที่รัน Docker เพื่อให้เว็บออนไลน์จริง
+
 ## ส่ง Email OTP จริง (สำคัญ)
 
 `thanvasu.com` ใช้ **Google Workspace** → ส่งผ่าน `smtp.gmail.com`
@@ -60,7 +83,7 @@ cp .env.example .env
 
 ## บัญชีและสิทธิ์
 
-- Guest: ดูคอร์ส/อ่านคอมมูนิตี้
+- Guest: ดูหลักสูตร/อ่านคอมมูนิตี้
 - Student: สมัครเรียน เรียนบทเรียน โพสต์/ไลก์ ชำระเงิน ใบประกาศ
 - Admin: จัดการที่ `Admin.html` (ต้องตั้ง `Role = admin` ในตาราง `users_main`)
 
@@ -71,7 +94,7 @@ cp .env.example .env
 | Home / Courses / CourseDetail | หลักสูตร |
 | Learn | เรียนบทเรียน |
 | Community / Liked | คอมมูนิตี้ |
-| Favorites | คอร์สโปรด |
+| Favorites | หลักสูตรโปรด |
 | Schedule | ตารางเรียน |
 | Payments | ชำระเงิน PromptPay (ยืนยันในระบบตามบัญชีผู้ใช้) |
 | Certificates | ใบประกาศ |

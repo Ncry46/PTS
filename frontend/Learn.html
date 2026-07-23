@@ -49,7 +49,7 @@ const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;
 
 async function loadCourseLessons() {
   if (!courseId) {
-    document.getElementById('course-title').textContent = 'ไม่พบรหัสคอร์ส';
+    document.getElementById('course-title').textContent = 'ไม่พบรหัสหลักสูตร';
     return;
   }
   const res = await fetch(`/api/courses/${courseId}/lessons`, { credentials: 'include' });
@@ -58,13 +58,13 @@ async function loadCourseLessons() {
   if (!res.ok || !data.success) throw new Error(data.message || 'โหลดบทเรียนไม่สำเร็จ');
   if (!data.enrolled) {
     document.getElementById('course-title').textContent = data.course.course_name;
-    document.getElementById('lesson-view').innerHTML = `<div class="pts-empty" style="border:none;padding:24px 0"><p class="mb-4">คุณยังไม่ได้สมัครคอร์สนี้</p><a class="pts-btn pts-btn-primary" href="Courses.html">ไปสมัครเรียน</a></div>`;
+    document.getElementById('lesson-view').innerHTML = `<div class="pts-empty" style="border:none;padding:24px 0"><p class="mb-4">คุณยังไม่ได้สมัครหลักสูตรนี้</p><a class="pts-btn pts-btn-primary" href="Courses.html">ไปสมัครเรียน</a></div>`;
     return;
   }
   document.getElementById('course-title').textContent = data.course.course_name;
   const list = document.getElementById('lesson-list');
   if (!data.data.length) {
-    list.innerHTML = '<p class="text-sm text-on-surface-variant p-2">ยังไม่มีบทเรียนในคอร์สนี้</p>';
+    list.innerHTML = '<p class="text-sm text-on-surface-variant p-2">ยังไม่มีบทเรียนในหลักสูตรนี้</p>';
     document.getElementById('lesson-view').innerHTML = '<div class="pts-empty" style="border:none">ยังไม่มีบทเรียนให้เรียน</div>';
     return;
   }
@@ -113,7 +113,7 @@ async function openLesson(lessonId) {
     const j = await r.json();
     const msg = document.getElementById('complete-msg');
     if (!r.ok || !j.success) { msg.textContent = j.message || 'บันทึกไม่สำเร็จ'; msg.className='pts-msg pts-msg--err'; return; }
-    msg.textContent = `บันทึกแล้ว ความคืบหน้าคอร์ส ${j.progress}% (${j.completed}/${j.total} บท)`;
+    msg.textContent = `บันทึกแล้ว ความคืบหน้าหลักสูตร ${j.progress}% (${j.completed}/${j.total} บท)`;
     msg.className = 'pts-msg pts-msg--ok';
     loadCourseLessons();
   };

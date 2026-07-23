@@ -115,7 +115,7 @@ function buildEventBody(schedule, options = {}) {
     const courseLabel = schedule.course_name ? ` · ${schedule.course_name}` : '';
     const lines = [
         'ตารางเรียนจาก PTS Learning',
-        schedule.course_name ? `คอร์ส: ${schedule.course_name}` : '',
+        schedule.course_name ? `หลักสูตร: ${schedule.course_name}` : '',
         schedule.delivery_mode ? `รูปแบบ: ${schedule.delivery_mode}` : '',
         schedule.meeting_url ? `ลิงก์เข้าเรียน: ${schedule.meeting_url}` : '',
         schedule.location ? `สถานที่: ${schedule.location}` : '',
@@ -476,13 +476,13 @@ async function syncUserSchedules(pool, userId, options = {}) {
         const h = hint.recordset[0] || {};
         let message = 'ยังไม่มีตารางเรียนที่จะซิงค์';
         if (!h.enroll_count) {
-            message = 'บัญชียังไม่ได้สมัครคอร์ส — ไปหน้าหลักสูตรแล้วกดสมัครเรียนก่อน แล้วค่อยซิงค์';
+            message = 'บัญชียังไม่ได้สมัครหลักสูตร — ไปหน้าหลักสูตรแล้วกดสมัครเรียนก่อน แล้วค่อยซิงค์';
         } else if (h.unbound_count > 0 && !h.schedule_count) {
-            message = 'มีตารางในระบบแต่ยังไม่ผูกคอร์ส — ให้แอดมินสร้างตารางใหม่แล้วเลือกคอร์สที่คุณสมัครไว้';
+            message = 'มีตารางในระบบแต่ยังไม่ผูกหลักสูตร — ให้แอดมินสร้างตารางใหม่แล้วเลือกหลักสูตรที่คุณสมัครไว้';
         } else if (!h.schedule_count) {
-            message = 'ยังไม่มีตารางเรียนในระบบ — ให้แอดมินไป Admin → ตารางเรียน สร้างตารางและเลือกคอร์สที่คุณสมัครไว้';
+            message = 'ยังไม่มีตารางเรียนในระบบ — ให้แอดมินไป Admin → ตารางเรียน สร้างตารางและเลือกหลักสูตรที่คุณสมัครไว้';
         } else {
-            message = 'มีตารางในระบบแล้ว แต่ไม่มีตารางของคอร์สที่คุณสมัคร — ให้แอดมินผูกตารางกับคอร์สที่บัญชีนี้สมัครไว้ หรือสมัครคอร์สที่มีตาราง';
+            message = 'มีตารางในระบบแล้ว แต่ไม่มีตารางของหลักสูตรที่คุณสมัคร — ให้แอดมินผูกตารางกับหลักสูตรที่บัญชีนี้สมัครไว้ หรือสมัครหลักสูตรที่มีตาราง';
         }
         return {
             success: false,

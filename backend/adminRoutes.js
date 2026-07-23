@@ -13,7 +13,14 @@ const HERO_ICONS = new Set([
     'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
     'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
 ]);
-const HERO_THEMES = new Set(['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset']);
+const HERO_THEMES = new Set(['rose', 'sage', 'gold', 'ink', 'ocean', 'sunset', 'custom']);
+
+function normalizeHexColor(value) {
+    const raw = String(value || '').trim();
+    const m = raw.match(/^#?([0-9a-fA-F]{6})$/);
+    if (!m) return null;
+    return `#${m[1].toLowerCase()}`;
+}
 
 function ensureHeroDir() {
     fs.mkdirSync(HERO_DIR, { recursive: true });
@@ -42,7 +49,12 @@ const heroUpload = multer({
 
 function normalizeHeroBody(body = {}) {
     const icon = String(body.badge_icon || '').trim() || 'check_circle';
-    const theme = String(body.theme || '').trim().toLowerCase() || 'rose';
+    let theme = String(body.theme || '').trim().toLowerCase() || 'rose';
+    if (!HERO_THEMES.has(theme)) theme = 'rose';
+    const themeColor = normalizeHexColor(body.theme_color || body.themeColor || '');
+    if (theme === 'custom' && !themeColor) {
+        theme = 'rose';
+    }
     return {
         sort_order: Math.max(1, parseInt(body.sort_order, 10) || 1),
         eyebrow: String(body.eyebrow || '').trim() || null,
@@ -58,7 +70,8 @@ function normalizeHeroBody(body = {}) {
         badge_icon: HERO_ICONS.has(icon) ? icon : 'check_circle',
         badge_title: String(body.badge_title || '').trim() || null,
         badge_subtitle: String(body.badge_subtitle || '').trim() || null,
-        theme: HERO_THEMES.has(theme) ? theme : 'rose',
+        theme,
+        theme_color: theme === 'custom' ? themeColor : (themeColor || null),
         flag_use: body.flag_use === false || body.flag_use === 0 || body.flag_use === '0' ? 0 : 1
     };
 }
@@ -80,6 +93,7 @@ function bindHeroInputs(request, data) {
         .input('badge_title', sql.NVarChar, data.badge_title)
         .input('badge_subtitle', sql.NVarChar, data.badge_subtitle)
         .input('theme', sql.NVarChar, data.theme)
+        .input('theme_color', sql.NVarChar, data.theme_color)
         .input('flag_use', sql.Bit, data.flag_use);
 }
 
@@ -181,7 +195,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 } = req.body;
 
         if (!course_name) {
-            return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อคอร์ส' });
+            return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อหลักสูตร' });
         }
 
         try {
@@ -205,7 +219,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 `);
 
             const created = result.recordset[0];
-            res.json({ success: true, message: 'สร้างคอร์สสำเร็จ', data: created });
+            res.json({ success: true, message: 'สร้างหลักสูตรสำเร็จ', data: created });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -214,7 +228,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
     router.put('/courses/:courseId', async (req, res) => {
         if (!requireAdmin(req, res)) return;
         const courseId = parseInt(req.params.courseId, 10);
-        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสคอร์สไม่ถูกต้อง' });
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
 
         const {
             course_name, instructor_name, delivery_mode, difficulty_level,
@@ -244,7 +258,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         is_featured = COALESCE(@featured, is_featured)
                     WHERE course_id = @courseId
                 `);
-            res.json({ success: true, message: 'อัปเดตคอร์สแล้ว' });
+            res.json({ success: true, message: 'อัปเดตหลักสูตรแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -255,7 +269,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const courseId = parseInt(req.params.courseId, 10);
         const { title, content_html, video_url, sort_order, duration_minutes } = req.body;
         if (!courseId || !title) {
-            return res.status(400).json({ success: false, message: 'กรุณาระบุคอร์สและชื่อบทเรียน' });
+            return res.status(400).json({ success: false, message: 'กรุณาระบุหลักสูตรและชื่อบทเรียน' });
         }
 
         try {
@@ -336,7 +350,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             return res.status(400).json({ success: false, message: 'กรุณากรอกหัวข้อและเวลา' });
         }
         if (!course_id) {
-            return res.status(400).json({ success: false, message: 'กรุณาเลือกคอร์สที่ผูกตาราง (จำเป็นสำหรับซิงค์ปฏิทินนักเรียน)' });
+            return res.status(400).json({ success: false, message: 'กรุณาเลือกหลักสูตรที่ผูกตาราง (จำเป็นสำหรับซิงค์ปฏิทินนักเรียน)' });
         }
 
         try {
@@ -437,7 +451,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT
                     slide_id, sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme,
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color,
                     flag_use, created_at, updated_at
                 FROM BD_PTS.dbo.hero_slides
                 ORDER BY sort_order ASC, slide_id ASC
@@ -460,13 +474,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 INSERT INTO BD_PTS.dbo.hero_slides (
                     sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, flag_use
+                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color, flag_use
                 )
                 OUTPUT INSERTED.slide_id
                 VALUES (
                     @sort_order, @eyebrow, @title, @title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
-                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, @flag_use
+                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, @theme_color, @flag_use
                 )
             `);
             res.json({ success: true, message: 'เพิ่มแบนเนอร์แล้ว', data: result.recordset[0] });
@@ -504,6 +518,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         badge_title = @badge_title,
                         badge_subtitle = @badge_subtitle,
                         theme = @theme,
+                        theme_color = @theme_color,
                         flag_use = @flag_use,
                         updated_at = GETDATE()
                     WHERE slide_id = @slideId
@@ -531,6 +546,76 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     WHERE slide_id = @slideId
                 `);
             res.json({ success: true, message: 'ซ่อนแบนเนอร์แล้ว' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    // เปลี่ยนสี / แสดง-ซ่อน แบบเร็ว โดยไม่ต้องส่งฟอร์มทั้งชุด
+    router.patch('/hero-slides/:slideId', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const slideId = parseInt(req.params.slideId, 10);
+        if (!slideId) return res.status(400).json({ success: false, message: 'รหัสแบนเนอร์ไม่ถูกต้อง' });
+
+        const sets = [];
+        const inputs = [];
+
+        if (req.body.theme != null) {
+            const theme = String(req.body.theme || '').trim().toLowerCase();
+            if (!HERO_THEMES.has(theme)) {
+                return res.status(400).json({ success: false, message: 'ธีมสีไม่ถูกต้อง' });
+            }
+            sets.push('theme = @theme');
+            inputs.push(['theme', sql.NVarChar, theme]);
+        }
+        if (req.body.theme_color != null || req.body.themeColor != null) {
+            const raw = req.body.theme_color != null ? req.body.theme_color : req.body.themeColor;
+            if (String(raw || '').trim() === '') {
+                sets.push('theme_color = @theme_color');
+                inputs.push(['theme_color', sql.NVarChar, null]);
+            } else {
+                const themeColor = normalizeHexColor(raw);
+                if (!themeColor) {
+                    return res.status(400).json({ success: false, message: 'รหัสสีไม่ถูกต้อง (ใช้เช่น #974258)' });
+                }
+                sets.push('theme_color = @theme_color');
+                inputs.push(['theme_color', sql.NVarChar, themeColor]);
+                if (req.body.theme == null) {
+                    sets.push('theme = @theme');
+                    inputs.push(['theme', sql.NVarChar, 'custom']);
+                }
+            }
+        }
+        if (req.body.flag_use != null) {
+            const flag = req.body.flag_use === false || req.body.flag_use === 0 || req.body.flag_use === '0' ? 0 : 1;
+            sets.push('flag_use = @flag_use');
+            inputs.push(['flag_use', sql.Bit, flag]);
+        }
+        if (req.body.sort_order != null) {
+            const sort = Math.max(1, parseInt(req.body.sort_order, 10) || 1);
+            sets.push('sort_order = @sort_order');
+            inputs.push(['sort_order', sql.Int, sort]);
+        }
+        if (!sets.length) {
+            return res.status(400).json({ success: false, message: 'ไม่มีข้อมูลที่จะอัปเดต' });
+        }
+        sets.push('updated_at = GETDATE()');
+
+        try {
+            const pool = await poolPromise;
+            let request = pool.request().input('slideId', sql.Int, slideId);
+            inputs.forEach(([name, type, value]) => {
+                request = request.input(name, type, value);
+            });
+            const result = await request.query(`
+                UPDATE BD_PTS.dbo.hero_slides
+                SET ${sets.join(', ')}
+                WHERE slide_id = @slideId
+            `);
+            if (!result.rowsAffected[0]) {
+                return res.status(404).json({ success: false, message: 'ไม่พบแบนเนอร์' });
+            }
+            res.json({ success: true, message: 'อัปเดตแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
