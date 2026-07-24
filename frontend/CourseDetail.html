@@ -115,7 +115,7 @@ async function mountCourseGcalControls(hostEl) {
 
   hostEl.hidden = false;
 
-  async function setCourseNotify(enabled, btn) {
+  async function setCourseNotify(enabled, btn, options = {}) {
     const msg = document.getElementById('gcal-course-msg');
     if (btn) btn.disabled = true;
     if (msg) { msg.textContent = 'กำลังอัปเดต...'; msg.className = 'pts-msg'; }
@@ -129,11 +129,12 @@ async function mountCourseGcalControls(hostEl) {
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'อัปเดตไม่สำเร็จ');
       const synced = Number(data.synced || 0);
+      const needsConnect = enabled && data.connected === false;
       if (msg) {
         msg.textContent = data.message || (enabled
           ? (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'บันทึกแล้ว แต่ยังไม่มีตารางให้ส่ง')
           : 'นำคอร์สนี้ออกจากปฏิทินแล้ว');
-        msg.className = (enabled && (data.pending || synced === 0))
+        msg.className = (enabled && !needsConnect && (data.pending || synced === 0))
           ? 'pts-msg pts-msg--err'
           : 'pts-msg pts-msg--ok';
       }
@@ -142,10 +143,11 @@ async function mountCourseGcalControls(hostEl) {
       const msg2 = document.getElementById('gcal-course-msg');
       if (msg2 && data.message) {
         msg2.textContent = data.message;
-        msg2.className = (enabled && (data.pending || synced === 0))
+        msg2.className = (enabled && !needsConnect && (data.pending || synced === 0))
           ? 'pts-msg pts-msg--err'
           : 'pts-msg pts-msg--ok';
       }
+      if (needsConnect || options.openConnectModal) openGcalModal();
     } catch (e) {
       if (msg) {
         msg.textContent = e.message || 'อัปเดตไม่สำเร็จ';
@@ -155,18 +157,27 @@ async function mountCourseGcalControls(hostEl) {
     }
   }
 
-  // Case 2: enrolled but Google not connected → button opens Settings popup
+  // Case 2: enrolled but Google not connected → save opt-in, then prompt Settings
   if (!pref.connected) {
+    const alreadyQueued = !!pref.enabled;
     hostEl.innerHTML = `
       <div class="pts-gcal-row">
         <div class="pts-gcal-row__text">
-          <p class="pts-gcal-row__title">เพิ่มคอร์สนี้ลงปฏิทิน</p>
-          <p class="pts-gcal-row__hint">ถ้าต้องการรับแจ้งเตือนตารางเรียนคอร์สนี้ กดปุ่มด้านขวา (ไม่ต้องการก็ไม่ต้องกด)</p>
+          <p class="pts-gcal-row__title">${alreadyQueued ? 'รอบันทึกคอร์สนี้แล้ว — เชื่อม Google ต่อ' : 'เพิ่มคอร์สนี้ลงปฏิทิน'}</p>
+          <p class="pts-gcal-row__hint">${alreadyQueued
+            ? 'กดปุ่มเพื่อไปเชื่อมต่อ Google Calendar ที่หน้าตั้งค่า หลังเชื่อมสำเร็จระบบจะส่งตารางเข้าปฏิทินให้อัตโนมัติ'
+            : 'กดปุ่มเพื่อบันทึกคอร์สนี้ แล้วเชื่อมต่อ Google Calendar (ถ้ายังไม่เชื่อม)'}</p>
         </div>
-        <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">เพิ่มลงปฏิทิน</button>
+        <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">${alreadyQueued ? 'ไปเชื่อมต่อปฏิทิน' : 'เพิ่มลงปฏิทิน'}</button>
       </div>
       <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
-    document.getElementById('gcal-add-btn')?.addEventListener('click', () => openGcalModal());
+    document.getElementById('gcal-add-btn')?.addEventListener('click', (e) => {
+      if (alreadyQueued) {
+        openGcalModal();
+        return;
+      }
+      setCourseNotify(true, e.currentTarget, { openConnectModal: true });
+    });
     return;
   }
 

@@ -187,11 +187,42 @@ function pad(n) {
     return String(n).padStart(2, '0');
 }
 
-/** Format Date as local wall-clock for Asia/Bangkok Calendar API. */
+/** Format absolute instant as Asia/Bangkok wall-clock (no offset in string). */
+function formatInstantInBangkok(ms) {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+        timeZone: TIMEZONE,
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    }).formatToParts(new Date(ms));
+    const get = (type) => {
+        const part = parts.find((p) => p.type === type);
+        return part ? part.value : '00';
+    };
+    return `${get('year')}-${get('month')}-${get('day')}T${get('hour')}:${get('minute')}:${get('second')}`;
+}
+
+/** Format value as wall-clock datetime for Asia/Bangkok (no offset in string). */
 function formatDateTimeLocal(value) {
-    const d = new Date(value);
+    if (value == null) throw new Error('วันที่ไม่ถูกต้อง');
+
+    // MSSQL often returns 'YYYY-MM-DD HH:mm:ss' or Date
+    if (typeof value === 'string') {
+        const m = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+        if (m) {
+            return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6] || '00'}`;
+        }
+    }
+
+    const d = value instanceof Date ? value : new Date(value);
     if (Number.isNaN(d.getTime())) throw new Error('วันที่ไม่ถูกต้อง');
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+
+    // mssql/tedious defaults treat DATETIME as UTC — use UTC parts as wall-clock
+    return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
 }
 
 function buildEventBody(schedule, options = {}) {
@@ -209,16 +240,25 @@ function buildEventBody(schedule, options = {}) {
         'ดูตารางทั้งหมด: ' + (getGoogleConfig().appBaseUrl + '/Schedule.html')
     ].filter(Boolean);
 
-    return {
+    let startStr = formatDateTimeLocal(schedule.start_at);
+    let endStr = formatDateTimeLocal(schedule.end_at);
+    const startMs = Date.parse(startStr + '+07:00');
+    const endMs = Date.parse(endStr + '+07:00');
+    if (!Number.isNaN(startMs) && !Number.isNaN(endMs) && endMs <= startMs) {
+        // Google rejects end <= start — bump 1 hour in Asia/Bangkok wall-clock
+        endStr = formatInstantInBangkok(startMs + 60 * 60 * 1000);
+    }
+
+    const body = {
         summary: `${schedule.title}${courseLabel}`,
         description: lines.join('\n'),
         location: schedule.location || schedule.meeting_url || '',
         start: {
-            dateTime: formatDateTimeLocal(schedule.start_at),
+            dateTime: startStr,
             timeZone: TIMEZONE
         },
         end: {
-            dateTime: formatDateTimeLocal(schedule.end_at),
+            dateTime: endStr,
             timeZone: TIMEZONE
         },
         reminders: remindersEnabled
@@ -226,19 +266,15 @@ function buildEventBody(schedule, options = {}) {
                 useDefault: false,
                 overrides: [
                     { method: 'popup', minutes: 24 * 60 },
-                    { method: 'popup', minutes: 60 },
-                    { method: 'email', minutes: 24 * 60 }
+                    { method: 'popup', minutes: 60 }
                 ]
             }
             : {
                 useDefault: false,
                 overrides: []
-            },
-        source: {
-            title: 'PTS Learning',
-            url: getGoogleConfig().appBaseUrl + '/Schedule.html'
-        }
+            }
     };
+    return body;
 }
 
 function buildAuthUrl(state, options = {}) {
@@ -504,13 +540,25 @@ async function syncOneSchedule(pool, userId, schedule) {
             await upsertEventMap(pool, userId, schedule.schedule_id, mapped.google_event_id);
             return { updated: true, google_event_id: mapped.google_event_id };
         } catch (err) {
-            if (err.status !== 404) throw err;
+            if (err.status !== 404 && err.status !== 410) throw err;
         }
     }
 
-    const created = await calendarApi(auth.accessToken, 'POST', `/calendars/${calId}/events`, body);
-    await upsertEventMap(pool, userId, schedule.schedule_id, created.id);
-    return { created: true, google_event_id: created.id };
+    try {
+        const created = await calendarApi(auth.accessToken, 'POST', `/calendars/${calId}/events`, body);
+        if (!created || !created.id) {
+            throw new Error('Google ไม่ส่ง event id กลับมา');
+        }
+        await upsertEventMap(pool, userId, schedule.schedule_id, created.id);
+        return { created: true, google_event_id: created.id, htmlLink: created.htmlLink || null };
+    } catch (err) {
+        if (err.status === 401 || err.status === 403) {
+            const e = new Error('สิทธิ์ Google Calendar หมดอายุหรือไม่ครบ — ไป Settings แล้วเชื่อมต่อ Google ใหม่');
+            e.status = err.status;
+            throw e;
+        }
+        throw err;
+    }
 }
 
 async function deleteOneScheduleEvent(pool, userId, scheduleId) {
@@ -664,6 +712,7 @@ async function setCourseNotifyPref(pool, userId, courseId, enabled) {
     if (on) {
         const sync = await syncUserSchedules(pool, userId, { courseId, notify: true });
         const synced = Number(sync.synced || 0);
+        const firstErr = Array.isArray(sync.errors) && sync.errors[0] ? sync.errors[0].message : '';
         if (synced > 0) {
             return {
                 success: true,
@@ -671,10 +720,10 @@ async function setCourseNotifyPref(pool, userId, courseId, enabled) {
                 connected: true,
                 enabled: true,
                 synced,
-                message: `เพิ่ม ${synced} รายการตารางเรียนเข้า Google Calendar แล้ว — เปิดแอปปฏิทินเพื่อดู`
+                htmlLink: sync.htmlLink || null,
+                message: `ส่งเข้า Google Calendar แล้ว ${synced} รายการ — เปิดแอป Google Calendar (บัญชีที่เชื่อม) แล้วค้นหาชื่อตารางเรียน`
             };
         }
-        // Keep opt-in on so future admin schedules still sync, but tell user nothing was pushed yet
         return {
             success: true,
             enrolled: true,
@@ -683,8 +732,10 @@ async function setCourseNotifyPref(pool, userId, courseId, enabled) {
             synced: 0,
             pending: true,
             errors: sync.errors || [],
-            message: sync.message
-                || 'บันทึกแล้ว แต่ยังไม่มีตารางเรียนของคอร์สนี้ให้ส่งเข้าปฏิทิน — ให้แอดมินสร้างตารางที่ Admin → ตารางเรียน แล้วเลือกคอร์สนี้'
+            hint: sync.hint || null,
+            message: firstErr
+                || sync.message
+                || 'บันทึกแล้ว แต่ยังไม่มีตารางเรียนของคอร์สนี้ให้ส่งเข้าปฏิทิน — ให้แอดมินสร้างตารางที่ Admin → ตารางเรียน แล้วเลือกคอร์สนี้ จากนั้นกดซิงค์อีกครั้ง'
         };
     }
 
@@ -789,6 +840,7 @@ async function syncUserSchedules(pool, userId, options = {}) {
     }
 
     let synced = 0;
+    let htmlLink = null;
     const errors = [];
     for (const schedule of schedules) {
         try {
@@ -803,6 +855,7 @@ async function syncUserSchedules(pool, userId, options = {}) {
                 continue;
             }
             synced += 1;
+            if (!htmlLink && result && result.htmlLink) htmlLink = result.htmlLink;
         } catch (err) {
             console.warn('[google-calendar] sync schedule', schedule.schedule_id, err.message);
             errors.push({ schedule_id: schedule.schedule_id, message: err.message });
@@ -830,6 +883,7 @@ async function syncUserSchedules(pool, userId, options = {}) {
         connected: true,
         synced,
         total: schedules.length,
+        htmlLink,
         errors,
         message: synced
             ? `ซิงค์ ${synced} รายการเข้า Google Calendar แล้ว (แจ้งเตือนล่วงหน้า 1 วัน และ 1 ชม.)${errorHint}`
