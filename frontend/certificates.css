@@ -590,7 +590,6 @@ body.cert-modal-open .user-side {
     margin: 0;
   }
 
-  /* Hide every chrome — only the certificate prints */
   html, body {
     width: 297mm !important;
     height: 210mm !important;
@@ -600,13 +599,50 @@ body.cert-modal-open .user-side {
     overflow: hidden !important;
   }
 
-  body * {
-    visibility: hidden !important;
+  /* Hide page chrome; print only the dedicated sheet */
+  body.cert-printing > *:not(#cert-print-sheet) {
+    display: none !important;
   }
 
-  #cert-print-root,
-  #cert-print-root * {
+  #cert-print-sheet {
+    display: block !important;
     visibility: visible !important;
+    position: static !important;
+    inset: auto !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: visible !important;
+  }
+
+  #cert-print-sheet,
+  #cert-print-sheet * {
+    visibility: visible !important;
+  }
+
+  #cert-print-sheet .pts-cert {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    padding: 6mm !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  #cert-print-sheet img {
+    visibility: visible !important;
+    display: block !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   #app-navbar,
@@ -614,75 +650,32 @@ body.cert-modal-open .user-side {
   .cert-toolbar,
   .cert-grid,
   .pts-footer-note,
+  .cert-modal,
   .cert-modal__bar,
   .user-side,
   #user-sidebar,
   .user-shell,
   .pts-main,
-  .no-print {
+  .no-print,
+  #cert-print-frame {
     display: none !important;
   }
+}
 
-  .cert-modal {
-    display: block !important;
-    position: static !important;
-    inset: auto !important;
-    background: transparent !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    backdrop-filter: none !important;
-    overflow: visible !important;
-  }
-  .cert-modal__dialog {
-    display: block !important;
-    box-shadow: none !important;
-    background: transparent !important;
-    max-height: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    width: 297mm !important;
-    border-radius: 0 !important;
-    overflow: visible !important;
-  }
-  #cert-print-root {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    width: 297mm !important;
-    height: 210mm !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: visible !important;
-    --cert-scale: 1 !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-  }
-  .pts-cert,
-  .cert-modal__dialog #cert-print-root .pts-cert {
-    position: static !important;
-    top: auto !important;
-    left: auto !important;
-    width: 297mm !important;
-    height: 210mm !important;
-    max-width: none !important;
-    box-shadow: none !important;
-    padding: 6mm !important;
-    margin: 0 !important;
-    transform: none !important;
-    page-break-after: avoid !important;
-    page-break-inside: avoid !important;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
-  #cert-print-frame {
-    position: fixed !important;
-    width: 0 !important;
-    height: 0 !important;
-    border: 0 !important;
-    left: -9999px !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-  }
+/* Screen: keep print sheet out of the way */
+#cert-print-sheet {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 297mm;
+  height: 210mm;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  z-index: -1;
+}
+body.cert-printing #cert-print-sheet {
+  opacity: 1;
 }
 
 html[data-theme="dark"] .cert-page .text-on-surface-variant { color: var(--pts-muted, #b8a8ae); }

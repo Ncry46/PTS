@@ -6,7 +6,7 @@
 <title>ใบประกาศนียบัตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <link rel="stylesheet" href="site.css?v=20260723t">
-<link rel="stylesheet" href="certificates.css?v=20260724h">
+<link rel="stylesheet" href="certificates.css?v=20260724i">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&amp;family=Sarabun:wght@300;400;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
@@ -157,11 +157,13 @@ function fitCertPreview(root) {
 
 async function imageToDataUrl(src) {
   if (!src) return '';
+  if (String(src).startsWith('data:')) return src;
   const abs = new URL(src, window.location.href).href;
   try {
-    const res = await fetch(abs, { credentials: 'same-origin', cache: 'force-cache' });
+    const res = await fetch(abs, { credentials: 'same-origin', cache: 'no-cache' });
     if (!res.ok) throw new Error(String(res.status));
     const blob = await res.blob();
+    if (!blob || !blob.size) throw new Error('empty');
     return await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(String(reader.result || ''));
@@ -169,8 +171,52 @@ async function imageToDataUrl(src) {
       reader.readAsDataURL(blob);
     });
   } catch (_) {
-    return abs;
+    // Canvas fallback (works for same-origin loaded images)
+    try {
+      const img = await new Promise((resolve, reject) => {
+        const el = new Image();
+        el.onload = () => resolve(el);
+        el.onerror = reject;
+        el.src = abs;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth || img.width;
+      canvas.height = img.naturalHeight || img.height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0);
+      return canvas.toDataURL('image/png');
+    } catch (__) {
+      return '';
+    }
   }
+}
+
+async function embedCertImages(rootEl) {
+  const imgs = Array.from(rootEl.querySelectorAll('img'));
+  await Promise.all(imgs.map(async (img) => {
+    const isStamp = /stamp/i.test(img.className) || /stamp/i.test(img.alt || '');
+    const candidates = [
+      img.getAttribute('src'),
+      img.currentSrc,
+      img.src,
+      isStamp ? PA_STAMP : PA_LOGO,
+      isStamp ? PA_STAMP_FALLBACK : PA_LOGO_FALLBACK
+    ].filter(Boolean);
+    let dataUrl = '';
+    for (const src of candidates) {
+      dataUrl = await imageToDataUrl(src);
+      if (dataUrl && dataUrl.startsWith('data:image')) break;
+    }
+    if (!dataUrl) return;
+    img.removeAttribute('onerror');
+    img.setAttribute('src', dataUrl);
+    img.src = dataUrl;
+    img.style.visibility = 'visible';
+    img.style.display = 'block';
+    img.style.opacity = '1';
+    img.style.printColorAdjust = 'exact';
+    img.style.webkitPrintColorAdjust = 'exact';
+  }));
 }
 
 async function printCertificateOnly() {
@@ -178,116 +224,37 @@ async function printCertificateOnly() {
   const cert = root && root.querySelector('.pts-cert');
   if (!cert) return;
 
-  // Clone and embed images as data URLs (iframe is about:blank so /uploads paths break)
+  // Build a same-page print sheet (no iframe / no about:blank) with embedded images
+  let sheet = document.getElementById('cert-print-sheet');
+  if (!sheet) {
+    sheet = document.createElement('div');
+    sheet.id = 'cert-print-sheet';
+    sheet.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(sheet);
+  }
+
   const clone = cert.cloneNode(true);
-  clone.style.transform = 'none';
-  clone.style.maxWidth = 'none';
-  clone.style.margin = '0';
-  clone.style.boxShadow = 'none';
+  clone.removeAttribute('style');
+  clone.style.cssText = 'width:297mm;height:210mm;max-width:none;margin:0;box-shadow:none;transform:none;padding:6mm;';
+  await embedCertImages(clone);
+  sheet.innerHTML = '';
+  sheet.appendChild(clone);
 
-  const imgs = Array.from(clone.querySelectorAll('img'));
-  await Promise.all(imgs.map(async (img) => {
-    const srcAttr = img.getAttribute('src') || '';
-    const candidates = [];
-    if (img.currentSrc) candidates.push(img.currentSrc);
-    if (img.src) candidates.push(img.src);
-    if (srcAttr) candidates.push(srcAttr);
-    if (/stamp/i.test(img.className) || /stamp/i.test(img.alt || '')) {
-      candidates.push(PA_STAMP, PA_STAMP_FALLBACK);
-    } else {
-      candidates.push(PA_LOGO, PA_LOGO_FALLBACK);
-    }
-    let dataUrl = '';
-    for (const src of candidates) {
-      dataUrl = await imageToDataUrl(src);
-      if (dataUrl && dataUrl.startsWith('data:')) break;
-    }
-    if (dataUrl) {
-      img.removeAttribute('onerror');
-      img.setAttribute('src', dataUrl);
-      img.src = dataUrl;
-    }
-  }));
-
-  let frame = document.getElementById('cert-print-frame');
-  if (!frame) {
-    frame = document.createElement('iframe');
-    frame.id = 'cert-print-frame';
-    frame.title = 'พิมพ์ใบประกาศ';
-    frame.setAttribute('aria-hidden', 'true');
-    frame.style.cssText = 'position:fixed;width:0;height:0;border:0;left:-9999px;top:0;opacity:0;pointer-events:none;';
-    document.body.appendChild(frame);
-  }
-
-  const cssHref = new URL('certificates.css?v=20260724h', window.location.href).href;
-  const fontsHref = 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap';
-  const baseHref = `${window.location.origin}/`;
-  const html = `<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<base href="${baseHref}">
-<title>ใบประกาศนียบัตร</title>
-<link rel="stylesheet" href="${cssHref}">
-<link href="${fontsHref}" rel="stylesheet">
-<style>
-  @page { size: A4 landscape; margin: 0; }
-  html, body { margin: 0; padding: 0; background: #fff; }
-  body { width: 297mm; height: 210mm; overflow: hidden; }
-  .pts-cert {
-    width: 297mm !important;
-    height: 210mm !important;
-    max-width: none !important;
-    margin: 0 !important;
-    box-shadow: none !important;
-    transform: none !important;
-    padding: 6mm !important;
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-  .pts-cert img {
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
-  }
-</style>
-</head>
-<body>${clone.outerHTML}</body>
-</html>`;
-
-  const win = frame.contentWindow;
-  const doc = frame.contentDocument || (win && win.document);
-  if (!doc || !win) {
-    document.body.classList.add('cert-printing');
-    root.style.setProperty('--cert-scale', '1');
-    root.style.height = '';
-    const restore = () => {
-      document.body.classList.remove('cert-printing');
-      window.removeEventListener('afterprint', restore);
-      fitCertPreview(root);
-    };
-    window.addEventListener('afterprint', restore);
-    window.print();
-    setTimeout(restore, 2000);
-    return;
-  }
-
-  doc.open();
-  doc.write(html);
-  doc.close();
-
-  let printed = false;
-  const triggerPrint = () => {
-    if (printed) return;
-    printed = true;
-    try {
-      win.focus();
-      win.print();
-    } catch (_) {
-      window.print();
-    }
+  document.body.classList.add('cert-printing');
+  const restore = () => {
+    document.body.classList.remove('cert-printing');
+    window.removeEventListener('afterprint', restore);
+    sheet.innerHTML = '';
+    fitCertPreview(root);
   };
-
-  setTimeout(triggerPrint, 400);
+  window.addEventListener('afterprint', restore);
+  // Let browser paint embedded images before print dialog
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      window.print();
+      setTimeout(restore, 2500);
+    });
+  });
 }
 
 function modeTag(mode) {
@@ -317,7 +284,7 @@ function openCert(cert) {
   root.innerHTML = certificateHtml({
     userName,
     courseName: cert.course_name,
-    issuedAt: cert.issued_at
+    completedAt: certCompletionDate(cert)
   });
   const modal = document.getElementById('cert-modal');
   modal.classList.add('is-open');
@@ -376,11 +343,14 @@ function render() {
   }
 
   const cards = list.map((c) => {
-    const dateText = new Date(c.issued_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+    const doneAt = certCompletionDate(c);
+    const dateText = doneAt
+      ? new Date(doneAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+      : '-';
     const preview = certificateHtml({
       userName,
       courseName: c.course_name,
-      issuedAt: c.issued_at
+      completedAt: doneAt
     });
     return `
       <article class="cert-card">
@@ -389,7 +359,7 @@ function render() {
         </div>
         <div class="cert-card__body">
           <h3 class="cert-card__title">${escapeHtml(c.course_name)}</h3>
-          <p class="cert-card__meta">ได้รับเมื่อ: ${escapeHtml(dateText)}</p>
+          <p class="cert-card__meta">เรียนจบเมื่อ: ${escapeHtml(dateText)}</p>
           <div class="cert-card__actions">
             <button type="button" class="pts-btn pts-btn-primary cert-download" data-id="${c.certificate_id}">
               <span class="material-symbols-outlined" style="font-size:18px">download</span>
@@ -463,7 +433,7 @@ async function init() {
     };
   });
   document.getElementById('cert-close-btn').onclick = closeCert;
-  document.getElementById('cert-print-btn').onclick = () => printCertificateOnly();
+  document.getElementById('cert-print-btn').onclick = () => { printCertificateOnly().catch((e) => console.error(e)); };
   document.getElementById('cert-modal').addEventListener('click', (e) => {
     if (e.target.id === 'cert-modal') closeCert();
   });
