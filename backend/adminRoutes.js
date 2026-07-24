@@ -6,7 +6,7 @@ const multer = require('multer');
 const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = require('./mailSecrets');
 const { issueEmailOtp, getMailStatus } = require('./emailOtp');
 const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
-const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages } = require('./heroImages');
+const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath } = require('./heroImages');
 const {
     CERT_DIR,
     CERT_SLOTS,
@@ -631,6 +631,51 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
             }
             res.json({ success: true, url: `/uploads/hero/${req.file.filename}` });
+        });
+    });
+
+    /** แบนเนอร์หน้าแรก — บันทึกเป็นไฟล์คงที่ uploads/hero/home-banner.png */
+    const homeBannerUpload = multer({
+        storage: multer.diskStorage({
+            destination: (_req, _file, cb) => {
+                ensureHeroDir();
+                cb(null, HERO_DIR);
+            },
+            filename: (_req, _file, cb) => {
+                const dest = homeBannerPath();
+                try { if (fs.existsSync(dest)) fs.unlinkSync(dest); } catch (_) { /* ignore */ }
+                cb(null, HOME_BANNER_FILENAME);
+            }
+        }),
+        limits: { fileSize: 12 * 1024 * 1024 },
+        fileFilter: (_req, file, cb) => {
+            if (HERO_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+            else cb(new Error('รองรับเฉพาะไฟล์รูป JPG, PNG, WEBP หรือ GIF'));
+        }
+    });
+
+    router.get('/home-banner', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        res.json({ success: true, data: getHomeBannerInfo() });
+    });
+
+    router.post('/home-banner/upload', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        homeBannerUpload.single('image')(req, res, (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
+            }
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
+            }
+            const info = getHomeBannerInfo();
+            res.json({
+                success: true,
+                message: 'บันทึกแบนเนอร์หน้าแรกแล้ว',
+                url: info.url,
+                filename: info.filename,
+                bytes: info.bytes
+            });
         });
     });
 

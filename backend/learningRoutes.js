@@ -613,6 +613,16 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    // รูปแบนเนอร์หน้าแรก (ไฟล์ใน uploads/hero/home-banner.png)
+    router.get('/home-banner', (_req, res) => {
+        try {
+            const { getHomeBannerInfo } = require('./heroImages');
+            res.json({ success: true, data: getHomeBannerInfo() });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
     return router;
 }
 

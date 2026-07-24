@@ -5,17 +5,62 @@ const UPLOADS_ROOT = path.join(__dirname, '..', 'uploads');
 const HERO_DIR = path.join(UPLOADS_ROOT, 'hero');
 const ASSETS_DIR = path.join(__dirname, '..', 'frontend', 'assets');
 
+/** รูปแบนเนอร์หน้าแรก — เก็บไฟล์จริงใน uploads/hero */
+const HOME_BANNER_FILENAME = 'home-banner.png';
+const HOME_BANNER_ASSET_FALLBACK = 'home-banner.png';
+
 /** รูปใน repo (เสิร์ฟผ่าน express.static frontend) — ไม่พึ่ง CDN นอก */
 const BUNDLED_HERO_IMAGES = [
     '/assets/hero-1.png',
     '/assets/hero-2.png',
     '/assets/hero-3.png',
-    '/assets/hero-fallback.png'
+    '/assets/hero-fallback.png',
+    '/assets/home-banner.png'
 ];
 
 function ensureHeroDir() {
     fs.mkdirSync(HERO_DIR, { recursive: true });
     fs.mkdirSync(path.join(UPLOADS_ROOT, 'avatars'), { recursive: true });
+}
+
+function homeBannerPath() {
+    return path.join(HERO_DIR, HOME_BANNER_FILENAME);
+}
+
+/** ถ้ายังไม่มีไฟล์ใน uploads/hero ให้คัดลอกจาก assets */
+function ensureHomeBanner() {
+    ensureHeroDir();
+    const dest = homeBannerPath();
+    if (fs.existsSync(dest)) return dest;
+    const src = path.join(ASSETS_DIR, HOME_BANNER_ASSET_FALLBACK);
+    if (fs.existsSync(src)) {
+        try { fs.copyFileSync(src, dest); } catch (_) { /* ignore */ }
+    }
+    return dest;
+}
+
+function publicHomeBannerUrl() {
+    ensureHomeBanner();
+    const file = homeBannerPath();
+    if (fs.existsSync(file)) {
+        const ver = Math.floor(fs.statSync(file).mtimeMs);
+        return `/uploads/hero/${HOME_BANNER_FILENAME}?v=${ver}`;
+    }
+    return `/assets/${HOME_BANNER_ASSET_FALLBACK}`;
+}
+
+function getHomeBannerInfo() {
+    ensureHomeBanner();
+    const file = homeBannerPath();
+    const exists = fs.existsSync(file);
+    return {
+        filename: HOME_BANNER_FILENAME,
+        path: file,
+        uploaded: exists,
+        url: publicHomeBannerUrl(),
+        fallback: `/assets/${HOME_BANNER_ASSET_FALLBACK}`,
+        bytes: exists ? fs.statSync(file).size : 0
+    };
 }
 
 function listLocalHeroFiles() {
@@ -52,6 +97,9 @@ function localUploadExists(urlPath) {
 }
 
 function pickFallback(slideIndex = 0) {
+    const home = homeBannerPath();
+    if (fs.existsSync(home)) return `/uploads/hero/${HOME_BANNER_FILENAME}`;
+
     const locals = listLocalHeroFiles();
     if (locals.length) {
         const pick = locals[Math.abs(slideIndex) % locals.length];
@@ -67,16 +115,11 @@ function pickFallback(slideIndex = 0) {
 function isFragileRemoteUrl(url) {
     const u = String(url || '').toLowerCase();
     if (!u) return true;
-    // ลิงก์ Google AI Studio / aida มักหมดอายุ
     if (u.includes('aida-public') || u.includes('googleusercontent.com/aida')) return true;
-    // Unsplash อาจถูกบล็อกในเครือข่ายบริษัท — ถ้ามีไฟล์ในเครื่องให้ใช้แทน
     if (u.includes('images.unsplash.com') && listLocalHeroFiles().length) return true;
     return false;
 }
 
-/**
- * แปลงค่า image_url จาก DB ให้เป็น URL ที่เบราว์เซอร์ใช้ได้แน่นอน
- */
 function normalizeHeroImageUrl(imageUrl, slideIndex = 0) {
     let raw = String(imageUrl || '').trim();
     if (!raw || isFragileRemoteUrl(raw)) {
@@ -122,9 +165,6 @@ function mapHeroSlidesImages(rows) {
     });
 }
 
-/**
- * เขียน URL ที่ใช้ได้กลับลง DB (ครั้งเดียวตอนสตาร์ท) เพื่อให้แอดมินเห็นรูปจริง
- */
 async function repairHeroSlideImages(pool) {
     const sql = require('mssql');
     try {
@@ -162,8 +202,13 @@ async function repairHeroSlideImages(pool) {
 module.exports = {
     HERO_DIR,
     UPLOADS_ROOT,
+    HOME_BANNER_FILENAME,
     BUNDLED_HERO_IMAGES,
     ensureHeroDir,
+    ensureHomeBanner,
+    homeBannerPath,
+    publicHomeBannerUrl,
+    getHomeBannerInfo,
     listLocalHeroFiles,
     localUploadExists,
     normalizeHeroImageUrl,

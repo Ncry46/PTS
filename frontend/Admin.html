@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724w">
+<link rel="stylesheet" href="site.css?v=20260724y">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -467,7 +467,16 @@ async function renderSchedules() {
 }
 
 async function renderBanners() {
-  const { data } = await api('/api/admin/hero-slides');
+  const [{ data }, homeBannerRes] = await Promise.all([
+    api('/api/admin/hero-slides'),
+    api('/api/admin/home-banner').catch(() => ({ data: null }))
+  ]);
+  const homeBanner = homeBannerRes?.data || {
+    url: '/uploads/hero/home-banner.png',
+    filename: 'home-banner.png',
+    fallback: '/assets/home-banner.png',
+    uploaded: false
+  };
   const iconOptions = [
     'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
     'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
@@ -761,9 +770,23 @@ async function renderBanners() {
   document.getElementById('panel').innerHTML = `
     <div class="ban-wrap">
       <div class="ban-card">
-        <h2 class="font-bold text-lg mb-1" id="b-form-title">เพิ่มแบนเนอร์หน้าแรก</h2>
-        <p class="text-sm text-on-surface-variant mb-4">อัปเดตรูปในเครื่องแล้ว (build 20260723c) — รูปใช้จากโฟลเดอร์โปรเจกต์ ไม่พึ่งลิงก์ภายนอก</p>
-        <p class="text-sm text-on-surface-variant mb-4">เลือกสี → อัปโหลดรูป → ใส่หัวข้อ → กดบันทึก · เปลี่ยนสีจากรายการด้านล่างได้ทันทีโดยไม่ต้องเปิดแก้ไข</p>
+        <h2 class="font-bold text-lg mb-1">แบนเนอร์หน้าแรก (รูปเดียว)</h2>
+        <p class="text-sm text-on-surface-variant mb-4">
+          เก็บไฟล์จริงที่ <code>uploads/hero/home-banner.png</code> — หน้าแรกแสดงรูปนี้เต็มแถบ
+        </p>
+        <div class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] overflow-hidden bg-[#0b1a2e] mb-3">
+          <img id="home-banner-preview" src="${escapeHtml(homeBanner.url || homeBanner.fallback)}"
+            alt="Home banner preview" style="display:block;width:100%;height:auto;max-height:320px;object-fit:contain"
+            onerror="this.onerror=null;this.src='/assets/home-banner.png'">
+        </div>
+        <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(homeBanner.filename || 'home-banner.png')}</code>${homeBanner.bytes ? ` · ${(homeBanner.bytes / 1024).toFixed(0)} KB` : ''}</p>
+        <input type="file" id="home-banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
+        <button type="button" class="pts-btn pts-btn-primary" id="home-banner-upload">อัปโหลดรูปแบนเนอร์หน้าแรก</button>
+        <p id="home-banner-msg" class="text-xs mt-2 text-on-surface-variant"></p>
+      </div>
+      <div class="ban-card">
+        <h2 class="font-bold text-lg mb-1" id="b-form-title">สไลด์เพิ่มเติม (ไม่บังคับ)</h2>
+        <p class="text-sm text-on-surface-variant mb-4">หน้าแรกใช้รูปเดียวด้านบนแล้ว — ส่วนนี้เก็บสไลด์เก่าไว้ถ้าต้องการ</p>
         <div id="b-form">${formHtml()}</div>
       </div>
       <div class="ban-card">
@@ -798,6 +821,33 @@ async function renderBanners() {
       </div>
     </div>
   `;
+
+  document.getElementById('home-banner-upload')?.addEventListener('click', async () => {
+    const input = document.getElementById('home-banner-file');
+    const msg = document.getElementById('home-banner-msg');
+    const file = input?.files?.[0];
+    if (!file) {
+      if (msg) msg.textContent = 'กรุณาเลือกไฟล์ก่อน';
+      return;
+    }
+    if (msg) msg.textContent = 'กำลังอัปโหลด...';
+    try {
+      const fd = new FormData();
+      fd.append('image', file);
+      const res = await fetch('/api/admin/home-banner/upload', {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
+      const preview = document.getElementById('home-banner-preview');
+      if (preview && json.url) preview.src = json.url;
+      if (msg) msg.textContent = 'บันทึกแล้วที่ uploads/hero/home-banner.png ✓ — เปิดหน้าแรกเพื่อดูผล';
+    } catch (e) {
+      if (msg) msg.textContent = e.message || 'อัปโหลดไม่สำเร็จ';
+    }
+  });
 
   const readForm = () => ({
     sort_order: Number(document.getElementById('b-sort').value || 1),

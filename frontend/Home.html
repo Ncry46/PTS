@@ -128,6 +128,7 @@
 <!-- Hero: single full-bleed promotional image -->
 <section class="pts-home-banner" aria-label="แบนเนอร์หน้าแรก">
   <img
+    id="home-banner-img"
     src="/uploads/hero/home-banner.png"
     alt="RIGHT-HAND PARTNER PROGRAM — Personal Assistant Academy"
     width="1536"
@@ -438,8 +439,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allCourses = [];
   let activeMode = '';
 
-  // (home banner is a static image — no register CTA in hero)
-
+  // โหลด URL รูปจาก uploads/hero/home-banner.png (มี cache-bust)
+  fetch('/api/home-banner')
+    .then((r) => r.json())
+    .then((j) => {
+      const img = document.getElementById('home-banner-img');
+      if (img && j?.success && j.data?.url) img.src = j.data.url;
+    })
+    .catch(() => {});
 
   const modeBadge = (mode) => {
     const m = String(mode || 'online').toLowerCase();

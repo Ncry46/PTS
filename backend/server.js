@@ -44,8 +44,9 @@ const componentsDir = path.join(__dirname, '..', 'components');
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 
 try {
-    const { ensureHeroDir } = require('./heroImages');
+    const { ensureHeroDir, ensureHomeBanner } = require('./heroImages');
     ensureHeroDir();
+    ensureHomeBanner();
 } catch (_) {
     try { fs.mkdirSync(path.join(uploadsDir, 'hero'), { recursive: true }); } catch (__) {}
     try { fs.mkdirSync(path.join(uploadsDir, 'avatars'), { recursive: true }); } catch (__) {}
