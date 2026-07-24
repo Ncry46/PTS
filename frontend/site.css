@@ -957,7 +957,25 @@ input.pts-pw-input::-ms-clear {
   .pts-nav__hide-mobile { display: none !important; }
 }
 
-/* —— Home hero banner carousel (full panel) —— */
+/* —— Home banner: single full-bleed promotional image —— */
+.pts-home-banner {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  line-height: 0;
+  background: #0b1a2e;
+  overflow: hidden;
+}
+.pts-home-banner img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 100%;
+  object-fit: contain;
+  object-position: center top;
+}
+
+/* —— Home hero banner carousel (legacy; unused when image-only) —— */
 .pts-hero-banner {
   position: relative;
   overflow: hidden;
