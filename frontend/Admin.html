@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724ai">
+<link rel="stylesheet" href="site.css?v=20260724aj">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -800,12 +800,29 @@ const tabs = {
   mail: renderMail
 };
 
-function activateTab(name) {
+function showAdminError(err) {
+  const panel = document.getElementById('panel');
+  if (!panel) return;
+  const msg = (err && err.message) ? err.message : String(err || 'ไม่ทราบสาเหตุ');
+  panel.innerHTML = `<div class="p-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-sm">
+    <p class="font-bold mb-1">โหลดแผงแอดมินไม่สำเร็จ</p>
+    <p>${escapeHtml(msg)}</p>
+  </div>`;
+}
+
+async function activateTab(name) {
   const key = tabs[name] ? name : 'courses';
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === key);
   });
-  tabs[key]();
+  const panel = document.getElementById('panel');
+  if (panel) panel.innerHTML = '<p class="text-sm text-on-surface-variant">กำลังโหลด...</p>';
+  try {
+    await tabs[key]();
+  } catch (err) {
+    console.error(err);
+    showAdminError(err);
+  }
   if (location.hash !== '#' + key) {
     history.replaceState(null, '', '#' + key);
   }
@@ -825,8 +842,23 @@ window.addEventListener('hashchange', () => {
   if ((me.user.role || '').toLowerCase() !== 'admin') {
     return location.href = 'Home.html';
   }
-  activateTab((location.hash || '').replace(/^#/, '') || 'courses');
-})().catch(err => console.error(err));
+  await activateTab((location.hash || '').replace(/^#/, '') || 'courses');
+})().catch(err => {
+  console.error(err);
+  showAdminError(err);
+});
+</script>
+<script>
+/* If the main admin script failed to parse, surface a visible error instead of a blank panel. */
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    if (typeof activateTab === 'function') return;
+    const panel = document.getElementById('panel');
+    if (panel && !panel.innerHTML.trim()) {
+      panel.innerHTML = '<div class="p-4 rounded-xl border border-red-200 bg-red-50 text-red-800 text-sm"><p class="font-bold">แผงแอดมินโหลดไม่สำเร็จ</p><p>สคริปต์หน้านี้พัง — รีเฟรชแรง (Ctrl+F5) หรือแจ้งผู้ดูแล</p></div>';
+    }
+  }, 50);
+});
 </script>
 <!-- PTS-NAV-INLINE-BOOT -->
 <script>
