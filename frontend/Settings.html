@@ -95,14 +95,14 @@
       </ol>
     </div>
     <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-3 hidden">
-      เครื่องนี้อ่าน Client ID/Secret ไม่เจอ (ไฟล์ลับไม่ถูกส่งมากับ git — เลยเพื่อนรันได้แต่เรายังไม่ได้)
-      <br>ในโฟลเดอร์โปรเจกต์รัน:
-      <code>npm run google:check</code>
-      แล้วตั้งค่าด้วย
-      <code>node backend/write-google-local.js --from พาธ\google.local.jsของเพื่อน</code>
-      หรือ
-      <code>node backend/write-google-local.js CLIENT_ID CLIENT_SECRET</code>
-      จากนั้น <code>npm start</code> ใหม่
+      <span id="gcal-setup-user">ระบบยังไม่เปิดใช้ Google Calendar บนเซิร์ฟเวอร์นี้ — ผู้ใช้ทั่วไปไม่ต้องตั้งค่าอะไร ติดต่อผู้ดูแลระบบให้เปิดใช้งาน</span>
+      <span id="gcal-setup-admin" class="hidden">
+        <strong>สำหรับผู้ดูแล / นักพัฒนา:</strong>
+        Client ID/Secret ตั้งที่<strong>เซิร์ฟเวอร์</strong>ครั้งเดียว (ไม่ใช่ที่เครื่องผู้ใช้)
+        · ตรวจด้วย <code>npm run google:check</code>
+        · ตั้งค่า <code>node backend/write-google-local.js CLIENT_ID CLIENT_SECRET</code>
+        หรือใส่ <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> ใน `.env` ของเซิร์ฟเวอร์ แล้วรีสตาร์ท
+      </span>
       <span id="gcal-diagnose-line" class="block mt-1"></span>
     </p>
   </section>
@@ -136,6 +136,7 @@
 <script>
 let pendingAvatarFile = null;
 let currentAvatarUrl = '';
+let isAdminUser = false;
 
 function defaultAvatar(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'P')}&background=F8BBD0&color=880E4F&size=128`;
@@ -149,6 +150,8 @@ function setAvatarPreview(url, name) {
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
+  const role = String(me.user?.role || me.user?.Role || '').toLowerCase();
+  isAdminUser = role === 'admin';
   const profile = await fetch('/api/profile', { credentials: 'include' }).then(r => r.json());
   if (!profile.success) { console.error(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ'); return location.href = 'Login.html'; }
   document.getElementById('full_name').value = profile.data.full_name || '';
@@ -274,24 +277,32 @@ async function refreshGcalStatus() {
       return;
     }
     if (!st.configured) {
-      statusText.textContent = 'ยังไม่มี Client ID/Secret ที่อ่านได้ — ตั้งค่า Google OAuth แล้วรีสตาร์ทเซิร์ฟเวอร์';
+      statusText.textContent = isAdminUser
+        ? 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่า Google OAuth (Client ID/Secret)'
+        : 'ระบบยังไม่เปิดใช้การเชื่อม Google Calendar — ติดต่อผู้ดูแล';
       hint.classList.remove('hidden');
+      document.getElementById('gcal-setup-user')?.classList.toggle('hidden', isAdminUser);
+      document.getElementById('gcal-setup-admin')?.classList.toggle('hidden', !isAdminUser);
       const diagEl = document.getElementById('gcal-diagnose-line');
-      try {
-        const dr = await fetch('/api/google/diagnose', { credentials: 'include' });
-        const diag = await dr.json();
-        const bits = [];
-        if (diag.hasLocalFile) bits.push('พบ google.local.js');
-        else bits.push('ไม่พบ google.local.js');
-        if (diag.fileEncodingGuess && diag.fileEncodingGuess.startsWith('utf16')) {
-          bits.push('ไฟล์เป็น UTF-16 (พัง) — รัน write-google-local.js เพื่อซ่อม');
+      if (isAdminUser) {
+        try {
+          const dr = await fetch('/api/google/diagnose', { credentials: 'include' });
+          const diag = await dr.json();
+          const bits = [];
+          if (diag.hasLocalFile) bits.push('พบ google.local.js');
+          else bits.push('ไม่พบ google.local.js');
+          if (diag.fileEncodingGuess && diag.fileEncodingGuess.startsWith('utf16')) {
+            bits.push('ไฟล์เป็น UTF-16 (พัง) — รัน write-google-local.js เพื่อซ่อม');
+          }
+          if (diag.envHasClientId) bits.push('.env มี CLIENT_ID');
+          else bits.push('.env ยังว่าง');
+          if (diag.redirectUri) bits.push('redirect: ' + diag.redirectUri);
+          if (diagEl) diagEl.textContent = 'ตรวจพบ: ' + bits.join(' · ');
+        } catch (_) {
+          if (diagEl) diagEl.textContent = '';
         }
-        if (diag.envHasClientId) bits.push('.env มี CLIENT_ID');
-        else bits.push('.env ยังว่าง');
-        if (diag.redirectUri) bits.push('redirect: ' + diag.redirectUri);
-        if (diagEl) diagEl.textContent = 'ตรวจพบ: ' + bits.join(' · ');
-      } catch (_) {
-        if (diagEl) diagEl.textContent = '';
+      } else if (diagEl) {
+        diagEl.textContent = '';
       }
       return;
     }
