@@ -630,7 +630,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const items = listGalleryBanners();
             const data = items.length
                 ? items.map((x) => ({ id: x.id, url: x.url, alt: 'Banner' }))
-                : [{ id: 'fallback', url: '/assets/home-banner.png', alt: 'PTS Learning' }];
+                : [{ id: 'fallback', url: '/uploads/hero/home-banner.png', alt: 'PTS Learning' }];
             res.json({ success: true, data });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

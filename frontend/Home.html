@@ -3,7 +3,7 @@
         <script src="/comp/theme-boot.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260724ab">
+        <link rel="stylesheet" href="site.css?v=20260724ad">
         <!-- pts-build:20260724x-image-banner -->
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
@@ -136,7 +136,7 @@
         height="1024"
         decoding="async"
         fetchpriority="high"
-        onerror="this.onerror=null;this.src='/assets/home-banner.png'"
+        onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'"
       >
       <span class="pts-home-banner__veil" aria-hidden="true"></span>
     </article>
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function render(list) {
       slides = list.length ? list : [{
-        url: '/assets/home-banner.png',
+        url: '/uploads/hero/home-banner.png',
         alt: 'PTS Learning'
       }];
       root.classList.toggle('is-single', slides.length < 2);
@@ -499,7 +499,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         <article class="pts-home-banner__slide${i === 0 ? ' is-active' : ''}" data-index="${i}">
           <img src="${escapeAttr(s.url)}" alt="${escapeAttr(s.alt || 'Banner')}"
             decoding="${i === 0 ? 'async' : 'async'}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
-            onerror="this.onerror=null;this.src='/assets/home-banner.png'">
+            onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
           <span class="pts-home-banner__veil" aria-hidden="true"></span>
         </article>`).join('');
       dotsBox.innerHTML = slides.map((_, i) => `

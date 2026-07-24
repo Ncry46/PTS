@@ -6,7 +6,3 @@
 # Served at:
 #   /uploads/cert/logo.png
 #   /uploads/cert/stamp.png
-#
-# Fallback (bundled):
-#   /assets/logo.png
-#   /assets/stamp.png

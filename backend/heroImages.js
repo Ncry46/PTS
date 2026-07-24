@@ -3,20 +3,9 @@ const path = require('path');
 
 const UPLOADS_ROOT = path.join(__dirname, '..', 'uploads');
 const HERO_DIR = path.join(UPLOADS_ROOT, 'hero');
-const ASSETS_DIR = path.join(__dirname, '..', 'frontend', 'assets');
 
 /** รูปแบนเนอร์หน้าแรก — เก็บไฟล์จริงใน uploads/hero */
 const HOME_BANNER_FILENAME = 'home-banner.png';
-const HOME_BANNER_ASSET_FALLBACK = 'home-banner.png';
-
-/** รูปใน repo (เสิร์ฟผ่าน express.static frontend) — ไม่พึ่ง CDN นอก */
-const BUNDLED_HERO_IMAGES = [
-    '/assets/hero-1.png',
-    '/assets/hero-2.png',
-    '/assets/hero-3.png',
-    '/assets/hero-fallback.png',
-    '/assets/home-banner.png'
-];
 
 function ensureHeroDir() {
     fs.mkdirSync(HERO_DIR, { recursive: true });
@@ -27,16 +16,9 @@ function homeBannerPath() {
     return path.join(HERO_DIR, HOME_BANNER_FILENAME);
 }
 
-/** ถ้ายังไม่มีไฟล์ใน uploads/hero ให้คัดลอกจาก assets */
 function ensureHomeBanner() {
     ensureHeroDir();
-    const dest = homeBannerPath();
-    if (fs.existsSync(dest)) return dest;
-    const src = path.join(ASSETS_DIR, HOME_BANNER_ASSET_FALLBACK);
-    if (fs.existsSync(src)) {
-        try { fs.copyFileSync(src, dest); } catch (_) { /* ignore */ }
-    }
-    return dest;
+    return homeBannerPath();
 }
 
 function publicHomeBannerUrl() {
@@ -46,7 +28,10 @@ function publicHomeBannerUrl() {
         const ver = Math.floor(fs.statSync(file).mtimeMs);
         return `/uploads/hero/${HOME_BANNER_FILENAME}?v=${ver}`;
     }
-    return `/assets/${HOME_BANNER_ASSET_FALLBACK}`;
+    // fallback: รูปแบนเนอร์อื่นในโฟลเดอร์
+    const others = listGalleryBanners();
+    if (others.length) return others[0].url;
+    return `/uploads/hero/${HOME_BANNER_FILENAME}`;
 }
 
 function getHomeBannerInfo() {
@@ -58,7 +43,7 @@ function getHomeBannerInfo() {
         path: file,
         uploaded: exists,
         url: publicHomeBannerUrl(),
-        fallback: `/assets/${HOME_BANNER_ASSET_FALLBACK}`,
+        fallback: `/uploads/hero/${HOME_BANNER_FILENAME}`,
         bytes: exists ? fs.statSync(file).size : 0
     };
 }
@@ -74,7 +59,6 @@ function isGalleryBannerFilename(name) {
 
 function listGalleryBanners() {
     ensureHeroDir();
-    ensureHomeBanner();
     let names = [];
     try {
         names = fs.readdirSync(HERO_DIR).filter(isGalleryBannerFilename);
@@ -97,7 +81,6 @@ function listGalleryBanners() {
         };
     }).filter(Boolean);
 
-    // ใหม่สุดอยู่ก่อน
     items.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
     return items;
 }
@@ -116,8 +99,6 @@ function deleteGalleryBanner(filename) {
     }
     try {
         fs.unlinkSync(abs);
-        // ถ้าลบ home-banner.png ให้ seed ใหม่จาก assets เพื่อไม่ให้หน้าแรกว่าง
-        if (/^home-banner\./i.test(safe)) ensureHomeBanner();
         return { ok: true };
     } catch (err) {
         return { ok: false, message: err.message || 'ลบไม่สำเร็จ' };
@@ -135,16 +116,6 @@ function listLocalHeroFiles() {
     }
 }
 
-function bundledExists(urlPath) {
-    if (!urlPath || !String(urlPath).startsWith('/assets/')) return false;
-    const abs = path.join(ASSETS_DIR, path.basename(urlPath));
-    try {
-        return fs.existsSync(abs) && fs.statSync(abs).isFile();
-    } catch (_) {
-        return false;
-    }
-}
-
 function localUploadExists(urlPath) {
     if (!urlPath || !String(urlPath).startsWith('/uploads/')) return false;
     const rel = String(urlPath).replace(/^\/uploads\//, '').replace(/\//g, path.sep);
@@ -158,6 +129,10 @@ function localUploadExists(urlPath) {
 }
 
 function pickFallback(slideIndex = 0) {
+    const gallery = listGalleryBanners();
+    if (gallery.length) {
+        return gallery[Math.abs(slideIndex) % gallery.length].url.split('?')[0];
+    }
     const home = homeBannerPath();
     if (fs.existsSync(home)) return `/uploads/hero/${HOME_BANNER_FILENAME}`;
 
@@ -166,11 +141,7 @@ function pickFallback(slideIndex = 0) {
         const pick = locals[Math.abs(slideIndex) % locals.length];
         return `/uploads/hero/${pick}`;
     }
-    const bundled = BUNDLED_HERO_IMAGES.filter(bundledExists);
-    if (bundled.length) {
-        return bundled[Math.abs(slideIndex) % bundled.length];
-    }
-    return '/assets/hero-fallback.png';
+    return `/uploads/hero/${HOME_BANNER_FILENAME}`;
 }
 
 function isFragileRemoteUrl(url) {
@@ -179,6 +150,15 @@ function isFragileRemoteUrl(url) {
     if (u.includes('aida-public') || u.includes('googleusercontent.com/aida')) return true;
     if (u.includes('images.unsplash.com') && listLocalHeroFiles().length) return true;
     return false;
+}
+
+/** map พาธเก่า /assets/... → /uploads/... */
+function remapLegacyAssetUrl(raw) {
+    const name = path.basename(String(raw || '').split('?')[0]);
+    if (!name) return null;
+    if (/^(logo|stamp)\.png$/i.test(name)) return `/uploads/cert/${name}`;
+    if (/\.(jpe?g|png|webp|gif)$/i.test(name)) return `/uploads/hero/${name}`;
+    return null;
 }
 
 function normalizeHeroImageUrl(imageUrl, slideIndex = 0) {
@@ -191,7 +171,13 @@ function normalizeHeroImageUrl(imageUrl, slideIndex = 0) {
         return raw;
     }
 
-    const winMatch = raw.replace(/\\/g, '/').match(/(?:^|\/)uploads\/(hero|avatars)\/([^/?#]+)$/i);
+    if (raw.startsWith('/assets/')) {
+        const mapped = remapLegacyAssetUrl(raw);
+        if (mapped && localUploadExists(mapped)) return mapped;
+        return pickFallback(slideIndex);
+    }
+
+    const winMatch = raw.replace(/\\/g, '/').match(/(?:^|\/)uploads\/(hero|avatars|cert)\/([^/?#]+)$/i);
     if (winMatch) {
         raw = `/uploads/${winMatch[1].toLowerCase()}/${winMatch[2]}`;
     } else if (!raw.startsWith('/') && /\.(jpe?g|png|webp|gif)$/i.test(raw)) {
@@ -200,11 +186,6 @@ function normalizeHeroImageUrl(imageUrl, slideIndex = 0) {
 
     if (raw.startsWith('/uploads/')) {
         if (localUploadExists(raw)) return raw;
-        return pickFallback(slideIndex);
-    }
-
-    if (raw.startsWith('/assets/')) {
-        if (bundledExists(raw)) return raw;
         return pickFallback(slideIndex);
     }
 
@@ -253,7 +234,7 @@ async function repairHeroSlideImages(pool) {
             }
         }
         if (fixed) {
-            console.log(`🖼️  ซ่อม URL รูปแบนเนอร์แล้ว ${fixed} รายการ → ใช้ไฟล์ในโปรเจกต์`);
+            console.log(`🖼️  ซ่อม URL รูปแบนเนอร์แล้ว ${fixed} รายการ → ใช้ไฟล์ใน uploads/`);
         }
     } catch (err) {
         console.warn('repairHeroSlideImages:', err.message || err);
@@ -264,7 +245,6 @@ module.exports = {
     HERO_DIR,
     UPLOADS_ROOT,
     HOME_BANNER_FILENAME,
-    BUNDLED_HERO_IMAGES,
     ensureHeroDir,
     ensureHomeBanner,
     homeBannerPath,

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724ac">
+<link rel="stylesheet" href="site.css?v=20260724ad">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -491,7 +491,7 @@ async function renderBanners() {
               <article class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] overflow-hidden bg-[var(--pts-surface,#fff)]">
                 <div class="bg-[#0b1020]">
                   <img src="${escapeHtml(b.url)}" alt="" class="w-full h-40 object-cover"
-                    onerror="this.onerror=null;this.src='/assets/home-banner.png'">
+                    onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
                 </div>
                 <div class="p-3 flex items-center justify-between gap-2">
                   <div class="min-w-0">
@@ -712,8 +712,8 @@ async function renderCertAssets() {
   const panel = document.getElementById('panel');
   const { data } = await api('/api/admin/cert-assets');
   const bySlot = Object.fromEntries((data || []).map((x) => [x.slot, x]));
-  const logo = bySlot.logo || { url: '/assets/logo.png', filename: 'logo.png' };
-  const stamp = bySlot.stamp || { url: '/assets/stamp.png', filename: 'stamp.png' };
+  const logo = bySlot.logo || { url: '/uploads/cert/logo.png', filename: 'logo.png' };
+  const stamp = bySlot.stamp || { url: '/uploads/cert/stamp.png', filename: 'stamp.png' };
 
   panel.innerHTML = `
     <div class="space-y-4">
@@ -729,7 +729,7 @@ async function renderCertAssets() {
             <div class="bg-[#f7f1f3] rounded-xl p-4 mb-3 flex items-center justify-center min-h-[160px]">
               <img id="cert-logo-preview" src="${escapeHtml(logo.url)}" alt="Logo preview"
                 style="max-height:120px;max-width:100%;object-fit:contain"
-                onerror="this.onerror=null;this.src='/assets/logo.png'">
+                onerror="this.onerror=null;this.src='/uploads/cert/logo.png'">
             </div>
             <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(logo.filename || 'logo.png')}</code></p>
             <input type="file" id="cert-logo-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
@@ -741,7 +741,7 @@ async function renderCertAssets() {
             <div class="bg-[#f7f1f3] rounded-xl p-4 mb-3 flex items-center justify-center min-h-[160px]">
               <img id="cert-stamp-preview" src="${escapeHtml(stamp.url)}" alt="Stamp preview"
                 style="max-height:120px;max-width:100%;object-fit:contain"
-                onerror="this.onerror=null;this.src='/assets/stamp.png'">
+                onerror="this.onerror=null;this.src='/uploads/cert/stamp.png'">
             </div>
             <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(stamp.filename || 'stamp.png')}</code></p>
             <input type="file" id="cert-stamp-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">

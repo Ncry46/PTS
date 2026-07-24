@@ -1,7 +1,7 @@
 # Home / hero banner images (stored on disk)
 #
 # Gallery banners shown on Home carousel:
-#   uploads/hero/home-banner.png   (default / seeded)
+#   uploads/hero/home-banner.png   (default)
 #   uploads/hero/banner-*.png      (uploaded from Admin)
 #
 # Served at: /uploads/hero/<filename>
