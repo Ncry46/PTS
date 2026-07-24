@@ -68,6 +68,12 @@ git pull
 | `SMTP_USER` | อีเมลผู้ส่ง OTP |
 | `SMTP_PASS` | Google App Password |
 | `MAIL_FROM_EMAIL` | อีเมลผู้ส่ง |
+| `GOOGLE_CLIENT_ID` | OAuth Client ID (ตั้งที่เซิร์ฟเวอร์ครั้งเดียว) |
+| `GOOGLE_CLIENT_SECRET` | OAuth Client Secret |
+| `GOOGLE_REDIRECT_URI` | `https://ชื่อบริการ.onrender.com/api/google/oauth/callback` |
+
+> **ผู้ใช้จริง (นักเรียน) ไม่ต้องมีไฟล์ลับบนเครื่อง** — พวกเขาแค่เปิดเว็บ → Settings → กดเชื่อมต่อ Google  
+> Client ID/Secret อยู่ที่เซิร์ฟเวอร์เท่านั้น (เหมือนรหัส DB)
 
 แล้วกด **Deploy**
 
@@ -86,7 +92,8 @@ git pull
 
 อัปเดต:
 - `APP_BASE_URL` = URL จริง
-- ถ้าใช้ Google Calendar: `GOOGLE_REDIRECT_URI=https://YOUR-URL/api/google/oauth/callback` และใส่ใน Google Cloud Console ด้วย
+- `GOOGLE_REDIRECT_URI=https://YOUR-URL/api/google/oauth/callback` และใส่ URI เดียวกันใน Google Cloud Console → OAuth client → Authorized redirect URIs
+- ตรวจสถานะ: `https://YOUR-URL/api/google/diagnose` ควรได้ `"configured": true`
 
 ---
 
