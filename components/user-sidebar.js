@@ -54,7 +54,8 @@
     content.className = 'user-main';
     while (main.firstChild) content.appendChild(main.firstChild);
 
-    main.classList.add('pts-main--wide', 'user-shell');
+    main.classList.add('pts-main--user', 'user-shell');
+    main.classList.remove('pts-main--wide');
     main.appendChild(aside);
     main.appendChild(content);
     return main;
