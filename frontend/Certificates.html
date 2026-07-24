@@ -68,9 +68,9 @@ let allCerts = [];
 let filterMode = 'all';
 let query = '';
 
-function formatCertDate(issuedAt) {
-  if (!issuedAt) return '-';
-  const d = new Date(issuedAt);
+function formatCertDate(dateValue) {
+  if (!dateValue) return '-';
+  const d = new Date(dateValue);
   if (Number.isNaN(d.getTime())) return '-';
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
@@ -78,9 +78,13 @@ function formatCertDate(issuedAt) {
   return `${dd}/${mm}/${yyyy}`;
 }
 
+function certCompletionDate(cert) {
+  return cert?.completed_at || cert?.issued_at || null;
+}
+
 /** Official PA Academy certificate — template with dynamic name / course / date */
-function certificateHtml({ userName, courseName, issuedAt }) {
-  const dateText = formatCertDate(issuedAt);
+function certificateHtml({ userName, courseName, completedAt }) {
+  const dateText = formatCertDate(completedAt);
   const name = escapeHtml(userName || 'ผู้เรียน');
   const course = escapeHtml(courseName || '');
   return `
@@ -118,7 +122,7 @@ function certificateHtml({ userName, courseName, issuedAt }) {
           </div>
           <p class="pts-cert__course">${course}</p>
           <div class="pts-cert__date-wrap">
-            <div class="pts-cert__date-label">Date / วันที่</div>
+            <div class="pts-cert__date-label">Date / วันที่เรียนจบ</div>
             <div class="pts-cert__date">${escapeHtml(dateText)}</div>
           </div>
         </div>
@@ -188,7 +192,7 @@ function filteredList() {
   if (filterMode === 'az') {
     list.sort((a, b) => String(a.course_name || '').localeCompare(String(b.course_name || ''), 'th'));
   } else {
-    list.sort((a, b) => new Date(b.issued_at) - new Date(a.issued_at));
+    list.sort((a, b) => new Date(certCompletionDate(b)) - new Date(certCompletionDate(a)));
   }
   return list;
 }

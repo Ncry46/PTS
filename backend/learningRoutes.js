@@ -262,11 +262,24 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     SELECT
                         cert.certificate_id, cert.certificate_code, cert.issued_at,
                         c.course_id, c.course_name, c.instructor_name, c.cover_image_url,
-                        c.delivery_mode
+                        c.delivery_mode,
+                        COALESCE(prog.last_completed_at, CASE WHEN e.status = 'completed' THEN e.updated_at END, cert.issued_at) AS completed_at
                     FROM BD_PTS.dbo.certificates cert
                     INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = cert.course_id
+                    LEFT JOIN BD_PTS.dbo.course_enrollments e
+                        ON e.user_id = cert.user_id AND e.course_id = cert.course_id
+                    OUTER APPLY (
+                        SELECT MAX(lp.completed_at) AS last_completed_at
+                        FROM BD_PTS.dbo.lesson_progress lp
+                        INNER JOIN BD_PTS.dbo.course_lessons l ON l.lesson_id = lp.lesson_id
+                        WHERE lp.user_id = cert.user_id
+                          AND l.course_id = cert.course_id
+                          AND lp.completed = 1
+                          AND l.flag_use = 1
+                          AND lp.completed_at IS NOT NULL
+                    ) prog
                     WHERE cert.user_id = @userId
-                    ORDER BY cert.issued_at DESC
+                    ORDER BY COALESCE(prog.last_completed_at, CASE WHEN e.status = 'completed' THEN e.updated_at END, cert.issued_at) DESC
                 `);
             res.json({ success: true, data: result.recordset });
         } catch (error) {
