@@ -3,13 +3,179 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>PTS Learning Dashboard</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724w">
+<link rel="stylesheet" href="site.css?v=20260724dash">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<style>
+  .dash-myc-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 220px));
+    gap: 16px;
+    justify-content: start;
+  }
+  .dash-myc-list > .pts-empty,
+  .dash-myc-list > .dash-myc-empty {
+    grid-column: 1 / -1;
+  }
+  .myc-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 220px;
+    background: var(--pts-card-bg, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 16px;
+    overflow: hidden;
+    min-height: 0;
+  }
+  .myc-card__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #f8e8ec;
+  }
+  .myc-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .myc-card__badge {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    background: #974258;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 9px;
+    border-radius: 999px;
+  }
+  .myc-card__body {
+    flex: 1;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .myc-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+  }
+  .myc-card__title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--pts-text, #1c1520);
+    margin: 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .myc-card__meta {
+    font-size: 12px;
+    color: var(--pts-muted, #544245);
+    margin: 0;
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .myc-card__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+  .myc-card__foot {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
+  }
+  .myc-progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+  .myc-progress-row strong { color: #974258; }
+  .myc-bar {
+    height: 6px;
+    width: 100%;
+    background: rgba(151,66,88,.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .myc-bar > span {
+    display: block;
+    height: 100%;
+    background: #974258;
+    border-radius: 999px;
+  }
+  .myc-status {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    line-height: 1.3;
+  }
+  .myc-status--progress {
+    background: rgba(151,66,88,.1);
+    color: #974258;
+  }
+  .myc-status--done {
+    background: rgba(46,125,50,.12);
+    color: #2e7d32;
+  }
+  .myc-status--other {
+    background: rgba(84,66,69,.1);
+    color: #544245;
+  }
+  .myc-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .myc-actions .pts-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 9px 12px;
+    font-size: 13px;
+    border-radius: 12px;
+  }
+  .myc-actions__link {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #974258;
+    text-decoration: none;
+    padding: 2px 0;
+  }
+  .myc-actions__link:hover { text-decoration: underline; }
+  .dash-myc-empty {
+    background: #fff;
+    border: 1px solid rgba(151,66,88,.14);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    color: #544245;
+  }
+</style>
 <!-- Tailwind Configuration -->
 <script id="tailwind-config">
       tailwind.config = {
@@ -215,11 +381,11 @@
 <!-- Learning Card -->
 <div>
 <div class="flex justify-between items-end mb-md">
-<h3 class="font-headline-sm text-headline-sm">หลักสูตรของฉัน</h3>
-<a class="text-primary font-label-md text-label-md hover:underline" href="Courses.html">ดูหลักสูตรทั้งหมด</a>
+<h3 class="font-headline-sm text-headline-sm">เรียนล่าสุด</h3>
+<a class="text-primary font-label-md text-label-md hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>
 </div>
-<div id="my-courses"></div><div id="dash-my-courses" class="space-y-md">
-<div class="bg-surface-container-lowest rounded-24px soft-shadow p-md text-on-surface-variant">กำลังโหลดหลักสูตรของฉัน...</div>
+<div id="dash-my-courses" class="dash-myc-list">
+<div class="dash-myc-empty">กำลังโหลดหลักสูตร...</div>
 </div>
 </div>
 <!-- Schedule List -->
@@ -433,6 +599,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
 const myCoursesEl = document.getElementById('dash-my-courses');
+    const PLACEHOLDER = 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course';
+
+    function statusLabel(status) {
+        if (status === 'completed') return { text: 'เรียนจบแล้ว', cls: 'myc-status--done' };
+        if (status === 'in_progress') return { text: 'กำลังเรียน', cls: 'myc-status--progress' };
+        return { text: status || 'สมัครแล้ว', cls: 'myc-status--other' };
+    }
+
+    function dashCourseCard(course) {
+        const progress = Math.max(0, Math.min(100, Number(course.progress_percent || 0)));
+        const image = course.cover_image_url || PLACEHOLDER;
+        const mode = (course.delivery_mode || 'หลักสูตร').toString();
+        const st = statusLabel(course.status);
+        const hours = course.total_hours != null ? `${Number(course.total_hours)} ชม.` : '';
+        const primaryHref = course.status === 'completed'
+            ? 'Certificates.html'
+            : `Learn.html?courseId=${course.course_id}`;
+        const primaryLabel = course.status === 'completed' ? 'ดูใบประกาศ' : 'เข้าเรียนต่อ';
+
+        return `
+        <article class="myc-card">
+          <div class="myc-card__media">
+            <img src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+            <span class="myc-card__badge">${escapeHtml(mode)}</span>
+          </div>
+          <div class="myc-card__body">
+            <div class="myc-card__info">
+              <div class="myc-card__top">
+                <span class="myc-status ${st.cls}">${st.text}</span>
+                ${hours ? `<span class="myc-card__meta">${escapeHtml(hours)}</span>` : ''}
+              </div>
+              <h3 class="myc-card__title">${escapeHtml(course.course_name)}</h3>
+              <p class="myc-card__meta">โดย ${escapeHtml(course.instructor_name || '-')}</p>
+            </div>
+            <div class="myc-card__foot">
+              <div>
+                <div class="myc-progress-row">
+                  <span>ความคืบหน้า</span>
+                  <strong>${progress}%</strong>
+                </div>
+                <div class="myc-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
+              </div>
+              <div class="myc-actions">
+                <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
+                <a class="myc-actions__link" href="CourseDetail.html?courseId=${course.course_id}">รายละเอียด</a>
+              </div>
+            </div>
+          </div>
+        </article>`;
+    }
+
     try {
         const response = await fetch('/api/my/courses', { credentials: 'include' });
         const payload = await response.json();
@@ -456,52 +673,27 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         if (completedEl) completedEl.textContent = `${summary.completed || 0} หลักสูตร`;
 
         const courses = payload.data || [];
+        // API already ORDER BY updated_at DESC — show only 3 most recent
+        const recent = courses.slice(0, 3);
         if (!courses.length) {
             myCoursesEl.innerHTML = `
-                <div class="bg-surface-container-lowest rounded-24px soft-shadow p-md text-center">
-                    <p class="text-on-surface-variant mb-md">คุณยังไม่ได้สมัครหลักสูตรใดๆ</p>
-                    <a href="Courses.html" class="inline-block bg-primary text-white px-lg py-sm rounded-full font-bold">ไปเลือกหลักสูตร</a>
+                <div class="dash-myc-empty">
+                    <p class="mb-3">คุณยังไม่ได้สมัครหลักสูตรใดๆ</p>
+                    <a href="Courses.html" class="pts-btn pts-btn-primary">ไปเลือกหลักสูตร</a>
                 </div>`;
         } else {
-            myCoursesEl.innerHTML = courses.map(course => {
-                const progress = Number(course.progress_percent || 0);
-                const image = course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course';
-                const mode = (course.delivery_mode || 'course').toString();
-                return `
-                <div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden">
-                    <div class="flex flex-col md:flex-row h-full">
-                        <div class="md:w-1/3 relative h-40 md:h-auto overflow-hidden">
-                            <img class="w-full h-full object-cover" src="${image}" alt="">
-                            <div class="absolute bottom-4 left-4 z-20">
-                                <span class="bg-primary text-white text-[12px] px-sm py-1 rounded-full font-bold">${escapeHtml(mode)}</span>
-                            </div>
-                        </div>
-                        <div class="p-md md:w-2/3 flex flex-col justify-between gap-sm">
-                            <div>
-                                <h4 class="font-headline-sm text-headline-sm mb-xs">${escapeHtml(course.course_name)}</h4>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant">โดย ${escapeHtml(course.instructor_name || '-')}</p>
-                            </div>
-                            <div class="space-y-sm">
-                                <div class="flex justify-between items-center text-label-md">
-                                    <span class="text-on-surface-variant">ความคืบหน้า</span>
-                                    <span class="text-primary font-bold">${progress}%</span>
-                                </div>
-                                <div class="h-2 w-full bg-surface-container rounded-full overflow-hidden">
-                                    <div class="h-full bg-primary rounded-full" style="width: ${progress}%;"></div>
-                                </div>
-                                <div class="flex flex-wrap gap-sm">
-                                    <a href="Learn.html?courseId=${course.course_id}" class="bg-primary text-white px-lg py-sm rounded-full font-bold">เข้าเรียน</a>
-                                    <a href="Payments.html?courseId=${course.course_id}" class="border border-primary/30 text-primary px-lg py-sm rounded-full font-bold">ชำระเงิน</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('');
+            myCoursesEl.innerHTML = recent.map(dashCourseCard).join('');
+            if (courses.length > 3) {
+                const note = document.createElement('p');
+                note.className = 'text-sm text-on-surface-variant mt-3';
+                note.style.gridColumn = '1 / -1';
+                note.innerHTML = `แสดง ${recent.length} จาก ${courses.length} หลักสูตรล่าสุด · <a class="text-primary font-bold hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>`;
+                myCoursesEl.appendChild(note);
+            }
         }
     } catch (error) {
         console.error(error);
-        myCoursesEl.innerHTML = `<div class="bg-error-container text-error rounded-24px p-md">${escapeHtml(error.message)}</div>`;
+        myCoursesEl.innerHTML = `<div class="dash-myc-empty" style="color:#ba1a1a">${escapeHtml(error.message)}</div>`;
     }
 
     myCoursesEl.addEventListener('click', async (e) => {
