@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายละเอียดหลักสูตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724al">
+<link rel="stylesheet" href="site.css?v=20260724cal">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
@@ -57,17 +57,6 @@
 <script>
 const courseId = new URLSearchParams(location.search).get('courseId');
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const courseReturnPath = () => `/CourseDetail.html?courseId=${encodeURIComponent(courseId || '')}`;
-
-async function startGoogleCalendarOAuth() {
-  const res = await fetch(`/api/google/oauth/start?redirect=0&returnTo=${encodeURIComponent(courseReturnPath())}`, {
-    credentials: 'include',
-    headers: { Accept: 'application/json' }
-  });
-  const data = await res.json();
-  if (!res.ok || !data.url) throw new Error(data.message || 'เริ่มเชื่อม Google ไม่สำเร็จ');
-  location.href = data.url;
-}
 
 async function mountCourseNotifyControls(hostEl) {
   if (!hostEl || !courseId) return;
@@ -104,18 +93,18 @@ async function mountCourseNotifyControls(hostEl) {
   const enabled = !!pref.enabled;
   const connected = !!pref.connected;
   const upcoming = Number(pref.upcoming_count || 0);
-  const calLabel = enabled
-    ? 'เปิดรับปฏิทินแล้ว'
-    : 'รับแจ้งเตือนเข้าปฏิทิน';
+  const calLabel = enabled ? 'เปิดรับปฏิทินแล้ว' : 'รับแจ้งเตือนเข้าปฏิทิน';
   const calHint = enabled
-    ? (upcoming > 0
-      ? `ส่งตาราง ${upcoming} รายการเข้า Google Calendar แล้ว — กดอีกครั้งเพื่อปิด`
-      : 'เปิดรับแล้ว — เมื่อแอดมินสร้างตารางรอบใหม่ ระบบจะส่งเข้าปฏิทินให้อัตโนมัติ')
-    : 'สมัครคอร์สอย่างเดียวยังไม่เข้าปฏิทิน — กดปุ่มนี้ถ้าต้องการ (ถ้ายังไม่เชื่อม Google จะพาไปอนุญาตทันที)';
+    ? (connected
+      ? (upcoming > 0
+        ? `ส่งตาราง ${upcoming} รายการเข้า Google Calendar แล้ว`
+        : 'เปิดรับแล้ว — ตารางรอบใหม่จะถูกส่งเข้าปฏิทินอัตโนมัติ')
+      : 'เปิดรับคอร์สนี้แล้ว — ยังต้องผูกบัญชี Google ที่หน้าตั้งค่า')
+    : 'สมัครคอร์สอย่างเดียวขึ้นในปฏิทินบนเว็บแล้ว — กดปุ่มนี้ถ้าต้องการส่งเข้า Google Calendar ด้วย';
 
   const lineConfigured = !!(lineInfo.configured && lineInfo.url);
-  const lineLabel = `เชื่อม LINE OA`;
   const lineHref = lineConfigured ? lineInfo.url : '#';
+  const settingsLabel = connected ? 'จัดการบัญชีปฏิทิน' : 'ไปตั้งค่าผูก Google';
 
   hostEl.innerHTML = `
     <div class="pts-notify">
@@ -126,11 +115,20 @@ async function mountCourseNotifyControls(hostEl) {
         <a class="pts-btn pts-btn-line${!lineConfigured ? ' is-disabled' : ''}" id="notify-line-btn"
            href="${escapeHtml(lineHref)}"
            target="_blank" rel="noopener noreferrer"
-           ${!lineConfigured ? 'aria-disabled="true"' : ''}>${escapeHtml(lineLabel)}</a>
+           ${!lineConfigured ? 'aria-disabled="true"' : ''}>เชื่อม LINE OA</a>
+      </div>
+      <div class="pts-settings-shortcut" style="margin-top:12px;margin-bottom:0;">
+        <p class="pts-settings-shortcut__text">
+          <strong>ผูกบัญชี Google</strong> — สวิตช์หลักอยู่ที่หน้าตั้งค่า กดทางลัดนี้เพื่อไปเชื่อมหรือจัดการ
+        </p>
+        <a class="pts-btn pts-btn-outline" href="Settings.html#google-calendar">${escapeHtml(settingsLabel)}</a>
       </div>
       ${enabled ? `<div class="pts-notify__actions" style="margin-top:8px;">
         <button type="button" class="pts-btn pts-btn-ghost" id="notify-cal-off-btn">ปิดการแจ้งเตือนปฏิทิน</button>
-      </div>` : ''}
+        <a class="pts-btn pts-btn-ghost" href="Schedule.html">ดูปฏิทินบนเว็บ</a>
+      </div>` : `<div class="pts-notify__actions" style="margin-top:8px;">
+        <a class="pts-btn pts-btn-ghost" href="Schedule.html">ดูปฏิทินบนเว็บ</a>
+      </div>`}
       <p id="notify-msg" class="pts-msg" style="margin:10px 0 0;"></p>
     </div>`;
 
@@ -150,26 +148,21 @@ async function mountCourseNotifyControls(hostEl) {
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'อัปเดตไม่สำเร็จ');
 
-      // Need Google connect → start OAuth from this page (no Settings hop)
-      if (on && data.connected === false) {
-        if (msg) {
-          msg.textContent = 'บันทึกแล้ว — กำลังพาไปอนุญาต Google Calendar...';
-          msg.className = 'pts-msg pts-msg--ok';
-        }
-        await startGoogleCalendarOAuth();
-        return;
-      }
-
       const synced = Number(data.synced || 0);
       await mountCourseNotifyControls(hostEl);
       const msg2 = msgEl();
       if (msg2) {
-        msg2.textContent = data.message || (on
-          ? (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'เปิดรับแล้ว')
-          : 'ปิดการแจ้งเตือนปฏิทินแล้ว');
-        msg2.className = (on && (data.pending || synced === 0))
-          ? 'pts-msg pts-msg--err'
-          : 'pts-msg pts-msg--ok';
+        if (on && data.connected === false) {
+          msg2.textContent = 'บันทึกคอร์สนี้แล้ว — กด “ไปตั้งค่าผูก Google” เพื่อเชื่อมบัญชีหลัก แล้วระบบจะส่งตารางเข้าปฏิทิน';
+          msg2.className = 'pts-msg pts-msg--ok';
+        } else {
+          msg2.textContent = data.message || (on
+            ? (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'เปิดรับแล้ว')
+            : 'ปิดการแจ้งเตือนปฏิทินแล้ว');
+          msg2.className = (on && (data.pending || synced === 0))
+            ? 'pts-msg pts-msg--err'
+            : 'pts-msg pts-msg--ok';
+        }
       }
     } catch (e) {
       if (msg) {
@@ -180,28 +173,15 @@ async function mountCourseNotifyControls(hostEl) {
     }
   }
 
-  document.getElementById('notify-cal-btn')?.addEventListener('click', async (e) => {
+  document.getElementById('notify-cal-btn')?.addEventListener('click', (e) => {
     const btn = e.currentTarget;
     if (enabled) {
-      // Already on — offer soft feedback; use off button to disable
       const msg = msgEl();
       if (msg) {
         msg.textContent = connected
-          ? 'เปิดรับอยู่แล้ว — ตรวจใน Google Calendar หรือกด “ปิดการแจ้งเตือนปฏิทิน” ถ้าไม่ต้องการ'
-          : 'รอบันทึกแล้ว — กดปุ่มอีกครั้งถ้าต้องการเชื่อม Google';
+          ? 'เปิดรับอยู่แล้ว — ตรวจใน Google Calendar หรือกดปิดด้านล่าง'
+          : 'รอบันทึกคอร์สนี้แล้ว — ไปตั้งค่าเพื่อผูก Google ก่อน';
         msg.className = 'pts-msg pts-msg--ok';
-      }
-      if (!connected) {
-        try {
-          btn.disabled = true;
-          await startGoogleCalendarOAuth();
-        } catch (err) {
-          if (msg) {
-            msg.textContent = err.message || 'เชื่อม Google ไม่สำเร็จ';
-            msg.className = 'pts-msg pts-msg--err';
-          }
-          btn.disabled = false;
-        }
       }
       return;
     }
@@ -222,31 +202,6 @@ async function mountCourseNotifyControls(hostEl) {
       }
     }
   });
-
-  // Return from Google OAuth on this page
-  const params = new URLSearchParams(location.search);
-  const gcal = params.get('gcal');
-  if (gcal === 'connected' || gcal === 'error') {
-    const oauthMsg = params.get('msg');
-    params.delete('gcal');
-    params.delete('msg');
-    const qs = params.toString();
-    history.replaceState({}, '', `${location.pathname}${qs ? `?${qs}` : ''}`);
-
-    const msg = msgEl();
-    if (gcal === 'connected') {
-      if (enabled) {
-        // Already opted in before OAuth — resync now that Google is linked
-        await setCourseNotify(true, null);
-      } else if (msg) {
-        msg.textContent = 'เชื่อม Google Calendar สำเร็จ — กด “รับแจ้งเตือนเข้าปฏิทิน” เพื่อส่งตารางคอร์สนี้';
-        msg.className = 'pts-msg pts-msg--ok';
-      }
-    } else if (msg) {
-      msg.textContent = oauthMsg || 'เชื่อม Google ไม่สำเร็จ';
-      msg.className = 'pts-msg pts-msg--err';
-    }
-  }
 }
 
 (async () => {
