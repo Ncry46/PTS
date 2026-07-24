@@ -579,13 +579,32 @@ async function isEnrolledInCourse(pool, userId, courseId) {
 async function getCourseNotifyPref(pool, userId, courseId) {
     const enrollment = await isEnrolledInCourse(pool, userId, courseId);
     const link = await getLink(pool, userId);
+    let scheduleCount = 0;
+    let upcomingCount = 0;
+    try {
+        const counts = await pool.request()
+            .input('courseId', sql.Int, courseId)
+            .query(`
+                SELECT
+                  SUM(CASE WHEN flag_use = 1 THEN 1 ELSE 0 END) AS total_count,
+                  SUM(CASE WHEN flag_use = 1 AND end_at >= DATEADD(day, -1, GETDATE()) THEN 1 ELSE 0 END) AS upcoming_count
+                FROM BD_PTS.dbo.class_schedules
+                WHERE course_id = @courseId
+            `);
+        const row = counts.recordset[0] || {};
+        scheduleCount = Number(row.total_count || 0);
+        upcomingCount = Number(row.upcoming_count || 0);
+    } catch (_) { /* ignore */ }
+
     return {
         enrolled: Boolean(enrollment),
         connected: Boolean(link),
         configured: isGoogleConfigured(),
         /* Opt-in: only true when user explicitly enabled */
         enabled: enrollment ? (enrollment.gcal_notify === true || enrollment.gcal_notify === 1) : false,
-        google_email: link ? link.google_email : null
+        google_email: link ? link.google_email : null,
+        schedule_count: scheduleCount,
+        upcoming_count: upcomingCount
     };
 }
 
@@ -644,13 +663,28 @@ async function setCourseNotifyPref(pool, userId, courseId, enabled) {
 
     if (on) {
         const sync = await syncUserSchedules(pool, userId, { courseId, notify: true });
+        const synced = Number(sync.synced || 0);
+        if (synced > 0) {
+            return {
+                success: true,
+                enrolled: true,
+                connected: true,
+                enabled: true,
+                synced,
+                message: `เพิ่ม ${synced} รายการตารางเรียนเข้า Google Calendar แล้ว — เปิดแอปปฏิทินเพื่อดู`
+            };
+        }
+        // Keep opt-in on so future admin schedules still sync, but tell user nothing was pushed yet
         return {
             success: true,
             enrolled: true,
             connected: true,
             enabled: true,
-            synced: sync.synced || 0,
-            message: sync.message || 'เปิดรับการแจ้งเตือนคอร์สนี้แล้ว'
+            synced: 0,
+            pending: true,
+            errors: sync.errors || [],
+            message: sync.message
+                || 'บันทึกแล้ว แต่ยังไม่มีตารางเรียนของคอร์สนี้ให้ส่งเข้าปฏิทิน — ให้แอดมินสร้างตารางที่ Admin → ตารางเรียน แล้วเลือกคอร์สนี้'
         };
     }
 
@@ -678,6 +712,49 @@ async function syncUserSchedules(pool, userId, options = {}) {
 
     const schedules = await listUserFutureSchedules(pool, userId, options.courseId || null);
     if (!schedules.length) {
+        const courseId = options.courseId ? Number(options.courseId) : null;
+        if (courseId) {
+            const courseHint = await pool.request()
+                .input('userId', sql.Int, userId)
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    SELECT
+                      (SELECT COUNT(*) FROM BD_PTS.dbo.course_enrollments
+                        WHERE user_id = @userId AND course_id = @courseId) AS enrolled,
+                      (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules
+                        WHERE flag_use = 1 AND course_id = @courseId) AS course_schedule_count,
+                      (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules
+                        WHERE flag_use = 1 AND course_id = @courseId
+                          AND end_at >= DATEADD(day, -1, GETDATE())) AS upcoming_count,
+                      (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules
+                        WHERE flag_use = 1 AND course_id = @courseId
+                          AND end_at < DATEADD(day, -1, GETDATE())) AS past_count
+                `);
+            const h = courseHint.recordset[0] || {};
+            let message = 'ยังไม่มีตารางเรียนของคอร์สนี้ที่จะส่งเข้าปฏิทิน';
+            if (!h.enrolled) {
+                message = 'ยังไม่ได้สมัครหลักสูตรนี้';
+            } else if (!h.course_schedule_count) {
+                message = 'คอร์สนี้ยังไม่มีตารางเรียนในระบบ — ให้แอดมินไป Admin → ตารางเรียน สร้างตารางแล้วเลือกหลักสูตรนี้';
+            } else if (!h.upcoming_count && h.past_count > 0) {
+                message = `คอร์สนี้มีตาราง ${h.past_count} รายการแต่หมดเวลาแล้ว — ให้แอดมินสร้างตารางรอบใหม่`;
+            }
+            return {
+                success: false,
+                connected: true,
+                synced: 0,
+                total: 0,
+                course_id: courseId,
+                hint: {
+                    enrolled: h.enrolled || 0,
+                    course_schedule_count: h.course_schedule_count || 0,
+                    upcoming_count: h.upcoming_count || 0,
+                    past_count: h.past_count || 0
+                },
+                message
+            };
+        }
+
         const hint = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
@@ -715,7 +792,16 @@ async function syncUserSchedules(pool, userId, options = {}) {
     const errors = [];
     for (const schedule of schedules) {
         try {
-            await syncOneSchedule(pool, userId, schedule);
+            const result = await syncOneSchedule(pool, userId, schedule);
+            if (result && result.skipped) {
+                errors.push({
+                    schedule_id: schedule.schedule_id,
+                    message: result.reason === 'not_connected'
+                        ? 'ยังเชื่อมต่อ Google ไม่สำเร็จ (token หมดอายุ — ไป Settings เชื่อมใหม่)'
+                        : (result.reason || 'ข้ามรายการนี้')
+                });
+                continue;
+            }
             synced += 1;
         } catch (err) {
             console.warn('[google-calendar] sync schedule', schedule.schedule_id, err.message);
@@ -735,15 +821,21 @@ async function syncUserSchedules(pool, userId, options = {}) {
         } catch (_) {}
     }
 
+    const errorHint = errors.length
+        ? ` (มีปัญหา ${errors.length} รายการ: ${errors[0].message})`
+        : '';
+
     return {
-        success: true,
+        success: synced > 0,
         connected: true,
         synced,
         total: schedules.length,
         errors,
         message: synced
-            ? `ซิงค์ ${synced} รายการเข้า Google Calendar แล้ว (แจ้งเตือนล่วงหน้า 1 วัน และ 1 ชม.)`
-            : (schedules.length ? 'ไม่สามารถซิงค์รายการได้' : 'ยังไม่มีตารางเรียนที่จะซิงค์')
+            ? `ซิงค์ ${synced} รายการเข้า Google Calendar แล้ว (แจ้งเตือนล่วงหน้า 1 วัน และ 1 ชม.)${errorHint}`
+            : (schedules.length
+                ? (`ไม่สามารถซิงค์รายการได้${errorHint || ' — ลองเชื่อม Google ใหม่ที่หน้า Settings'}`)
+                : 'ยังไม่มีตารางเรียนที่จะซิงค์')
     };
 }
 

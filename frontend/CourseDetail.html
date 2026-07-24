@@ -128,11 +128,24 @@ async function mountCourseGcalControls(hostEl) {
       });
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'อัปเดตไม่สำเร็จ');
+      const synced = Number(data.synced || 0);
       if (msg) {
-        msg.textContent = data.message || (enabled ? 'เพิ่มคอร์สนี้ลงปฏิทินแล้ว' : 'นำคอร์สนี้ออกจากปฏิทินแล้ว');
-        msg.className = 'pts-msg pts-msg--ok';
+        msg.textContent = data.message || (enabled
+          ? (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'บันทึกแล้ว แต่ยังไม่มีตารางให้ส่ง')
+          : 'นำคอร์สนี้ออกจากปฏิทินแล้ว');
+        msg.className = (enabled && (data.pending || synced === 0))
+          ? 'pts-msg pts-msg--err'
+          : 'pts-msg pts-msg--ok';
       }
       await mountCourseGcalControls(hostEl);
+      // keep last message visible after remount
+      const msg2 = document.getElementById('gcal-course-msg');
+      if (msg2 && data.message) {
+        msg2.textContent = data.message;
+        msg2.className = (enabled && (data.pending || synced === 0))
+          ? 'pts-msg pts-msg--err'
+          : 'pts-msg pts-msg--ok';
+      }
     } catch (e) {
       if (msg) {
         msg.textContent = e.message || 'อัปเดตไม่สำเร็จ';
@@ -157,17 +170,28 @@ async function mountCourseGcalControls(hostEl) {
     return;
   }
 
-  // Case 1a: already added to calendar
+  const upcoming = Number(pref.upcoming_count || 0);
+  const scheduleCount = Number(pref.schedule_count || 0);
+
+  // Case 1a: already opted in
   if (pref.enabled) {
     hostEl.innerHTML = `
       <div class="pts-gcal-row">
         <div class="pts-gcal-row__text">
-          <p class="pts-gcal-row__title">คอร์สนี้ถูกเพิ่มลงปฏิทินแล้ว</p>
-          <p class="pts-gcal-row__hint">จะได้รับแจ้งเตือนก่อนวันเรียนตามตารางของคอร์สนี้</p>
+          <p class="pts-gcal-row__title">คอร์สนี้เปิดรับเข้าปฏิทินแล้ว</p>
+          <p class="pts-gcal-row__hint">${upcoming > 0
+            ? `มีตารางที่จะเรียน ${upcoming} รายการ — ตรวจใน Google Calendar / หน้า <a class="text-primary underline" href="Schedule.html">ตารางเรียน</a>`
+            : (scheduleCount > 0
+              ? 'มีตารางในระบบแต่หมดเวลาแล้ว — ให้แอดมินสร้างตารางรอบใหม่'
+              : 'ยังไม่มีตารางเรียนของคอร์สนี้ — ให้แอดมินสร้างที่ Admin → ตารางเรียน')}</p>
         </div>
+        <button type="button" class="pts-btn pts-btn-outline" id="gcal-resync-btn">ซิงค์อีกครั้ง</button>
         <button type="button" class="pts-btn pts-btn-ghost" id="gcal-remove-btn">นำออกจากปฏิทิน</button>
       </div>
       <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
+    document.getElementById('gcal-resync-btn')?.addEventListener('click', (e) => {
+      setCourseNotify(true, e.currentTarget);
+    });
     document.getElementById('gcal-remove-btn')?.addEventListener('click', (e) => {
       setCourseNotify(false, e.currentTarget);
     });
@@ -179,7 +203,11 @@ async function mountCourseGcalControls(hostEl) {
     <div class="pts-gcal-row">
       <div class="pts-gcal-row__text">
         <p class="pts-gcal-row__title">เพิ่มคอร์สนี้ลงปฏิทิน</p>
-        <p class="pts-gcal-row__hint">ถ้าต้องการรับแจ้งเตือนตารางเรียนคอร์สนี้ กดปุ่มด้านขวา (ไม่ต้องการก็ไม่ต้องกด)</p>
+        <p class="pts-gcal-row__hint">${upcoming > 0
+          ? `มีตาราง ${upcoming} รายการพร้อมส่งเข้าปฏิทิน — กดปุ่มถ้าต้องการ (ไม่ต้องการก็ไม่ต้องกด)`
+          : (scheduleCount > 0
+            ? 'คอร์สนี้มีตารางแต่หมดเวลาแล้ว — กดปุ่มได้เพื่อเปิดรับรอบใหม่ในภายหลัง'
+            : 'ถ้าต้องการรับแจ้งเตือน กดปุ่มได้ (ตอนนี้คอร์สยังไม่มีตาราง — แอดมินต้องสร้างก่อนถึงจะเห็นในปฏิทิน)')}</p>
       </div>
       <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">เพิ่มลงปฏิทิน</button>
     </div>
