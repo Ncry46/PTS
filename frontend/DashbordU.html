@@ -3,13 +3,98 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>PTS Learning Dashboard</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724dash">
+<link rel="stylesheet" href="site.css?v=20260724dash2">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 <style>
+  /* —— Dashboard visual polish (colors / atmosphere only) —— */
+  .user-main {
+    position: relative;
+  }
+  .user-main::before {
+    content: '';
+    position: absolute;
+    inset: -24px -12px auto;
+    height: 280px;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(ellipse 70% 80% at 12% 0%, rgba(151, 66, 88, 0.14), transparent 62%),
+      radial-gradient(ellipse 55% 70% at 88% 8%, rgba(61, 90, 76, 0.10), transparent 58%);
+  }
+  .user-main > .space-y-lg {
+    position: relative;
+    z-index: 1;
+  }
+
+  .dash-stat {
+    background:
+      linear-gradient(165deg, rgba(255,255,255,0.95) 0%, rgba(255,249,250,0.98) 100%);
+    border: 1px solid rgba(151, 66, 88, 0.12);
+    border-radius: 20px;
+    box-shadow: 0 8px 28px -8px rgba(28, 21, 32, 0.08);
+    transition: transform 0.28s ease, box-shadow 0.28s ease;
+  }
+  .dash-stat:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px -12px rgba(151, 66, 88, 0.16);
+  }
+  .dash-stat--progress {
+    background:
+      radial-gradient(circle at 50% 18%, rgba(255, 177, 193, 0.28), transparent 55%),
+      linear-gradient(180deg, #fff 0%, #faf5f6 100%);
+  }
+  .dash-stat__icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .dash-stat__icon--hours {
+    background: linear-gradient(145deg, #dcefd6, #b8d9b0);
+    color: #355a38;
+  }
+  .dash-stat__icon--learn {
+    background: linear-gradient(145deg, #ffd6df, #f0a8b8);
+    color: #7a2f42;
+  }
+  .dash-stat__icon--done {
+    background: linear-gradient(145deg, #c8f0d2, #87d899);
+    color: #0f5a2e;
+  }
+
+  .dash-section-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .dash-section-head h3 {
+    position: relative;
+    padding-left: 12px;
+  }
+  .dash-section-head h3::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 999px;
+    background: linear-gradient(180deg, #974258, #3d5a4c);
+  }
+  .dash-section-head a {
+    color: #974258;
+    font-weight: 600;
+  }
+
   .dash-myc-list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 220px));
@@ -25,11 +110,17 @@
     flex-direction: column;
     width: 100%;
     max-width: 220px;
-    background: var(--pts-card-bg, #fff);
-    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    background: linear-gradient(180deg, #ffffff 0%, #fffafb 100%);
+    border: 1px solid rgba(151,66,88,.12);
     border-radius: 16px;
     overflow: hidden;
     min-height: 0;
+    box-shadow: 0 6px 20px -10px rgba(28, 21, 32, 0.12);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .myc-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 32px -12px rgba(151, 66, 88, 0.22);
   }
   .myc-card__media {
     position: relative;
@@ -37,7 +128,15 @@
     aspect-ratio: 16 / 10;
     flex-shrink: 0;
     overflow: hidden;
-    background: #f8e8ec;
+    background: linear-gradient(135deg, #f8e8ec, #efe8e6);
+  }
+  .myc-card__media::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0;
+    height: 42%;
+    background: linear-gradient(180deg, transparent, rgba(28, 21, 32, 0.28));
+    pointer-events: none;
   }
   .myc-card__media img {
     width: 100%;
@@ -49,12 +148,14 @@
     position: absolute;
     left: 10px;
     bottom: 10px;
-    background: #974258;
+    z-index: 1;
+    background: rgba(151, 66, 88, 0.92);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
     padding: 4px 9px;
     border-radius: 999px;
+    backdrop-filter: blur(4px);
   }
   .myc-card__body {
     flex: 1;
@@ -120,7 +221,7 @@
   .myc-bar > span {
     display: block;
     height: 100%;
-    background: #974258;
+    background: linear-gradient(90deg, #974258, #c46a82);
     border-radius: 999px;
   }
   .myc-status {
@@ -168,7 +269,7 @@
   }
   .myc-actions__link:hover { text-decoration: underline; }
   .dash-myc-empty {
-    background: #fff;
+    background: linear-gradient(165deg, #fff, #faf5f6);
     border: 1px dashed rgba(151,66,88,.28);
     border-radius: 16px;
     padding: 28px 20px;
@@ -205,6 +306,52 @@
     gap: 8px;
     justify-content: center;
   }
+
+  .dash-panel {
+    background: linear-gradient(165deg, #ffffff 0%, #fff8f9 100%);
+    border: 1px solid rgba(151, 66, 88, 0.12);
+    border-radius: 22px;
+    box-shadow: 0 10px 28px -12px rgba(28, 21, 32, 0.1);
+    overflow: hidden;
+  }
+  .dash-cta {
+    position: relative;
+    overflow: hidden;
+    border-radius: 22px;
+    background:
+      radial-gradient(circle at 85% 15%, rgba(255,255,255,0.22), transparent 42%),
+      linear-gradient(135deg, #7a2f42 0%, #974258 48%, #3d5a4c 118%);
+    color: #fff;
+    box-shadow: 0 14px 34px -12px rgba(122, 47, 66, 0.45);
+  }
+  .dash-cta::after {
+    content: '';
+    position: absolute;
+    width: 160px;
+    height: 160px;
+    right: -36px;
+    top: -48px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+  }
+
+  #dash-schedule > div {
+    background: linear-gradient(90deg, rgba(151,66,88,0.06), #fff 28%);
+    border: 1px solid rgba(151,66,88,0.1);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px -10px rgba(28,21,32,0.1);
+  }
+
+  @keyframes dash-fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .dash-animate {
+    animation: dash-fade-up 0.45s ease both;
+  }
+  .dash-animate-delay-1 { animation-delay: 0.06s; }
+  .dash-animate-delay-2 { animation-delay: 0.12s; }
+  .dash-animate-delay-3 { animation-delay: 0.18s; }
 </style>
 <!-- Tailwind Configuration -->
 <script id="tailwind-config">
@@ -308,7 +455,7 @@
     </script>
 <style>
         body {
-            background-color: var(--pts-bg, #FAFAFA);
+            background-color: var(--pts-bg, #f3f0f1);
             font-family: 'IBM Plex Sans Thai', sans-serif;
             -webkit-font-smoothing: antialiased;
         }
@@ -328,6 +475,7 @@
         .circular-progress {
             background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
                         conic-gradient(#974258 75%, #f4c7d3 0);
+            box-shadow: inset 0 0 0 1px rgba(151,66,88,0.08);
         }
         html[data-theme="dark"] .circular-progress {
             background: radial-gradient(closest-side, var(--pts-surface) 79%, transparent 80% 100%),
@@ -367,16 +515,16 @@
 <main class="user-main flex-grow min-w-0" data-user-main>
 <div class="space-y-lg">
 <!-- Stats Overview (Asymmetric Layout) -->
-<section class="grid grid-cols-1 md:grid-cols-4 gap-md">
-<div class="md:col-span-1 bg-surface-container-lowest p-md rounded-20px soft-shadow flex flex-col items-center justify-center text-center" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<section class="grid grid-cols-1 md:grid-cols-4 gap-md dash-animate">
+<div class="md:col-span-1 dash-stat dash-stat--progress p-md flex flex-col items-center justify-center text-center">
 <div class="relative w-24 h-24 circular-progress rounded-full flex items-center justify-center mb-base">
 <span id="dash-avg-progress" class="font-headline-sm text-headline-sm text-primary">0%</span>
 </div>
 <p class="font-label-md text-label-md text-on-surface-variant">ความคืบหน้าภาพรวม</p>
 </div>
 <div class="md:col-span-3 grid grid-cols-1 sm:grid-cols-3 gap-md">
-<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center gap-md" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
-<div class="w-12 h-12 bg-secondary-container rounded-2xl flex items-center justify-center text-secondary">
+<div class="dash-stat p-md flex items-center gap-md">
+<div class="dash-stat__icon dash-stat__icon--hours">
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">schedule</span>
 </div>
 <div>
@@ -384,8 +532,8 @@
 <p class="font-body-sm text-body-sm text-on-surface-variant">ชั่วโมงเรียนสะสม</p>
 </div>
 </div>
-<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center gap-md" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
-<div class="w-12 h-12 bg-primary-container/20 rounded-2xl flex items-center justify-center text-primary">
+<div class="dash-stat p-md flex items-center gap-md dash-animate-delay-1">
+<div class="dash-stat__icon dash-stat__icon--learn">
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">play_lesson</span>
 </div>
 <div>
@@ -393,8 +541,8 @@
 <p class="font-body-sm text-body-sm text-on-surface-variant">กำลังเรียนอยู่</p>
 </div>
 </div>
-<div class="bg-surface-container-lowest p-md rounded-20px soft-shadow flex items-center gap-md" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
-<div class="w-12 h-12 bg-tertiary-fixed rounded-2xl flex items-center justify-center text-tertiary">
+<div class="dash-stat p-md flex items-center gap-md dash-animate-delay-2">
+<div class="dash-stat__icon dash-stat__icon--done">
 <span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">task_alt</span>
 </div>
 <div>
@@ -407,12 +555,12 @@
 <!-- Main Content Grid -->
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-lg">
 <!-- Recently Learning & Schedule (L-Side) -->
-<div class="lg:col-span-2 space-y-lg">
+<div class="lg:col-span-2 space-y-lg dash-animate dash-animate-delay-1">
 <!-- Learning Card -->
 <div>
-<div class="flex justify-between items-end mb-md">
+<div class="dash-section-head">
 <h3 class="font-headline-sm text-headline-sm">เรียนล่าสุด</h3>
-<a class="text-primary font-label-md text-label-md hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>
+<a class="font-label-md text-label-md hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>
 </div>
 <div id="dash-my-courses" class="dash-myc-list">
 <div class="dash-myc-empty">กำลังโหลดหลักสูตร...</div>
@@ -420,9 +568,9 @@
 </div>
 <!-- Schedule List -->
 <div>
-<div class="flex justify-between items-end mb-md">
+<div class="dash-section-head">
 <h3 class="font-headline-sm text-headline-sm">ตารางเรียนที่กำลังจะมาถึง</h3>
-<a class="text-primary font-label-md text-label-md hover:underline" href="Schedule.html">ดูทั้งหมด</a>
+<a class="font-label-md text-label-md hover:underline" href="Schedule.html">ดูทั้งหมด</a>
 </div>
 <div id="dash-schedule" class="space-y-sm">
 <div class="bg-surface-container-lowest p-md rounded-20px soft-shadow text-on-surface-variant">กำลังโหลดตารางเรียน...</div>
@@ -430,9 +578,9 @@
 </div>
 </div>
 <!-- Sidebar News<!-- Sidebar News/Notifications (R-Side) -->
-<div class="space-y-lg">
+<div class="space-y-lg dash-animate dash-animate-delay-2">
 <div id="dash-attendance-qr" class="pts-attend-qr-panel"></div>
-<div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden border border-primary/10" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="dash-panel">
 <div class="p-md">
 <div class="flex justify-between items-center mb-sm">
 <h3 class="font-label-md text-label-md font-bold text-primary flex items-center gap-xs">
@@ -450,13 +598,13 @@ Community Feed
 </div>
 <div>
 
-<div class="bg-surface-container-lowest rounded-24px soft-shadow overflow-hidden" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="dash-panel overflow-hidden">
 
 
 </div>
 </div>
 <!-- Mini CTA / Promotion -->
-<div class="relative overflow-hidden rounded-24px bg-primary p-md text-white soft-shadow h-48 flex flex-col justify-end" style="transform: translateY(0px); transition: transform 0.3s ease-out, box-shadow 0.3s ease-out; box-shadow: rgba(151, 66, 88, 0.05) 0px 10px 30px -5px;">
+<div class="dash-cta p-md h-48 flex flex-col justify-end">
 
 <div class="relative z-10">
 <h4 class="font-headline-sm text-headline-sm mb-xs">ปลดล็อกศักยภาพสูงสุด</h4>
