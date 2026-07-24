@@ -95,9 +95,14 @@
       </ol>
     </div>
     <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-3 hidden">
-      ผู้ดูแลระบบต้องตั้งค่า <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> ในไฟล์
-      <code>.env</code> หรือรัน <code>node backend/write-google-local.js &lt;CLIENT_ID&gt; &lt;CLIENT_SECRET&gt;</code>
-      แล้วรีสตาร์ทเซิร์ฟเวอร์ (ดูตัวอย่างที่ <code>backend/google.local.example.js</code>)
+      เครื่องนี้อ่าน Client ID/Secret ไม่เจอ (ไฟล์ลับไม่ถูกส่งมากับ git — เลยเพื่อนรันได้แต่เรายังไม่ได้)
+      <br>ในโฟลเดอร์โปรเจกต์รัน:
+      <code>npm run google:check</code>
+      แล้วตั้งค่าด้วย
+      <code>node backend/write-google-local.js --from พาธ\google.local.jsของเพื่อน</code>
+      หรือ
+      <code>node backend/write-google-local.js CLIENT_ID CLIENT_SECRET</code>
+      จากนั้น <code>npm start</code> ใหม่
       <span id="gcal-diagnose-line" class="block mt-1"></span>
     </p>
   </section>

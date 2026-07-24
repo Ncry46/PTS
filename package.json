@@ -5,7 +5,9 @@
   "main": "backend/server.js",
   "scripts": {
     "test": "node --test",
-    "start": "node backend/server.js"
+    "start": "node backend/server.js",
+    "google:check": "node backend/check-google-setup.js",
+    "google:setup": "node backend/write-google-local.js"
   },
   "keywords": [],
   "author": "",
