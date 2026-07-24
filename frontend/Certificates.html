@@ -6,7 +6,7 @@
 <title>ใบประกาศนียบัตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <link rel="stylesheet" href="site.css?v=20260723t">
-<link rel="stylesheet" href="certificates.css?v=20260724a">
+<link rel="stylesheet" href="certificates.css?v=20260724b">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&amp;family=Sarabun:wght@300;400;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
@@ -135,17 +135,20 @@ function fitCertPreview(root) {
   if (!root) return;
   const cert = root.querySelector('.pts-cert');
   if (!cert) return;
-  const slot = root.parentElement && root.parentElement.classList.contains('cert-card__preview')
-    ? root.parentElement
-    : root;
-  // Fill the slot width edge-to-edge (A4 landscape aspect matches the card)
-  const availW = Math.max(200, slot.clientWidth || root.clientWidth || 0);
+  const isCard = root.parentElement && root.parentElement.classList.contains('cert-card__preview');
+  const slot = isCard ? root.parentElement : root;
+  const availW = Math.max(160, slot.clientWidth || root.clientWidth || 0);
   const scale = availW / 1122;
+  root.style.setProperty('--cert-scale', String(scale));
+  cert.style.width = '1122px';
+  cert.style.height = '794px';
   cert.style.maxWidth = 'none';
-  cert.style.transform = `scale(${scale})`;
-  cert.style.transformOrigin = 'top left';
-  root.style.width = '100%';
-  root.style.height = `${Math.ceil(794 * scale)}px`;
+  if (isCard) {
+    // Parent aspect-ratio already matches A4 — absolute child fills it
+    root.style.height = '';
+  } else {
+    root.style.height = `${Math.ceil(794 * scale)}px`;
+  }
 }
 
 function printCertificateOnly() {
@@ -153,7 +156,7 @@ function printCertificateOnly() {
   const certHtml = root && root.innerHTML;
   if (!certHtml) return;
 
-  const cssHref = new URL('certificates.css?v=20260724a', window.location.href).href;
+  const cssHref = new URL('certificates.css?v=20260724b', window.location.href).href;
   const fontsHref = 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap';
   const win = window.open('', '_blank', 'noopener,noreferrer,width=1200,height=860');
   if (!win) {
@@ -242,6 +245,7 @@ function openCert(cert) {
   const modal = document.getElementById('cert-modal');
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('cert-modal-open');
   document.body.style.overflow = 'hidden';
   requestAnimationFrame(() => {
     fitCertPreview(root);
@@ -253,6 +257,7 @@ function closeCert() {
   const modal = document.getElementById('cert-modal');
   modal.classList.remove('is-open');
   modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('cert-modal-open');
   document.body.style.overflow = '';
 }
 
@@ -294,7 +299,6 @@ function render() {
   }
 
   const cards = list.map((c) => {
-    const tag = modeTag(c.delivery_mode);
     const dateText = new Date(c.issued_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
     const preview = certificateHtml({
       userName,
@@ -307,7 +311,6 @@ function render() {
           <div class="cert-card__preview-scale">${preview}</div>
         </div>
         <div class="cert-card__body">
-          <span class="cert-tag ${tag.cls}">${tag.label}</span>
           <h3 class="cert-card__title">${escapeHtml(c.course_name)}</h3>
           <p class="cert-card__meta">ได้รับเมื่อ: ${escapeHtml(dateText)}</p>
           <div class="cert-card__actions">
@@ -332,7 +335,13 @@ function render() {
 
   grid.innerHTML = cards + teaser;
 
-  grid.querySelectorAll('.cert-card__preview-scale').forEach((el) => fitCertPreview(el));
+  const fitCards = () => {
+    grid.querySelectorAll('.cert-card__preview-scale').forEach((el) => fitCertPreview(el));
+  };
+  requestAnimationFrame(() => {
+    fitCards();
+    requestAnimationFrame(fitCards);
+  });
 
   grid.querySelectorAll('.cert-download').forEach((btn) => {
     btn.onclick = () => {

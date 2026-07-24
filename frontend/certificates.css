@@ -113,28 +113,32 @@
 .cert-card__preview {
   position: relative;
   aspect-ratio: 1122 / 794;
-  background:
-    radial-gradient(420px 180px at 20% 0%, color-mix(in srgb, var(--pts-primary) 12%, transparent), transparent 60%),
-    var(--pts-input-bg, #f7f1f3);
+  width: 100%;
+  background: #efe8ea;
   overflow: hidden;
   border-bottom: 1px solid var(--pts-border, rgba(151,66,88,.1));
   display: block;
   padding: 0;
 }
 .cert-card__preview-scale {
-  position: relative;
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   overflow: hidden;
-  display: block;
+  --cert-scale: 1;
 }
 .cert-card__preview-scale .pts-cert {
-  width: 1122px;
-  height: 794px;
-  max-width: none;
-  flex-shrink: 0;
-  box-shadow: none;
-  margin: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1122px !important;
+  height: 794px !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transform: scale(var(--cert-scale));
+  transform-origin: top left;
 }
 .cert-card__body {
   padding: 16px 16px 14px;
@@ -143,18 +147,6 @@
   gap: 8px;
   flex: 1;
 }
-.cert-tag {
-  display: inline-flex;
-  align-self: flex-start;
-  padding: 5px 10px;
-  border-radius: 999px;
-  font-size: 11px;
-  font-weight: 700;
-}
-.cert-tag--online { background: #e8f6ec; color: #166c39; }
-.cert-tag--onsite { background: #fff4e5; color: #9a6700; }
-.cert-tag--hybrid { background: #eef3ec; color: #3d5a4c; }
-.cert-tag--default { background: #f6e6ea; color: #974258; }
 .cert-card__title {
   margin: 0;
   font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
@@ -235,7 +227,7 @@
 .pts-cert {
   width: 1122px;
   height: 794px;
-  max-width: 100%;
+  max-width: none;
   margin: 0 auto;
   background: #ffffff;
   position: relative;
@@ -538,40 +530,57 @@
   display: none;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
   background: rgba(26,16,20,.55);
   backdrop-filter: blur(8px);
 }
 .cert-modal.is-open { display: flex; }
+body.cert-modal-open #app-navbar,
+body.cert-modal-open #user-sidebar,
+body.cert-modal-open .user-side {
+  display: none !important;
+}
 .cert-modal__dialog {
-  width: min(1160px, 100%);
-  max-height: 94dvh;
+  width: min(1200px, 100%);
+  max-height: 96dvh;
   overflow: auto;
-  background: #f3f0f1;
-  border-radius: 24px;
-  padding: 16px;
+  background: #ebe4e6;
+  border-radius: 20px;
+  padding: 12px;
   box-shadow: 0 30px 80px rgba(0,0,0,.28);
   display: flex;
   flex-direction: column;
+  gap: 10px;
 }
 .cert-modal__bar {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  margin: 0;
   flex-shrink: 0;
 }
 .cert-modal__dialog #cert-print-root {
+  position: relative;
   width: 100%;
   overflow: hidden;
   display: block;
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 auto;
+  --cert-scale: 1;
+  background: #fff;
+  border-radius: 8px;
 }
-.cert-modal__dialog .pts-cert {
-  margin: 0;
-  max-width: none;
+.cert-modal__dialog #cert-print-root .pts-cert {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1122px !important;
+  height: 794px !important;
+  max-width: none !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transform: scale(var(--cert-scale));
+  transform-origin: top left;
 }
 
 @media print {
