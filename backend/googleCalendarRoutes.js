@@ -26,7 +26,7 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         const base = publicGoogleStatus();
         const user = req.session && req.session.user;
         if (!user || !user.user_id) {
-            return res.json({ success: true, ...base, connected: false, loggedIn: false });
+            return res.json({ success: true, ...base, configured: base.configured, connected: false, loggedIn: false });
         }
         try {
             const pool = await poolPromise;
@@ -34,6 +34,7 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
             return res.json({
                 success: true,
                 ...base,
+                configured: Boolean(base.configured),
                 loggedIn: true,
                 connected: Boolean(link),
                 google_email: link ? link.google_email : null,
@@ -43,7 +44,17 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
                     : true
             });
         } catch (error) {
-            return res.status(500).json({ success: false, message: error.message, ...base });
+            // อย่าทำให้หน้า Settings เข้าใจว่า OAuth ยังไม่พร้อม — แค่เช็ค connection ใน DB ไม่ได้
+            return res.json({
+                success: true,
+                ...base,
+                configured: Boolean(base.configured),
+                loggedIn: true,
+                connected: false,
+                google_email: null,
+                reminders_enabled: true,
+                warning: error.message
+            });
         }
     });
 
