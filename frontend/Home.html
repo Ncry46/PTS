@@ -128,12 +128,13 @@
 <!-- Hero: single full-bleed promotional image -->
 <section class="pts-home-banner" aria-label="แบนเนอร์หน้าแรก">
   <img
-    src="/assets/home-banner.png"
+    src="/uploads/hero/home-banner.png"
     alt="RIGHT-HAND PARTNER PROGRAM — Personal Assistant Academy"
     width="1536"
     height="1024"
     decoding="async"
     fetchpriority="high"
+    onerror="this.onerror=null;this.src='/assets/home-banner.png'"
   >
 </section>
 <!-- Choose Learning Type Section -->
@@ -437,20 +438,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allCourses = [];
   let activeMode = '';
 
-  // ซ่อนปุ่มสมัครสมาชิกใน hero เมื่อล็อกอินแล้ว
-  try {
-    const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
-    if (me.loggedIn) {
-      document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
-    }
-  } catch (_) {}
+  // (home banner is a static image — no register CTA in hero)
 
-  // Re-hide register buttons after hero loads (hero is async)
-  setTimeout(() => {
-    fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json()).then((me) => {
-      if (me.loggedIn) document.querySelectorAll('.home-register-btn').forEach((el) => el.remove());
-    }).catch(() => {});
-  }, 800);
 
   const modeBadge = (mode) => {
     const m = String(mode || 'online').toLowerCase();
