@@ -556,7 +556,7 @@ async function listUserFutureSchedules(pool, userId, courseId) {
                 SELECT 1 FROM BD_PTS.dbo.course_enrollments e
                 WHERE e.user_id = @userId
                   AND e.course_id = s.course_id
-                  AND ISNULL(e.gcal_notify, 1) = 1
+                  AND ISNULL(e.gcal_notify, 0) = 1
           )
           ${courseFilter}
         ORDER BY s.start_at ASC
@@ -569,7 +569,7 @@ async function isEnrolledInCourse(pool, userId, courseId) {
         .input('userId', sql.Int, userId)
         .input('courseId', sql.Int, courseId)
         .query(`
-            SELECT TOP 1 enrollment_id, ISNULL(gcal_notify, 1) AS gcal_notify
+            SELECT TOP 1 enrollment_id, ISNULL(gcal_notify, 0) AS gcal_notify
             FROM BD_PTS.dbo.course_enrollments
             WHERE user_id = @userId AND course_id = @courseId
         `);
@@ -583,7 +583,8 @@ async function getCourseNotifyPref(pool, userId, courseId) {
         enrolled: Boolean(enrollment),
         connected: Boolean(link),
         configured: isGoogleConfigured(),
-        enabled: enrollment ? !(enrollment.gcal_notify === false || enrollment.gcal_notify === 0) : false,
+        /* Opt-in: only true when user explicitly enabled */
+        enabled: enrollment ? (enrollment.gcal_notify === true || enrollment.gcal_notify === 1) : false,
         google_email: link ? link.google_email : null
     };
 }
@@ -746,11 +747,13 @@ async function syncUserSchedules(pool, userId, options = {}) {
     };
 }
 
-/** After enroll: push that course's schedules if Google is connected. */
+/** After enroll: only sync if user already opted in for this course (default is OFF). */
 async function syncAfterEnroll(pool, userId, courseId) {
     try {
         const link = await getLink(pool, userId);
         if (!link || !isGoogleConfigured()) return;
+        const enrollment = await isEnrolledInCourse(pool, userId, courseId);
+        if (!enrollment || !(enrollment.gcal_notify === true || enrollment.gcal_notify === 1)) return;
         await syncUserSchedules(pool, userId, { courseId, notify: true });
     } catch (err) {
         console.warn('[google-calendar] syncAfterEnroll:', err.message);
@@ -781,7 +784,7 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
                 FROM BD_PTS.dbo.course_enrollments e
                 INNER JOIN BD_PTS.dbo.google_calendar_links g ON g.user_id = e.user_id
                 WHERE e.course_id = @courseId
-                  AND ISNULL(e.gcal_notify, 1) = 1
+                  AND ISNULL(e.gcal_notify, 0) = 1
             `);
 
         for (const row of users.recordset) {
