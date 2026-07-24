@@ -554,12 +554,116 @@ async function listUserFutureSchedules(pool, userId, courseId) {
           AND s.end_at >= DATEADD(day, -1, GETDATE())
           AND EXISTS (
                 SELECT 1 FROM BD_PTS.dbo.course_enrollments e
-                WHERE e.user_id = @userId AND e.course_id = s.course_id
+                WHERE e.user_id = @userId
+                  AND e.course_id = s.course_id
+                  AND ISNULL(e.gcal_notify, 1) = 1
           )
           ${courseFilter}
         ORDER BY s.start_at ASC
     `);
     return result.recordset;
+}
+
+async function isEnrolledInCourse(pool, userId, courseId) {
+    const result = await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('courseId', sql.Int, courseId)
+        .query(`
+            SELECT TOP 1 enrollment_id, ISNULL(gcal_notify, 1) AS gcal_notify
+            FROM BD_PTS.dbo.course_enrollments
+            WHERE user_id = @userId AND course_id = @courseId
+        `);
+    return result.recordset[0] || null;
+}
+
+async function getCourseNotifyPref(pool, userId, courseId) {
+    const enrollment = await isEnrolledInCourse(pool, userId, courseId);
+    const link = await getLink(pool, userId);
+    return {
+        enrolled: Boolean(enrollment),
+        connected: Boolean(link),
+        configured: isGoogleConfigured(),
+        enabled: enrollment ? !(enrollment.gcal_notify === false || enrollment.gcal_notify === 0) : false,
+        google_email: link ? link.google_email : null
+    };
+}
+
+async function removeCourseCalendarEvents(pool, userId, courseId) {
+    const maps = await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('courseId', sql.Int, courseId)
+        .query(`
+            SELECT e.schedule_id
+            FROM BD_PTS.dbo.google_calendar_events e
+            INNER JOIN BD_PTS.dbo.class_schedules s ON s.schedule_id = e.schedule_id
+            WHERE e.user_id = @userId AND s.course_id = @courseId
+        `);
+    let removed = 0;
+    for (const row of maps.recordset) {
+        await deleteOneScheduleEvent(pool, userId, row.schedule_id);
+        removed += 1;
+    }
+    return removed;
+}
+
+/**
+ * Toggle per-course calendar notify for an enrolled user.
+ * enabled=true  → sync this course into Google Calendar
+ * enabled=false → remove this course's events from the calendar
+ */
+async function setCourseNotifyPref(pool, userId, courseId, enabled) {
+    const enrollment = await isEnrolledInCourse(pool, userId, courseId);
+    if (!enrollment) {
+        return { success: false, message: 'ยังไม่ได้สมัครหลักสูตรนี้', enrolled: false };
+    }
+
+    const on = Boolean(enabled);
+    await pool.request()
+        .input('userId', sql.Int, userId)
+        .input('courseId', sql.Int, courseId)
+        .input('enabled', sql.Bit, on ? 1 : 0)
+        .query(`
+            UPDATE BD_PTS.dbo.course_enrollments
+            SET gcal_notify = @enabled, updated_at = GETDATE()
+            WHERE user_id = @userId AND course_id = @courseId
+        `);
+
+    const link = await getLink(pool, userId);
+    if (!link || !isGoogleConfigured()) {
+        return {
+            success: true,
+            enrolled: true,
+            connected: false,
+            enabled: on,
+            message: on
+                ? 'บันทึกแล้ว — เชื่อมต่อ Google Calendar ที่หน้าตั้งค่าเพื่อรับตารางเรียน'
+                : 'ปิดการแจ้งเตือนคอร์สนี้แล้ว'
+        };
+    }
+
+    if (on) {
+        const sync = await syncUserSchedules(pool, userId, { courseId, notify: true });
+        return {
+            success: true,
+            enrolled: true,
+            connected: true,
+            enabled: true,
+            synced: sync.synced || 0,
+            message: sync.message || 'เปิดรับการแจ้งเตือนคอร์สนี้แล้ว'
+        };
+    }
+
+    const removed = await removeCourseCalendarEvents(pool, userId, courseId);
+    return {
+        success: true,
+        enrolled: true,
+        connected: true,
+        enabled: false,
+        removed,
+        message: removed
+            ? `ปิดการแจ้งเตือนแล้ว และลบ ${removed} รายการออกจากปฏิทิน`
+            : 'ปิดการแจ้งเตือนคอร์สนี้แล้ว'
+    };
 }
 
 async function syncUserSchedules(pool, userId, options = {}) {
@@ -677,6 +781,7 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
                 FROM BD_PTS.dbo.course_enrollments e
                 INNER JOIN BD_PTS.dbo.google_calendar_links g ON g.user_id = e.user_id
                 WHERE e.course_id = @courseId
+                  AND ISNULL(e.gcal_notify, 1) = 1
             `);
 
         for (const row of users.recordset) {
@@ -759,6 +864,8 @@ module.exports = {
     syncScheduleToEnrolledUsers,
     removeScheduleFromAllCalendars,
     disconnectUser,
+    getCourseNotifyPref,
+    setCourseNotifyPref,
     newOAuthState,
     LOGIN_SCOPES
 };

@@ -11,6 +11,8 @@ const {
     setRemindersEnabled,
     syncUserSchedules,
     disconnectUser,
+    getCourseNotifyPref,
+    setCourseNotifyPref,
     newOAuthState
 } = require('./googleCalendar');
 const { completeGoogleLogin } = require('./googleAuthRoutes');
@@ -181,8 +183,46 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
 
         try {
             const pool = await poolPromise;
-            const result = await syncUserSchedules(pool, user.user_id, { notify: true });
+            const courseId = parseInt((req.body && req.body.courseId) || req.query.courseId, 10) || null;
+            const result = await syncUserSchedules(pool, user.user_id, {
+                notify: true,
+                courseId: courseId || undefined
+            });
             const status = result.success ? 200 : (result.connected === false ? 400 : 503);
+            return res.status(status).json(result);
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.get('/google/course-notify', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+        const courseId = parseInt(req.query.courseId, 10);
+        if (!courseId) {
+            return res.status(400).json({ success: false, message: 'ต้องระบุ courseId' });
+        }
+        try {
+            const pool = await poolPromise;
+            const pref = await getCourseNotifyPref(pool, user.user_id, courseId);
+            return res.json({ success: true, ...pref });
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.post('/google/course-notify', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+        const courseId = parseInt(req.body && req.body.courseId, 10);
+        if (!courseId) {
+            return res.status(400).json({ success: false, message: 'ต้องระบุ courseId' });
+        }
+        const enabled = !(req.body && (req.body.enabled === false || req.body.enabled === 0 || req.body.enabled === '0'));
+        try {
+            const pool = await poolPromise;
+            const result = await setCourseNotifyPref(pool, user.user_id, courseId, enabled);
+            const status = result.success ? 200 : 400;
             return res.status(status).json(result);
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });
