@@ -6,7 +6,7 @@
 <title>ใบประกาศนียบัตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <link rel="stylesheet" href="site.css?v=20260723t">
-<link rel="stylesheet" href="certificates.css?v=20260724f">
+<link rel="stylesheet" href="certificates.css?v=20260724g">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&amp;family=Sarabun:wght@300;400;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
@@ -157,22 +157,99 @@ function fitCertPreview(root) {
 
 function printCertificateOnly() {
   const root = document.getElementById('cert-print-root');
-  if (!root || !root.querySelector('.pts-cert')) return;
+  const cert = root && root.querySelector('.pts-cert');
+  if (!cert) return;
 
-  document.body.classList.add('cert-printing');
-  root.style.setProperty('--cert-scale', '1');
-  root.style.height = '';
+  // Hidden iframe in the same tab — never window.open (avoids Edge about:blank popup)
+  let frame = document.getElementById('cert-print-frame');
+  if (!frame) {
+    frame = document.createElement('iframe');
+    frame.id = 'cert-print-frame';
+    frame.title = 'พิมพ์ใบประกาศ';
+    frame.setAttribute('aria-hidden', 'true');
+    frame.style.cssText = 'position:fixed;width:0;height:0;border:0;left:-9999px;top:0;opacity:0;pointer-events:none;';
+    document.body.appendChild(frame);
+  }
 
-  const restore = () => {
-    document.body.classList.remove('cert-printing');
-    window.removeEventListener('afterprint', restore);
-    fitCertPreview(root);
+  const cssHref = new URL('certificates.css?v=20260724g', window.location.href).href;
+  const fontsHref = 'https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&family=Sarabun:wght@300;400;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap';
+  const html = `<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<title>ใบประกาศนียบัตร</title>
+<link rel="stylesheet" href="${cssHref}">
+<link href="${fontsHref}" rel="stylesheet">
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  html, body { margin: 0; padding: 0; background: #fff; }
+  body { width: 297mm; height: 210mm; overflow: hidden; }
+  .pts-cert {
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: none !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    padding: 6mm !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+</style>
+</head>
+<body>${cert.outerHTML}</body>
+</html>`;
+
+  const win = frame.contentWindow;
+  const doc = frame.contentDocument || (win && win.document);
+  if (!doc || !win) {
+    // Last resort: same-tab print (still no new window)
+    document.body.classList.add('cert-printing');
+    root.style.setProperty('--cert-scale', '1');
+    root.style.height = '';
+    const restore = () => {
+      document.body.classList.remove('cert-printing');
+      window.removeEventListener('afterprint', restore);
+      fitCertPreview(root);
+    };
+    window.addEventListener('afterprint', restore);
+    window.print();
+    setTimeout(restore, 2000);
+    return;
+  }
+
+  doc.open();
+  doc.write(html);
+  doc.close();
+
+  const triggerPrint = () => {
+    try {
+      win.focus();
+      win.print();
+    } catch (_) {
+      window.print();
+    }
   };
-  window.addEventListener('afterprint', restore);
-  // Print in the same tab — no about:blank popup
-  window.print();
-  // Fallback restore if afterprint does not fire (some Edge builds)
-  setTimeout(restore, 2000);
+
+  const imgs = Array.from(doc.images || []);
+  if (!imgs.length) {
+    setTimeout(triggerPrint, 200);
+    return;
+  }
+  let left = imgs.length;
+  const done = () => {
+    left -= 1;
+    if (left <= 0) setTimeout(triggerPrint, 100);
+  };
+  imgs.forEach((img) => {
+    if (img.complete) done();
+    else {
+      img.addEventListener('load', done, { once: true });
+      img.addEventListener('error', done, { once: true });
+    }
+  });
+  // Safety timeout if images hang
+  setTimeout(triggerPrint, 2500);
 }
 
 function modeTag(mode) {

@@ -674,6 +674,15 @@ body.cert-modal-open .user-side {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }
+  #cert-print-frame {
+    position: fixed !important;
+    width: 0 !important;
+    height: 0 !important;
+    border: 0 !important;
+    left: -9999px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
 }
 
 html[data-theme="dark"] .cert-page .text-on-surface-variant { color: var(--pts-muted, #b8a8ae); }
