@@ -63,6 +63,67 @@ function getHomeBannerInfo() {
     };
 }
 
+/** ไฟล์แบนเนอร์หน้าแรกที่แอดมินอัปโหลด (ไม่รวมรูป hero แนวตั้งเก่า) */
+function isGalleryBannerFilename(name) {
+    const n = String(name || '');
+    if (!/\.(jpe?g|png|webp|gif)$/i.test(n)) return false;
+    if (/^home-banner\./i.test(n)) return true;
+    if (/^banner[-_]/i.test(n)) return true;
+    return false;
+}
+
+function listGalleryBanners() {
+    ensureHeroDir();
+    ensureHomeBanner();
+    let names = [];
+    try {
+        names = fs.readdirSync(HERO_DIR).filter(isGalleryBannerFilename);
+    } catch (_) {
+        names = [];
+    }
+
+    const items = names.map((filename) => {
+        const abs = path.join(HERO_DIR, filename);
+        let stat;
+        try { stat = fs.statSync(abs); } catch (_) { return null; }
+        if (!stat.isFile()) return null;
+        const ver = Math.floor(stat.mtimeMs);
+        return {
+            id: filename,
+            filename,
+            url: `/uploads/hero/${filename}?v=${ver}`,
+            bytes: stat.size,
+            updated_at: stat.mtime.toISOString()
+        };
+    }).filter(Boolean);
+
+    // ใหม่สุดอยู่ก่อน
+    items.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
+    return items;
+}
+
+function deleteGalleryBanner(filename) {
+    const safe = path.basename(String(filename || ''));
+    if (!isGalleryBannerFilename(safe)) {
+        return { ok: false, message: 'ชื่อไฟล์ไม่ถูกต้อง' };
+    }
+    const abs = path.join(HERO_DIR, safe);
+    if (!abs.startsWith(HERO_DIR)) {
+        return { ok: false, message: 'พาธไม่ถูกต้อง' };
+    }
+    if (!fs.existsSync(abs)) {
+        return { ok: false, message: 'ไม่พบไฟล์' };
+    }
+    try {
+        fs.unlinkSync(abs);
+        // ถ้าลบ home-banner.png ให้ seed ใหม่จาก assets เพื่อไม่ให้หน้าแรกว่าง
+        if (/^home-banner\./i.test(safe)) ensureHomeBanner();
+        return { ok: true };
+    } catch (err) {
+        return { ok: false, message: err.message || 'ลบไม่สำเร็จ' };
+    }
+}
+
 function listLocalHeroFiles() {
     ensureHeroDir();
     try {
@@ -209,6 +270,9 @@ module.exports = {
     homeBannerPath,
     publicHomeBannerUrl,
     getHomeBannerInfo,
+    listGalleryBanners,
+    deleteGalleryBanner,
+    isGalleryBannerFilename,
     listLocalHeroFiles,
     localUploadExists,
     normalizeHeroImageUrl,

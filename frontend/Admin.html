@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724z">
+<link rel="stylesheet" href="site.css?v=20260724ac">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -467,364 +467,52 @@ async function renderSchedules() {
 }
 
 async function renderBanners() {
-  const [{ data }, homeBannerRes] = await Promise.all([
-    api('/api/admin/hero-slides'),
-    api('/api/admin/home-banner').catch(() => ({ data: null }))
-  ]);
-  const homeBanner = homeBannerRes?.data || {
-    url: '/uploads/hero/home-banner.png',
-    filename: 'home-banner.png',
-    fallback: '/assets/home-banner.png',
-    uploaded: false
-  };
-  const iconOptions = [
-    'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
-    'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
-  ];
-  const themeOptions = [
-    { value: 'rose', label: 'Rose' },
-    { value: 'sage', label: 'Sage' },
-    { value: 'gold', label: 'Gold' },
-    { value: 'ink', label: 'Ink' },
-    { value: 'ocean', label: 'Ocean' },
-    { value: 'sunset', label: 'Sunset' },
-    { value: 'custom', label: 'กำหนดเอง' }
-  ];
-  const themeLabel = (s) => {
-    if (String(s?.theme || '').toLowerCase() === 'custom') {
-      return `กำหนดเอง ${s.theme_color || ''}`.trim();
-    }
-    return (themeOptions.find((x) => x.value === s?.theme) || themeOptions[0]).label;
-  };
-
-  function parseHex(value) {
-    const m = String(value || '').trim().match(/^#?([0-9a-fA-F]{6})$/);
-    if (!m) return null;
-    const hex = `#${m[1].toLowerCase()}`;
-    const n = parseInt(m[1], 16);
-    return { hex, r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 };
-  }
-  function toHex(r, g, b) {
-    return '#' + [r, g, b].map((x) => Math.max(0, Math.min(255, Number(x) || 0)).toString(16).padStart(2, '0')).join('');
-  }
-  function hsvToRgb(h, s, v) {
-    const c = v * s;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = v - c;
-    let rp = 0, gp = 0, bp = 0;
-    if (h < 60) { rp = c; gp = x; }
-    else if (h < 120) { rp = x; gp = c; }
-    else if (h < 180) { gp = c; bp = x; }
-    else if (h < 240) { gp = x; bp = c; }
-    else if (h < 300) { rp = x; bp = c; }
-    else { rp = c; bp = x; }
-    return {
-      r: Math.round((rp + m) * 255),
-      g: Math.round((gp + m) * 255),
-      b: Math.round((bp + m) * 255)
-    };
-  }
-  function rgbToHsv(r, g, b) {
-    r /= 255; g /= 255; b /= 255;
-    const max = Math.max(r, g, b);
-    const min = Math.min(r, g, b);
-    const d = max - min;
-    let h = 0;
-    if (d !== 0) {
-      if (max === r) h = ((g - b) / d) % 6;
-      else if (max === g) h = (b - r) / d + 2;
-      else h = (r - g) / d + 4;
-      h *= 60;
-      if (h < 0) h += 360;
-    }
-    const s = max === 0 ? 0 : d / max;
-    return { h, s, v: max };
-  }
-  const presets = [
-    {
-      key: 'cert',
-      label: 'ใบประกาศ',
-      fill: {
-        eyebrow: 'พร้อมใบประกาศ',
-        title: 'จบหลักสูตรได้ใบประกาศนียบัตรที่นำไปใช้ต่อได้จริง',
-        title_highlight: 'ใบประกาศนียบัตร',
-        lead: 'เก็บใบประกาศในระบบได้ทันทีหลังเรียนครบ และแชร์ต่อในโปรไฟล์ได้',
-        cta_primary_label: 'ดูใบประกาศ',
-        cta_primary_href: 'Certificates.html',
-        cta_secondary_label: 'เข้าคอมมูนิตี้',
-        cta_secondary_href: 'Community.html',
-        badge_icon: 'workspace_premium',
-        badge_title: 'Certificate',
-        badge_subtitle: 'เก็บใบประกาศในระบบได้ทันที',
-        theme: 'gold'
-      }
-    },
-    {
-      key: 'mode',
-      label: 'โหมดเรียน',
-      fill: {
-        eyebrow: 'เรียนได้ทุกที่',
-        title: 'เลือกสไตล์การเรียน Online • Onsite • Hybrid ได้ตามชีวิตคุณ',
-        title_highlight: 'Online • Onsite • Hybrid',
-        lead: 'จัดตารางเรียน เช็กอิน QR Onsite และเรียนออนไลน์ในระบบเดียว',
-        cta_primary_label: 'เริ่มเลือกโหมดเรียน',
-        cta_primary_href: 'Courses.html',
-        cta_secondary_label: 'สมัครสมาชิก',
-        cta_secondary_href: 'Register.html',
-        badge_icon: 'schedule',
-        badge_title: 'Flexible',
-        badge_subtitle: 'เลือกโหมดเรียนได้ตามไลฟ์สไตล์',
-        theme: 'sage'
-      }
-    },
-    {
-      key: 'start',
-      label: 'เริ่มต้น',
-      fill: {
-        eyebrow: 'PTS Learning',
-        title: 'ยกระดับทักษะ Personal Assistant',
-        title_highlight: 'Personal Assistant',
-        lead: 'หลักสูตรคุณภาพสำหรับเลขาและผู้ช่วยส่วนตัว พร้อมใบประกาศและคอมมูนิตี้',
-        cta_primary_label: 'ดูหลักสูตร',
-        cta_primary_href: 'Courses.html',
-        cta_secondary_label: 'สมัครสมาชิก',
-        cta_secondary_href: 'Register.html',
-        badge_icon: 'auto_awesome',
-        badge_title: 'PTS',
-        badge_subtitle: 'เริ่มเรียนได้ทันที',
-        theme: 'rose'
-      }
-    }
-  ];
-
-  const themePickerHtml = (selected, color) => themeOptions.map((t) => `
-    <button type="button" class="ban-theme${(selected || 'rose') === t.value ? ' is-active' : ''}"
-      data-theme="${t.value}" data-ban-theme title="${t.label}">
-      <span class="ban-theme__swatch" style="${t.value === 'custom' && color ? `background:${escapeHtml(color)}` : ''}" aria-hidden="true"></span>
-      <span class="ban-theme__label">${t.label}</span>
-    </button>
-  `).join('');
-
-  const formHtml = (s = {}) => {
-    const custom = parseHex(s.theme_color) || { hex: '#974258', r: 151, g: 66, b: 88 };
-    const theme = s.theme || 'rose';
-    return `
-    <input type="hidden" id="b-id" value="${s.slide_id || ''}">
-    <input type="hidden" id="b-theme" value="${escapeHtml(theme)}">
-    <input type="hidden" id="b-theme-color" value="${escapeHtml(theme === 'custom' ? (s.theme_color || custom.hex) : (s.theme_color || ''))}">
-    <input type="hidden" id="b-image" value="${escapeHtml(s.image_url || '')}">
-
-    <div class="ban-steps">
-      <span>1 เลือกสี</span>
-      <span>2 อัปโหลดรูป</span>
-      <span>3 ใส่ข้อความ</span>
-      <span>4 บันทึก</span>
-    </div>
-
-    <div class="ban-field mb-3">
-      <label>สีแบนเนอร์ (พรีเซ็ตเดิม หรือกำหนดเองด้วย RGB)</label>
-      <div class="ban-theme-grid" id="b-theme-picker">${themePickerHtml(theme, s.theme_color || custom.hex)}</div>
-      <div class="ban-rgb${theme === 'custom' ? '' : ' is-hidden'}" id="b-rgb-box">
-        <p class="text-sm font-bold m-0" style="color:var(--pts-primary,#974258)">กงล้อสี RGB — คลิกหรือลากเพื่อเลือกสี</p>
-        <div class="ban-wheel-layout">
-          <div class="ban-wheel-stage" id="b-wheel-stage">
-            <canvas id="b-wheel" width="220" height="220" aria-label="กงล้อสี"></canvas>
-            <span class="ban-wheel-marker" id="b-wheel-marker" aria-hidden="true"></span>
-          </div>
-          <div class="ban-wheel-side">
-            <div class="ban-wheel-swatch" id="b-wheel-swatch" style="background:${escapeHtml(custom.hex)}"></div>
-            <div>
-              <label for="b-bright">ความสว่าง</label>
-              <input type="range" id="b-bright" min="20" max="100" value="85">
-            </div>
-            <p class="text-xs text-on-surface-variant m-0">ลากบนกงล้อ = โทนสีและความเข้ม · สไลเดอร์ = ความสว่าง</p>
-          </div>
-        </div>
-        <div class="ban-rgb__row">
-          <div class="ban-field">
-            <label>R</label>
-            <input type="number" id="b-r" min="0" max="255" value="${custom.r}">
-          </div>
-          <div class="ban-field">
-            <label>G</label>
-            <input type="number" id="b-g" min="0" max="255" value="${custom.g}">
-          </div>
-          <div class="ban-field">
-            <label>B</label>
-            <input type="number" id="b-b" min="0" max="255" value="${custom.b}">
-          </div>
-          <div class="ban-field" style="flex:1.4 1 100px">
-            <label>HEX</label>
-            <input type="text" id="b-hex" maxlength="7" value="${escapeHtml(custom.hex)}" placeholder="#974258">
-          </div>
-          <div class="ban-field">
-            <label>สำรอง</label>
-            <input type="color" id="b-color" class="ban-rgb__picker" value="${escapeHtml(custom.hex)}" title="เปิดตัวเลือกสีของระบบ">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="ban-preview mb-4" id="b-preview" data-theme="${escapeHtml(theme)}" style="${theme === 'custom' ? `--ban-c:${escapeHtml(s.theme_color || custom.hex)}` : ''}">
-      <div>
-        <p class="ban-preview__eyebrow" id="bp-eyebrow">${escapeHtml(s.eyebrow || 'ข้อความเล็ก')}</p>
-        <h3 class="ban-preview__title" id="bp-title"></h3>
-        <p class="ban-preview__lead" id="bp-lead">${escapeHtml(s.lead || 'คำอธิบายสั้นจะโผล่ตรงนี้')}</p>
-      </div>
-      <img class="ban-preview__img" id="bp-img" alt="" src="${escapeHtml(s.image_url || '/assets/hero-fallback.png')}"
-        onerror="this.onerror=null;this.src='/assets/hero-fallback.png';this.style.opacity='1'">
-    </div>
-    ${s.image_missing ? '<p class="text-xs text-amber-700 mb-3">ไฟล์รูปเดิมใช้ไม่ได้ — ระบบใช้รูปในโปรเจกต์ชั่วคราว กรุณาอัปโหลดใหม่แล้วบันทึก</p>' : ''}
-
-    <div class="ban-field mb-3">
-      <label>รูปแบนเนอร์</label>
-      <div class="ban-drop" id="b-drop" tabindex="0" role="button" aria-label="อัปโหลดรูปแบนเนอร์">
-        <p class="ban-drop__hint"><strong>คลิกหรือลากรูปมาวาง</strong> · JPG / PNG / WEBP · สูงสุด 5MB</p>
-        <input id="b-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden" hidden>
-        <p id="b-upload-msg" class="text-xs mt-2 text-on-surface-variant"></p>
-      </div>
-    </div>
-
-    <div class="ban-grid ban-grid-2 mb-3">
-      <div class="ban-field" style="grid-column:1/-1">
-        <label>หัวข้อหลัก *</label>
-        <input id="b-title" placeholder="เช่น จบหลักสูตรได้ใบประกาศนียบัตรที่นำไปใช้ต่อได้จริง" value="${escapeHtml(s.title || '')}">
-      </div>
-      <div class="ban-field" style="grid-column:1/-1">
-        <label>คำที่อยากเน้นสีในหัวข้อ (พิมพ์ให้ตรงกับข้อความในหัวข้อ)</label>
-        <input id="b-highlight" placeholder="เช่น ใบประกาศนียบัตร" value="${escapeHtml(s.title_highlight || '')}">
-      </div>
-      <div class="ban-field">
-        <label>ข้อความเล็กเหนือหัวข้อ</label>
-        <input id="b-eyebrow" placeholder="เช่น พร้อมใบประกาศ" value="${escapeHtml(s.eyebrow || '')}">
-      </div>
-      <div class="ban-field">
-        <label>ลำดับการแสดง</label>
-        <input id="b-sort" type="number" min="1" value="${s.sort_order || data.length + 1}">
-      </div>
-      <div class="ban-field" style="grid-column:1/-1">
-        <label>คำอธิบายสั้น</label>
-        <textarea id="b-lead" rows="2" placeholder="อธิบายสั้นๆ 1–2 ประโยค">${escapeHtml(s.lead || '')}</textarea>
-      </div>
-    </div>
-
-    <div class="flex flex-wrap gap-2 mb-3">
-      <span class="text-xs font-bold text-on-surface-variant self-center">เติมเร็ว:</span>
-      ${presets.map((p) => `<button type="button" class="border px-3 py-1.5 rounded-full text-sm font-bold" data-ban-preset="${p.key}">${p.label}</button>`).join('')}
-    </div>
-
-    <details class="ban-adv mb-4">
-      <summary>รายละเอียดเพิ่มเติม (ปุ่ม / แบดจ์ / alt)</summary>
-      <div class="ban-grid ban-grid-2">
-        <div class="ban-field">
-          <label>ปุ่มหลัก — ข้อความ</label>
-          <input id="b-cta1-label" value="${escapeHtml(s.cta_primary_label || '')}" placeholder="ดูหลักสูตร">
-        </div>
-        <div class="ban-field">
-          <label>ปุ่มหลัก — ลิงก์</label>
-          <input id="b-cta1-href" value="${escapeHtml(s.cta_primary_href || '')}" placeholder="Courses.html">
-        </div>
-        <div class="ban-field">
-          <label>ปุ่มรอง — ข้อความ</label>
-          <input id="b-cta2-label" value="${escapeHtml(s.cta_secondary_label || '')}" placeholder="สมัครสมาชิก">
-        </div>
-        <div class="ban-field">
-          <label>ปุ่มรอง — ลิงก์</label>
-          <input id="b-cta2-href" value="${escapeHtml(s.cta_secondary_href || '')}" placeholder="Register.html">
-        </div>
-        <div class="ban-field">
-          <label>ไอคอนแบดจ์</label>
-          <select id="b-icon">${iconOptions.map((i) => `<option value="${i}" ${s.badge_icon === i ? 'selected' : ''}>${i}</option>`).join('')}</select>
-        </div>
-        <div class="ban-field">
-          <label>ข้อความแบดจ์</label>
-          <input id="b-badge-title" value="${escapeHtml(s.badge_title || '')}" placeholder="Certificate">
-        </div>
-        <div class="ban-field" style="grid-column:1/-1">
-          <label>คำอธิบายใต้แบดจ์</label>
-          <input id="b-badge-sub" value="${escapeHtml(s.badge_subtitle || '')}" placeholder="เก็บใบประกาศในระบบได้ทันที">
-        </div>
-        <div class="ban-field" style="grid-column:1/-1">
-          <label>คำอธิบายรูป (alt)</label>
-          <input id="b-alt" value="${escapeHtml(s.image_alt || '')}" placeholder="ภาพประกอบแบนเนอร์">
-        </div>
-      </div>
-    </details>
-
-    <label class="flex items-center gap-2 text-sm mb-4">
-      <input id="b-active" type="checkbox" ${s.flag_use === 0 || s.flag_use === false ? '' : 'checked'}>
-      แสดงบนหน้าแรกทันทีหลังบันทึก
-    </label>
-
-    <div class="flex flex-wrap gap-2 mb-2">
-      <button type="button" id="b-save" class="bg-primary text-white px-5 py-2.5 rounded-full font-bold">
-        ${s.slide_id ? 'บันทึกการแก้ไข' : 'เพิ่มแบนเนอร์'}
-      </button>
-      ${s.slide_id ? '<button type="button" id="b-cancel" class="border px-5 py-2.5 rounded-full font-bold">ยกเลิก</button>' : ''}
-      <a href="Home.html" target="_blank" rel="noopener" class="border px-5 py-2.5 rounded-full font-bold text-sm self-center">ดูหน้าแรก</a>
-    </div>
-    <p id="b-msg" class="text-sm"></p>
-  `;
-  };
+  const { data } = await api('/api/admin/home-banners');
+  const list = Array.isArray(data) ? data : [];
 
   document.getElementById('panel').innerHTML = `
-    <div class="ban-wrap">
-      <div class="ban-card">
-        <h2 class="font-bold text-lg mb-1">แบนเนอร์หน้าแรก (รูปเดียว)</h2>
+    <div class="space-y-4">
+      <div class="pts-card p-5">
+        <h2 class="font-bold text-lg mb-1">เพิ่มแบนเนอร์หน้าแรก</h2>
         <p class="text-sm text-on-surface-variant mb-4">
-          เก็บไฟล์จริงที่ <code>uploads/hero/home-banner.png</code> — หน้าแรกสไลด์หลายรูปได้ (อัปโหลดรูปหลักด้านล่าง + เพิ่มสไลด์อื่นในรายการ)
+          อัปโหลดรูปแล้วจะโชว์บนหน้าแรกทันที · แนะนำขนาด <strong>1920 × 1080</strong> (16:9)
+          · เก็บไฟล์ที่ <code>uploads/hero/</code>
         </p>
-        <div class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] overflow-hidden bg-[#0b1a2e] mb-3">
-          <img id="home-banner-preview" src="${escapeHtml(homeBanner.url || homeBanner.fallback)}"
-            alt="Home banner preview" style="display:block;width:100%;height:auto;max-height:320px;object-fit:contain"
-            onerror="this.onerror=null;this.src='/assets/home-banner.png'">
-        </div>
-        <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(homeBanner.filename || 'home-banner.png')}</code>${homeBanner.bytes ? ` · ${(homeBanner.bytes / 1024).toFixed(0)} KB` : ''}</p>
-        <input type="file" id="home-banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
-        <button type="button" class="pts-btn pts-btn-primary" id="home-banner-upload">อัปโหลดรูปแบนเนอร์หน้าแรก</button>
-        <p id="home-banner-msg" class="text-xs mt-2 text-on-surface-variant"></p>
+        <input type="file" id="banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
+        <button type="button" class="pts-btn pts-btn-primary" id="banner-upload">เพิ่มแบนเนอร์</button>
+        <p id="banner-msg" class="text-xs mt-2 text-on-surface-variant"></p>
       </div>
-      <div class="ban-card">
-        <h2 class="font-bold text-lg mb-1" id="b-form-title">สไลด์เพิ่มเติม (ไม่บังคับ)</h2>
-        <p class="text-sm text-on-surface-variant mb-4">หน้าแรกใช้รูปเดียวด้านบนแล้ว — ส่วนนี้เก็บสไลด์เก่าไว้ถ้าต้องการ</p>
-        <div id="b-form">${formHtml()}</div>
-      </div>
-      <div class="ban-card">
-        <h3 class="font-bold mb-3">รายการแบนเนอร์ (${data.length})</h3>
-        <div class="space-y-3">${data.map((s) => `
-          <div class="ban-list-item${!s.flag_use ? ' is-hidden' : ''}" data-slide-id="${s.slide_id}">
-            <img src="${escapeHtml(s.image_url || '/assets/hero-fallback.png')}" alt="" class="w-full h-28 object-cover rounded-xl bg-gray-100" style="object-position:center 14%" onerror="this.onerror=null;this.src='/assets/hero-fallback.png'">
-            <div class="min-w-0">
-              <p class="text-xs text-on-surface-variant mb-1">ลำดับ ${s.sort_order} · #${s.slide_id} · ${s.flag_use ? 'แสดง' : 'ซ่อน'} · ${themeLabel(s)}${s.image_missing ? ' · รูปสำรอง' : ''}</p>
-              <p class="font-bold truncate">${escapeHtml(s.eyebrow || '—')}</p>
-              <p class="text-sm truncate">${escapeHtml(s.title)}</p>
-              ${s.image_missing ? '<p class="text-xs text-amber-700 mt-1">รูปเดิมใช้ไม่ได้ — กดแก้ไขแล้วอัปโหลดใหม่</p>' : ''}
-              <div class="ban-mini-themes" role="group" aria-label="เปลี่ยนสีแบนเนอร์">
-                ${themeOptions.filter((t) => t.value !== 'custom').map((t) => `
-                  <button type="button" data-theme="${t.value}" data-quick-theme="${s.slide_id}"
-                    class="${(s.theme || 'rose') === t.value ? 'is-active' : ''}" title="${t.label}" aria-label="สี ${t.label}"></button>
-                `).join('')}
-                <label class="inline-flex items-center" title="กำหนดสีเอง">
-                  <input type="color" data-quick-custom="${s.slide_id}" value="${escapeHtml(parseHex(s.theme_color)?.hex || '#974258')}"
-                    style="width:28px;height:22px;padding:0;border:0;border-radius:999px;cursor:pointer;background:transparent">
-                </label>
-              </div>
-            </div>
-            <div class="flex flex-wrap gap-2 shrink-0">
-              <button class="edit-banner border px-3 py-1.5 rounded-full text-sm font-bold" data-id="${s.slide_id}">แก้ไข</button>
-              ${s.flag_use
-                ? `<button class="hide-banner text-red-600 font-bold text-sm" data-id="${s.slide_id}">ซ่อน</button>`
-                : `<button class="show-banner border px-3 py-1.5 rounded-full text-sm font-bold" data-id="${s.slide_id}">แสดง</button>`}
-            </div>
-          </div>`).join('') || '<p class="text-on-surface-variant">ยังไม่มีแบนเนอร์ — เพิ่มอันแรกด้านบนได้เลย</p>'}
-        </div>
-      </div>
-    </div>
-  `;
 
-  document.getElementById('home-banner-upload')?.addEventListener('click', async () => {
-    const input = document.getElementById('home-banner-file');
-    const msg = document.getElementById('home-banner-msg');
+      <div class="pts-card p-5">
+        <h3 class="font-bold mb-3">รายการแบนเนอร์ (${list.length})</h3>
+        ${list.length ? `
+          <div class="grid gap-3 md:grid-cols-2">
+            ${list.map((b, i) => `
+              <article class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] overflow-hidden bg-[var(--pts-surface,#fff)]">
+                <div class="bg-[#0b1020]">
+                  <img src="${escapeHtml(b.url)}" alt="" class="w-full h-40 object-cover"
+                    onerror="this.onerror=null;this.src='/assets/home-banner.png'">
+                </div>
+                <div class="p-3 flex items-center justify-between gap-2">
+                  <div class="min-w-0">
+                    <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}</p>
+                    <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
+                  </div>
+                  <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
+                </div>
+              </article>
+            `).join('')}
+          </div>
+        ` : `<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปด้านบนได้เลย</div>`}
+        <p class="text-xs text-on-surface-variant mt-3">
+          <a class="text-primary font-bold" href="Home.html" target="_blank" rel="noopener">เปิดหน้าแรก</a> เพื่อดูสไลด์แบนเนอร์
+        </p>
+      </div>
+    </div>`;
+
+  document.getElementById('banner-upload')?.addEventListener('click', async () => {
+    const input = document.getElementById('banner-file');
+    const msg = document.getElementById('banner-msg');
     const file = input?.files?.[0];
     if (!file) {
       if (msg) msg.textContent = 'กรุณาเลือกไฟล์ก่อน';
@@ -834,494 +522,32 @@ async function renderBanners() {
     try {
       const fd = new FormData();
       fd.append('image', file);
-      const res = await fetch('/api/admin/home-banner/upload', {
+      const res = await fetch('/api/admin/home-banners/upload', {
         method: 'POST',
         credentials: 'include',
         body: fd
       });
       const json = await res.json().catch(() => ({}));
       if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
-      const preview = document.getElementById('home-banner-preview');
-      if (preview && json.url) preview.src = json.url;
-      if (msg) msg.textContent = 'บันทึกแล้วที่ uploads/hero/home-banner.png ✓ — เปิดหน้าแรกเพื่อดูผล';
+      if (msg) msg.textContent = 'เพิ่มแบนเนอร์แล้ว ✓';
+      renderBanners();
     } catch (e) {
       if (msg) msg.textContent = e.message || 'อัปโหลดไม่สำเร็จ';
     }
   });
 
-  const readForm = () => ({
-    sort_order: Number(document.getElementById('b-sort').value || 1),
-    theme: document.getElementById('b-theme').value || 'rose',
-    theme_color: document.getElementById('b-theme-color').value || null,
-    eyebrow: document.getElementById('b-eyebrow').value,
-    title: document.getElementById('b-title').value,
-    title_highlight: document.getElementById('b-highlight').value,
-    lead: document.getElementById('b-lead').value,
-    cta_primary_label: document.getElementById('b-cta1-label').value,
-    cta_primary_href: document.getElementById('b-cta1-href').value,
-    cta_secondary_label: document.getElementById('b-cta2-label').value,
-    cta_secondary_href: document.getElementById('b-cta2-href').value,
-    image_url: document.getElementById('b-image').value,
-    image_alt: document.getElementById('b-alt').value,
-    badge_icon: document.getElementById('b-icon').value,
-    badge_title: document.getElementById('b-badge-title').value,
-    badge_subtitle: document.getElementById('b-badge-sub').value,
-    flag_use: document.getElementById('b-active').checked
-  });
-
-  const renderPreviewTitle = (title, highlight) => {
-    const el = document.getElementById('bp-title');
-    if (!el) return;
-    const raw = String(title || 'หัวข้อแบนเนอร์');
-    const h = String(highlight || '').trim();
-    if (!h || raw.indexOf(h) < 0) {
-      el.textContent = raw;
-      return;
-    }
-    const idx = raw.indexOf(h);
-    el.innerHTML = `${escapeHtml(raw.slice(0, idx))}<em>${escapeHtml(h)}</em>${escapeHtml(raw.slice(idx + h.length))}`;
-  };
-
-  const syncPreview = () => {
-    const theme = document.getElementById('b-theme')?.value || 'rose';
-    const color = document.getElementById('b-theme-color')?.value || '#974258';
-    const preview = document.getElementById('b-preview');
-    const rgbBox = document.getElementById('b-rgb-box');
-    if (preview) {
-      preview.dataset.theme = theme;
-      if (theme === 'custom') preview.style.setProperty('--ban-c', color);
-      else preview.style.removeProperty('--ban-c');
-    }
-    if (rgbBox) rgbBox.classList.toggle('is-hidden', theme !== 'custom');
-    if (theme === 'custom') {
-      requestAnimationFrame(() => initColorWheel(true));
-    }
-    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
-    if (customBtn && theme === 'custom') customBtn.style.background = color;
-    const swatch = document.getElementById('b-wheel-swatch');
-    if (swatch) swatch.style.background = color;
-    const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
-    const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
-    const img = document.getElementById('b-image')?.value || '';
-    const bpEyebrow = document.getElementById('bp-eyebrow');
-    const bpLead = document.getElementById('bp-lead');
-    const bpImg = document.getElementById('bp-img');
-    if (bpEyebrow) bpEyebrow.textContent = eyebrow;
-    if (bpLead) bpLead.textContent = lead;
-    if (bpImg) {
-      bpImg.style.opacity = '1';
-      bpImg.src = img || '';
-    }
-    renderPreviewTitle(
-      document.getElementById('b-title')?.value,
-      document.getElementById('b-highlight')?.value
-    );
-  };
-
-  let wheelState = { h: 340, s: 0.55, v: 0.85, drawing: false, bound: false };
-
-  const drawColorWheel = () => {
-    const canvas = document.getElementById('b-wheel');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const size = canvas.width;
-    const cx = size / 2;
-    const cy = size / 2;
-    const radius = size / 2 - 2;
-    const image = ctx.createImageData(size, size);
-    const data = image.data;
-    const v = wheelState.v;
-    for (let y = 0; y < size; y++) {
-      for (let x = 0; x < size; x++) {
-        const dx = x - cx;
-        const dy = y - cy;
-        const dist = Math.sqrt(dx * dx + dy * dy);
-        const i = (y * size + x) * 4;
-        if (dist > radius) {
-          data[i + 3] = 0;
-          continue;
-        }
-        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-        if (angle < 0) angle += 360;
-        const sat = Math.min(1, dist / radius);
-        const rgb = hsvToRgb(angle, sat, v);
-        data[i] = rgb.r;
-        data[i + 1] = rgb.g;
-        data[i + 2] = rgb.b;
-        data[i + 3] = 255;
-      }
-    }
-    ctx.putImageData(image, 0, 0);
-
-    // center hole soft white for readability
-    ctx.beginPath();
-    ctx.arc(cx, cy, Math.max(8, radius * 0.08), 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${0.15 + (1 - v) * 0.35})`;
-    ctx.fill();
-
-    const marker = document.getElementById('b-wheel-marker');
-    if (marker) {
-      const mr = wheelState.s * radius;
-      const rad = wheelState.h * Math.PI / 180;
-      const mx = cx + Math.cos(rad) * mr;
-      const my = cy + Math.sin(rad) * mr;
-      marker.style.left = `${(mx / size) * 100}%`;
-      marker.style.top = `${(my / size) * 100}%`;
-      marker.style.background = toHex(
-        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).r,
-        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).g,
-        hsvToRgb(wheelState.h, wheelState.s, wheelState.v).b
-      );
-    }
-  };
-
-  const colorFromWheelEvent = (e) => {
-    const canvas = document.getElementById('b-wheel');
-    if (!canvas) return null;
-    const rect = canvas.getBoundingClientRect();
-    const size = canvas.width;
-    const scaleX = size / rect.width;
-    const scaleY = size / rect.height;
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
-    const cx = size / 2;
-    const cy = size / 2;
-    const dx = x - cx;
-    const dy = y - cy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    const radius = size / 2 - 2;
-    let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-    if (angle < 0) angle += 360;
-    const sat = Math.min(1, dist / radius);
-    wheelState.h = angle;
-    wheelState.s = sat;
-    return hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
-  };
-
-  const applyCustomColor = (hexOrParts, opts = {}) => {
-    let parsed = null;
-    if (typeof hexOrParts === 'string') parsed = parseHex(hexOrParts);
-    else if (hexOrParts && typeof hexOrParts === 'object') {
-      parsed = parseHex(toHex(hexOrParts.r, hexOrParts.g, hexOrParts.b));
-    }
-    if (!parsed) return;
-    const colorEl = document.getElementById('b-theme-color');
-    const picker = document.getElementById('b-color');
-    const hex = document.getElementById('b-hex');
-    const r = document.getElementById('b-r');
-    const g = document.getElementById('b-g');
-    const b = document.getElementById('b-b');
-    if (colorEl) colorEl.value = parsed.hex;
-    if (picker) picker.value = parsed.hex;
-    if (hex) hex.value = parsed.hex;
-    if (r) r.value = parsed.r;
-    if (g) g.value = parsed.g;
-    if (b) b.value = parsed.b;
-
-    if (!opts.fromWheel) {
-      const hsv = rgbToHsv(parsed.r, parsed.g, parsed.b);
-      wheelState.h = hsv.h;
-      wheelState.s = hsv.s;
-      wheelState.v = Math.max(0.2, hsv.v || 0.85);
-      const bright = document.getElementById('b-bright');
-      if (bright) bright.value = String(Math.round(wheelState.v * 100));
-    }
-    drawColorWheel();
-
-    const swatch = document.getElementById('b-wheel-swatch');
-    if (swatch) swatch.style.background = parsed.hex;
-
-    // sync preview without re-init wheel loop
-    const theme = 'custom';
-    const preview = document.getElementById('b-preview');
-    const rgbBox = document.getElementById('b-rgb-box');
-    if (preview) {
-      preview.dataset.theme = theme;
-      preview.style.setProperty('--ban-c', parsed.hex);
-    }
-    if (rgbBox) rgbBox.classList.remove('is-hidden');
-    const customBtn = document.querySelector('#b-theme-picker .ban-theme[data-theme="custom"] .ban-theme__swatch');
-    if (customBtn) customBtn.style.background = parsed.hex;
-    const eyebrow = document.getElementById('b-eyebrow')?.value || 'ข้อความเล็ก';
-    const lead = document.getElementById('b-lead')?.value || 'คำอธิบายสั้นจะโผล่ตรงนี้';
-    const img = document.getElementById('b-image')?.value || '';
-    const bpEyebrow = document.getElementById('bp-eyebrow');
-    const bpLead = document.getElementById('bp-lead');
-    const bpImg = document.getElementById('bp-img');
-    if (bpEyebrow) bpEyebrow.textContent = eyebrow;
-    if (bpLead) bpLead.textContent = lead;
-    if (bpImg) {
-      bpImg.style.opacity = '1';
-      bpImg.src = img || '';
-    }
-    renderPreviewTitle(
-      document.getElementById('b-title')?.value,
-      document.getElementById('b-highlight')?.value
-    );
-  };
-
-  const initColorWheel = (onlyRedraw) => {
-    const canvas = document.getElementById('b-wheel');
-    if (!canvas) return;
-    if (!onlyRedraw) {
-      const current = parseHex(document.getElementById('b-theme-color')?.value || '#974258')
-        || { r: 151, g: 66, b: 88, hex: '#974258' };
-      const hsv = rgbToHsv(current.r, current.g, current.b);
-      wheelState.h = hsv.h;
-      wheelState.s = hsv.s;
-      wheelState.v = Math.max(0.2, hsv.v || 0.85);
-      const bright = document.getElementById('b-bright');
-      if (bright) bright.value = String(Math.round(wheelState.v * 100));
-    }
-    drawColorWheel();
-
-    if (wheelState.bound) return;
-    wheelState.bound = true;
-
-    const onMove = (e) => {
-      if (!wheelState.drawing) return;
-      e.preventDefault();
-      const rgb = colorFromWheelEvent(e);
-      if (!rgb) return;
-      const themeEl = document.getElementById('b-theme');
-      if (themeEl) themeEl.value = 'custom';
-      applyCustomColor(rgb, { fromWheel: true });
-    };
-    const onUp = () => { wheelState.drawing = false; };
-
-    canvas.addEventListener('pointerdown', (e) => {
-      wheelState.drawing = true;
-      canvas.setPointerCapture?.(e.pointerId);
-      const themeEl = document.getElementById('b-theme');
-      if (themeEl) themeEl.value = 'custom';
-      document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
-        btn.classList.toggle('is-active', btn.dataset.theme === 'custom');
-      });
-      const rgb = colorFromWheelEvent(e);
-      if (rgb) applyCustomColor(rgb, { fromWheel: true });
-    });
-    canvas.addEventListener('pointermove', onMove);
-    canvas.addEventListener('pointerup', onUp);
-    canvas.addEventListener('pointercancel', onUp);
-
-    document.getElementById('b-bright')?.addEventListener('input', (e) => {
-      wheelState.v = Math.max(0.2, Math.min(1, (Number(e.target.value) || 85) / 100));
-      const rgb = hsvToRgb(wheelState.h, wheelState.s, wheelState.v);
-      const themeEl = document.getElementById('b-theme');
-      if (themeEl) themeEl.value = 'custom';
-      applyCustomColor(rgb, { fromWheel: true });
-    });
-  };
-
-  const setTheme = (theme) => {
-    const t = themeOptions.some((x) => x.value === theme) ? theme : 'rose';
-    const hidden = document.getElementById('b-theme');
-    if (hidden) hidden.value = t;
-    document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
-      btn.classList.toggle('is-active', btn.dataset.theme === t);
-    });
-    if (t === 'custom') {
-      const current = document.getElementById('b-theme-color')?.value || '#974258';
-      applyCustomColor(current);
-      initColorWheel(false);
-    } else {
-      syncPreview();
-    }
-  };
-
-  const fillFields = (obj) => {
-    const map = {
-      'b-eyebrow': 'eyebrow',
-      'b-title': 'title',
-      'b-highlight': 'title_highlight',
-      'b-lead': 'lead',
-      'b-cta1-label': 'cta_primary_label',
-      'b-cta1-href': 'cta_primary_href',
-      'b-cta2-label': 'cta_secondary_label',
-      'b-cta2-href': 'cta_secondary_href',
-      'b-badge-title': 'badge_title',
-      'b-badge-sub': 'badge_subtitle',
-      'b-icon': 'badge_icon'
-    };
-    Object.entries(map).forEach(([id, key]) => {
-      const el = document.getElementById(id);
-      if (el && obj[key] != null) el.value = obj[key];
-    });
-    if (obj.theme_color) {
-      const colorEl = document.getElementById('b-theme-color');
-      if (colorEl) colorEl.value = obj.theme_color;
-    }
-    if (obj.theme) setTheme(obj.theme);
-    else syncPreview();
-  };
-
-  const uploadFile = async (file) => {
-    const msg = document.getElementById('b-upload-msg');
-    if (!file) { if (msg) msg.textContent = 'เลือกไฟล์ก่อน'; return; }
-    if (msg) msg.textContent = 'กำลังอัปโหลด...';
-    try {
-      const fd = new FormData();
-      fd.append('image', file);
-      const res = await fetch('/api/admin/hero-slides/upload', { method: 'POST', credentials: 'include', body: fd });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
-      document.getElementById('b-image').value = json.url;
-      const preview = document.getElementById('bp-img');
-      if (preview) {
-        preview.onerror = null;
-        preview.src = json.url;
-        preview.style.opacity = '1';
-      }
-      if (msg) msg.textContent = 'อัปโหลดแล้ว ✓ — กดบันทึกเพื่อใช้รูปนี้';
-      syncPreview();
-    } catch (e) {
-      if (msg) msg.textContent = e.message;
-    }
-  };
-
-  const wireForm = () => {
-    wheelState.bound = false;
-    syncPreview();
-    if (document.getElementById('b-theme')?.value === 'custom') {
-      initColorWheel(false);
-    }
-
-    document.querySelectorAll('#b-theme-picker .ban-theme').forEach((btn) => {
-      btn.onclick = () => setTheme(btn.dataset.theme);
-    });
-
-    document.getElementById('b-color')?.addEventListener('input', (e) => {
-      setTheme('custom');
-      applyCustomColor(e.target.value);
-    });
-    document.getElementById('b-hex')?.addEventListener('change', (e) => {
-      setTheme('custom');
-      applyCustomColor(e.target.value);
-    });
-    ['b-r', 'b-g', 'b-b'].forEach((id) => {
-      document.getElementById(id)?.addEventListener('change', () => {
-        setTheme('custom');
-        applyCustomColor({
-          r: document.getElementById('b-r').value,
-          g: document.getElementById('b-g').value,
-          b: document.getElementById('b-b').value
-        });
-      });
-    });
-
-    ['b-title', 'b-highlight', 'b-eyebrow', 'b-lead'].forEach((id) => {
-      document.getElementById(id)?.addEventListener('input', syncPreview);
-    });
-
-    document.querySelectorAll('[data-ban-preset]').forEach((btn) => {
-      btn.onclick = () => {
-        const preset = presets.find((p) => p.key === btn.dataset.banPreset);
-        if (preset) fillFields(preset.fill);
-      };
-    });
-
-    const drop = document.getElementById('b-drop');
-    const fileInput = document.getElementById('b-file');
-    drop?.addEventListener('click', () => fileInput?.click());
-    drop?.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput?.click(); }
-    });
-    fileInput?.addEventListener('change', () => uploadFile(fileInput.files?.[0]));
-    ['dragenter', 'dragover'].forEach((ev) => {
-      drop?.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('is-drag'); });
-    });
-    ['dragleave', 'drop'].forEach((ev) => {
-      drop?.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('is-drag'); });
-    });
-    drop?.addEventListener('drop', (e) => {
-      const file = e.dataTransfer?.files?.[0];
-      if (file) uploadFile(file);
-    });
-
-    document.getElementById('b-save').onclick = async () => {
-      const msg = document.getElementById('b-msg');
-      const id = document.getElementById('b-id').value;
-      const payload = readForm();
+  document.querySelectorAll('.banner-del').forEach((btn) => {
+    btn.onclick = async () => {
+      const filename = btn.dataset.file;
+      if (!filename) return;
+      if (!confirm(`ลบแบนเนอร์ ${filename} ?`)) return;
       try {
-        if (!payload.title.trim()) throw new Error('กรุณาระบุหัวข้อแบนเนอร์');
-        if (id) {
-          await api(`/api/admin/hero-slides/${id}`, { method: 'PUT', body: JSON.stringify(payload) });
-        } else {
-          await api('/api/admin/hero-slides', { method: 'POST', body: JSON.stringify(payload) });
-        }
-        msg.className = 'text-sm text-emerald-700';
-        msg.textContent = 'บันทึกแล้ว — เปิดหน้าแรกเพื่อดูผล';
+        await api(`/api/admin/home-banners/${encodeURIComponent(filename)}`, { method: 'DELETE' });
         renderBanners();
       } catch (e) {
-        msg.className = 'text-sm text-red-600';
-        msg.textContent = e.message;
+        alert(e.message || 'ลบไม่สำเร็จ');
       }
     };
-
-    document.getElementById('b-cancel')?.addEventListener('click', () => renderBanners());
-  };
-
-  wireForm();
-
-  document.querySelectorAll('.edit-banner').forEach((btn) => {
-    btn.onclick = () => {
-      const slide = data.find((s) => String(s.slide_id) === btn.dataset.id);
-      if (!slide) return;
-      document.getElementById('b-form-title').textContent = `แก้ไขแบนเนอร์ #${slide.slide_id}`;
-      document.getElementById('b-form').innerHTML = formHtml(slide);
-      wireForm();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    };
-  });
-
-  document.querySelectorAll('.hide-banner').forEach((btn) => {
-    btn.onclick = async () => {
-      await api(`/api/admin/hero-slides/${btn.dataset.id}`, { method: 'DELETE' });
-      renderBanners();
-    };
-  });
-
-  document.querySelectorAll('.show-banner').forEach((btn) => {
-    btn.onclick = async () => {
-      await api(`/api/admin/hero-slides/${btn.dataset.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({ flag_use: 1 })
-      });
-      renderBanners();
-    };
-  });
-
-  document.querySelectorAll('[data-quick-theme]').forEach((btn) => {
-    btn.onclick = async () => {
-      const id = btn.dataset.quickTheme;
-      const theme = btn.dataset.theme;
-      try {
-        await api(`/api/admin/hero-slides/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ theme })
-        });
-        renderBanners();
-      } catch (e) {
-        alert(e.message || 'เปลี่ยนสีไม่สำเร็จ');
-      }
-    };
-  });
-
-  document.querySelectorAll('[data-quick-custom]').forEach((input) => {
-    input.addEventListener('change', async () => {
-      const id = input.dataset.quickCustom;
-      const theme_color = parseHex(input.value)?.hex;
-      if (!theme_color) return;
-      try {
-        await api(`/api/admin/hero-slides/${id}`, {
-          method: 'PATCH',
-          body: JSON.stringify({ theme: 'custom', theme_color })
-        });
-        renderBanners();
-      } catch (e) {
-        alert(e.message || 'เปลี่ยนสีไม่สำเร็จ');
-      }
-    });
   });
 }
 

@@ -1,10 +1,13 @@
 # Home / hero banner images (stored on disk)
 #
-# Home page banner (image-only):
-#   uploads/hero/home-banner.png
-#   Served at: /uploads/hero/home-banner.png
+# Gallery banners shown on Home carousel:
+#   uploads/hero/home-banner.png   (default / seeded)
+#   uploads/hero/banner-*.png      (uploaded from Admin)
 #
-# Upload via Admin → แบนเนอร์ → อัปโหลดรูปแบนเนอร์หน้าแรก
-# Or drop the PNG here and name it home-banner.png
+# Served at: /uploads/hero/<filename>
+# Manage via: Admin → แบนเนอร์ (upload / list / delete)
 #
-# Other hero-*.png files are older carousel slide uploads.
+# Recommended size: 1920 × 1080 (16:9)
+#
+# Older hero-*.png files are leftover portrait assets and are NOT
+# included in the home carousel.

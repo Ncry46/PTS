@@ -6,7 +6,7 @@ const multer = require('multer');
 const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = require('./mailSecrets');
 const { issueEmailOtp, getMailStatus } = require('./emailOtp');
 const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
-const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath } = require('./heroImages');
+const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath, listGalleryBanners, deleteGalleryBanner, isGalleryBannerFilename } = require('./heroImages');
 const {
     CERT_DIR,
     CERT_SLOTS,
@@ -634,7 +634,66 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         });
     });
 
-    /** แบนเนอร์หน้าแรก — บันทึกเป็นไฟล์คงที่ uploads/hero/home-banner.png */
+    /** แบนเนอร์หน้าแรก — อัปโหลดหลายรูป (banner-*.png) เก็บใน uploads/hero */
+    const galleryBannerUpload = multer({
+        storage: multer.diskStorage({
+            destination: (_req, _file, cb) => {
+                ensureHeroDir();
+                cb(null, HERO_DIR);
+            },
+            filename: (_req, file, cb) => {
+                const ext = path.extname(file.originalname || '').toLowerCase();
+                const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)
+                    ? (ext === '.jpeg' ? '.jpg' : ext)
+                    : '.png';
+                cb(null, `banner-${Date.now()}${safeExt}`);
+            }
+        }),
+        limits: { fileSize: 12 * 1024 * 1024 },
+        fileFilter: (_req, file, cb) => {
+            if (HERO_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+            else cb(new Error('รองรับเฉพาะไฟล์รูป JPG, PNG, WEBP หรือ GIF'));
+        }
+    });
+
+    router.get('/home-banners', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        res.json({ success: true, data: listGalleryBanners() });
+    });
+
+    router.post('/home-banners/upload', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        galleryBannerUpload.single('image')(req, res, (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
+            }
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
+            }
+            const items = listGalleryBanners();
+            const item = items.find((x) => x.filename === req.file.filename) || {
+                filename: req.file.filename,
+                url: `/uploads/hero/${req.file.filename}`
+            };
+            res.json({
+                success: true,
+                message: 'เพิ่มแบนเนอร์แล้ว',
+                data: item,
+                list: items
+            });
+        });
+    });
+
+    router.delete('/home-banners/:filename', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const result = deleteGalleryBanner(req.params.filename);
+        if (!result.ok) {
+            return res.status(400).json({ success: false, message: result.message || 'ลบไม่สำเร็จ' });
+        }
+        res.json({ success: true, message: 'ลบแบนเนอร์แล้ว', data: listGalleryBanners() });
+    });
+
+    /** แบนเนอร์หน้าแรก — บันทึกเป็นไฟล์คงที่ uploads/hero/home-banner.png (legacy) */
     const homeBannerUpload = multer({
         storage: multer.diskStorage({
             destination: (_req, _file, cb) => {

@@ -623,47 +623,15 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
-    // รายการแบนเนอร์สำหรับสไลด์หน้าแรก (หลายรูป)
-    router.get('/home-banners', async (_req, res) => {
+    // รายการแบนเนอร์สำหรับสไลด์หน้าแรก (หลายรูปจาก uploads/hero)
+    router.get('/home-banners', (_req, res) => {
         try {
-            const { getHomeBannerInfo, normalizeHeroImageUrl, localUploadExists } = require('./heroImages');
-            const slides = [];
-            const seen = new Set();
-
-            const push = (url, alt, id) => {
-                const raw = String(url || '').trim();
-                if (!raw) return;
-                const key = raw.split('?')[0];
-                if (seen.has(key)) return;
-                seen.add(key);
-                slides.push({ id: id || key, url: raw, alt: alt || 'PTS Learning banner' });
-            };
-
-            const home = getHomeBannerInfo();
-            if (home?.url) push(home.url, 'RIGHT-HAND PARTNER PROGRAM', 'home-banner');
-
-            try {
-                const pool = await poolPromise;
-                const result = await pool.request().query(`
-                    SELECT slide_id, title, image_url, image_alt, sort_order
-                    FROM BD_PTS.dbo.hero_slides
-                    WHERE flag_use = 1
-                    ORDER BY sort_order ASC, slide_id ASC
-                `);
-                (result.recordset || []).forEach((row, index) => {
-                    const resolved = normalizeHeroImageUrl(row.image_url, index);
-                    // ข้ามถ้าเป็นแค่ fallback ซ้ำ หรือไฟล์หาย
-                    if (!resolved) return;
-                    if (resolved.startsWith('/uploads/') && !localUploadExists(resolved.split('?')[0])) return;
-                    push(resolved, row.image_alt || row.title || 'Banner', `slide-${row.slide_id}`);
-                });
-            } catch (_) { /* DB optional for banner list */ }
-
-            if (!slides.length) {
-                push('/assets/home-banner.png', 'PTS Learning', 'fallback');
-            }
-
-            res.json({ success: true, data: slides });
+            const { listGalleryBanners } = require('./heroImages');
+            const items = listGalleryBanners();
+            const data = items.length
+                ? items.map((x) => ({ id: x.id, url: x.url, alt: 'Banner' }))
+                : [{ id: 'fallback', url: '/assets/home-banner.png', alt: 'PTS Learning' }];
+            res.json({ success: true, data });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
