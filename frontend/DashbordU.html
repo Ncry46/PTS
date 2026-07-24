@@ -169,11 +169,41 @@
   .myc-actions__link:hover { text-decoration: underline; }
   .dash-myc-empty {
     background: #fff;
-    border: 1px solid rgba(151,66,88,.14);
+    border: 1px dashed rgba(151,66,88,.28);
     border-radius: 16px;
-    padding: 20px;
+    padding: 28px 20px;
     text-align: center;
     color: #544245;
+  }
+  .dash-myc-empty__icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 12px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(151,66,88,.1);
+    color: #974258;
+  }
+  .dash-myc-empty__icon .material-symbols-outlined { font-size: 26px; }
+  .dash-myc-empty__title {
+    margin: 0 0 6px;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1c1520;
+  }
+  .dash-myc-empty__text {
+    margin: 0 0 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #544245;
+  }
+  .dash-myc-empty__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
   }
 </style>
 <!-- Tailwind Configuration -->
