@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>หลักสูตรของฉัน | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260724a">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+<style>
+  .myc-summary {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  @media (min-width: 768px) {
+    .myc-summary { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  .myc-stat {
+    background: var(--pts-card-bg, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 16px;
+    padding: 16px 18px;
+  }
+  .myc-stat__label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--pts-muted, #544245);
+    margin-bottom: 6px;
+  }
+  .myc-stat__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #974258;
+    line-height: 1.2;
+  }
+  .myc-section { margin-bottom: 36px; }
+  .myc-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .myc-section__title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--pts-text, #1c1520);
+  }
+  .myc-section__hint {
+    font-size: 13px;
+    color: var(--pts-muted, #544245);
+  }
+  .myc-list { display: flex; flex-direction: column; gap: 14px; }
+  .myc-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--pts-card-bg, #fff);
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 18px;
+    overflow: hidden;
+  }
+  @media (min-width: 768px) {
+    .myc-card { flex-direction: row; min-height: 168px; }
+  }
+  .myc-card__media {
+    position: relative;
+    width: 100%;
+    height: 160px;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: #f8e8ec;
+  }
+  @media (min-width: 768px) {
+    .myc-card__media { width: 240px; height: auto; }
+  }
+  .myc-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .myc-card__badge {
+    position: absolute;
+    left: 12px;
+    bottom: 12px;
+    background: #974258;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .myc-card__body {
+    flex: 1;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .myc-card__title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--pts-text, #1c1520);
+    margin-bottom: 4px;
+  }
+  .myc-card__meta {
+    font-size: 13px;
+    color: var(--pts-muted, #544245);
+  }
+  .myc-progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-bottom: 6px;
+  }
+  .myc-progress-row strong { color: #974258; }
+  .myc-bar {
+    height: 8px;
+    width: 100%;
+    background: rgba(151,66,88,.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .myc-bar > span {
+    display: block;
+    height: 100%;
+    background: #974258;
+    border-radius: 999px;
+  }
+  .myc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .myc-status--progress {
+    background: rgba(151,66,88,.1);
+    color: #974258;
+  }
+  .myc-status--done {
+    background: rgba(46,125,50,.12);
+    color: #2e7d32;
+  }
+  .myc-status--other {
+    background: rgba(84,66,69,.1);
+    color: #544245;
+  }
+  .myc-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .myc-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+</style>
+</head>
+<body class="pts-body">
+<div id="app-navbar"></div>
+
+<main class="pts-main" data-user-shell>
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">My Courses</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">หลักสูตรของฉัน</h1>
+    <p class="text-on-surface-variant">ดูว่าตอนนี้เรียนถึงไหนแล้ว และหลักสูตรที่สมัครไว้ทั้งหมด</p>
+  </section>
+
+  <div id="myc-summary" class="myc-summary" aria-live="polite">
+    <div class="myc-stat"><div class="myc-stat__label">ทั้งหมด</div><div class="myc-stat__value" id="stat-total">—</div></div>
+    <div class="myc-stat"><div class="myc-stat__label">กำลังเรียน</div><div class="myc-stat__value" id="stat-progress">—</div></div>
+    <div class="myc-stat"><div class="myc-stat__label">เรียนจบแล้ว</div><div class="myc-stat__value" id="stat-done">—</div></div>
+    <div class="myc-stat"><div class="myc-stat__label">ความคืบหน้าเฉลี่ย</div><div class="myc-stat__value" id="stat-avg">—</div></div>
+  </div>
+
+  <section class="myc-section" id="section-in-progress">
+    <div class="myc-section__head">
+      <h2 class="myc-section__title">กำลังเรียนอยู่</h2>
+      <p class="myc-section__hint" id="hint-in-progress">หลักสูตรที่ยังเรียนไม่จบ</p>
+    </div>
+    <div id="list-in-progress" class="myc-list">
+      <div class="pts-empty pts-card">กำลังโหลด...</div>
+    </div>
+  </section>
+
+  <section class="myc-section" id="section-all">
+    <div class="myc-section__head">
+      <h2 class="myc-section__title">หลักสูตรที่สมัครทั้งหมด</h2>
+      <p class="myc-section__hint">เรียงตามอัปเดตล่าสุด</p>
+    </div>
+    <div class="myc-filters" role="tablist" aria-label="กรองหลักสูตร">
+      <button type="button" class="myc-filter pts-btn pts-btn-primary" data-filter="all">ทั้งหมด</button>
+      <button type="button" class="myc-filter pts-btn pts-btn-outline" data-filter="in_progress">กำลังเรียน</button>
+      <button type="button" class="myc-filter pts-btn pts-btn-outline" data-filter="completed">เรียนจบแล้ว</button>
+    </div>
+    <div id="list-all" class="myc-list">
+      <div class="pts-empty pts-card">กำลังโหลด...</div>
+    </div>
+  </section>
+</main>
+
+<script>
+const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const PLACEHOLDER = 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course';
+
+let allCourses = [];
+let filterMode = 'all';
+
+function statusLabel(status) {
+  if (status === 'completed') return { text: 'เรียนจบแล้ว', cls: 'myc-status--done' };
+  if (status === 'in_progress') return { text: 'กำลังเรียน', cls: 'myc-status--progress' };
+  return { text: status || 'สมัครแล้ว', cls: 'myc-status--other' };
+}
+
+function courseCard(course, { emphasizeProgress = false } = {}) {
+  const progress = Math.max(0, Math.min(100, Number(course.progress_percent || 0)));
+  const image = course.cover_image_url || PLACEHOLDER;
+  const mode = (course.delivery_mode || 'หลักสูตร').toString();
+  const st = statusLabel(course.status);
+  const hours = course.total_hours != null ? `${Number(course.total_hours)} ชม.` : '';
+  const primaryHref = course.status === 'completed'
+    ? `Certificates.html`
+    : `Learn.html?courseId=${course.course_id}`;
+  const primaryLabel = course.status === 'completed' ? 'ดูใบประกาศ' : 'เข้าเรียนต่อ';
+
+  return `
+    <article class="myc-card">
+      <div class="myc-card__media">
+        <img src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+        <span class="myc-card__badge">${escapeHtml(mode)}</span>
+      </div>
+      <div class="myc-card__body">
+        <div>
+          <div class="flex flex-wrap items-center gap-2 mb-2">
+            <span class="myc-status ${st.cls}">${st.text}</span>
+            ${hours ? `<span class="myc-card__meta">${escapeHtml(hours)}</span>` : ''}
+          </div>
+          <h3 class="myc-card__title">${escapeHtml(course.course_name)}</h3>
+          <p class="myc-card__meta">โดย ${escapeHtml(course.instructor_name || '-')}</p>
+        </div>
+        <div>
+          <div class="myc-progress-row">
+            <span>ความคืบหน้า</span>
+            <strong>${progress}%</strong>
+          </div>
+          <div class="myc-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
+          <div class="myc-actions">
+            <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
+            <a class="pts-btn pts-btn-outline" href="CourseDetail.html?courseId=${course.course_id}">รายละเอียด</a>
+          </div>
+        </div>
+      </div>
+    </article>`;
+}
+
+function emptyState(message, ctaHref, ctaLabel) {
+  return `<div class="pts-empty pts-card">${message}${ctaHref ? `<br><a class="text-primary font-bold" href="${ctaHref}">${ctaLabel}</a>` : ''}</div>`;
+}
+
+function isInProgress(course) {
+  const p = Number(course.progress_percent || 0);
+  return course.status === 'in_progress' || (course.status !== 'completed' && p < 100);
+}
+
+function renderInProgress() {
+  const box = document.getElementById('list-in-progress');
+  const list = allCourses.filter(isInProgress);
+
+  document.getElementById('hint-in-progress').textContent =
+    list.length ? `${list.length} หลักสูตรที่ยังเรียนไม่จบ` : 'ยังไม่มีหลักสูตรที่กำลังเรียน';
+
+  if (!list.length) {
+    box.innerHTML = emptyState('ยังไม่มีหลักสูตรที่กำลังเรียนอยู่', 'Courses.html', 'ไปเลือกหลักสูตร');
+    return;
+  }
+  box.innerHTML = list.map((c) => courseCard(c, { emphasizeProgress: true })).join('');
+}
+
+function renderAll() {
+  const box = document.getElementById('list-all');
+  let list = allCourses.slice();
+  if (filterMode === 'in_progress') {
+    list = list.filter(isInProgress);
+  } else if (filterMode === 'completed') {
+    list = list.filter((c) => c.status === 'completed' || Number(c.progress_percent || 0) >= 100);
+  }
+
+  if (!allCourses.length) {
+    box.innerHTML = emptyState('คุณยังไม่ได้สมัครหลักสูตรใดๆ', 'Courses.html', 'ไปเลือกหลักสูตร');
+    return;
+  }
+  if (!list.length) {
+    box.innerHTML = emptyState('ไม่มีหลักสูตรในหมวดนี้');
+    return;
+  }
+  box.innerHTML = list.map((c) => courseCard(c)).join('');
+}
+
+function setFilter(mode) {
+  filterMode = mode;
+  document.querySelectorAll('.myc-filter').forEach((btn) => {
+    const active = btn.dataset.filter === mode;
+    btn.className = 'myc-filter pts-btn ' + (active ? 'pts-btn-primary' : 'pts-btn-outline');
+  });
+  renderAll();
+}
+
+document.querySelectorAll('.myc-filter').forEach((btn) => {
+  btn.addEventListener('click', () => setFilter(btn.dataset.filter));
+});
+
+(async () => {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+  if (!me.loggedIn) return (location.href = 'Login.html');
+
+  try {
+    const res = await fetch('/api/my/courses', { credentials: 'include' });
+    const payload = await res.json();
+    if (!res.ok || !payload.success) throw new Error(payload.message || 'โหลดหลักสูตรไม่สำเร็จ');
+
+    allCourses = payload.data || [];
+    const summary = payload.summary || {};
+
+    document.getElementById('stat-total').textContent = String(summary.total ?? allCourses.length);
+    document.getElementById('stat-progress').textContent = String(summary.in_progress ?? 0);
+    document.getElementById('stat-done').textContent = String(summary.completed ?? 0);
+    document.getElementById('stat-avg').textContent = `${Number(summary.average_progress || 0)}%`;
+
+    renderInProgress();
+    renderAll();
+  } catch (err) {
+    const msg = escapeHtml(err.message || 'เกิดข้อผิดพลาด');
+    document.getElementById('list-in-progress').innerHTML = `<div class="pts-card p-5 text-error">${msg}</div>`;
+    document.getElementById('list-all').innerHTML = `<div class="pts-card p-5 text-error">${msg}</div>`;
+  }
+})();
+</script>
+<script src="/comp/user-sidebar.js?v=20260724a"></script>
+<script src="/comp/navbar.js?v=20260723d"></script>
+</body>
+</html>

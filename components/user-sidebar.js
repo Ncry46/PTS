@@ -5,6 +5,7 @@
 (function () {
   const LINKS = [
     { href: 'DashbordU.html', label: 'แดชบอร์ด', match: /DashbordU\.html/i },
+    { href: 'MyCourses.html', label: 'หลักสูตรของฉัน', match: /MyCourses\.html/i },
     { href: 'Certificates.html', label: 'ใบประกาศ', match: /Certificates\.html/i },
     { href: 'Payments.html', label: 'ชำระเงิน', match: /Payments\.html/i },
     { href: 'Favorites.html', label: 'รายการโปรด', match: /Favorites\.html/i },
