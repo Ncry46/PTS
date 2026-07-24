@@ -387,18 +387,18 @@
 
 .pts-cert__logo-wrap {
   position: absolute;
-  top: 58px;
+  top: 42px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 20;
-  width: min(420px, 48%);
+  width: min(520px, 58%);
   display: flex;
   justify-content: center;
 }
 .pts-cert__logo {
-  height: 128px;
+  height: 168px;
   width: 100%;
-  max-width: 420px;
+  max-width: 520px;
   object-fit: contain;
   object-position: center;
   display: block;
@@ -423,7 +423,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 145px 80px 110px;
+  padding: 175px 80px 110px;
   text-align: center;
   box-sizing: border-box;
 }
