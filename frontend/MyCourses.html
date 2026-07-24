@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260724myc2">
+<link rel="stylesheet" href="site.css?v=20260724myc3">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
 <style>
@@ -55,18 +55,12 @@
     font-size: 12px;
     color: var(--pts-muted, #544245);
   }
-  /* Compact card grid — fixed max width so cards stay small */
+  /* Proportioned card grid — room for Thai text without stretching full-width */
   .myc-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 160px));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 220px));
+    gap: 16px;
     justify-content: start;
-  }
-  @media (min-width: 640px) {
-    .myc-list {
-      grid-template-columns: repeat(auto-fill, minmax(150px, 168px));
-      gap: 12px;
-    }
   }
   .myc-list > .pts-empty,
   .myc-list > .pts-card {
@@ -76,17 +70,17 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 168px;
+    max-width: 220px;
     background: var(--pts-card-bg, #fff);
     border: 1px solid var(--pts-border, rgba(151,66,88,.14));
-    border-radius: 12px;
+    border-radius: 16px;
     overflow: hidden;
     min-height: 0;
   }
   .myc-card__media {
     position: relative;
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 16 / 10;
     flex-shrink: 0;
     overflow: hidden;
     background: #f8e8ec;
@@ -99,38 +93,44 @@
   }
   .myc-card__badge {
     position: absolute;
-    left: 6px;
-    bottom: 6px;
+    left: 10px;
+    bottom: 10px;
     background: #974258;
     color: #fff;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    padding: 2px 6px;
+    padding: 4px 9px;
     border-radius: 999px;
   }
   .myc-card__body {
     flex: 1;
-    padding: 8px 9px 9px;
+    padding: 14px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .myc-card__info {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
   }
   .myc-card__title {
-    font-size: 0.8rem;
+    font-size: 0.95rem;
     font-weight: 700;
     color: var(--pts-text, #1c1520);
     margin: 0;
-    line-height: 1.3;
+    line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 2.1em;
   }
   .myc-card__meta {
-    font-size: 10px;
+    font-size: 12px;
     color: var(--pts-muted, #544245);
     margin: 0;
+    line-height: 1.4;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -139,18 +139,25 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
+  }
+  .myc-card__foot {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: auto;
   }
   .myc-progress-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 10px;
-    margin-bottom: 3px;
+    font-size: 12px;
+    margin-bottom: 6px;
+    gap: 8px;
   }
   .myc-progress-row strong { color: #974258; }
   .myc-bar {
-    height: 4px;
+    height: 6px;
     width: 100%;
     background: rgba(151,66,88,.12);
     border-radius: 999px;
@@ -165,11 +172,11 @@
   .myc-status {
     display: inline-flex;
     align-items: center;
-    gap: 2px;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    padding: 1px 6px;
+    padding: 3px 9px;
     border-radius: 999px;
+    line-height: 1.3;
   }
   .myc-status--progress {
     background: rgba(151,66,88,.1);
@@ -186,20 +193,26 @@
   .myc-actions {
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    margin-top: auto;
+    align-items: stretch;
+    gap: 8px;
   }
   .myc-actions .pts-btn {
     width: 100%;
     justify-content: center;
-    padding: 6px 8px;
-    font-size: 11px;
-    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 13px;
+    border-radius: 12px;
   }
-  .myc-actions .pts-btn-outline {
-    padding: 5px 8px;
-    font-size: 10px;
+  .myc-actions__link {
+    display: block;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #974258;
+    text-decoration: none;
+    padding: 2px 0;
   }
+  .myc-actions__link:hover { text-decoration: underline; }
   .myc-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 </style>
 </head>
@@ -277,23 +290,25 @@ function courseCard(course, { emphasizeProgress = false } = {}) {
         <span class="myc-card__badge">${escapeHtml(mode)}</span>
       </div>
       <div class="myc-card__body">
-        <div>
-          <div class="myc-card__top mb-1">
+        <div class="myc-card__info">
+          <div class="myc-card__top">
             <span class="myc-status ${st.cls}">${st.text}</span>
             ${hours ? `<span class="myc-card__meta">${escapeHtml(hours)}</span>` : ''}
           </div>
           <h3 class="myc-card__title">${escapeHtml(course.course_name)}</h3>
           <p class="myc-card__meta">โดย ${escapeHtml(course.instructor_name || '-')}</p>
         </div>
-        <div>
-          <div class="myc-progress-row">
-            <span>ความคืบหน้า</span>
-            <strong>${progress}%</strong>
+        <div class="myc-card__foot">
+          <div>
+            <div class="myc-progress-row">
+              <span>ความคืบหน้า</span>
+              <strong>${progress}%</strong>
+            </div>
+            <div class="myc-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
           </div>
-          <div class="myc-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
           <div class="myc-actions">
             <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
-            <a class="pts-btn pts-btn-outline" href="CourseDetail.html?courseId=${course.course_id}">รายละเอียด</a>
+            <a class="myc-actions__link" href="CourseDetail.html?courseId=${course.course_id}">รายละเอียด</a>
           </div>
         </div>
       </div>
