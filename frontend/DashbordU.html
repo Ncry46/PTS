@@ -703,17 +703,24 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         if (completedEl) completedEl.textContent = `${summary.completed || 0} หลักสูตร`;
 
         const courses = payload.data || [];
-        // API already ORDER BY updated_at DESC — show only 3 most recent
-        const recent = courses.slice(0, 3);
+        // API already ORDER BY updated_at DESC — show only 5 most recent
+        const recent = courses.slice(0, 5);
         if (!courses.length) {
             myCoursesEl.innerHTML = `
                 <div class="dash-myc-empty">
-                    <p class="mb-3">คุณยังไม่ได้สมัครหลักสูตรใดๆ</p>
-                    <a href="Courses.html" class="pts-btn pts-btn-primary">ไปเลือกหลักสูตร</a>
+                    <div class="dash-myc-empty__icon" aria-hidden="true">
+                      <span class="material-symbols-outlined">school</span>
+                    </div>
+                    <p class="dash-myc-empty__title">ยังไม่มีหลักสูตรที่เรียน</p>
+                    <p class="dash-myc-empty__text">เริ่มต้นด้วยการเลือกหลักสูตรที่สนใจ<br>เมื่อสมัครแล้ว คอร์สล่าสุดจะโชว์ที่นี่</p>
+                    <div class="dash-myc-empty__actions">
+                      <a href="Courses.html" class="pts-btn pts-btn-primary">เลือกหลักสูตร</a>
+                      <a href="MyCourses.html" class="pts-btn pts-btn-outline">ไปหลักสูตรของฉัน</a>
+                    </div>
                 </div>`;
         } else {
             myCoursesEl.innerHTML = recent.map(dashCourseCard).join('');
-            if (courses.length > 3) {
+            if (courses.length > 5) {
                 const note = document.createElement('p');
                 note.className = 'text-sm text-on-surface-variant mt-3';
                 note.style.gridColumn = '1 / -1';
