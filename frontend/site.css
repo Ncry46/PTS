@@ -372,6 +372,7 @@ a { color: inherit; }
   width: 100%;
   margin-left: 0;
   margin-right: 0;
+  padding-top: var(--pts-nav-h, 68px);
   padding-left: 0;
   padding-right: 0;
   padding-bottom: 0;
@@ -410,7 +411,7 @@ a { color: inherit; }
     overflow-y: auto;
     border-bottom: none;
     border-right: 1px solid var(--pts-border, rgba(151, 66, 88, 0.14));
-    padding: 22px 14px;
+    padding: 16px 14px;
   }
 }
 
@@ -466,18 +467,18 @@ html[data-theme="dark"] .user-side__link.is-active {
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 20px 16px 48px;
+  padding: 0 16px 48px;
 }
 
 @media (min-width: 768px) {
   .user-main {
-    padding: 28px 28px 64px;
+    padding: 0 28px 64px;
   }
 }
 
 @media (min-width: 1280px) {
   .user-main {
-    padding: 32px 40px 72px;
+    padding: 0 40px 72px;
   }
 }
 .pts-main--flush {
