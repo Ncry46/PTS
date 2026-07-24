@@ -497,18 +497,18 @@ html[data-theme="dark"] .user-side__link.is-active {
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 16px 48px;
+  padding: 20px 16px 48px;
 }
 
 @media (min-width: 768px) {
   .user-main {
-    padding: 0 28px 64px;
+    padding: 24px 28px 64px;
   }
 }
 
 @media (min-width: 1280px) {
   .user-main {
-    padding: 0 40px 72px;
+    padding: 24px 40px 72px;
   }
 }
 
@@ -553,18 +553,18 @@ html[data-theme="dark"] .user-side__link.is-active {
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  padding: 0 16px 48px;
+  padding: 20px 16px 48px;
 }
 
 @media (min-width: 768px) {
   .admin-main {
-    padding: 0 28px 64px;
+    padding: 24px 28px 64px;
   }
 }
 
 @media (min-width: 1280px) {
   .admin-main {
-    padding: 0 40px 72px;
+    padding: 24px 40px 72px;
   }
 }
 .pts-main--flush {
