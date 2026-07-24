@@ -1,13 +1,13 @@
-# Place exact user-provided certificate images here (do not edit/recolor):
-#   2.png   = logo (header)
-#   2_2.png = stamp (footer seal)
+# Certificate brand images (exact files — do not edit/recolor):
+#   logo.png  = logo (header)
+#   stamp.png = stamp (footer seal)
 #
 # Preferred (uploadable) paths used by Certificates.html:
-#   /uploads/cert/2.png
-#   /uploads/cert/2_2.png
+#   /uploads/cert/logo.png
+#   /uploads/cert/stamp.png
 #
 # Fallback bundled copies:
-#   /assets/2.png
-#   /assets/2_2.png
+#   /assets/logo.png
+#   /assets/stamp.png
 #
 # Admin can upload from: Admin → ใบประกาศ

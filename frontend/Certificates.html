@@ -56,10 +56,10 @@
 
 <script>
 /* Prefer uploaded cert images; fall back to bundled assets */
-const PA_LOGO = '/uploads/cert/2.png';
-const PA_LOGO_FALLBACK = '/assets/2.png';
-const PA_STAMP = '/uploads/cert/2_2.png';
-const PA_STAMP_FALLBACK = '/assets/2_2.png';
+const PA_LOGO = '/uploads/cert/logo.png';
+const PA_LOGO_FALLBACK = '/assets/logo.png';
+const PA_STAMP = '/uploads/cert/stamp.png';
+const PA_STAMP_FALLBACK = '/assets/stamp.png';
 const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 const imgFallback = (fallback) => `this.onerror=null;this.src='${fallback}'`;
 

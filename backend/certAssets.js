@@ -5,14 +5,30 @@ const CERT_DIR = path.join(__dirname, '..', 'uploads', 'cert');
 const ASSETS_DIR = path.join(__dirname, '..', 'frontend', 'assets');
 
 const CERT_SLOTS = {
-    logo: { filename: '2.png', assetFallback: '2.png', label: 'โลโก้' },
-    stamp: { filename: '2_2.png', assetFallback: '2_2.png', label: 'สแตมป์' }
+    logo: { filename: 'logo.png', assetFallback: 'logo.png', label: 'โลโก้', legacy: ['2.png'] },
+    stamp: { filename: 'stamp.png', assetFallback: 'stamp.png', label: 'สแตมป์', legacy: ['2_2.png'] }
 };
+
+function migrateLegacy(slot) {
+    const dest = path.join(CERT_DIR, slot.filename);
+    if (fs.existsSync(dest)) return;
+    for (const oldName of slot.legacy || []) {
+        const oldPath = path.join(CERT_DIR, oldName);
+        if (!fs.existsSync(oldPath)) continue;
+        try {
+            fs.renameSync(oldPath, dest);
+            return;
+        } catch (_) {
+            try { fs.copyFileSync(oldPath, dest); } catch (__) { /* ignore */ }
+            return;
+        }
+    }
+}
 
 function ensureCertDir() {
     fs.mkdirSync(CERT_DIR, { recursive: true });
-    // Seed from frontend/assets when upload folder is empty
     for (const slot of Object.values(CERT_SLOTS)) {
+        migrateLegacy(slot);
         const dest = path.join(CERT_DIR, slot.filename);
         if (fs.existsSync(dest)) continue;
         const src = path.join(ASSETS_DIR, slot.assetFallback);

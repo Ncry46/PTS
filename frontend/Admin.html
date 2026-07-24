@@ -1460,8 +1460,8 @@ async function renderCertAssets() {
   const panel = document.getElementById('panel');
   const { data } = await api('/api/admin/cert-assets');
   const bySlot = Object.fromEntries((data || []).map((x) => [x.slot, x]));
-  const logo = bySlot.logo || { url: '/assets/2.png', filename: '2.png' };
-  const stamp = bySlot.stamp || { url: '/assets/2_2.png', filename: '2_2.png' };
+  const logo = bySlot.logo || { url: '/assets/logo.png', filename: 'logo.png' };
+  const stamp = bySlot.stamp || { url: '/assets/stamp.png', filename: 'stamp.png' };
 
   panel.innerHTML = `
     <div class="space-y-4">
@@ -1469,7 +1469,7 @@ async function renderCertAssets() {
         <h2 class="font-bold text-lg mb-1">รูปใบประกาศ</h2>
         <p class="text-sm text-on-surface-variant mb-4">
           อัปโหลดโลโก้และสแตมป์ไปที่โฟลเดอร์ <code>uploads/cert/</code>
-          — ไฟล์จะถูกบันทึกเป็น <code>2.png</code> (โลโก้) และ <code>2_2.png</code> (สแตมป์)
+          — ไฟล์จะถูกบันทึกเป็น <code>logo.png</code> (โลโก้) และ <code>stamp.png</code> (สแตมป์)
         </p>
         <div class="grid gap-4 md:grid-cols-2">
           <div class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] p-4">
@@ -1477,9 +1477,9 @@ async function renderCertAssets() {
             <div class="bg-[#f7f1f3] rounded-xl p-4 mb-3 flex items-center justify-center min-h-[160px]">
               <img id="cert-logo-preview" src="${escapeHtml(logo.url)}" alt="Logo preview"
                 style="max-height:120px;max-width:100%;object-fit:contain"
-                onerror="this.onerror=null;this.src='/assets/2.png'">
+                onerror="this.onerror=null;this.src='/assets/logo.png'">
             </div>
-            <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(logo.filename || '2.png')}</code></p>
+            <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(logo.filename || 'logo.png')}</code></p>
             <input type="file" id="cert-logo-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
             <button type="button" class="pts-btn pts-btn-primary" id="cert-logo-upload">อัปโหลดโลโก้</button>
             <p id="cert-logo-msg" class="text-xs mt-2 text-on-surface-variant"></p>
@@ -1489,9 +1489,9 @@ async function renderCertAssets() {
             <div class="bg-[#f7f1f3] rounded-xl p-4 mb-3 flex items-center justify-center min-h-[160px]">
               <img id="cert-stamp-preview" src="${escapeHtml(stamp.url)}" alt="Stamp preview"
                 style="max-height:120px;max-width:100%;object-fit:contain"
-                onerror="this.onerror=null;this.src='/assets/2_2.png'">
+                onerror="this.onerror=null;this.src='/assets/stamp.png'">
             </div>
-            <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(stamp.filename || '2_2.png')}</code></p>
+            <p class="text-xs text-on-surface-variant mb-2">ไฟล์: <code>${escapeHtml(stamp.filename || 'stamp.png')}</code></p>
             <input type="file" id="cert-stamp-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
             <button type="button" class="pts-btn pts-btn-primary" id="cert-stamp-upload">อัปโหลดสแตมป์</button>
             <p id="cert-stamp-msg" class="text-xs mt-2 text-on-surface-variant"></p>
