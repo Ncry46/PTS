@@ -16,42 +16,128 @@ const { createNotification } = require('./ensureSchema');
 const SCOPES = ['https://www.googleapis.com/auth/calendar.events', 'openid', 'email', 'profile'];
 const LOGIN_SCOPES = ['openid', 'email', 'profile'];
 const TIMEZONE = 'Asia/Bangkok';
+const LOCAL_PATH = path.join(__dirname, 'google.local.js');
 
-function readLocalGoogle() {
-    const localPath = path.join(__dirname, 'google.local.js');
+function pickNonEmpty(...values) {
+    for (const value of values) {
+        const s = String(value == null ? '' : value).trim();
+        if (s) return s;
+    }
+    return '';
+}
+
+function readLocalFileText() {
+    if (!fs.existsSync(LOCAL_PATH)) return { text: '', encoding: 'missing', buf: null };
+    const buf = fs.readFileSync(LOCAL_PATH);
+    if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) {
+        return { text: buf.toString('utf16le'), encoding: 'utf16le-bom', buf };
+    }
+    if (buf.length >= 2 && buf[0] === 0xfe && buf[1] === 0xff) {
+        // UTF-16 BE — uncommon, but heal by swapping
+        const swapped = Buffer.alloc(buf.length - 2);
+        for (let i = 2; i + 1 < buf.length; i += 2) {
+            swapped[i - 2] = buf[i + 1];
+            swapped[i - 1] = buf[i];
+        }
+        return { text: swapped.toString('utf16le'), encoding: 'utf16be-bom', buf };
+    }
+    return {
+        text: buf.toString('utf8').replace(/^\uFEFF/, ''),
+        encoding: (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) ? 'utf8-bom' : 'utf8-or-ascii',
+        buf
+    };
+}
+
+function parseLocalObject(text) {
+    if (!text) return {};
+    const match = text.match(/module\.exports\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
+    if (match) {
+        // eslint-disable-next-line no-new-func
+        const obj = Function('"use strict"; return (' + match[1] + ')')();
+        return obj && typeof obj === 'object' ? obj : {};
+    }
     try {
-        if (!fs.existsSync(localPath)) return {};
-        const buf = fs.readFileSync(localPath);
-        let text;
-        // PowerShell Set-Content มักเขียน UTF-16 LE (FF FE)
-        if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) {
-            text = buf.toString('utf16le');
-        } else {
-            text = buf.toString('utf8').replace(/^\uFEFF/, '');
-        }
-        const match = text.match(/module\.exports\s*=\s*(\{[\s\S]*\})\s*;?\s*$/);
-        if (match) {
-            // eslint-disable-next-line no-new-func
-            const obj = Function('"use strict"; return (' + match[1] + ')')();
-            return obj && typeof obj === 'object' ? obj : {};
-        }
         delete require.cache[require.resolve('./google.local.js')];
         return require('./google.local.js') || {};
+    } catch (_) {
+        return {};
+    }
+}
+
+function writeLocalGoogleFile(config) {
+    const body = `module.exports = {
+    clientId: ${JSON.stringify(String(config.clientId || ''))},
+    clientSecret: ${JSON.stringify(String(config.clientSecret || ''))},
+    redirectUri: ${JSON.stringify(String(config.redirectUri || 'http://localhost:3000/api/google/oauth/callback'))},
+    appBaseUrl: ${JSON.stringify(String(config.appBaseUrl || 'http://localhost:3000'))}
+};
+`;
+    fs.writeFileSync(LOCAL_PATH, body, { encoding: 'utf8' });
+}
+
+function readLocalGoogle() {
+    try {
+        const { text, encoding } = readLocalFileText();
+        if (!text) return {};
+        const obj = parseLocalObject(text);
+        // Auto-heal PowerShell UTF-16 files so require()/future boots stay reliable
+        if (encoding.startsWith('utf16') && obj && (obj.clientId || obj.clientSecret)) {
+            try {
+                writeLocalGoogleFile({
+                    clientId: obj.clientId,
+                    clientSecret: obj.clientSecret,
+                    redirectUri: obj.redirectUri,
+                    appBaseUrl: obj.appBaseUrl
+                });
+                console.warn('[google-calendar] แปลง google.local.js จาก UTF-16 → UTF-8 แล้ว');
+            } catch (healErr) {
+                console.warn('[google-calendar] heal UTF-16 ไม่สำเร็จ:', healErr.message);
+            }
+        }
+        return obj && typeof obj === 'object' ? obj : {};
     } catch (err) {
         console.warn('[google-calendar] อ่าน google.local.js ไม่สำเร็จ:', err.message);
         return {};
     }
 }
 
+/** Fill empty process.env Google keys from google.local.js (runtime only). */
+function hydrateGoogleEnvFromLocal() {
+    const local = readLocalGoogle();
+    if (!local || typeof local !== 'object') return getGoogleConfig();
+    if (!pickNonEmpty(process.env.GOOGLE_CLIENT_ID) && local.clientId) {
+        process.env.GOOGLE_CLIENT_ID = String(local.clientId).trim();
+    }
+    if (!pickNonEmpty(process.env.GOOGLE_CLIENT_SECRET) && local.clientSecret) {
+        process.env.GOOGLE_CLIENT_SECRET = String(local.clientSecret).trim();
+    }
+    if (!pickNonEmpty(process.env.GOOGLE_REDIRECT_URI) && local.redirectUri) {
+        process.env.GOOGLE_REDIRECT_URI = String(local.redirectUri).trim();
+    }
+    if (!pickNonEmpty(process.env.APP_BASE_URL) && local.appBaseUrl) {
+        process.env.APP_BASE_URL = String(local.appBaseUrl).trim();
+    }
+    return getGoogleConfig();
+}
+
 function getGoogleConfig() {
     const local = readLocalGoogle();
-    const baseUrl = (process.env.APP_BASE_URL || local.appBaseUrl || 'http://localhost:3000').replace(/\/$/, '');
+    const baseUrl = pickNonEmpty(
+        process.env.APP_BASE_URL,
+        local.appBaseUrl,
+        'http://localhost:3000'
+    ).replace(/\/$/, '');
+    const redirectUri = pickNonEmpty(
+        process.env.GOOGLE_REDIRECT_URI,
+        local.redirectUri,
+        `${baseUrl}/api/google/oauth/callback`
+    );
     return {
-        clientId: String(process.env.GOOGLE_CLIENT_ID || local.clientId || '').trim(),
-        clientSecret: String(process.env.GOOGLE_CLIENT_SECRET || local.clientSecret || '').trim(),
-        redirectUri: String(process.env.GOOGLE_REDIRECT_URI || local.redirectUri || `${baseUrl}/api/google/oauth/callback`).trim(),
+        clientId: pickNonEmpty(process.env.GOOGLE_CLIENT_ID, local.clientId),
+        clientSecret: pickNonEmpty(process.env.GOOGLE_CLIENT_SECRET, local.clientSecret),
+        redirectUri,
         appBaseUrl: baseUrl,
-        hasLocalFile: fs.existsSync(path.join(__dirname, 'google.local.js')),
+        hasLocalFile: fs.existsSync(LOCAL_PATH),
         localKeys: Object.keys(local || {})
     };
 }
@@ -73,30 +159,27 @@ function publicGoogleStatus() {
 }
 
 function diagnoseGoogleSetup() {
+    const { encoding, buf } = readLocalFileText();
     const c = getGoogleConfig();
-    const localPath = path.join(__dirname, 'google.local.js');
-    let fileBytes = 0;
-    let fileEncodingGuess = 'missing';
-    if (fs.existsSync(localPath)) {
-        const buf = fs.readFileSync(localPath);
-        fileBytes = buf.length;
-        if (buf.length >= 2 && buf[0] === 0xff && buf[1] === 0xfe) fileEncodingGuess = 'utf16le-bom';
-        else if (buf[0] === 0xef && buf[1] === 0xbb && buf[2] === 0xbf) fileEncodingGuess = 'utf8-bom';
-        else fileEncodingGuess = 'utf8-or-ascii';
-    }
     return {
         success: true,
         configured: isGoogleConfigured(),
         hasLocalFile: c.hasLocalFile,
-        localPath,
-        fileBytes,
-        fileEncodingGuess,
+        localPath: LOCAL_PATH,
+        fileBytes: buf ? buf.length : 0,
+        fileEncodingGuess: encoding,
         clientIdHint: c.clientId ? (c.clientId.slice(0, 20) + '…') : null,
         hasClientSecret: Boolean(c.clientSecret),
         redirectUri: c.redirectUri,
         appBaseUrl: c.appBaseUrl,
+        envHasClientId: Boolean(pickNonEmpty(process.env.GOOGLE_CLIENT_ID)),
+        envHasClientSecret: Boolean(pickNonEmpty(process.env.GOOGLE_CLIENT_SECRET)),
+        localHasClientId: Boolean(pickNonEmpty((readLocalGoogle() || {}).clientId)),
         moduleFile: path.join(__dirname, 'googleCalendar.js'),
-        moduleExists: fs.existsSync(path.join(__dirname, 'googleCalendar.js'))
+        moduleExists: fs.existsSync(path.join(__dirname, 'googleCalendar.js')),
+        hint: isGoogleConfigured()
+            ? 'พร้อมใช้งาน — ให้ผู้ใช้กดเชื่อมต่อ Google Calendar ที่หน้า Settings'
+            : 'ยังไม่พร้อม — ตั้งค่าใน .env หรือรัน: node backend/write-google-local.js <CLIENT_ID> <CLIENT_SECRET> แล้วรีสตาร์ทเซิร์ฟเวอร์'
     };
 }
 
@@ -662,6 +745,7 @@ module.exports = {
     publicGoogleStatus,
     diagnoseGoogleSetup,
     getGoogleConfig,
+    hydrateGoogleEnvFromLocal,
     buildAuthUrl,
     buildLoginAuthUrl,
     exchangeCode,

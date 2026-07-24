@@ -12,6 +12,11 @@ const { createProfileRouter } = require('./profileRoutes');
 const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
 const { createGoogleAuthRouter } = require('./googleAuthRoutes');
 const googleCalendar = require('./googleCalendar');
+try {
+    if (typeof googleCalendar.hydrateGoogleEnvFromLocal === 'function') {
+        googleCalendar.hydrateGoogleEnvFromLocal();
+    }
+} catch (_) { /* ignore */ }
 const { syncAfterEnroll } = googleCalendar;
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
@@ -1022,6 +1027,10 @@ app.listen(PORT, HOST, () => {
         if (status.redirectUri) console.log(`   redirectUri = ${status.redirectUri}`);
         const localG = path.join(__dirname, 'google.local.js');
         console.log(`   google.local.js = ${localG} ${fs.existsSync(localG) ? '(มีไฟล์)' : '(ไม่พบ)'}`);
+        if (!configured) {
+            console.log('   ตั้งค่า: node backend/write-google-local.js <CLIENT_ID> <CLIENT_SECRET>');
+            console.log('   หรือใส่ GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET ใน .env แล้วรีสตาร์ท');
+        }
     } catch (err) {
         console.warn('📅 Google Calendar status unavailable:', err.message);
     }
