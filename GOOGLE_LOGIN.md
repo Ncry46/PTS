@@ -5,7 +5,16 @@
 ## สิ่งที่ต้องมี
 
 1. OAuth Client (Web application) ใน [Google Cloud Console](https://console.cloud.google.com/)
-2. ค่าใน `backend/google.local.js` หรือไฟล์ `.env`:
+2. ค่าใน `backend/google.local.js` หรือไฟล์ `.env` — วิธีที่ง่ายที่สุด:
+
+```bash
+node backend/write-google-local.js YOUR_CLIENT_ID YOUR_CLIENT_SECRET
+npm start
+```
+
+คำสั่งนี้เขียน `google.local.js` เป็น UTF-8 และอัปเดต `GOOGLE_*` ใน `.env` ให้เอง
+
+หรือใส่เองใน `backend/google.local.js`:
 
 ```js
 module.exports = {
@@ -21,7 +30,17 @@ module.exports = {
    - **Authorized redirect URIs:** `http://localhost:3000/api/google/oauth/callback`  
      (ต้องตรงทุกตัวอักษร — ใช้ร่วมกับ Google Calendar)
 
-## ทดสอบ
+## แจ้งเตือนปฏิทิน (Settings)
+
+หลังตั้งค่า Client ID/Secret แล้ว:
+
+1. เปิด `Settings.html` → ส่วน Google Calendar
+2. กด **เชื่อมต่อ Google Calendar**
+3. เปิดสวิตช์แจ้งเตือน → กดซิงค์ตารางเรียน
+
+ตรวจสถานะเซิร์ฟเวอร์: `http://localhost:3000/api/google/diagnose`
+
+## ทดสอบ Login
 
 ```powershell
 npm start
@@ -39,3 +58,4 @@ npm start
 
 - Redirect URI เดียวกับ Calendar — ไม่ต้องสร้าง Client ใหม่
 - บน production เปลี่ยนเป็น `https://โดเมนจริง/...` ทั้งใน Google Cloud และ `APP_BASE_URL` / `GOOGLE_REDIRECT_URI`
+- อย่า commit ไฟล์ `.env` หรือ `backend/google.local.js` (มีใน `.gitignore` แล้ว)
