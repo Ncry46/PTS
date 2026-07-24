@@ -1003,7 +1003,7 @@ input.pts-pw-input::-ms-clear {
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   object-position: center center;
   transform: scale(1.02);
   transition: transform 6.5s ease-out;
