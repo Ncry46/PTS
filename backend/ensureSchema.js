@@ -111,6 +111,9 @@ async function ensureLearningSchema(pool) {
         `IF COL_LENGTH('dbo.google_calendar_links', 'reminders_enabled') IS NULL
          ALTER TABLE dbo.google_calendar_links ADD reminders_enabled BIT NOT NULL
             CONSTRAINT DF_gcal_reminders_enabled DEFAULT (1)`,
+        `IF COL_LENGTH('dbo.course_enrollments', 'gcal_notify') IS NULL
+         ALTER TABLE dbo.course_enrollments ADD gcal_notify BIT NOT NULL
+            CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (1)`,
         `IF COL_LENGTH('dbo.courses_main', 'price') IS NULL
          ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
         `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL
