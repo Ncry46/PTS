@@ -150,7 +150,9 @@ function setAvatarPreview(url, name) {
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
-  const role = String(me.user?.role || me.user?.Role || '').toLowerCase();
+  const role = String(
+    me.user?.role || me.user?.Role || me.role || me.Role || ''
+  ).toLowerCase();
   isAdminUser = role === 'admin';
   const profile = await fetch('/api/profile', { credentials: 'include' }).then(r => r.json());
   if (!profile.success) { console.error(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ'); return location.href = 'Login.html'; }
@@ -266,46 +268,58 @@ async function refreshGcalStatus() {
   remindersRow.classList.remove('flex');
   howto.classList.add('hidden');
   try {
-    const res = await fetch('/api/google/status', { credentials: 'include' });
+    const res = await fetch('/api/google/status', { credentials: 'include', cache: 'no-store' });
     const raw = await res.text();
     let st;
     try {
       st = JSON.parse(raw);
     } catch (_) {
-      statusText.textContent = 'เซิร์ฟเวอร์ยังไม่มีระบบ Google Calendar — ดึงโค้ดล่าสุด สร้างไฟล์ backend/google.local.js แล้วรัน npm start ใหม่จากโฟลเดอร์ PTS';
+      statusText.textContent = 'เซิร์ฟเวอร์ยังไม่มีระบบ Google Calendar — รีสตาร์ท npm start แล้วรีเฟรชแรง (Ctrl+F5)';
       hint.classList.remove('hidden');
       return;
     }
-    if (!st.configured) {
-      statusText.textContent = isAdminUser
-        ? 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่า Google OAuth (Client ID/Secret)'
-        : 'ระบบยังไม่เปิดใช้การเชื่อม Google Calendar — ติดต่อผู้ดูแล';
-      hint.classList.remove('hidden');
-      document.getElementById('gcal-setup-user')?.classList.toggle('hidden', isAdminUser);
-      document.getElementById('gcal-setup-admin')?.classList.toggle('hidden', !isAdminUser);
-      const diagEl = document.getElementById('gcal-diagnose-line');
-      if (isAdminUser) {
-        try {
-          const dr = await fetch('/api/google/diagnose', { credentials: 'include' });
-          const diag = await dr.json();
-          const bits = [];
-          if (diag.hasLocalFile) bits.push('พบ google.local.js');
-          else bits.push('ไม่พบ google.local.js');
-          if (diag.fileEncodingGuess && diag.fileEncodingGuess.startsWith('utf16')) {
-            bits.push('ไฟล์เป็น UTF-16 (พัง) — รัน write-google-local.js เพื่อซ่อม');
+
+    // ถ้า status บอกว่ายังไม่พร้อม ให้ยืนยันกับ /diagnose อีกรอบ (กัน cache / เซิร์ฟเวอร์เก่า)
+    let configured = st.configured === true;
+    if (!configured) {
+      try {
+        const dr = await fetch('/api/google/diagnose', { credentials: 'include', cache: 'no-store' });
+        const diag = await dr.json();
+        if (diag && diag.configured === true) {
+          configured = true;
+          st = { ...st, ...diag, configured: true };
+        } else {
+          statusText.textContent = isAdminUser
+            ? 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่า Google OAuth (Client ID/Secret)'
+            : 'ระบบยังไม่เปิดใช้การเชื่อม Google Calendar — ติดต่อผู้ดูแล';
+          hint.classList.remove('hidden');
+          document.getElementById('gcal-setup-user')?.classList.toggle('hidden', isAdminUser);
+          document.getElementById('gcal-setup-admin')?.classList.toggle('hidden', !isAdminUser);
+          const diagEl = document.getElementById('gcal-diagnose-line');
+          if (isAdminUser && diagEl) {
+            const bits = [];
+            if (diag.hasLocalFile) bits.push('พบ google.local.js');
+            else bits.push('ไม่พบ google.local.js');
+            if (diag.envHasClientId) bits.push('.env มี CLIENT_ID');
+            else bits.push('.env ยังว่าง');
+            if (diag.redirectUri) bits.push('redirect: ' + diag.redirectUri);
+            diagEl.textContent = bits.length ? ('ตรวจพบ: ' + bits.join(' · ')) : '';
+          } else if (diagEl) {
+            diagEl.textContent = '';
           }
-          if (diag.envHasClientId) bits.push('.env มี CLIENT_ID');
-          else bits.push('.env ยังว่าง');
-          if (diag.redirectUri) bits.push('redirect: ' + diag.redirectUri);
-          if (diagEl) diagEl.textContent = 'ตรวจพบ: ' + bits.join(' · ');
-        } catch (_) {
-          if (diagEl) diagEl.textContent = '';
+          return;
         }
-      } else if (diagEl) {
-        diagEl.textContent = '';
+      } catch (_) {
+        statusText.textContent = isAdminUser
+          ? 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่า Google OAuth (Client ID/Secret)'
+          : 'ระบบยังไม่เปิดใช้การเชื่อม Google Calendar — ติดต่อผู้ดูแล';
+        hint.classList.remove('hidden');
+        document.getElementById('gcal-setup-user')?.classList.toggle('hidden', isAdminUser);
+        document.getElementById('gcal-setup-admin')?.classList.toggle('hidden', !isAdminUser);
+        return;
       }
-      return;
     }
+
     hint.classList.add('hidden');
     if (st.connected) {
       const remOn = st.reminders_enabled !== false;
