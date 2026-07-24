@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายละเอียดหลักสูตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724cal">
+<link rel="stylesheet" href="site.css?v=20260724settings-line">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
@@ -21,17 +21,6 @@
   .pts-notify__hint { font-size: 12px; color: var(--pts-muted, #5c4f55); margin: 0 0 12px; line-height: 1.45; }
   .pts-notify__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pts-notify__actions .pts-btn { flex: 1 1 160px; justify-content: center; text-align: center; }
-  .pts-btn-line {
-    background: #06C755;
-    color: #fff;
-    border-color: #06C755;
-  }
-  .pts-btn-line:hover { filter: brightness(0.95); color: #fff; }
-  .pts-btn-line.is-disabled,
-  .pts-btn-line[aria-disabled="true"] {
-    opacity: 0.55;
-    pointer-events: none;
-  }
 </style>
 </head>
 <body class="pts-body">
@@ -62,21 +51,13 @@ async function mountCourseNotifyControls(hostEl) {
   if (!hostEl || !courseId) return;
 
   let pref;
-  let lineInfo = { configured: false, url: null, name: 'PTS Learning' };
   try {
-    const [prefRes, lineRes] = await Promise.all([
-      fetch(`/api/google/course-notify?courseId=${encodeURIComponent(courseId)}`, {
-        credentials: 'include',
-        cache: 'no-store'
-      }),
-      fetch('/api/line/oa', { credentials: 'include', cache: 'no-store' })
-    ]);
+    const prefRes = await fetch(`/api/google/course-notify?courseId=${encodeURIComponent(courseId)}`, {
+      credentials: 'include',
+      cache: 'no-store'
+    });
     pref = await prefRes.json();
     if (!prefRes.ok || pref.success === false) throw new Error(pref.message || 'โหลดสถานะไม่สำเร็จ');
-    if (lineRes.ok) {
-      const lineJson = await lineRes.json();
-      if (lineJson && lineJson.success !== false) lineInfo = lineJson;
-    }
   } catch (err) {
     console.warn(err);
     return;
@@ -102,8 +83,6 @@ async function mountCourseNotifyControls(hostEl) {
       : 'เปิดรับคอร์สนี้แล้ว — ยังต้องผูกบัญชี Google ที่หน้าตั้งค่า')
     : 'สมัครคอร์สอย่างเดียวขึ้นในปฏิทินบนเว็บแล้ว — กดปุ่มนี้ถ้าต้องการส่งเข้า Google Calendar ด้วย';
 
-  const lineConfigured = !!(lineInfo.configured && lineInfo.url);
-  const lineHref = lineConfigured ? lineInfo.url : '#';
   const settingsLabel = connected ? 'จัดการบัญชีปฏิทิน' : 'ไปตั้งค่าผูก Google';
 
   hostEl.innerHTML = `
@@ -112,14 +91,10 @@ async function mountCourseNotifyControls(hostEl) {
       <p class="pts-notify__hint">${escapeHtml(calHint)}</p>
       <div class="pts-notify__actions">
         <button type="button" class="pts-btn ${enabled ? 'pts-btn-primary' : 'pts-btn-outline'}" id="notify-cal-btn">${escapeHtml(calLabel)}</button>
-        <a class="pts-btn pts-btn-line${!lineConfigured ? ' is-disabled' : ''}" id="notify-line-btn"
-           href="${escapeHtml(lineHref)}"
-           target="_blank" rel="noopener noreferrer"
-           ${!lineConfigured ? 'aria-disabled="true"' : ''}>เชื่อม LINE OA</a>
       </div>
       <div class="pts-settings-shortcut" style="margin-top:12px;margin-bottom:0;">
         <p class="pts-settings-shortcut__text">
-          <strong>ผูกบัญชี Google</strong> — สวิตช์หลักอยู่ที่หน้าตั้งค่า กดทางลัดนี้เพื่อไปเชื่อมหรือจัดการ
+          <strong>ผูกบัญชี Google / LINE</strong> — ไปหน้าตั้งค่าเพื่อเชื่อมบัญชีหลัก
         </p>
         <a class="pts-btn pts-btn-outline" href="Settings.html#google-calendar">${escapeHtml(settingsLabel)}</a>
       </div>
@@ -190,17 +165,6 @@ async function mountCourseNotifyControls(hostEl) {
 
   document.getElementById('notify-cal-off-btn')?.addEventListener('click', (e) => {
     setCourseNotify(false, e.currentTarget);
-  });
-
-  document.getElementById('notify-line-btn')?.addEventListener('click', (e) => {
-    if (!lineConfigured) {
-      e.preventDefault();
-      const msg = msgEl();
-      if (msg) {
-        msg.textContent = 'ยังไม่ได้ตั้งค่าลิงก์ LINE OA บนเซิร์ฟเวอร์ (LINE_OA_ADD_FRIEND_URL)';
-        msg.className = 'pts-msg pts-msg--err';
-      }
-    }
   });
 }
 
