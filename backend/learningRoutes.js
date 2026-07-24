@@ -7,6 +7,22 @@ const { mapHeroSlidesImages } = require('./heroImages');
 function createLearningRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
 
+    /** LINE Official Account add-friend link (public; used on Course Detail). */
+    router.get('/line/oa', (req, res) => {
+        const url = String(
+            process.env.LINE_OA_ADD_FRIEND_URL
+            || process.env.LINE_OA_URL
+            || ''
+        ).trim();
+        const name = String(process.env.LINE_OA_NAME || 'PTS Learning').trim() || 'PTS Learning';
+        return res.json({
+            success: true,
+            configured: Boolean(url),
+            url: url || null,
+            name
+        });
+    });
+
     async function recalculateCourseProgress(pool, userId, courseId) {
         const result = await pool.request()
             .input('userId', sql.Int, userId)
