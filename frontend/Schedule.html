@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตารางเรียน | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724w">
+<link rel="stylesheet" href="site.css?v=20260724cal">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
@@ -31,15 +31,36 @@
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">My Schedule</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตารางเรียนของฉัน</h1>
-    <p class="text-on-surface-variant max-w-xl">คลาสที่กำลังจะถึงจากหลักสูตรที่คุณสมัครไว้เท่านั้น — คลาส Onsite ให้ใช้ QR จากอีเมลด้านล่าง</p>
-    <div id="gcal-bar" class="mt-4 flex flex-wrap items-center gap-2 hidden">
-      <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google Calendar</a>
-      <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ไปยังปฏิทิน</button>
-      <a class="pts-btn pts-btn-outline" href="Settings.html">ตั้งค่าปฏิทิน</a>
-      <span id="gcal-note" class="text-sm text-on-surface-variant"></span>
+    <p class="text-on-surface-variant max-w-xl">สมัครหลักสูตรแล้ว ตารางจะขึ้นในปฏิทินด้านล่างตามวันเรียน — คลาส Onsite ใช้ QR จากอีเมลได้</p>
+    <div id="gcal-shortcut" class="pts-settings-shortcut hidden">
+      <p class="pts-settings-shortcut__text" id="gcal-shortcut-text">
+        <strong>ผูก Google Calendar</strong> — เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน
+      </p>
+      <a class="pts-btn pts-btn-primary" href="Settings.html#google-calendar">ไปตั้งค่าปฏิทิน</a>
     </div>
   </section>
   <div id="schedule-attendance-qr" class="pts-attend-qr-panel"></div>
+
+  <div id="schedule-calendar" class="pts-cal" hidden>
+    <div class="pts-cal__head">
+      <h2 class="pts-cal__title" id="cal-month-label">—</h2>
+      <div class="pts-cal__nav">
+        <button type="button" class="pts-btn pts-btn-outline" id="cal-prev" aria-label="เดือนก่อน">‹</button>
+        <button type="button" class="pts-btn pts-btn-ghost" id="cal-today">วันนี้</button>
+        <button type="button" class="pts-btn pts-btn-outline" id="cal-next" aria-label="เดือนถัดไป">›</button>
+      </div>
+    </div>
+    <div class="pts-cal__weekdays" aria-hidden="true">
+      <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
+    </div>
+    <div class="pts-cal__grid" id="cal-grid"></div>
+    <p class="pts-cal__legend" id="cal-legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อดูรายการ</p>
+  </div>
+
+  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+    <h2 class="font-bold text-lg m-0" id="schedule-list-title">รายการตาราง</h2>
+    <button type="button" class="pts-btn pts-btn-ghost hidden" id="cal-clear-filter">แสดงทั้งหมด</button>
+  </div>
   <div id="schedule-list" class="space-y-3">
     <div class="pts-empty">กำลังโหลดตาราง...</div>
   </div>
@@ -47,103 +68,169 @@
 <div class="pts-footer-note">© PTS Learning</div>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const pad = (n) => String(n).padStart(2, '0');
 
-async function loadGcalBar() {
-  const bar = document.getElementById('gcal-bar');
-  const connectBtn = document.getElementById('gcal-connect');
-  const syncBtn = document.getElementById('gcal-sync');
-  const note = document.getElementById('gcal-note');
+function toDateKey(value) {
+  if (value == null) return '';
+  if (typeof value === 'string') {
+    const m = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+function parseScheduleDate(value) {
+  if (value instanceof Date) return value;
+  if (typeof value === 'string') {
+    const m = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (m) {
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || 0));
+    }
+  }
+  return new Date(value);
+}
+
+let allSchedules = [];
+let viewYear = new Date().getFullYear();
+let viewMonth = new Date().getMonth(); // 0-11
+let selectedDayKey = null;
+
+async function loadGcalShortcut() {
+  const box = document.getElementById('gcal-shortcut');
+  const text = document.getElementById('gcal-shortcut-text');
   try {
-    const st = await fetch('/api/google/status', { credentials: 'include' }).then(r => r.json());
+    const st = await fetch('/api/google/status', { credentials: 'include' }).then((r) => r.json());
     if (!st.configured) {
-      bar.classList.add('hidden');
+      box.classList.add('hidden');
       return;
     }
-    bar.classList.remove('hidden');
+    box.classList.remove('hidden');
     if (st.connected) {
-      connectBtn.classList.add('hidden');
-      syncBtn.classList.remove('hidden');
-      note.textContent = st.google_email
-        ? `เชื่อมแล้ว: ${st.google_email} (แจ้งเตือนล่วงหน้า 1 วัน / 1 ชม.)`
-        : 'เชื่อม Google Calendar แล้ว — กดซิงค์เพื่ออัปเดต';
+      text.innerHTML = st.google_email
+        ? `<strong>เชื่อม Google แล้ว:</strong> ${escapeHtml(st.google_email)} — จัดการการแจ้งเตือนหรือซิงค์ได้ที่หน้าตั้งค่า`
+        : '<strong>เชื่อม Google Calendar แล้ว</strong> — จัดการบัญชีหลักได้ที่หน้าตั้งค่า';
     } else {
-      connectBtn.classList.remove('hidden');
-      syncBtn.classList.add('hidden');
-      note.textContent = 'เชื่อมปฏิทินเพื่อรับการแจ้งเตือนก่อนวันเรียน';
+      text.innerHTML = '<strong>ผูก Google Calendar</strong> — เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน';
     }
   } catch (_) {
-    bar.classList.add('hidden');
+    box.classList.add('hidden');
   }
 }
 
-document.getElementById('gcal-sync').onclick = async () => {
-  const btn = document.getElementById('gcal-sync');
-  const note = document.getElementById('gcal-note');
-  btn.disabled = true;
-  btn.textContent = 'กำลังซิงค์...';
-  try {
-    const res = await fetch('/api/google/sync', { method: 'POST', credentials: 'include' });
-    const data = await res.json();
-    note.textContent = data.message || (res.ok ? 'ซิงค์แล้ว' : 'ซิงค์ไม่สำเร็จ');
-  } catch (e) {
-    note.textContent = e.message;
-  } finally {
-    btn.disabled = false;
-    btn.textContent = 'ซิงค์ไปยังปฏิทิน';
+function groupByDay(schedules) {
+  const map = new Map();
+  for (const s of schedules) {
+    const key = toDateKey(s.start_at);
+    if (!key) continue;
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(s);
   }
-};
+  return map;
+}
 
-document.getElementById('gcal-connect').onclick = async (e) => {
-  e.preventDefault();
-  const note = document.getElementById('gcal-note');
-  const btn = document.getElementById('gcal-connect');
-  btn.textContent = 'กำลังเปิด Google...';
-  try {
-    const res = await fetch('/api/google/oauth/start?redirect=0', {
-      credentials: 'include',
-      headers: { Accept: 'application/json' }
-    });
-    const data = await res.json();
-    if (!res.ok || !data.url) throw new Error(data.message || 'เริ่มเชื่อมต่อไม่สำเร็จ');
-    window.location.href = data.url;
-  } catch (err) {
-    note.textContent = err.message;
-    btn.textContent = 'เชื่อม Google Calendar';
-  }
-};
+function renderCalendar() {
+  const host = document.getElementById('schedule-calendar');
+  const grid = document.getElementById('cal-grid');
+  const label = document.getElementById('cal-month-label');
+  if (!host || !grid) return;
 
-async function load() {
-  const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
-  if (!me.loggedIn) return location.href = 'Login.html';
-  if (window.PtsAttendanceQr && me.user && me.user.email) {
-    window.PtsAttendanceQr.mount('#schedule-attendance-qr', {
-      email: me.user.email,
-      name: me.user.name || ''
-    });
+  host.hidden = false;
+  const byDay = groupByDay(allSchedules);
+  const monthDate = new Date(viewYear, viewMonth, 1);
+  label.textContent = monthDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+
+  // Monday-first grid
+  const firstDow = (monthDate.getDay() + 6) % 7; // 0=Mon
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const prevDays = new Date(viewYear, viewMonth, 0).getDate();
+  const todayKey = toDateKey(new Date());
+
+  const cells = [];
+  for (let i = 0; i < 42; i += 1) {
+    let y = viewYear;
+    let m = viewMonth;
+    let day;
+    let muted = false;
+    if (i < firstDow) {
+      day = prevDays - firstDow + i + 1;
+      m -= 1;
+      if (m < 0) { m = 11; y -= 1; }
+      muted = true;
+    } else if (i >= firstDow + daysInMonth) {
+      day = i - firstDow - daysInMonth + 1;
+      m += 1;
+      if (m > 11) { m = 0; y += 1; }
+      muted = true;
+    } else {
+      day = i - firstDow + 1;
+    }
+    const key = `${y}-${pad(m + 1)}-${pad(day)}`;
+    const events = byDay.get(key) || [];
+    const classes = ['pts-cal__day'];
+    if (muted) classes.push('pts-cal__day--muted');
+    if (key === todayKey) classes.push('pts-cal__day--today');
+    if (events.length) classes.push('pts-cal__day--has');
+    if (selectedDayKey === key) classes.push('pts-cal__day--selected');
+    const dots = events.slice(0, 3).map(() => '<span class="pts-cal__dot"></span>').join('');
+    const count = events.length > 1
+      ? `<span class="pts-cal__day-count">${events.length}</span>`
+      : '';
+    cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" ${events.length ? '' : 'disabled'}>
+      <span class="pts-cal__day-num">${day}</span>
+      <span class="pts-cal__dots">${dots}</span>
+      ${count}
+    </button>`);
   }
-  await loadGcalBar();
-  const res = await fetch('/api/my/schedules', { credentials: 'include' });
-  const data = await res.json();
+  grid.innerHTML = cells.join('');
+  grid.querySelectorAll('.pts-cal__day--has').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      selectedDayKey = btn.getAttribute('data-day');
+      renderCalendar();
+      renderList();
+    });
+  });
+}
+
+function renderList() {
   const el = document.getElementById('schedule-list');
-  if (!res.ok || !data.success) {
-    el.innerHTML = `<div class="pts-empty pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
-    return;
+  const title = document.getElementById('schedule-list-title');
+  const clearBtn = document.getElementById('cal-clear-filter');
+  let rows = allSchedules.slice();
+
+  if (selectedDayKey) {
+    rows = rows.filter((s) => toDateKey(s.start_at) === selectedDayKey);
+    const nice = selectedDayKey.replace(/-/g, '/');
+    title.textContent = `รายการวันที่ ${nice}`;
+    clearBtn.classList.remove('hidden');
+  } else {
+    title.textContent = 'รายการตาราง';
+    clearBtn.classList.add('hidden');
   }
-  if (!data.data.length) {
+
+  if (!allSchedules.length) {
     el.innerHTML = `<div class="pts-empty">
       <div class="pts-empty__icon"><span class="material-symbols-outlined">event_busy</span></div>
       <p class="font-semibold mb-1">ยังไม่มีตารางเรียน</p>
-      <p class="text-sm mb-4">เมื่อสมัครหลักสูตรที่มีตาราง จะแสดงที่นี่</p>
+      <p class="text-sm mb-4">เมื่อสมัครหลักสูตรที่มีตาราง จะแสดงในปฏิทินและรายการด้านล่าง</p>
       <a class="pts-btn pts-btn-primary" href="Courses.html">ดูหลักสูตร</a>
     </div>`;
+    document.getElementById('schedule-calendar').hidden = true;
     return;
   }
-  el.innerHTML = data.data.map(s => {
-    const d = new Date(s.start_at);
+
+  if (!rows.length) {
+    el.innerHTML = `<div class="pts-empty">ไม่มีตารางในวันที่เลือก</div>`;
+    return;
+  }
+
+  el.innerHTML = rows.map((s) => {
+    const d = parseScheduleDate(s.start_at);
     const month = d.toLocaleDateString('th-TH', { month: 'short' });
     const day = d.getDate();
     const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-    const end = new Date(s.end_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    const end = parseScheduleDate(s.end_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
     return `<article class="pts-row">
       <div class="flex items-start gap-4">
         <div class="pts-date-badge"><span class="text-xs font-bold uppercase">${escapeHtml(month)}</span><strong>${day}</strong></div>
@@ -160,8 +247,72 @@ async function load() {
     </article>`;
   }).join('');
 }
-load().catch(err => {
-  document.getElementById('schedule-list').innerHTML = `<div class="pts-empty pts-msg--err">${escapeHtml(err.message)}</div>`;
+
+document.getElementById('cal-prev').onclick = () => {
+  viewMonth -= 1;
+  if (viewMonth < 0) { viewMonth = 11; viewYear -= 1; }
+  renderCalendar();
+};
+document.getElementById('cal-next').onclick = () => {
+  viewMonth += 1;
+  if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
+  renderCalendar();
+};
+document.getElementById('cal-today').onclick = () => {
+  const now = new Date();
+  viewYear = now.getFullYear();
+  viewMonth = now.getMonth();
+  selectedDayKey = toDateKey(now);
+  renderCalendar();
+  renderList();
+};
+document.getElementById('cal-clear-filter').onclick = () => {
+  selectedDayKey = null;
+  renderCalendar();
+  renderList();
+};
+
+async function load() {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html';
+  if (window.PtsAttendanceQr && me.user && me.user.email) {
+    window.PtsAttendanceQr.mount('#schedule-attendance-qr', {
+      email: me.user.email,
+      name: me.user.name || ''
+    });
+  }
+  await loadGcalShortcut();
+  const res = await fetch('/api/my/schedules', { credentials: 'include' });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    document.getElementById('schedule-list').innerHTML =
+      `<div class="pts-empty pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</div>`;
+    return;
+  }
+  allSchedules = Array.isArray(data.data) ? data.data : [];
+  if (allSchedules.length) {
+    const first = parseScheduleDate(allSchedules[0].start_at);
+    if (!Number.isNaN(first.getTime())) {
+      const now = new Date();
+      const hasThisMonth = allSchedules.some((s) => {
+        const d = parseScheduleDate(s.start_at);
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      });
+      if (hasThisMonth) {
+        viewYear = now.getFullYear();
+        viewMonth = now.getMonth();
+      } else {
+        viewYear = first.getFullYear();
+        viewMonth = first.getMonth();
+      }
+    }
+  }
+  renderCalendar();
+  renderList();
+}
+load().catch((err) => {
+  document.getElementById('schedule-list').innerHTML =
+    `<div class="pts-empty pts-msg--err">${escapeHtml(err.message)}</div>`;
 });
 </script>
 <!-- PTS-NAV-INLINE-BOOT -->

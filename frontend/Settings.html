@@ -60,7 +60,7 @@
     <p id="profile-msg" class="pts-msg"></p>
   </section>
 
-  <section class="pts-panel mb-5">
+  <section id="google-calendar" class="pts-panel mb-5 scroll-mt-24">
     <h2 class="font-bold text-lg mb-2">Google Calendar</h2>
     <p class="text-sm text-on-surface-variant mb-4">
       เชื่อมปฏิทิน Google เพื่อรับการแจ้งเตือนอัตโนมัติก่อนวันเรียนของหลักสูตรที่สมัครไว้
@@ -346,11 +346,15 @@ async function refreshGcalStatus() {
   if (gcal === 'connected') {
     msg.textContent = 'เชื่อมต่อ Google Calendar สำเร็จ และกำลังซิงค์ตารางเรียน';
     msg.className = 'pts-msg pts-msg--ok';
-    history.replaceState({}, '', 'Settings.html');
+    history.replaceState({}, '', 'Settings.html#google-calendar');
   } else if (gcal === 'error') {
     msg.textContent = params.get('msg') || 'เชื่อมต่อไม่สำเร็จ';
     msg.className = 'pts-msg pts-msg--err';
-    history.replaceState({}, '', 'Settings.html');
+    history.replaceState({}, '', 'Settings.html#google-calendar');
+  }
+
+  if (location.hash === '#google-calendar') {
+    document.getElementById('google-calendar')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
 

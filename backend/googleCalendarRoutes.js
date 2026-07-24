@@ -17,6 +17,22 @@ const {
 } = require('./googleCalendar');
 const { completeGoogleLogin } = require('./googleAuthRoutes');
 
+/** Allow only same-origin relative paths (e.g. /CourseDetail.html?courseId=1). */
+function sanitizeReturnTo(raw) {
+    const s = String(raw == null ? '' : raw).trim();
+    if (!s || !s.startsWith('/') || s.startsWith('//') || s.includes('://')) return null;
+    if (s.length > 500) return null;
+    return s;
+}
+
+function redirectWithGcal(res, basePath, status, extraQuery) {
+    const dest = basePath || '/Settings.html';
+    const params = new URLSearchParams({ gcal: status });
+    if (extraQuery && extraQuery.msg) params.set('msg', String(extraQuery.msg).slice(0, 300));
+    const join = dest.includes('?') ? '&' : '?';
+    return res.redirect(`${dest}${join}${params.toString()}`);
+}
+
 function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
 
@@ -77,6 +93,9 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         req.session.googleOAuthState = state;
         req.session.googleOAuthUserId = user.user_id;
         req.session.googleOAuthPurpose = 'calendar';
+        const returnTo = sanitizeReturnTo(req.query.returnTo);
+        if (returnTo) req.session.googleOAuthReturnTo = returnTo;
+        else delete req.session.googleOAuthReturnTo;
 
         const finish = (url) => {
             const wantJson = req.query.redirect === '0'
@@ -107,7 +126,7 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         const { code, state, error } = req.query;
         const purpose = req.session && req.session.googleOAuthPurpose;
         const loginUrl = '/Login.html?google=';
-        const settingsUrl = '/Settings.html?gcal=';
+        const returnTo = sanitizeReturnTo(req.session && req.session.googleOAuthReturnTo) || '/Settings.html';
 
         // —— โหมดเข้าสู่ระบบด้วย Gmail ——
         if (purpose === 'login') {
@@ -125,7 +144,8 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         }
 
         if (error) {
-            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent(String(error))}`);
+            delete req.session.googleOAuthReturnTo;
+            return redirectWithGcal(res, returnTo, 'error', { msg: String(error) });
         }
 
         const sessionState = req.session && req.session.googleOAuthState;
@@ -133,12 +153,16 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
             || (req.session && req.session.user && req.session.user.user_id);
 
         if (!code || !userId) {
-            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent('การยืนยัน Google ไม่สำเร็จ (ไม่มี code หรือยังไม่ล็อกอิน) กรุณาเข้าสู่ระบบแล้วลองใหม่')}`);
+            delete req.session.googleOAuthReturnTo;
+            return redirectWithGcal(res, returnTo, 'error', {
+                msg: 'การยืนยัน Google ไม่สำเร็จ (ไม่มี code หรือยังไม่ล็อกอิน) กรุณาเข้าสู่ระบบแล้วลองใหม่'
+            });
         }
 
         // ถ้า state ใน session หาย (เบราว์เซอร์บางตัว) ยังให้ผ่านได้เมื่อมี user login อยู่
         if (sessionState && state && sessionState !== state) {
-            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent('การยืนยัน Google ไม่สำเร็จ (state ไม่ตรง) กรุณาลองใหม่')}`);
+            delete req.session.googleOAuthReturnTo;
+            return redirectWithGcal(res, returnTo, 'error', { msg: 'การยืนยัน Google ไม่สำเร็จ (state ไม่ตรง) กรุณาลองใหม่' });
         }
 
         try {
@@ -150,15 +174,17 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
             delete req.session.googleOAuthState;
             delete req.session.googleOAuthUserId;
             delete req.session.googleOAuthPurpose;
+            delete req.session.googleOAuthReturnTo;
 
             syncUserSchedules(pool, userId, { notify: true }).catch((err) => {
                 console.warn('[google-calendar] post-connect sync:', err.message);
             });
 
-            return res.redirect(`${settingsUrl}connected`);
+            return redirectWithGcal(res, returnTo, 'connected');
         } catch (err) {
             console.error('[google-calendar] callback:', err.message);
-            return res.redirect(`${settingsUrl}error&msg=${encodeURIComponent(err.message)}`);
+            delete req.session.googleOAuthReturnTo;
+            return redirectWithGcal(res, returnTo, 'error', { msg: err.message });
         }
     });
 

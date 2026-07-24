@@ -5,39 +5,33 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายละเอียดหลักสูตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724al">
+<link rel="stylesheet" href="site.css?v=20260724cal">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 <style>
-  .pts-gcal-row {
-    display: flex; flex-wrap: wrap; align-items: center; gap: 12px;
-    margin: 0 0 20px; padding: 14px 16px;
+  .pts-notify {
+    margin: 0 0 22px;
+    padding: 16px;
     border: 1px solid var(--pts-border, rgba(151,66,88,.14));
     border-radius: 16px;
     background: color-mix(in srgb, var(--pts-primary, #974258) 5%, transparent);
   }
-  .pts-gcal-row__text { flex: 1 1 180px; min-width: 0; }
-  .pts-gcal-row__title { font-size: 14px; font-weight: 700; color: var(--pts-text, #1c1520); margin: 0 0 2px; }
-  .pts-gcal-row__hint { font-size: 12px; color: var(--pts-muted, #5c4f55); margin: 0; }
-  .pts-modal {
-    position: fixed; inset: 0; z-index: 100000;
-    display: none; align-items: center; justify-content: center;
-    padding: 20px; background: rgba(18,10,18,.45);
+  .pts-notify__title { font-size: 14px; font-weight: 700; margin: 0 0 4px; color: var(--pts-text, #1c1520); }
+  .pts-notify__hint { font-size: 12px; color: var(--pts-muted, #5c4f55); margin: 0 0 12px; line-height: 1.45; }
+  .pts-notify__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .pts-notify__actions .pts-btn { flex: 1 1 160px; justify-content: center; text-align: center; }
+  .pts-btn-line {
+    background: #06C755;
+    color: #fff;
+    border-color: #06C755;
   }
-  .pts-modal.is-open { display: flex; }
-  .pts-modal__panel {
-    width: min(420px, 100%);
-    background: var(--pts-surface, #fff);
-    color: var(--pts-text, #1c1520);
-    border-radius: 18px;
-    border: 1px solid var(--pts-border, rgba(151,66,88,.16));
-    box-shadow: 0 20px 50px rgba(28,21,32,.2);
-    padding: 22px 20px 18px;
+  .pts-btn-line:hover { filter: brightness(0.95); color: #fff; }
+  .pts-btn-line.is-disabled,
+  .pts-btn-line[aria-disabled="true"] {
+    opacity: 0.55;
+    pointer-events: none;
   }
-  .pts-modal__title { font-size: 18px; font-weight: 700; margin: 0 0 8px; }
-  .pts-modal__body { font-size: 14px; color: var(--pts-muted, #5c4f55); margin: 0 0 18px; line-height: 1.5; }
-  .pts-modal__actions { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
 </style>
 </head>
 <body class="pts-body">
@@ -59,54 +53,36 @@
   <div id="content"><div class="pts-empty">กำลังโหลด...</div></div>
 </main>
 
-<div id="gcal-connect-modal" class="pts-modal" role="dialog" aria-modal="true" aria-labelledby="gcal-modal-title" hidden>
-  <div class="pts-modal__panel">
-    <h3 id="gcal-modal-title" class="pts-modal__title">เชื่อมต่อ Google Calendar ก่อน</h3>
-    <p class="pts-modal__body">
-      เพื่อเพิ่มตารางเรียนคอร์สนี้ลงปฏิทินและรับการแจ้งเตือน
-      ให้เชื่อมต่อบัญชี Google Calendar ที่หน้าตั้งค่าก่อน
-    </p>
-    <div class="pts-modal__actions">
-      <button type="button" class="pts-btn pts-btn-outline" id="gcal-modal-close">ปิด</button>
-      <a class="pts-btn pts-btn-primary" href="Settings.html">ไปเชื่อมต่อปฏิทิน</a>
-    </div>
-  </div>
-</div>
-
 <div class="pts-footer-note">© PTS Learning</div>
 <script>
 const courseId = new URLSearchParams(location.search).get('courseId');
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-function openGcalModal() {
-  const modal = document.getElementById('gcal-connect-modal');
-  if (!modal) return;
-  modal.hidden = false;
-  modal.classList.add('is-open');
-}
-function closeGcalModal() {
-  const modal = document.getElementById('gcal-connect-modal');
-  if (!modal) return;
-  modal.classList.remove('is-open');
-  modal.hidden = true;
-}
-
-async function mountCourseGcalControls(hostEl) {
+async function mountCourseNotifyControls(hostEl) {
   if (!hostEl || !courseId) return;
+
   let pref;
+  let lineInfo = { configured: false, url: null, name: 'PTS Learning' };
   try {
-    const res = await fetch(`/api/google/course-notify?courseId=${encodeURIComponent(courseId)}`, {
-      credentials: 'include',
-      cache: 'no-store'
-    });
-    pref = await res.json();
-    if (!res.ok || pref.success === false) throw new Error(pref.message || 'โหลดสถานะปฏิทินไม่สำเร็จ');
+    const [prefRes, lineRes] = await Promise.all([
+      fetch(`/api/google/course-notify?courseId=${encodeURIComponent(courseId)}`, {
+        credentials: 'include',
+        cache: 'no-store'
+      }),
+      fetch('/api/line/oa', { credentials: 'include', cache: 'no-store' })
+    ]);
+    pref = await prefRes.json();
+    if (!prefRes.ok || pref.success === false) throw new Error(pref.message || 'โหลดสถานะไม่สำเร็จ');
+    if (lineRes.ok) {
+      const lineJson = await lineRes.json();
+      if (lineJson && lineJson.success !== false) lineInfo = lineJson;
+    }
   } catch (err) {
     console.warn(err);
     return;
   }
 
-  // Case 3: not enrolled → hide all calendar UI
+  // Not enrolled → no notify UI
   if (!pref.enrolled) {
     hostEl.innerHTML = '';
     hostEl.hidden = true;
@@ -114,9 +90,52 @@ async function mountCourseGcalControls(hostEl) {
   }
 
   hostEl.hidden = false;
+  const enabled = !!pref.enabled;
+  const connected = !!pref.connected;
+  const upcoming = Number(pref.upcoming_count || 0);
+  const calLabel = enabled ? 'เปิดรับปฏิทินแล้ว' : 'รับแจ้งเตือนเข้าปฏิทิน';
+  const calHint = enabled
+    ? (connected
+      ? (upcoming > 0
+        ? `ส่งตาราง ${upcoming} รายการเข้า Google Calendar แล้ว`
+        : 'เปิดรับแล้ว — ตารางรอบใหม่จะถูกส่งเข้าปฏิทินอัตโนมัติ')
+      : 'เปิดรับคอร์สนี้แล้ว — ยังต้องผูกบัญชี Google ที่หน้าตั้งค่า')
+    : 'สมัครคอร์สอย่างเดียวขึ้นในปฏิทินบนเว็บแล้ว — กดปุ่มนี้ถ้าต้องการส่งเข้า Google Calendar ด้วย';
 
-  async function setCourseNotify(enabled, btn) {
-    const msg = document.getElementById('gcal-course-msg');
+  const lineConfigured = !!(lineInfo.configured && lineInfo.url);
+  const lineHref = lineConfigured ? lineInfo.url : '#';
+  const settingsLabel = connected ? 'จัดการบัญชีปฏิทิน' : 'ไปตั้งค่าผูก Google';
+
+  hostEl.innerHTML = `
+    <div class="pts-notify">
+      <p class="pts-notify__title">รับการแจ้งเตือน</p>
+      <p class="pts-notify__hint">${escapeHtml(calHint)}</p>
+      <div class="pts-notify__actions">
+        <button type="button" class="pts-btn ${enabled ? 'pts-btn-primary' : 'pts-btn-outline'}" id="notify-cal-btn">${escapeHtml(calLabel)}</button>
+        <a class="pts-btn pts-btn-line${!lineConfigured ? ' is-disabled' : ''}" id="notify-line-btn"
+           href="${escapeHtml(lineHref)}"
+           target="_blank" rel="noopener noreferrer"
+           ${!lineConfigured ? 'aria-disabled="true"' : ''}>เชื่อม LINE OA</a>
+      </div>
+      <div class="pts-settings-shortcut" style="margin-top:12px;margin-bottom:0;">
+        <p class="pts-settings-shortcut__text">
+          <strong>ผูกบัญชี Google</strong> — สวิตช์หลักอยู่ที่หน้าตั้งค่า กดทางลัดนี้เพื่อไปเชื่อมหรือจัดการ
+        </p>
+        <a class="pts-btn pts-btn-outline" href="Settings.html#google-calendar">${escapeHtml(settingsLabel)}</a>
+      </div>
+      ${enabled ? `<div class="pts-notify__actions" style="margin-top:8px;">
+        <button type="button" class="pts-btn pts-btn-ghost" id="notify-cal-off-btn">ปิดการแจ้งเตือนปฏิทิน</button>
+        <a class="pts-btn pts-btn-ghost" href="Schedule.html">ดูปฏิทินบนเว็บ</a>
+      </div>` : `<div class="pts-notify__actions" style="margin-top:8px;">
+        <a class="pts-btn pts-btn-ghost" href="Schedule.html">ดูปฏิทินบนเว็บ</a>
+      </div>`}
+      <p id="notify-msg" class="pts-msg" style="margin:10px 0 0;"></p>
+    </div>`;
+
+  const msgEl = () => document.getElementById('notify-msg');
+
+  async function setCourseNotify(on, btn) {
+    const msg = msgEl();
     if (btn) btn.disabled = true;
     if (msg) { msg.textContent = 'กำลังอัปเดต...'; msg.className = 'pts-msg'; }
     try {
@@ -124,27 +143,26 @@ async function mountCourseGcalControls(hostEl) {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId: Number(courseId), enabled: !!enabled })
+        body: JSON.stringify({ courseId: Number(courseId), enabled: !!on })
       });
       const data = await res.json();
       if (!res.ok || data.success === false) throw new Error(data.message || 'อัปเดตไม่สำเร็จ');
+
       const synced = Number(data.synced || 0);
-      if (msg) {
-        msg.textContent = data.message || (enabled
-          ? (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'บันทึกแล้ว แต่ยังไม่มีตารางให้ส่ง')
-          : 'นำคอร์สนี้ออกจากปฏิทินแล้ว');
-        msg.className = (enabled && (data.pending || synced === 0))
-          ? 'pts-msg pts-msg--err'
-          : 'pts-msg pts-msg--ok';
-      }
-      await mountCourseGcalControls(hostEl);
-      // keep last message visible after remount
-      const msg2 = document.getElementById('gcal-course-msg');
-      if (msg2 && data.message) {
-        msg2.textContent = data.message;
-        msg2.className = (enabled && (data.pending || synced === 0))
-          ? 'pts-msg pts-msg--err'
-          : 'pts-msg pts-msg--ok';
+      await mountCourseNotifyControls(hostEl);
+      const msg2 = msgEl();
+      if (msg2) {
+        if (on && data.connected === false) {
+          msg2.textContent = 'บันทึกคอร์สนี้แล้ว — กด “ไปตั้งค่าผูก Google” เพื่อเชื่อมบัญชีหลัก แล้วระบบจะส่งตารางเข้าปฏิทิน';
+          msg2.className = 'pts-msg pts-msg--ok';
+        } else {
+          msg2.textContent = data.message || (on
+            ? (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'เปิดรับแล้ว')
+            : 'ปิดการแจ้งเตือนปฏิทินแล้ว');
+          msg2.className = (on && (data.pending || synced === 0))
+            ? 'pts-msg pts-msg--err'
+            : 'pts-msg pts-msg--ok';
+        }
       }
     } catch (e) {
       if (msg) {
@@ -155,65 +173,34 @@ async function mountCourseGcalControls(hostEl) {
     }
   }
 
-  // Case 2: enrolled but Google not connected → button opens Settings popup
-  if (!pref.connected) {
-    hostEl.innerHTML = `
-      <div class="pts-gcal-row">
-        <div class="pts-gcal-row__text">
-          <p class="pts-gcal-row__title">เพิ่มคอร์สนี้ลงปฏิทิน</p>
-          <p class="pts-gcal-row__hint">ถ้าต้องการรับแจ้งเตือนตารางเรียนคอร์สนี้ กดปุ่มด้านขวา (ไม่ต้องการก็ไม่ต้องกด)</p>
-        </div>
-        <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">เพิ่มลงปฏิทิน</button>
-      </div>
-      <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
-    document.getElementById('gcal-add-btn')?.addEventListener('click', () => openGcalModal());
-    return;
-  }
+  document.getElementById('notify-cal-btn')?.addEventListener('click', (e) => {
+    const btn = e.currentTarget;
+    if (enabled) {
+      const msg = msgEl();
+      if (msg) {
+        msg.textContent = connected
+          ? 'เปิดรับอยู่แล้ว — ตรวจใน Google Calendar หรือกดปิดด้านล่าง'
+          : 'รอบันทึกคอร์สนี้แล้ว — ไปตั้งค่าเพื่อผูก Google ก่อน';
+        msg.className = 'pts-msg pts-msg--ok';
+      }
+      return;
+    }
+    setCourseNotify(true, btn);
+  });
 
-  const upcoming = Number(pref.upcoming_count || 0);
-  const scheduleCount = Number(pref.schedule_count || 0);
+  document.getElementById('notify-cal-off-btn')?.addEventListener('click', (e) => {
+    setCourseNotify(false, e.currentTarget);
+  });
 
-  // Case 1a: already opted in
-  if (pref.enabled) {
-    hostEl.innerHTML = `
-      <div class="pts-gcal-row">
-        <div class="pts-gcal-row__text">
-          <p class="pts-gcal-row__title">คอร์สนี้เปิดรับเข้าปฏิทินแล้ว</p>
-          <p class="pts-gcal-row__hint">${upcoming > 0
-            ? `มีตารางที่จะเรียน ${upcoming} รายการ — ตรวจใน Google Calendar / หน้า <a class="text-primary underline" href="Schedule.html">ตารางเรียน</a>`
-            : (scheduleCount > 0
-              ? 'มีตารางในระบบแต่หมดเวลาแล้ว — ให้แอดมินสร้างตารางรอบใหม่'
-              : 'ยังไม่มีตารางเรียนของคอร์สนี้ — ให้แอดมินสร้างที่ Admin → ตารางเรียน')}</p>
-        </div>
-        <button type="button" class="pts-btn pts-btn-outline" id="gcal-resync-btn">ซิงค์อีกครั้ง</button>
-        <button type="button" class="pts-btn pts-btn-ghost" id="gcal-remove-btn">นำออกจากปฏิทิน</button>
-      </div>
-      <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
-    document.getElementById('gcal-resync-btn')?.addEventListener('click', (e) => {
-      setCourseNotify(true, e.currentTarget);
-    });
-    document.getElementById('gcal-remove-btn')?.addEventListener('click', (e) => {
-      setCourseNotify(false, e.currentTarget);
-    });
-    return;
-  }
-
-  // Case 1b: connected, not added yet → opt-in button only
-  hostEl.innerHTML = `
-    <div class="pts-gcal-row">
-      <div class="pts-gcal-row__text">
-        <p class="pts-gcal-row__title">เพิ่มคอร์สนี้ลงปฏิทิน</p>
-        <p class="pts-gcal-row__hint">${upcoming > 0
-          ? `มีตาราง ${upcoming} รายการพร้อมส่งเข้าปฏิทิน — กดปุ่มถ้าต้องการ (ไม่ต้องการก็ไม่ต้องกด)`
-          : (scheduleCount > 0
-            ? 'คอร์สนี้มีตารางแต่หมดเวลาแล้ว — กดปุ่มได้เพื่อเปิดรับรอบใหม่ในภายหลัง'
-            : 'ถ้าต้องการรับแจ้งเตือน กดปุ่มได้ (ตอนนี้คอร์สยังไม่มีตาราง — แอดมินต้องสร้างก่อนถึงจะเห็นในปฏิทิน)')}</p>
-      </div>
-      <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">เพิ่มลงปฏิทิน</button>
-    </div>
-    <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
-  document.getElementById('gcal-add-btn')?.addEventListener('click', (e) => {
-    setCourseNotify(true, e.currentTarget);
+  document.getElementById('notify-line-btn')?.addEventListener('click', (e) => {
+    if (!lineConfigured) {
+      e.preventDefault();
+      const msg = msgEl();
+      if (msg) {
+        msg.textContent = 'ยังไม่ได้ตั้งค่าลิงก์ LINE OA บนเซิร์ฟเวอร์ (LINE_OA_ADD_FRIEND_URL)';
+        msg.className = 'pts-msg pts-msg--err';
+      }
+    }
   });
 }
 
@@ -254,7 +241,7 @@ async function mountCourseGcalControls(hostEl) {
             ${loggedIn ? `<button id="fav" class="pts-btn pts-btn-ghost">${Number(c.is_favorited)?'นำออกจากโปรด':'บันทึกโปรด'}</button>` : ''}
             <a class="pts-btn pts-btn-outline" href="Courses.html">กลับรายการหลักสูตร</a>
           </div>
-          <div id="course-gcal-host" hidden></div>
+          <div id="course-notify-host" hidden></div>
           <h2 class="font-bold mb-3">บทเรียนในหลักสูตร</h2>
           <ul class="space-y-2">${(data.lessons||[]).length
             ? (data.lessons||[]).map((l,i)=>`<li class="text-sm border border-[var(--pts-border)] rounded-xl px-3 py-2.5 flex justify-between gap-3"><span>${i+1}. ${escapeHtml(l.title)}</span><span class="text-on-surface-variant shrink-0">${l.duration_minutes||0} นาที</span></li>`).join('')
@@ -276,13 +263,8 @@ async function mountCourseGcalControls(hostEl) {
     location.reload();
   });
 
-  document.getElementById('gcal-modal-close')?.addEventListener('click', closeGcalModal);
-  document.getElementById('gcal-connect-modal')?.addEventListener('click', (e) => {
-    if (e.target.id === 'gcal-connect-modal') closeGcalModal();
-  });
-
   if (loggedIn && enrolled) {
-    await mountCourseGcalControls(document.getElementById('course-gcal-host'));
+    await mountCourseNotifyControls(document.getElementById('course-notify-host'));
   }
 })();
 </script>
