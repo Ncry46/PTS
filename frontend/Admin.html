@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724ag">
+<link rel="stylesheet" href="site.css?v=20260724ah">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -475,90 +475,7 @@ async function renderBanners() {
       <div class="pts-card p-5">
         <h2 class="font-bold text-lg mb-1">เพิ่มแบนเนอร์หน้าแรก</h2>
         <p class="text-sm text-on-surface-variant mb-4">
-          อัปโหลดรูปแล้วจะโชว์บนหน้าแรกทันที · สร้างรูป <strong>1920 × 1080 px</strong> (16:9) — ระบบโชว์รูปเต็ม ไม่ตัดขอบ
-          · เก็บไฟล์ที่ <code>uploads/hero/</code>
-        </p>
-        <input type="file" id="banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
-        <button type="button" class="pts-btn pts-btn-primary" id="banner-upload">เพิ่มแบนเนอร์</button>
-        <p id="banner-msg" class="text-xs mt-2 text-on-surface-variant"></p>
-      </div>
-
-      <div class="pts-card p-5">
-        <h3 class="font-bold mb-3">รายการแบนเนอร์ (${list.length})</h3>
-        ${list.length ? `
-          <div class="grid gap-3 md:grid-cols-2">
-            ${list.map((b, i) => `
-              <article class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] overflow-hidden bg-[var(--pts-surface,#fff)]">
-                <div class="bg-[#0b1020]">
-                  <img src="${escapeHtml(b.url)}" alt="" class="w-full h-40 object-cover"
-                    onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
-                </div>
-                <div class="p-3 flex items-center justify-between gap-2">
-                  <div class="min-w-0">
-                    <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}</p>
-                    <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
-                  </div>
-                  <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
-                </div>
-              </article>
-            `).join('')}
-          </div>
-        ` : `<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปด้านบนได้เลย</div>`}
-        <p class="text-xs text-on-surface-variant mt-3">
-          <a class="text-primary font-bold" href="Home.html" target="_blank" rel="noopener">เปิดหน้าแรก</a> เพื่อดูสไลด์แบนเนอร์
-        </p>
-      </div>
-    </div>`;
-
-  document.getElementById('banner-upload')?.addEventListener('click', async () => {
-    const input = document.getElementById('banner-file');
-    const msg = document.getElementById('banner-msg');
-    const file = input?.files?.[0];
-    if (!file) {
-      if (msg) msg.textContent = 'กรุณาเลือกไฟล์ก่อน';
-      return;
-    }
-    if (msg) msg.textContent = 'กำลังอัปโหลด...';
-    try {
-      const fd = new FormData();
-      fd.append('image', file);
-      const res = await fetch('/api/admin/home-banners/upload', {
-        method: 'POST',
-        credentials: 'include',
-        body: fd
-      });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
-      if (msg) msg.textContent = 'เพิ่มแบนเนอร์แล้ว ✓';
-      renderBanners();
-    } catch (e) {
-      if (msg) msg.textContent = e.message || 'อัปโหลดไม่สำเร็จ';
-    }
-  });
-
-  document.querySelectorAll('.banner-del').forEach((btn) => {
-    btn.onclick = async () => {
-      const filename = btn.dataset.file;
-      if (!filename) return;
-      if (!confirm(`ลบแบนเนอร์ ${filename} ?`)) return;
-      try {
-        await api(`/api/admin/home-banners/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-        renderBanners();
-      } catch (e) {
-        alert(e.message || 'ลบไม่สำเร็จ');
-      }
-    };
-  });
-}
-
-async function renderUsers() {
-  const { data } = await api('/api/admin/users');
-  document.getElementById('panel').innerHTML = `
-    <div class="space-y-2">${data.map(u => `
-      <div class="border rounded-xl p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div>
-          <p class="font-bold">${escapeHtml(u.full_name || '-')}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(u.email)} · ${escapeHtml(u.Role || 'student')} · Flag ${escapeHtml(u.FlagUse || '-')}</p>
+          อัปโหลดรูปแล้วจะโชว์บนหน้าแรกทันที · สร้างรูป <strong>1920 × 1000 px</strong> (กว้างเต็มจอ · สูงพอดีจอใต้แถบนำทาง) — ไม่ตัดขอบ · ${escapeHtml(u.Role || 'student')} · Flag ${escapeHtml(u.FlagUse || '-')}</p>
         </div>
         <div class="flex gap-2">
           <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="student">student</button>

@@ -957,13 +957,12 @@ input.pts-pw-input::-ms-clear {
   .pts-nav__hide-mobile { display: none !important; }
 }
 
-/* —— Home banner carousel: 16:9 full-width, show full image (no crop) —— */
+/* —— Home banner carousel: full viewport height, show full image —— */
 .pts-home-banner {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  height: auto;
-  min-height: 0;
+  height: calc(100dvh - var(--pts-nav-h, 68px));
+  min-height: 280px;
   max-height: none;
   margin: 0;
   padding: 0;
@@ -972,6 +971,12 @@ input.pts-pw-input::-ms-clear {
   isolation: isolate;
   user-select: none;
   touch-action: pan-y;
+}
+@media (max-width: 639px) {
+  .pts-home-banner {
+    height: calc(100dvh - var(--pts-nav-h, 68px));
+    min-height: 220px;
+  }
 }
 
 .pts-home-banner__track {
