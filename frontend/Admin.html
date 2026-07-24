@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260722f">
+<link rel="stylesheet" href="site.css?v=20260724v">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -14,29 +14,8 @@
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
   body{font-family:'IBM Plex Sans Thai',sans-serif}
-  .admin-shell {
-    display: grid;
-    gap: 16px;
-  }
-  @media (min-width: 900px) {
-    .admin-shell {
-      grid-template-columns: 220px minmax(0, 1fr);
-      align-items: start;
-      gap: 20px;
-    }
-  }
-  .admin-side {
-    background: var(--pts-surface, #fff);
-    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
-    border-radius: 20px;
-    padding: 14px 12px;
-    box-shadow: var(--pts-shadow-sm, 0 8px 24px rgba(28,21,32,.05));
-  }
-  @media (min-width: 900px) {
-    .admin-side { position: sticky; top: calc(var(--pts-nav-h, 68px) + 16px); }
-  }
   .admin-side__label {
-    margin: 0 8px 10px;
+    margin: 0 10px 12px;
     font-size: 11px;
     font-weight: 700;
     letter-spacing: .08em;
@@ -45,29 +24,26 @@
   }
   .admin-side__nav {
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
+    flex-wrap: nowrap;
     gap: 6px;
   }
-  @media (min-width: 900px) {
-    .admin-side__nav { flex-direction: column; flex-wrap: nowrap; }
-  }
   .tab-btn {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
     border: 1px solid var(--pts-border, rgba(151,66,88,.18));
     background: var(--pts-surface, #fff);
     color: var(--pts-text, #1c1520);
-    border-radius: 999px;
-    padding: 10px 14px;
+    border-radius: 12px;
+    padding: 11px 14px;
     font-size: 14px;
     font-weight: 700;
     text-align: left;
     cursor: pointer;
   }
-  @media (min-width: 900px) {
-    .tab-btn { width: 100%; border-radius: 12px; }
-  }
   .tab-btn.active { background: #974258; color: #fff; border-color: #974258; }
   html[data-theme="dark"] .tab-btn.active { background: #b85a70; border-color: #b85a70; }
-  .admin-main { min-width: 0; }
 
   /* —— Banner admin (easy add + color picker) —— */
   .ban-wrap { display:grid; gap:18px; }
@@ -269,7 +245,7 @@
     </div>
   </nav>
 </div>
-<main class="pts-main pts-main--wide admin-shell">
+<main class="pts-main pts-main--user admin-shell">
   <aside class="admin-side" aria-label="เมนูแอดมิน">
     <p class="admin-side__label">จัดการระบบ</p>
     <nav class="admin-side__nav">
