@@ -115,13 +115,40 @@ async function mountCourseGcalControls(hostEl) {
 
   hostEl.hidden = false;
 
-  // Case 2: enrolled but Google not connected
+  async function setCourseNotify(enabled, btn) {
+    const msg = document.getElementById('gcal-course-msg');
+    if (btn) btn.disabled = true;
+    if (msg) { msg.textContent = 'กำลังอัปเดต...'; msg.className = 'pts-msg'; }
+    try {
+      const res = await fetch('/api/google/course-notify', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId: Number(courseId), enabled: !!enabled })
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) throw new Error(data.message || 'อัปเดตไม่สำเร็จ');
+      if (msg) {
+        msg.textContent = data.message || (enabled ? 'เพิ่มคอร์สนี้ลงปฏิทินแล้ว' : 'นำคอร์สนี้ออกจากปฏิทินแล้ว');
+        msg.className = 'pts-msg pts-msg--ok';
+      }
+      await mountCourseGcalControls(hostEl);
+    } catch (e) {
+      if (msg) {
+        msg.textContent = e.message || 'อัปเดตไม่สำเร็จ';
+        msg.className = 'pts-msg pts-msg--err';
+      }
+      if (btn) btn.disabled = false;
+    }
+  }
+
+  // Case 2: enrolled but Google not connected → button opens Settings popup
   if (!pref.connected) {
     hostEl.innerHTML = `
       <div class="pts-gcal-row">
         <div class="pts-gcal-row__text">
-          <p class="pts-gcal-row__title">เพิ่มตารางเรียนลงปฏิทิน</p>
-          <p class="pts-gcal-row__hint">เชื่อม Google Calendar เพื่อรับการแจ้งเตือนก่อนวันเรียน</p>
+          <p class="pts-gcal-row__title">เพิ่มคอร์สนี้ลงปฏิทิน</p>
+          <p class="pts-gcal-row__hint">ถ้าต้องการรับแจ้งเตือนตารางเรียนคอร์สนี้ กดปุ่มด้านขวา (ไม่ต้องการก็ไม่ต้องกด)</p>
         </div>
         <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">เพิ่มลงปฏิทิน</button>
       </div>
@@ -130,57 +157,35 @@ async function mountCourseGcalControls(hostEl) {
     return;
   }
 
-  // Case 1: enrolled + connected → per-course notify toggle
-  const checked = pref.enabled ? 'checked' : '';
+  // Case 1a: already added to calendar
+  if (pref.enabled) {
+    hostEl.innerHTML = `
+      <div class="pts-gcal-row">
+        <div class="pts-gcal-row__text">
+          <p class="pts-gcal-row__title">คอร์สนี้ถูกเพิ่มลงปฏิทินแล้ว</p>
+          <p class="pts-gcal-row__hint">จะได้รับแจ้งเตือนก่อนวันเรียนตามตารางของคอร์สนี้</p>
+        </div>
+        <button type="button" class="pts-btn pts-btn-ghost" id="gcal-remove-btn">นำออกจากปฏิทิน</button>
+      </div>
+      <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
+    document.getElementById('gcal-remove-btn')?.addEventListener('click', (e) => {
+      setCourseNotify(false, e.currentTarget);
+    });
+    return;
+  }
+
+  // Case 1b: connected, not added yet → opt-in button only
   hostEl.innerHTML = `
     <div class="pts-gcal-row">
       <div class="pts-gcal-row__text">
-        <p class="pts-gcal-row__title">รับการแจ้งเตือนคอร์สนี้</p>
-        <p class="pts-gcal-row__hint">${pref.enabled
-          ? 'เปิดอยู่ — ตารางเรียนคอร์สนี้จะถูกซิงค์เข้า Google Calendar'
-          : 'ปิดอยู่เป็นค่าเริ่มต้น — กดเปิดเมื่อต้องการรับแจ้งเตือนคอร์สนี้'}</p>
+        <p class="pts-gcal-row__title">เพิ่มคอร์สนี้ลงปฏิทิน</p>
+        <p class="pts-gcal-row__hint">ถ้าต้องการรับแจ้งเตือนตารางเรียนคอร์สนี้ กดปุ่มด้านขวา (ไม่ต้องการก็ไม่ต้องกด)</p>
       </div>
-      <label class="pts-switch" title="รับการแจ้งเตือนคอร์สนี้">
-        <input type="checkbox" id="gcal-course-toggle" ${checked}>
-        <span class="pts-switch__slider"></span>
-      </label>
+      <button type="button" class="pts-btn pts-btn-outline" id="gcal-add-btn">เพิ่มลงปฏิทิน</button>
     </div>
     <p id="gcal-course-msg" class="pts-msg" style="margin-top:-8px;margin-bottom:16px;"></p>`;
-
-  const toggle = document.getElementById('gcal-course-toggle');
-  const msg = document.getElementById('gcal-course-msg');
-  const hint = hostEl.querySelector('.pts-gcal-row__hint');
-  toggle?.addEventListener('change', async () => {
-    const enabled = !!toggle.checked;
-    toggle.disabled = true;
-    if (msg) { msg.textContent = 'กำลังอัปเดต...'; msg.className = 'pts-msg'; }
-    try {
-      const res = await fetch('/api/google/course-notify', {
-        method: 'POST',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ courseId: Number(courseId), enabled })
-      });
-      const data = await res.json();
-      if (!res.ok || data.success === false) throw new Error(data.message || 'อัปเดตไม่สำเร็จ');
-      if (hint) {
-        hint.textContent = enabled
-          ? 'เปิดอยู่ — ตารางเรียนคอร์สนี้จะถูกซิงค์เข้า Google Calendar'
-          : 'ปิดอยู่ — จะไม่ส่งตารางคอร์สนี้เข้าปฏิทิน';
-      }
-      if (msg) {
-        msg.textContent = data.message || (enabled ? 'เปิดการแจ้งเตือนแล้ว' : 'ปิดการแจ้งเตือนแล้ว');
-        msg.className = 'pts-msg pts-msg--ok';
-      }
-    } catch (e) {
-      toggle.checked = !enabled;
-      if (msg) {
-        msg.textContent = e.message || 'อัปเดตไม่สำเร็จ';
-        msg.className = 'pts-msg pts-msg--err';
-      }
-    } finally {
-      toggle.disabled = false;
-    }
+  document.getElementById('gcal-add-btn')?.addEventListener('click', (e) => {
+    setCourseNotify(true, e.currentTarget);
   });
 }
 
