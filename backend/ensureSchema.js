@@ -113,7 +113,7 @@ async function ensureLearningSchema(pool) {
             CONSTRAINT DF_gcal_reminders_enabled DEFAULT (1)`,
         `IF COL_LENGTH('dbo.course_enrollments', 'gcal_notify') IS NULL
          ALTER TABLE dbo.course_enrollments ADD gcal_notify BIT NOT NULL
-            CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (1)`,
+            CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (0)`,
         `IF COL_LENGTH('dbo.courses_main', 'price') IS NULL
          ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
         `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL
@@ -162,12 +162,48 @@ async function ensureLearningSchema(pool) {
         await pool.request().query(statement);
     }
 
+    await migrateGcalNotifyOptIn(pool);
     await seedHeroSlidesIfEmpty(pool);
     await ensureHeroSlideThemes(pool);
     try {
         const { repairHeroSlideImages } = require('./heroImages');
         await repairHeroSlideImages(pool);
     } catch (_) { /* ignore */ }
+}
+
+async function migrateGcalNotifyOptIn(pool) {
+    // Per-course calendar notify is opt-in (default OFF). Migrate older DEFAULT(1) installs once.
+    try {
+        const col = await pool.request().query(`
+            SELECT COL_LENGTH('dbo.course_enrollments', 'gcal_notify') AS col_len
+        `);
+        if (!col.recordset[0] || col.recordset[0].col_len == null) return;
+
+        const def = await pool.request().query(`
+            SELECT definition
+            FROM sys.default_constraints
+            WHERE parent_object_id = OBJECT_ID('dbo.course_enrollments')
+              AND name = 'DF_course_enrollments_gcal_notify'
+        `);
+        const definition = String((def.recordset[0] && def.recordset[0].definition) || '');
+        if (definition.includes('(0)')) return;
+
+        if (definition) {
+            await pool.request().query(`
+                ALTER TABLE dbo.course_enrollments DROP CONSTRAINT DF_course_enrollments_gcal_notify
+            `);
+        }
+        await pool.request().query(`
+            ALTER TABLE dbo.course_enrollments
+            ADD CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (0) FOR gcal_notify
+        `);
+        // Reset so users must opt in themselves
+        await pool.request().query(`
+            UPDATE dbo.course_enrollments SET gcal_notify = 0 WHERE gcal_notify = 1
+        `);
+    } catch (err) {
+        console.warn('[schema] migrateGcalNotifyOptIn:', err.message);
+    }
 }
 
 async function ensureHeroSlideThemes(pool) {
