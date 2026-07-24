@@ -6,7 +6,7 @@
 <title>ใบประกาศนียบัตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <link rel="stylesheet" href="site.css?v=20260723t">
-<link rel="stylesheet" href="certificates.css?v=20260724i">
+<link rel="stylesheet" href="certificates.css?v=20260724j">
 <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&amp;family=Sarabun:wght@300;400;600;700&amp;family=IBM+Plex+Sans+Thai:wght@400;500;600;700&amp;family=Sora:wght@600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
@@ -196,11 +196,11 @@ async function embedCertImages(rootEl) {
   await Promise.all(imgs.map(async (img) => {
     const isStamp = /stamp/i.test(img.className) || /stamp/i.test(img.alt || '');
     const candidates = [
+      isStamp ? PA_STAMP_FALLBACK : PA_LOGO_FALLBACK,
+      isStamp ? PA_STAMP : PA_LOGO,
       img.getAttribute('src'),
       img.currentSrc,
-      img.src,
-      isStamp ? PA_STAMP : PA_LOGO,
-      isStamp ? PA_STAMP_FALLBACK : PA_LOGO_FALLBACK
+      img.src
     ].filter(Boolean);
     let dataUrl = '';
     for (const src of candidates) {
@@ -224,7 +224,6 @@ async function printCertificateOnly() {
   const cert = root && root.querySelector('.pts-cert');
   if (!cert) return;
 
-  // Build a same-page print sheet (no iframe / no about:blank) with embedded images
   let sheet = document.getElementById('cert-print-sheet');
   if (!sheet) {
     sheet = document.createElement('div');
@@ -233,14 +232,33 @@ async function printCertificateOnly() {
     document.body.appendChild(sheet);
   }
 
+  // Prefer assets paths first (always in repo); uploads may be missing on some hosts
   const clone = cert.cloneNode(true);
   clone.removeAttribute('style');
-  clone.style.cssText = 'width:297mm;height:210mm;max-width:none;margin:0;box-shadow:none;transform:none;padding:6mm;';
+  clone.style.cssText = [
+    'width:297mm',
+    'height:210mm',
+    'max-width:none',
+    'margin:0',
+    'box-shadow:none',
+    'transform:none',
+    'padding:6mm',
+    'background:#fff',
+    'position:relative',
+    'display:block'
+  ].join(';');
+
+  // Force known image URLs before embedding
+  clone.querySelectorAll('img').forEach((img) => {
+    const isStamp = /stamp/i.test(img.className) || /stamp/i.test(img.alt || '');
+    img.setAttribute('src', isStamp ? PA_STAMP_FALLBACK : PA_LOGO_FALLBACK);
+  });
   await embedCertImages(clone);
+
   sheet.innerHTML = '';
   sheet.appendChild(clone);
-
   document.body.classList.add('cert-printing');
+
   const restore = () => {
     document.body.classList.remove('cert-printing');
     window.removeEventListener('afterprint', restore);
@@ -248,13 +266,22 @@ async function printCertificateOnly() {
     fitCertPreview(root);
   };
   window.addEventListener('afterprint', restore);
-  // Let browser paint embedded images before print dialog
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      window.print();
-      setTimeout(restore, 2500);
+
+  // Wait for data-URL images to decode, then print
+  const imgs = Array.from(sheet.querySelectorAll('img'));
+  await Promise.all(imgs.map((img) => {
+    if (img.complete && img.naturalWidth) return Promise.resolve();
+    return new Promise((resolve) => {
+      img.onload = () => resolve();
+      img.onerror = () => resolve();
+      setTimeout(resolve, 800);
     });
-  });
+  }));
+
+  setTimeout(() => {
+    window.print();
+    setTimeout(restore, 3000);
+  }, 150);
 }
 
 function modeTag(mode) {
