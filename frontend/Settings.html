@@ -96,7 +96,9 @@
     </div>
     <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-3 hidden">
       ผู้ดูแลระบบต้องตั้งค่า <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> ในไฟล์
-      <code>.env</code> หรือ <code>backend/google.local.js</code> (ดูตัวอย่างที่ <code>backend/google.local.example.js</code>)
+      <code>.env</code> หรือรัน <code>node backend/write-google-local.js &lt;CLIENT_ID&gt; &lt;CLIENT_SECRET&gt;</code>
+      แล้วรีสตาร์ทเซิร์ฟเวอร์ (ดูตัวอย่างที่ <code>backend/google.local.example.js</code>)
+      <span id="gcal-diagnose-line" class="block mt-1"></span>
     </p>
   </section>
 
@@ -267,9 +269,25 @@ async function refreshGcalStatus() {
       return;
     }
     if (!st.configured) {
-      statusText.textContent = 'ยังไม่มี Client ID/Secret ที่อ่านได้ — ใช้คำสั่ง node backend/write-google-local.js แล้วรีสตาร์ทเซิร์ฟเวอร์'
-        + (st.hasLocalFile ? ' (พบไฟล์ google.local.js แต่ค่าว่างหรือ encoding พัง)' : '');
+      statusText.textContent = 'ยังไม่มี Client ID/Secret ที่อ่านได้ — ตั้งค่า Google OAuth แล้วรีสตาร์ทเซิร์ฟเวอร์';
       hint.classList.remove('hidden');
+      const diagEl = document.getElementById('gcal-diagnose-line');
+      try {
+        const dr = await fetch('/api/google/diagnose', { credentials: 'include' });
+        const diag = await dr.json();
+        const bits = [];
+        if (diag.hasLocalFile) bits.push('พบ google.local.js');
+        else bits.push('ไม่พบ google.local.js');
+        if (diag.fileEncodingGuess && diag.fileEncodingGuess.startsWith('utf16')) {
+          bits.push('ไฟล์เป็น UTF-16 (พัง) — รัน write-google-local.js เพื่อซ่อม');
+        }
+        if (diag.envHasClientId) bits.push('.env มี CLIENT_ID');
+        else bits.push('.env ยังว่าง');
+        if (diag.redirectUri) bits.push('redirect: ' + diag.redirectUri);
+        if (diagEl) diagEl.textContent = 'ตรวจพบ: ' + bits.join(' · ');
+      } catch (_) {
+        if (diagEl) diagEl.textContent = '';
+      }
       return;
     }
     hint.classList.add('hidden');
