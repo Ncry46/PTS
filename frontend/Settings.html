@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตั้งค่าบัญชี | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260725settings-layout">
+<link rel="stylesheet" href="site.css?v=20260725settings-slim">
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
@@ -26,7 +26,6 @@
   }
   @media (min-width: 900px) {
     .set-grid-2 { grid-template-columns: 1fr 1.15fr; gap: 28px; }
-    .set-mid { grid-template-columns: 1fr 1fr; }
   }
   .set-title {
     font-size: 1.05rem;
@@ -98,25 +97,6 @@
     border-color: rgba(151,66,88,.45);
     background: #fff;
   }
-  .set-row {
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(151,66,88,.08);
-  }
-  .set-row:last-child { border-bottom: 0; }
-  .set-row__label { font-size: 14px; font-weight: 600; color: #1c1520; }
-  .set-row__hint { font-size: 12px; color: #5c4f55; margin-top: 2px; }
-  .set-check {
-    width: 22px; height: 22px; border-radius: 999px;
-    border: 2px solid rgba(151,66,88,.35);
-    display: inline-flex; align-items: center; justify-content: center;
-    color: transparent; flex-shrink: 0; cursor: pointer; background: #fff;
-  }
-  .set-check.is-on {
-    background: #974258; border-color: #974258; color: #fff;
-  }
-  .set-check .material-symbols-outlined { font-size: 16px; }
   .set-conn {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px;
@@ -173,7 +153,7 @@
     <section class="pts-page-hero" style="margin-bottom:18px;">
       <span class="pts-chip mb-3">Account</span>
       <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตั้งค่าบัญชี</h1>
-      <p class="text-on-surface-variant">จัดการโปรไฟล์ การแจ้งเตือน และการเชื่อมต่อของคุณ</p>
+      <p class="text-on-surface-variant">จัดการโปรไฟล์และความปลอดภัย รวมถึงการเชื่อมต่อของคุณ</p>
     </section>
 
     <!-- Top: Profile + Account -->
@@ -236,109 +216,76 @@
       </div>
     </section>
 
-    <!-- Middle: Notifications + Language/Connections -->
-    <div class="set-grid-2 set-mid" style="margin-top:18px;">
-      <section class="set-card">
-        <h2 class="set-title">การแจ้งเตือน</h2>
-        <p class="set-sub">เลือกช่องทางที่ต้องการรับข่าวสารจาก PTS</p>
-        <div id="notify-prefs">
-          <div class="set-row" data-pref="line_oa">
-            <div><div class="set-row__label">LINE OA</div><div class="set-row__hint">ข่าวสารจากเพจอย่างเป็นทางการ</div></div>
-            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
-          </div>
-          <div class="set-row" data-pref="email">
-            <div><div class="set-row__label">ประกาศทางอีเมล</div><div class="set-row__hint">อัปเดตหลักสูตรและข่าวสาร</div></div>
-            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
-          </div>
-          <div class="set-row" data-pref="class_reminder">
-            <div><div class="set-row__label">เตือนคลาสเรียน</div><div class="set-row__hint">แจ้งก่อนวันเรียน</div></div>
-            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
-          </div>
-          <div class="set-row" data-pref="new_course">
-            <div><div class="set-row__label">หลักสูตรใหม่</div><div class="set-row__hint">เมื่อมีคอร์สเปิดรับสมัคร</div></div>
-            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
-          </div>
-          <div class="set-row" data-pref="certificate">
-            <div><div class="set-row__label">ใบประกาศ</div><div class="set-row__hint">เมื่อได้รับใบประกาศ</div></div>
-            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
-          </div>
-          <div class="set-row" data-pref="community">
-            <div><div class="set-row__label">กิจกรรมคอมมูนิตี้</div><div class="set-row__hint">โพสต์และการตอบกลับ</div></div>
-            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
-          </div>
-        </div>
-      </section>
+    <!-- Middle: Language + Connections -->
+    <section class="set-card" id="connections" style="margin-top:18px;">
+      <h2 class="set-title">ภาษาและการเชื่อมต่อ</h2>
+      <p class="set-sub">ภาษา</p>
+      <div class="set-radio" role="radiogroup" aria-label="ภาษา">
+        <label><input type="radio" name="lang" value="th" checked> ไทย</label>
+        <label><input type="radio" name="lang" value="en"> English</label>
+      </div>
 
-      <section class="set-card" id="connections">
-        <h2 class="set-title">ภาษาและการเชื่อมต่อ</h2>
-        <p class="set-sub">ภาษา</p>
-        <div class="set-radio" role="radiogroup" aria-label="ภาษา">
-          <label><input type="radio" name="lang" value="th" checked> ไทย</label>
-          <label><input type="radio" name="lang" value="en"> English</label>
-        </div>
+      <p class="set-sub" style="margin-bottom:10px;">การเชื่อมต่อ</p>
 
-        <p class="set-sub" style="margin-bottom:10px;">การเชื่อมต่อ</p>
+      <div class="set-conn" id="line-oa">
+        <div class="set-conn__icon set-conn__icon--line"><span class="material-symbols-outlined">chat</span></div>
+        <div class="set-conn__body">
+          <div class="set-conn__title">LINE OA</div>
+          <div class="set-conn__status" id="line-status-text">กำลังตรวจสอบ...</div>
+        </div>
+        <label class="pts-switch" title="เชื่อม LINE OA">
+          <input type="checkbox" id="line-toggle">
+          <span class="pts-switch__slider"></span>
+        </label>
+        <a id="line-connect" class="hidden" href="#" target="_blank" rel="noopener noreferrer"></a>
+      </div>
+      <p id="line-msg" class="pts-msg" style="margin-top:-2px;"></p>
 
-        <div class="set-conn" id="line-oa">
-          <div class="set-conn__icon set-conn__icon--line"><span class="material-symbols-outlined">chat</span></div>
-          <div class="set-conn__body">
-            <div class="set-conn__title">LINE OA</div>
-            <div class="set-conn__status" id="line-status-text">กำลังตรวจสอบ...</div>
-          </div>
-          <label class="pts-switch" title="เชื่อม LINE OA">
-            <input type="checkbox" id="line-toggle">
-            <span class="pts-switch__slider"></span>
-          </label>
-          <a id="line-connect" class="hidden" href="#" target="_blank" rel="noopener noreferrer"></a>
+      <div class="set-conn scroll-mt-24" id="google-calendar">
+        <div class="set-conn__icon"><span class="material-symbols-outlined">calendar_month</span></div>
+        <div class="set-conn__body">
+          <div class="set-conn__title">Google Calendar</div>
+          <div class="set-conn__status" id="gcal-status-text">กำลังตรวจสอบ...</div>
         </div>
-        <p id="line-msg" class="pts-msg" style="margin-top:-2px;"></p>
+        <label class="pts-switch" title="เชื่อม Google Calendar">
+          <input type="checkbox" id="gcal-toggle">
+          <span class="pts-switch__slider"></span>
+        </label>
+      </div>
 
-        <div class="set-conn scroll-mt-24" id="google-calendar">
-          <div class="set-conn__icon"><span class="material-symbols-outlined">calendar_month</span></div>
-          <div class="set-conn__body">
-            <div class="set-conn__title">Google Calendar</div>
-            <div class="set-conn__status" id="gcal-status-text">กำลังตรวจสอบ...</div>
-          </div>
-          <label class="pts-switch" title="เชื่อม Google Calendar">
-            <input type="checkbox" id="gcal-toggle">
-            <span class="pts-switch__slider"></span>
-          </label>
+      <div id="gcal-reminders-row" class="hidden items-center justify-between gap-3 rounded-2xl border border-[rgba(151,66,88,.14)] px-4 py-3 mt-2 mb-2">
+        <div>
+          <p class="font-semibold text-sm">การแจ้งเตือนก่อนวันเรียน</p>
+          <p class="text-xs text-on-surface-variant mt-0.5">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
         </div>
+        <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
+          <input type="checkbox" id="gcal-reminders-toggle">
+          <span class="pts-switch__slider"></span>
+        </label>
+      </div>
 
-        <div id="gcal-reminders-row" class="hidden items-center justify-between gap-3 rounded-2xl border border-[rgba(151,66,88,.14)] px-4 py-3 mt-2 mb-2">
-          <div>
-            <p class="font-semibold text-sm">การแจ้งเตือนก่อนวันเรียน</p>
-            <p class="text-xs text-on-surface-variant mt-0.5">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
-          </div>
-          <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
-            <input type="checkbox" id="gcal-reminders-toggle">
-            <span class="pts-switch__slider"></span>
-          </label>
-        </div>
-
-        <div class="set-actions">
-          <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google</a>
-          <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียน</button>
-          <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
-        </div>
-        <p id="gcal-msg" class="pts-msg"></p>
-        <div id="gcal-howto" class="hidden mt-2 text-sm text-on-surface-variant space-y-1">
-          <p class="font-semibold text-on-surface">วิธีใช้งาน</p>
-          <ol class="list-decimal pl-5 space-y-1">
-            <li>สมัครหลักสูตรที่ต้องการ</li>
-            <li>ให้แอดมินสร้างตารางที่ <a class="text-primary underline" href="Admin.html">Admin → ตารางเรียน</a></li>
-            <li>กดซิงค์ตารางเรียน แล้วเปิด Google Calendar</li>
-          </ol>
-        </div>
-        <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-2 hidden">
-          <span id="gcal-setup-user">ระบบยังไม่เปิดใช้ Google Calendar บนเซิร์ฟเวอร์นี้ — ติดต่อผู้ดูแลระบบ</span>
-          <span id="gcal-setup-admin" class="hidden">
-            ตั้งค่าที่เซิร์ฟเวอร์: <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> หรือ <code>google.local.js</code>
-          </span>
-          <span id="gcal-diagnose-line" class="block mt-1"></span>
-        </p>
-      </section>
-    </div>
+      <div class="set-actions">
+        <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google</a>
+        <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียน</button>
+        <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
+      </div>
+      <p id="gcal-msg" class="pts-msg"></p>
+      <div id="gcal-howto" class="hidden mt-2 text-sm text-on-surface-variant space-y-1">
+        <p class="font-semibold text-on-surface">วิธีใช้งาน</p>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>สมัครหลักสูตรที่ต้องการ</li>
+          <li>ให้แอดมินสร้างตารางที่ <a class="text-primary underline" href="Admin.html">Admin → ตารางเรียน</a></li>
+          <li>กดซิงค์ตารางเรียน แล้วเปิด Google Calendar</li>
+        </ol>
+      </div>
+      <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-2 hidden">
+        <span id="gcal-setup-user">ระบบยังไม่เปิดใช้ Google Calendar บนเซิร์ฟเวอร์นี้ — ติดต่อผู้ดูแลระบบ</span>
+        <span id="gcal-setup-admin" class="hidden">
+          ตั้งค่าที่เซิร์ฟเวอร์: <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> หรือ <code>google.local.js</code>
+        </span>
+        <span id="gcal-diagnose-line" class="block mt-1"></span>
+      </p>
+    </section>
 
     <!-- Bottom: Privacy -->
     <section class="set-card" style="margin-top:18px;">
@@ -364,7 +311,6 @@ let gcalBusy = false;
 let lineUrl = '';
 let lineConfigured = false;
 
-const NOTIFY_KEY = 'pts_notify_prefs_v1';
 const LANG_KEY = 'pts_lang_pref';
 
 function defaultAvatar(name) {
@@ -384,26 +330,6 @@ function syncProfileMeta() {
   document.getElementById('meta-phone').textContent = phone;
 }
 
-function loadNotifyPrefs() {
-  let prefs = {};
-  try { prefs = JSON.parse(localStorage.getItem(NOTIFY_KEY) || '{}') || {}; } catch (_) {}
-  document.querySelectorAll('#notify-prefs .set-row').forEach((row) => {
-    const key = row.dataset.pref;
-    const on = prefs[key] !== false; // default on
-    const btn = row.querySelector('.set-check');
-    btn.classList.toggle('is-on', on);
-    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-  });
-}
-
-function saveNotifyPrefs() {
-  const prefs = {};
-  document.querySelectorAll('#notify-prefs .set-row').forEach((row) => {
-    prefs[row.dataset.pref] = row.querySelector('.set-check').classList.contains('is-on');
-  });
-  localStorage.setItem(NOTIFY_KEY, JSON.stringify(prefs));
-}
-
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
@@ -421,7 +347,6 @@ function saveNotifyPrefs() {
   currentAvatarUrl = profile.data.Url || '';
   setAvatarPreview(currentAvatarUrl, profile.data.full_name);
   syncProfileMeta();
-  loadNotifyPrefs();
 
   const lang = localStorage.getItem(LANG_KEY) || 'th';
   document.querySelectorAll('input[name="lang"]').forEach((el) => {
@@ -439,14 +364,6 @@ document.getElementById('toggle-edit-profile').onclick = () => {
   else panel.setAttribute('hidden', '');
   document.getElementById('toggle-edit-profile').textContent = open ? 'ปิดการแก้ไข' : 'แก้ไขข้อมูลส่วนตัว';
 };
-
-document.querySelectorAll('#notify-prefs .set-check').forEach((btn) => {
-  btn.addEventListener('click', () => {
-    btn.classList.toggle('is-on');
-    btn.setAttribute('aria-pressed', btn.classList.contains('is-on') ? 'true' : 'false');
-    saveNotifyPrefs();
-  });
-});
 
 document.querySelectorAll('input[name="lang"]').forEach((el) => {
   el.addEventListener('change', () => {
