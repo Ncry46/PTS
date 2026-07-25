@@ -48,10 +48,26 @@
       .replace(/</g, '&lt;');
   }
 
+  function t(key, fallback) {
+    if (window.PTSLang && typeof window.PTSLang.t === 'function') {
+      return window.PTSLang.t(key, fallback);
+    }
+    return fallback != null ? fallback : key;
+  }
+
+  function langToggleHtml() {
+    const lang = (window.PTSLang && window.PTSLang.get()) || 'th';
+    return `
+      <div class="pts-lang-toggle" role="group" aria-label="${escapeAttr(t('nav.lang', 'ภาษา'))}">
+        <button type="button" class="pts-lang-toggle__btn${lang === 'th' ? ' is-active' : ''}" data-pts-lang="th">${t('nav.lang.th', 'ไทย')}</button>
+        <button type="button" class="pts-lang-toggle__btn${lang === 'en' ? ' is-active' : ''}" data-pts-lang="en">${t('nav.lang.en', 'EN')}</button>
+      </div>`;
+  }
+
   function themeToggleHtml() {
     return `
       <button type="button" class="pts-theme-toggle" data-pts-theme-toggle
-        aria-label="สลับโหมดมืด/สว่าง" title="สลับโหมดมืด/สว่าง">
+        aria-label="${escapeAttr(t('nav.themeToggle', 'สลับโหมดมืด/สว่าง'))}" title="${escapeAttr(t('nav.themeToggle', 'สลับโหมดมืด/สว่าง'))}">
         <svg class="pts-theme-icon--moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M21 14.3A9 9 0 1 1 9.7 3a7 7 0 1 0 11.3 11.3Z"
             stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -68,7 +84,9 @@
     const theme = ensureThemeApi();
     const btn = root.querySelector('[data-pts-theme-toggle]');
     if (!btn) return;
-    const label = theme.get() === 'dark' ? 'สลับเป็นโหมดสว่าง' : 'สลับเป็นโหมดมืด';
+    const label = theme.get() === 'dark'
+      ? t('nav.themeToLight', 'สลับเป็นโหมดสว่าง')
+      : t('nav.themeToDark', 'สลับเป็นโหมดมืด');
     btn.setAttribute('aria-label', label);
     btn.title = label;
     btn.onclick = (e) => {
@@ -76,6 +94,22 @@
       theme.toggle();
       syncThemeToggle(root);
     };
+  }
+
+  function syncLangToggle(root) {
+    root.querySelectorAll('[data-pts-lang]').forEach((btn) => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        const next = btn.getAttribute('data-pts-lang');
+        if (window.PTSLang && typeof window.PTSLang.set === 'function') {
+          window.PTSLang.set(next);
+        } else {
+          try { localStorage.setItem('pts_lang_pref', next); } catch (_) { /* ignore */ }
+          document.documentElement.setAttribute('lang', next);
+          document.documentElement.setAttribute('data-lang', next);
+        }
+      };
+    });
   }
 
   function ensureCriticalCss() {
@@ -165,6 +199,22 @@
         color:var(--pts-muted,#5c4f55); display:grid; place-items:center; cursor:pointer; text-decoration:none;
       }
       .pts-topnav__icon:hover { background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258); }
+      .pts-lang-toggle {
+        display:inline-flex; align-items:center; gap:2px; padding:3px;
+        border:1px solid var(--pts-border,rgba(151,66,88,.18)); border-radius:999px;
+        background:var(--pts-surface,#fff); flex-shrink:0;
+      }
+      .pts-lang-toggle__btn {
+        border:none; background:transparent; cursor:pointer; font:inherit;
+        font-size:12px; font-weight:700; color:var(--pts-muted,#5c4f55);
+        padding:6px 9px; border-radius:999px; line-height:1;
+      }
+      .pts-lang-toggle__btn.is-active {
+        background:var(--pts-primary,#974258); color:#fff;
+      }
+      .pts-lang-toggle__btn:hover:not(.is-active) {
+        background:var(--pts-nav-hover,#f6e6ea); color:var(--pts-primary,#974258);
+      }
       .pts-theme-toggle {
         width:40px; height:40px; border:1px solid var(--pts-border,rgba(151,66,88,.18)); border-radius:999px;
         background:var(--pts-surface,#fff); color:var(--pts-text,#1c1520);
@@ -290,14 +340,14 @@
   function burgerHtml() {
     return `
       <button type="button" class="pts-topnav__burger" data-pts-burger
-        aria-label="เปิดเมนู" aria-expanded="false" aria-controls="pts-mobile-nav">☰</button>`;
+        aria-label="${escapeAttr(t('nav.openMenu', 'เปิดเมนู'))}" aria-expanded="false" aria-controls="pts-mobile-nav">☰</button>`;
   }
 
   function coursesMegaHtml() {
     return `
       <div class="pts-topnav__mega-wrap">
         <button type="button" class="pts-topnav__mega-btn" aria-haspopup="true">
-          หลักสูตร <span aria-hidden="true">▾</span>
+          ${t('nav.courses', 'หลักสูตร')} <span aria-hidden="true">▾</span>
         </button>
         <div class="pts-topnav__mega" role="menu">
           <div class="pts-topnav__mega-panel">
@@ -305,25 +355,25 @@
               <span class="pts-topnav__mega-icon">On</span>
               <span>
                 <p class="pts-topnav__mega-title">Online</p>
-                <p class="pts-topnav__mega-desc">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา</p>
+                <p class="pts-topnav__mega-desc">${t('nav.mega.online', 'เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา')}</p>
               </span>
             </button>
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="onsite">
               <span class="pts-topnav__mega-icon pts-topnav__mega-icon--onsite">Os</span>
               <span>
                 <p class="pts-topnav__mega-title">Onsite</p>
-                <p class="pts-topnav__mega-desc">เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code</p>
+                <p class="pts-topnav__mega-desc">${t('nav.mega.onsite', 'เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code')}</p>
               </span>
             </button>
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="hybrid">
               <span class="pts-topnav__mega-icon pts-topnav__mega-icon--hybrid">Hy</span>
               <span>
                 <p class="pts-topnav__mega-title">Hybrid</p>
-                <p class="pts-topnav__mega-desc">เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว</p>
+                <p class="pts-topnav__mega-desc">${t('nav.mega.hybrid', 'เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว')}</p>
               </span>
             </button>
             <div class="pts-topnav__mega-foot">
-              <a href="Courses.html">ดูหลักสูตรทั้งหมด</a>
+              <a href="Courses.html">${t('nav.coursesAll', 'ดูหลักสูตรทั้งหมด')}</a>
             </div>
           </div>
         </div>
@@ -332,7 +382,7 @@
 
   function coursesMobileHtml() {
     return `
-      <a href="Courses.html">หลักสูตรทั้งหมด</a>
+      <a href="Courses.html">${t('nav.coursesAllShort', 'หลักสูตรทั้งหมด')}</a>
       <a href="Courses.html?filter=online">· Online</a>
       <a href="Courses.html?filter=onsite">· Onsite</a>
       <a href="Courses.html?filter=hybrid">· Hybrid</a>`;
@@ -340,26 +390,26 @@
 
   function profileMenuHtml(name, roleLabel, avatar, isAdmin) {
     const studentLinks = `
-          <a href="DashbordU.html" role="menuitem">แดชบอร์ด</a>
-          <a href="Certificates.html" role="menuitem">ใบประกาศ</a>
-          <a href="Payments.html" role="menuitem">ชำระเงิน</a>
-          <a href="Favorites.html" role="menuitem">รายการโปรด</a>
-          <a href="Schedule.html" role="menuitem">ตารางเรียน / QR Onsite</a>
-          <a href="Settings.html" role="menuitem">ตั้งค่า</a>`;
+          <a href="DashbordU.html" role="menuitem">${t('nav.dashboard', 'แดชบอร์ด')}</a>
+          <a href="Certificates.html" role="menuitem">${t('nav.certificates', 'ใบประกาศ')}</a>
+          <a href="Payments.html" role="menuitem">${t('nav.payments', 'ชำระเงิน')}</a>
+          <a href="Favorites.html" role="menuitem">${t('nav.favorites', 'รายการโปรด')}</a>
+          <a href="Schedule.html" role="menuitem">${t('nav.schedule', 'ตารางเรียน / QR Onsite')}</a>
+          <a href="Settings.html" role="menuitem">${t('nav.settings', 'ตั้งค่า')}</a>`;
 
     const adminLinks = `
-          <a href="Admin.html#lessons" role="menuitem">บทเรียน</a>
-          <a href="Admin.html#schedules" role="menuitem">ตารางเรียน</a>
-          <a href="Admin.html#banners" role="menuitem">แบนเนอร์</a>
-          <a href="Admin.html#users" role="menuitem">ผู้ใช้</a>
-          <a href="Admin.html#posts" role="menuitem">โพสต์</a>
-          <a href="Admin.html#payments" role="menuitem">ชำระเงิน</a>
-          <a href="Admin.html#mail" role="menuitem">อีเมล OTP</a>`;
+          <a href="Admin.html#lessons" role="menuitem">${t('nav.admin.lessons', 'บทเรียน')}</a>
+          <a href="Admin.html#schedules" role="menuitem">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
+          <a href="Admin.html#banners" role="menuitem">${t('nav.admin.banners', 'แบนเนอร์')}</a>
+          <a href="Admin.html#users" role="menuitem">${t('nav.admin.users', 'ผู้ใช้')}</a>
+          <a href="Admin.html#posts" role="menuitem">${t('nav.admin.posts', 'โพสต์')}</a>
+          <a href="Admin.html#payments" role="menuitem">${t('nav.admin.payments', 'ชำระเงิน')}</a>
+          <a href="Admin.html#mail" role="menuitem">${t('nav.admin.mail', 'อีเมล OTP')}</a>`;
 
     return `
       <div class="pts-topnav__user-wrap" data-pts-user-wrap>
         <button type="button" class="pts-topnav__user" data-pts-user
-          aria-label="เปิดเมนูบัญชี" aria-expanded="false" aria-haspopup="true" aria-controls="pts-user-menu">
+          aria-label="${escapeAttr(t('nav.openAccount', 'เปิดเมนูบัญชี'))}" aria-expanded="false" aria-haspopup="true" aria-controls="pts-user-menu">
           <span style="display:none;text-align:right;line-height:1.15" class="pts-topnav__user-meta">
             <span style="display:block;font-size:13px;font-weight:700">${name}</span>
             <span style="display:block;font-size:10px;font-weight:700;color:var(--pts-primary,#974258);text-transform:uppercase">${roleLabel}</span>
@@ -376,7 +426,7 @@
           </div>
           <nav class="pts-topnav__drop-nav">
             ${isAdmin ? adminLinks : studentLinks}
-            <button type="button" class="pts-topnav__drop-logout" role="menuitem" onclick="logout()">ออกจากระบบ</button>
+            <button type="button" class="pts-topnav__drop-logout" role="menuitem" onclick="logout()">${t('nav.logout', 'ออกจากระบบ')}</button>
           </nav>
         </div>
       </div>`;
@@ -388,7 +438,7 @@
     if (!burger || !mobile) return;
     mobile.classList.toggle('is-open', open);
     burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    burger.setAttribute('aria-label', open ? 'ปิดเมนู' : 'เปิดเมนู');
+    burger.setAttribute('aria-label', open ? t('nav.closeMenu', 'ปิดเมนู') : t('nav.openMenu', 'เปิดเมนู'));
   }
 
   function setProfileOpen(wrap, open) {
@@ -398,7 +448,7 @@
     wrap.classList.toggle('is-open', open);
     if (btn) {
       btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      btn.setAttribute('aria-label', open ? 'ปิดเมนูบัญชี' : 'เปิดเมนูบัญชี');
+      btn.setAttribute('aria-label', open ? t('nav.closeAccount', 'ปิดเมนูบัญชี') : t('nav.openAccount', 'เปิดเมนูบัญชี'));
     }
     if (drop) {
       if (open) drop.removeAttribute('hidden');
@@ -441,39 +491,41 @@
 
   function renderGuest(container) {
     container.innerHTML = `
-      <nav class="pts-topnav" aria-label="เมนูหลัก">
+      <nav class="pts-topnav" aria-label="${escapeAttr(t('nav.main', 'เมนูหลัก'))}">
         <div class="pts-topnav__inner">
           <div class="pts-topnav__start">
             ${burgerHtml()}
             ${brandHtml()}
           </div>
           <div class="pts-topnav__links">
-            <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
+            <a class="pts-topnav__link" href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
             ${coursesMegaHtml()}
-            <a class="pts-topnav__link" href="Community.html">คอมมูนิตี้</a>
+            <a class="pts-topnav__link" href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
           </div>
           <div class="pts-topnav__actions">
-            <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">เข้าสู่ระบบ</a>
-            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Register.html">สมัครสมาชิก</a>
+            <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Register.html">${t('nav.register', 'สมัครสมาชิก')}</a>
+            ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>
         </div>
         <div class="pts-topnav__mobile" id="pts-mobile-nav" data-pts-mobile>
-          <a href="Home.html">หน้าแรก</a>
+          <a href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
           ${coursesMobileHtml()}
-          <a href="Community.html">คอมมูนิตี้</a>
-          <a href="Login.html">เข้าสู่ระบบ</a>
-          <a href="Register.html" style="color:#974258;font-weight:700">สมัครสมาชิก</a>
+          <a href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
+          <a href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
+          <a href="Register.html" style="color:#974258;font-weight:700">${t('nav.register', 'สมัครสมาชิก')}</a>
         </div>
       </nav>`;
     bindToggles(container);
     syncThemeToggle(container);
+    syncLangToggle(container);
   }
 
   function renderLoggedIn(container, user) {
     const userRole = String(user.role || user.Role || '').toLowerCase();
     const isAdmin = userRole === 'admin';
-    const name = escapeAttr(user.name || 'ผู้ใช้');
+    const name = escapeAttr(user.name || t('common.user', 'ผู้ใช้'));
     const avatar = escapeAttr(
       user.Url ||
         `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || 'P')}&background=F8BBD0&color=880E4F&size=128`
@@ -481,31 +533,33 @@
     const roleLabel = isAdmin ? 'Admin' : 'Student';
 
     container.innerHTML = `
-      <nav class="pts-topnav" aria-label="เมนูหลัก">
+      <nav class="pts-topnav" aria-label="${escapeAttr(t('nav.main', 'เมนูหลัก'))}">
         <div class="pts-topnav__inner">
           <div class="pts-topnav__start">
             ${burgerHtml()}
             ${brandHtml()}
           </div>
           <div class="pts-topnav__links">
-            <a class="pts-topnav__link" href="Home.html">หน้าแรก</a>
+            <a class="pts-topnav__link" href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
             ${coursesMegaHtml()}
-            <a class="pts-topnav__link" href="Community.html">คอมมูนิตี้</a>
+            <a class="pts-topnav__link" href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
           </div>
           <div class="pts-topnav__actions">
-            <a href="Notifications.html" class="pts-topnav__icon" title="การแจ้งเตือน" aria-label="การแจ้งเตือน">🔔</a>
+            <a href="Notifications.html" class="pts-topnav__icon" title="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}" aria-label="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}">🔔</a>
             ${profileMenuHtml(name, roleLabel, avatar, isAdmin)}
+            ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>
         </div>
         <div class="pts-topnav__mobile" id="pts-mobile-nav" data-pts-mobile>
-          <a href="Home.html">หน้าแรก</a>
+          <a href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
           ${coursesMobileHtml()}
-          <a href="Community.html">คอมมูนิตี้</a>
+          <a href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
         </div>
       </nav>`;
     bindToggles(container);
     syncThemeToggle(container);
+    syncLangToggle(container);
   }
 
   async function checkUserAndRenderNavbar() {
@@ -575,6 +629,10 @@
   function boot() {
     checkUserAndRenderNavbar();
   }
+
+  document.addEventListener('pts-lang-change', () => {
+    checkUserAndRenderNavbar();
+  });
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);

@@ -3,17 +3,26 @@
  * ใส่ <aside id="user-sidebar"></aside> ในหน้า หรือเรียก PTSUserSidebar.mount(el)
  */
 (function () {
-  const LINKS = [
-    { href: 'DashbordU.html', label: 'แดชบอร์ด', match: /DashbordU\.html/i },
-    { href: 'MyCourses.html', label: 'หลักสูตรของฉัน', match: /MyCourses\.html/i },
-    { href: 'Certificates.html', label: 'ใบประกาศ', match: /Certificates\.html/i },
-    { href: 'Payments.html', label: 'ชำระเงิน', match: /Payments\.html/i },
-    { href: 'Favorites.html', label: 'รายการโปรด', match: /Favorites\.html/i },
-    { href: 'Schedule.html', label: 'ตารางเรียน', match: /Schedule\.html/i },
-    { href: 'Notifications.html', label: 'การแจ้งเตือน', match: /Notifications\.html/i },
-    { href: 'Settings.html', label: 'ตั้งค่า', match: /Settings\.html/i },
-    { href: 'Community.html', label: 'คอมมูนิตี้', match: /Community\.html/i }
-  ];
+  function t(key, fallback) {
+    if (window.PTSLang && typeof window.PTSLang.t === 'function') {
+      return window.PTSLang.t(key, fallback);
+    }
+    return fallback != null ? fallback : key;
+  }
+
+  function getLinks() {
+    return [
+      { href: 'DashbordU.html', labelKey: 'side.dashboard', label: 'แดชบอร์ด', match: /DashbordU\.html/i },
+      { href: 'MyCourses.html', labelKey: 'side.mycourses', label: 'หลักสูตรของฉัน', match: /MyCourses\.html/i },
+      { href: 'Certificates.html', labelKey: 'side.certificates', label: 'ใบประกาศ', match: /Certificates\.html/i },
+      { href: 'Payments.html', labelKey: 'side.payments', label: 'ชำระเงิน', match: /Payments\.html/i },
+      { href: 'Favorites.html', labelKey: 'side.favorites', label: 'รายการโปรด', match: /Favorites\.html/i },
+      { href: 'Schedule.html', labelKey: 'side.schedule', label: 'ตารางเรียน', match: /Schedule\.html/i },
+      { href: 'Notifications.html', labelKey: 'side.notifications', label: 'การแจ้งเตือน', match: /Notifications\.html/i },
+      { href: 'Settings.html', labelKey: 'side.settings', label: 'ตั้งค่า', match: /Settings\.html/i },
+      { href: 'Community.html', labelKey: 'side.community', label: 'คอมมูนิตี้', match: /Community\.html/i }
+    ];
+  }
 
   function currentFile() {
     const path = (location.pathname || '').split('/').pop() || '';
@@ -23,20 +32,20 @@
   function isActive(link) {
     const file = currentFile();
     if (link.match.test(file)) return true;
-    // แดชบอร์ดเป็นหน้าแรกของโซนผู้ใช้
     if (link.href === 'DashbordU.html' && (!file || file === '' || file === 'index.html')) return true;
     return false;
   }
 
   function renderHtml() {
-    const items = LINKS.map((link) => {
+    const items = getLinks().map((link) => {
       const active = isActive(link) ? ' is-active' : '';
-      return `<a class="user-side__link${active}" href="${link.href}">${link.label}</a>`;
+      const label = t(link.labelKey, link.label);
+      return `<a class="user-side__link${active}" href="${link.href}">${label}</a>`;
     }).join('');
 
     return `
-      <p class="user-side__label">เมนูของฉัน</p>
-      <nav class="user-side__nav" aria-label="เมนูผู้ใช้">
+      <p class="user-side__label">${t('side.label', 'เมนูของฉัน')}</p>
+      <nav class="user-side__nav" aria-label="${t('side.aria', 'เมนูผู้ใช้')}">
         ${items}
       </nav>`;
   }
@@ -48,7 +57,7 @@
     const aside = document.createElement('aside');
     aside.id = 'user-sidebar';
     aside.className = 'user-side';
-    aside.setAttribute('aria-label', 'เมนูผู้ใช้');
+    aside.setAttribute('aria-label', t('side.aria', 'เมนูผู้ใช้'));
 
     const content = document.createElement('div');
     content.className = 'user-main';
@@ -72,10 +81,13 @@
     }
     if (!aside) return;
     aside.classList.add('user-side');
+    aside.setAttribute('aria-label', t('side.aria', 'เมนูผู้ใช้'));
     aside.innerHTML = renderHtml();
   }
 
-  window.PTSUserSidebar = { mount, LINKS, renderHtml };
+  window.PTSUserSidebar = { mount, get LINKS() { return getLinks(); }, renderHtml };
+
+  document.addEventListener('pts-lang-change', () => mount());
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => mount());

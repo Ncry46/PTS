@@ -5,6 +5,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>เข้าสู่ระบบ | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260723q">
 <link rel="stylesheet" href="auth-campus.css?v=20260723q">
 <link rel="stylesheet" href="login.css?v=20260723q">
@@ -91,13 +93,13 @@
 
       <header>
         <p class="pts-login__eyebrow">Welcome back</p>
-        <h2 class="pts-login__title">เข้าสู่ระบบ</h2>
-        <p class="pts-login__sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
+        <h2 class="pts-login__title" data-i18n="page.login.title">เข้าสู่ระบบ</h2>
+        <p class="pts-login__sub" data-i18n="page.login.sub">ยินดีต้อนรับกลับสู่ Personal Assistant Academy</p>
       </header>
 
       <form class="pts-login__form" id="login-form">
         <div class="pts-login__field">
-          <label for="email">อีเมล</label>
+          <label for="email" data-i18n="auth.email">อีเมล</label>
           <div class="pts-login__control pts-pw-wrap">
             <span class="material-symbols-outlined pts-login__ico">mail</span>
             <input class="pts-login__input" id="email" name="email" placeholder="example@email.com" type="email" required autocomplete="email">
@@ -106,8 +108,8 @@
 
         <div class="pts-login__field">
           <div class="pts-login__field-row">
-            <label for="password">รหัสผ่าน</label>
-            <button type="button" id="forgot-password-btn" class="pts-login__link">ลืมรหัสผ่าน?</button>
+            <label for="password" data-i18n="auth.password">รหัสผ่าน</label>
+            <button type="button" id="forgot-password-btn" class="pts-login__link" data-i18n="auth.forgot">ลืมรหัสผ่าน?</button>
           </div>
           <div class="pts-login__control pts-pw-wrap">
             <span class="material-symbols-outlined pts-login__ico">lock</span>
@@ -120,29 +122,29 @@
 
         <label class="pts-login__remember" for="remember">
           <input id="remember" type="checkbox">
-          <span>จำการเข้าสู่ระบบ</span>
+          <span data-i18n="auth.remember">จำการเข้าสู่ระบบ</span>
         </label>
 
         <button class="pts-login__submit" type="submit" id="submit-btn">
-          เข้าสู่ระบบ
+          <span data-i18n="auth.loginBtn">เข้าสู่ระบบ</span>
           <span class="material-symbols-outlined pts-login__submit-ico">login</span>
         </button>
         <p id="login-msg" class="pts-login__msg hidden"></p>
       </form>
 
-      <div class="pts-login__divider">หรือ</div>
+      <div class="pts-login__divider" data-i18n="auth.or">หรือ</div>
 
-      <button type="button" class="pts-login__google" id="google-login-btn" aria-label="เข้าสู่ระบบด้วย Gmail">
+      <button type="button" class="pts-login__google" id="google-login-btn" aria-label="เข้าสู่ระบบด้วย Gmail" data-i18n-aria-label="auth.google">
         <svg viewBox="0 0 24 24" aria-hidden="true">
           <path fill="#EA4335" d="M12 10.2v3.6h5.1c-.2 1.2-.9 2.2-1.9 2.9l3.1 2.4c1.8-1.7 2.9-4.1 2.9-7 0-.7-.1-1.3-.2-1.9H12z"/>
           <path fill="#34A853" d="M6.6 14.3l-.8.6-2.5 1.9C5.1 19.5 8.3 21.5 12 21.5c2.7 0 5-.9 6.7-2.4l-3.1-2.4c-.8.6-1.9.9-3.6.9-2.8 0-5.1-1.9-6-4.4z"/>
           <path fill="#4A90E2" d="M3.3 7.2C2.5 8.7 2 10.3 2 12s.5 3.3 1.3 4.8l3.3-2.5C6.2 13.4 6 12.7 6 12s.2-1.4.6-2.3L3.3 7.2z"/>
           <path fill="#FBBC05" d="M12 5.5c1.5 0 2.8.5 3.9 1.5l2.9-2.9C16.9 2.4 14.7 1.5 12 1.5 8.3 1.5 5.1 3.5 3.3 7.2l3.3 2.5C7 7.4 9.2 5.5 12 5.5z"/>
         </svg>
-        เข้าสู่ระบบด้วย Gmail
+        <span data-i18n="auth.google">เข้าสู่ระบบด้วย Gmail</span>
       </button>
 
-      <p class="pts-login__foot">ยังไม่มีบัญชี? <a href="Register.html">สมัครสมาชิกที่นี่</a></p>
+      <p class="pts-login__foot"><span data-i18n="auth.noAccount">ยังไม่มีบัญชี?</span> <a href="Register.html" data-i18n="auth.noAccountLink">สมัครสมาชิกที่นี่</a></p>
       <nav class="pts-login__legal" aria-label="ลิงก์เพิ่มเติม">
         <a href="Home.html">About Us</a>
         <a href="Legal.html">Privacy Policy</a>
@@ -196,6 +198,6 @@
 
 <script src="login.js?v=20260723g"></script>
 <script src="password-toggle.js?v=20260720e"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>

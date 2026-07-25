@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>การแจ้งเตือน | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260724gap">
@@ -30,10 +32,10 @@
   <section class="pts-page-hero flex flex-col md:flex-row md:items-end md:justify-between gap-3">
     <div>
       <span class="pts-chip mb-3">Notifications</span>
-      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">การแจ้งเตือน</h1>
-      <p class="text-on-surface-variant">ข่าวสารและอัปเดตที่เกี่ยวข้องกับบัญชีของคุณ</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.notifications.title">การแจ้งเตือน</h1>
+      <p class="text-on-surface-variant" data-i18n="page.notifications.sub">ข่าวสารและอัปเดตที่เกี่ยวข้องกับบัญชีของคุณ</p>
     </div>
-    <button id="read-all" class="pts-btn pts-btn-outline">อ่านทั้งหมด</button>
+    <button id="read-all" class="pts-btn pts-btn-outline" data-i18n="notif.markAll">อ่านทั้งหมด</button>
   </section>
   <div id="list" class="space-y-3"></div>
 </main>
@@ -101,7 +103,7 @@ load();
   }
 })();
 </script>
-<script src="/comp/user-sidebar.js?v=20260724u"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/user-sidebar.js?v=20260725lang"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>

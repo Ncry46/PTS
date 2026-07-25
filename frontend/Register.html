@@ -5,6 +5,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>สมัครสมาชิก | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260723q">
 <link rel="stylesheet" href="auth-campus.css?v=20260723q">
 <link rel="stylesheet" href="register.css?v=20260723q">
@@ -183,33 +185,33 @@
 <div class="pts-auth-card">
 <div class="pts-auth-title">
 <p class="text-xs font-bold tracking-[0.18em] uppercase text-primary mb-2" style="font-family:Sora,sans-serif">PTS Learning</p>
-<h1 class="text-2xl font-bold text-on-surface" style="font-family:Sora,sans-serif">สร้างบัญชีใหม่</h1>
-<p class="text-sm text-on-surface-variant mt-1">กรอกข้อมูลเพื่อเริ่มต้นการเรียนรู้ของคุณ</p>
+<h1 class="text-2xl font-bold text-on-surface" style="font-family:Sora,sans-serif" data-i18n="page.register.title">สร้างบัญชีใหม่</h1>
+<p class="text-sm text-on-surface-variant mt-1" data-i18n="page.register.sub">กรอกข้อมูลเพื่อเริ่มต้นการเรียนรู้ของคุณ</p>
 </div>
 <form class="space-y-base" id="register-form">
 <div class="space-y-xs">
-<label class="font-label-md text-label-md text-on-surface-variant" for="fullname">ชื่อ-นามสกุล</label>
+<label class="font-label-md text-label-md text-on-surface-variant" for="fullname" data-i18n="auth.fullName">ชื่อ-นามสกุล</label>
 <div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">person</span>
-<input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="fullname" placeholder="พิมพ์ชื่อและนามสกุลของคุณ" type="text" required>
+<input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="fullname" placeholder="พิมพ์ชื่อและนามสกุลของคุณ" data-i18n-placeholder="auth.namePh" type="text" required>
 </div>
 </div>
 <div class="space-y-xs">
-<label class="font-label-md text-label-md text-on-surface-variant" for="email">อีเมล</label>
+<label class="font-label-md text-label-md text-on-surface-variant" for="email" data-i18n="auth.email">อีเมล</label>
 <div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">mail</span>
 <input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="email" placeholder="example@email.com" type="email" required>
 </div>
 </div>
 <div class="space-y-xs">
-<label class="font-label-md text-label-md text-on-surface-variant" for="phone">เบอร์โทรศัพท์</label>
+<label class="font-label-md text-label-md text-on-surface-variant" for="phone" data-i18n="auth.phone">เบอร์โทรศัพท์</label>
 <div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">call</span>
 <input class="w-full pl-12 pr-4 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="phone" placeholder="08x-xxx-xxxx" type="tel">
 </div>
 </div>
 <div class="space-y-xs">
-<label class="font-label-md text-label-md text-on-surface-variant" for="password">รหัสผ่าน</label>
+<label class="font-label-md text-label-md text-on-surface-variant" for="password" data-i18n="auth.password">รหัสผ่าน</label>
 <div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock</span>
 <input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="password" placeholder="••••••••" type="password" required>
@@ -219,7 +221,7 @@
 </div>
 </div>
 <div class="space-y-xs">
-<label class="font-label-md text-label-md text-on-surface-variant" for="confirm-password">ยืนยันรหัสผ่าน</label>
+<label class="font-label-md text-label-md text-on-surface-variant" for="confirm-password" data-i18n="auth.confirmPassword">ยืนยันรหัสผ่าน</label>
 <div class="relative group pts-pw-wrap">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors">lock_reset</span>
 <input class="w-full pl-12 pr-12 rounded-[12px] border border-outline-variant bg-surface-container-lowest focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none font-body-md text-body-md py-2" id="confirm-password" placeholder="••••••••" type="password" required>
@@ -233,7 +235,7 @@
 <label class="font-label-md text-label-md text-on-surface-variant cursor-pointer select-none" for="tos">ฉันยอมรับ <a class="text-primary hover:underline" href="Legal.html">เงื่อนไขการใช้งาน</a> และ <a class="text-primary hover:underline" href="Legal.html">นโยบายความเป็นส่วนตัว</a></label>
 </div>
 <div class="pt-base space-y-md">
-<button class="w-full bg-primary text-white rounded-full font-label-md text-label-md font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center py-3" type="submit">สมัครสมาชิก</button>
+<button class="w-full bg-primary text-white rounded-full font-label-md text-label-md font-bold shadow-lg shadow-primary/20 hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center py-3" type="submit" data-i18n="auth.registerBtn">สมัครสมาชิก</button>
 <p id="register-msg" class="text-sm text-center text-error hidden"></p>
 <div class="relative py-base flex items-center justify-center">
 <div class="w-full border-t border-outline-variant"></div>
@@ -350,5 +352,5 @@
 })();
 </script>
 <script src="password-toggle.js?v=20260720e"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body></html>

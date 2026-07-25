@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>หลักสูตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260722f">
@@ -44,8 +46,8 @@ tailwind.config = {
 </div>
 <main class="pts-main pts-main--wide">
   <div class="mb-5">
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">หลักสูตร</h1>
-    <p id="hero-sub" class="text-on-surface-variant max-w-2xl">เลือกหลักสูตร Online / Onsite / Hybrid ที่เหมาะกับเป้าหมายของคุณ</p>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.courses.title">หลักสูตร</h1>
+    <p id="hero-sub" class="text-on-surface-variant max-w-2xl" data-i18n="page.courses.sub">เลือกหลักสูตร Online / Onsite / Hybrid ที่เหมาะกับเป้าหมายของคุณ</p>
   </div>
 
   <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
@@ -292,6 +294,6 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
   }
 })();
 </script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>

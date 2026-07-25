@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตารางเรียน | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260724gap">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -30,13 +32,13 @@
 <main class="pts-main" data-user-shell>
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">My Schedule</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตารางเรียนของฉัน</h1>
-    <p class="text-on-surface-variant max-w-xl">สมัครหลักสูตรแล้ว ตารางจะขึ้นในปฏิทินด้านล่างตามวันเรียน — คลาส Onsite ใช้ QR จากอีเมลได้</p>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.schedule.title">ตารางเรียนของฉัน</h1>
+    <p class="text-on-surface-variant max-w-xl" data-i18n="page.schedule.sub">สมัครหลักสูตรแล้ว ตารางจะขึ้นในปฏิทินด้านล่างตามวันเรียน — คลาส Onsite ใช้ QR จากอีเมลได้</p>
     <div id="gcal-shortcut" class="pts-settings-shortcut hidden">
       <p class="pts-settings-shortcut__text" id="gcal-shortcut-text">
-        <strong>ผูก Google Calendar</strong> — เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน
+        <strong data-i18n="schedule.gcalShortcutStrong">ผูก Google Calendar</strong><span data-i18n="schedule.gcalShortcutRest"> — เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน</span>
       </p>
-      <a class="pts-btn pts-btn-primary" href="Settings.html#google-calendar">ไปตั้งค่าปฏิทิน</a>
+      <a class="pts-btn pts-btn-primary" href="Settings.html#google-calendar" data-i18n="schedule.gcalShortcutBtn">ไปตั้งค่าปฏิทิน</a>
     </div>
   </section>
   <div id="schedule-attendance-qr" class="pts-attend-qr-panel"></div>
@@ -46,7 +48,7 @@
       <h2 class="pts-cal__title" id="cal-month-label">—</h2>
       <div class="pts-cal__nav">
         <button type="button" class="pts-btn pts-btn-outline" id="cal-prev" aria-label="เดือนก่อน">‹</button>
-        <button type="button" class="pts-btn pts-btn-ghost" id="cal-today">วันนี้</button>
+        <button type="button" class="pts-btn pts-btn-ghost" id="cal-today" data-i18n="common.today">วันนี้</button>
         <button type="button" class="pts-btn pts-btn-outline" id="cal-next" aria-label="เดือนถัดไป">›</button>
       </div>
     </div>
@@ -54,12 +56,12 @@
       <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
     </div>
     <div class="pts-cal__grid" id="cal-grid"></div>
-    <p class="pts-cal__legend" id="cal-legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อดูรายการ</p>
+    <p class="pts-cal__legend" id="cal-legend" data-i18n="schedule.legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อดูรายการ</p>
   </div>
 
   <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-    <h2 class="font-bold text-lg m-0" id="schedule-list-title">รายการตาราง</h2>
-    <button type="button" class="pts-btn pts-btn-ghost hidden" id="cal-clear-filter">แสดงทั้งหมด</button>
+    <h2 class="font-bold text-lg m-0" id="schedule-list-title" data-i18n="schedule.listTitle">รายการตาราง</h2>
+    <button type="button" class="pts-btn pts-btn-ghost hidden" id="cal-clear-filter" data-i18n="schedule.showAll">แสดงทั้งหมด</button>
   </div>
   <div id="schedule-list" class="space-y-3">
     <div class="pts-empty">กำลังโหลดตาราง...</div>
@@ -336,7 +338,7 @@ load().catch((err) => {
   }
 })();
 </script>
-<script src="/comp/user-sidebar.js?v=20260724u"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/user-sidebar.js?v=20260725lang"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>

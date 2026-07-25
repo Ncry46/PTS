@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Community | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260724gap">
@@ -47,8 +49,8 @@ tailwind.config = {
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
         <span class="pts-chip mb-3">PTS Community</span>
-        <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight mb-2 pts-display">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
-        <p class="text-on-surface-variant max-w-2xl">แลกเปลี่ยนประสบการณ์ อ่านโพสต์ และเรียนรู้จากเพื่อนร่วมอาชีพ</p>
+        <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight mb-2 pts-display" data-i18n="page.community.title">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
+        <p class="text-on-surface-variant max-w-2xl" data-i18n="page.community.sub">แลกเปลี่ยนประสบการณ์ อ่านโพสต์ และเรียนรู้จากเพื่อนร่วมอาชีพ</p>
       </div>
       <div id="hero-actions" class="flex flex-wrap gap-2"></div>
     </div>
@@ -347,7 +349,7 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
   }
 })();
 </script>
-<script src="/comp/user-sidebar.js?v=20260724u"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/user-sidebar.js?v=20260725lang"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>

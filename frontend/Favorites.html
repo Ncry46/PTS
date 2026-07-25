@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายการโปรด | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260724gap">
@@ -29,12 +31,12 @@
 <main class="pts-main" data-user-shell>
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Favorites</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">รายการโปรด</h1>
-    <p class="text-on-surface-variant">รวมหลักสูตรโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว</p>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.favorites.title">รายการโปรด</h1>
+    <p class="text-on-surface-variant" data-i18n="page.favorites.sub">รวมหลักสูตรโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว</p>
   </section>
 
   <div class="flex flex-wrap gap-2 mb-5" role="tablist">
-    <button type="button" id="tab-courses" class="fav-tab pts-btn pts-btn-primary" data-tab="courses">หลักสูตรโปรด</button>
+    <button type="button" id="tab-courses" class="fav-tab pts-btn pts-btn-primary" data-tab="courses" data-i18n="fav.courses">หลักสูตรโปรด</button>
     <button type="button" id="tab-posts" class="fav-tab pts-btn pts-btn-outline" data-tab="posts">โพสต์โปรด</button>
   </div>
 
@@ -145,7 +147,7 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   setTab(location.hash === '#posts' ? 'posts' : 'courses');
 })();
 </script>
-<script src="/comp/user-sidebar.js?v=20260724u"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/user-sidebar.js?v=20260725lang"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>

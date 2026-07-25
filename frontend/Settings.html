@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตั้งค่าบัญชี | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260725settings-wide">
 <style>
   input[type="password"]::-ms-reveal,
@@ -152,19 +154,19 @@
   <div class="set-page">
     <section class="pts-page-hero" style="margin-bottom:18px;">
       <span class="pts-chip mb-3">Account</span>
-      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตั้งค่าบัญชี</h1>
-      <p class="text-on-surface-variant">จัดการโปรไฟล์และความปลอดภัย รวมถึงการเชื่อมต่อของคุณ</p>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.settings.title">ตั้งค่าบัญชี</h1>
+      <p class="text-on-surface-variant" data-i18n="page.settings.sub">จัดการโปรไฟล์และความปลอดภัย รวมถึงการเชื่อมต่อของคุณ</p>
     </section>
 
     <!-- Top: Profile + Account -->
     <section class="set-card">
       <div class="set-grid-2">
         <div>
-          <h2 class="set-title">ข้อมูลส่วนตัว</h2>
+          <h2 class="set-title" data-i18n="settings.profile">ข้อมูลส่วนตัว</h2>
           <div class="set-profile">
             <div class="set-avatar-wrap">
               <img id="avatar-preview" class="set-avatar" src="" alt="รูปโปรไฟล์">
-              <button type="button" id="pick-avatar" class="set-avatar-edit" title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
+              <button type="button" id="pick-avatar" class="set-avatar-edit" data-i18n-title="settings.changeAvatar" data-i18n-aria-label="settings.changeAvatar" title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
                 <span class="material-symbols-outlined">photo_camera</span>
               </button>
               <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
@@ -172,45 +174,45 @@
             <p class="set-name" id="display-name">—</p>
             <span class="set-role" id="display-role">สมาชิก PTS</span>
             <div class="set-meta">
-              <div><span>ชื่อ-นามสกุล</span><strong id="meta-name">—</strong></div>
-              <div><span>เบอร์โทร</span><strong id="meta-phone">—</strong></div>
+              <div><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><strong id="meta-name">—</strong></div>
+              <div><span data-i18n="settings.phone">เบอร์โทร</span><strong id="meta-phone">—</strong></div>
             </div>
-            <button type="button" id="toggle-edit-profile" class="pts-btn pts-btn-outline" style="margin-top:8px;width:100%;">แก้ไขข้อมูลส่วนตัว</button>
+            <button type="button" id="toggle-edit-profile" class="pts-btn pts-btn-outline" style="margin-top:8px;width:100%;" data-i18n="settings.editProfile">แก้ไขข้อมูลส่วนตัว</button>
             <p id="avatar-file-name" class="text-xs text-on-surface-variant"></p>
-            <button type="button" id="clear-avatar-pick" class="pts-btn pts-btn-ghost hidden">ยกเลิกไฟล์ที่เลือก</button>
+            <button type="button" id="clear-avatar-pick" class="pts-btn pts-btn-ghost hidden" data-i18n="settings.clearAvatar">ยกเลิกไฟล์ที่เลือก</button>
           </div>
 
           <div id="edit-profile-panel" class="set-edit-panel" hidden>
             <div class="set-divider"></div>
-            <label class="set-field"><span>ชื่อ-นามสกุล</span><input id="full_name" class="set-input"></label>
-            <label class="set-field"><span>เบอร์โทร</span><input id="phone" class="set-input"></label>
-            <button id="save-profile" class="pts-btn pts-btn-primary" style="width:100%;">บันทึกโปรไฟล์</button>
+            <label class="set-field"><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><input id="full_name" class="set-input"></label>
+            <label class="set-field"><span data-i18n="settings.phone">เบอร์โทร</span><input id="phone" class="set-input"></label>
+            <button id="save-profile" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.saveProfile">บันทึกโปรไฟล์</button>
             <p id="profile-msg" class="pts-msg"></p>
           </div>
         </div>
 
         <div>
-          <h2 class="set-title">บัญชีและความปลอดภัย</h2>
-          <label class="set-field"><span>อีเมล</span><input id="email" class="set-input" disabled></label>
-          <label class="set-field"><span>รหัสผ่านปัจจุบัน</span>
+          <h2 class="set-title" data-i18n="settings.account">บัญชีและความปลอดภัย</h2>
+          <label class="set-field"><span data-i18n="settings.email">อีเมล</span><input id="email" class="set-input" disabled></label>
+          <label class="set-field"><span data-i18n="settings.currentPassword">รหัสผ่านปัจจุบัน</span>
             <div class="pts-pw-wrap relative">
               <input id="current_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1">
               <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
             </div>
           </label>
-          <label class="set-field"><span>รหัสผ่านใหม่</span>
+          <label class="set-field"><span data-i18n="settings.newPassword">รหัสผ่านใหม่</span>
             <div class="pts-pw-wrap relative">
               <input id="new_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1">
               <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
             </div>
           </label>
           <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
-            <label class="set-field flex-1 mb-0" style="margin-bottom:0;"><span>รหัส OTP จากอีเมล</span>
+            <label class="set-field flex-1 mb-0" style="margin-bottom:0;"><span data-i18n="settings.otp">รหัส OTP จากอีเมล</span>
               <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="set-input text-center tracking-[0.3em] font-bold" placeholder="••••••">
             </label>
-            <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap">ส่ง OTP</button>
+            <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap" data-i18n="settings.sendOtp">ส่ง OTP</button>
           </div>
-          <button id="save-password" class="pts-btn pts-btn-primary" style="width:100%;">บันทึกการเปลี่ยนแปลงทั้งหมด</button>
+          <button id="save-password" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.saveAll">บันทึกการเปลี่ยนแปลงทั้งหมด</button>
           <p id="password-msg" class="pts-msg"></p>
         </div>
       </div>
@@ -218,14 +220,14 @@
 
     <!-- Middle: Language + Connections -->
     <section class="set-card" id="connections" style="margin-top:18px;">
-      <h2 class="set-title">ภาษาและการเชื่อมต่อ</h2>
-      <p class="set-sub">ภาษา</p>
-      <div class="set-radio" role="radiogroup" aria-label="ภาษา">
-        <label><input type="radio" name="lang" value="th" checked> ไทย</label>
-        <label><input type="radio" name="lang" value="en"> English</label>
+      <h2 class="set-title" data-i18n="settings.langConnections">ภาษาและการเชื่อมต่อ</h2>
+      <p class="set-sub" data-i18n="settings.language">ภาษา</p>
+      <div class="set-radio" role="radiogroup" data-i18n-aria-label="settings.language" aria-label="ภาษา">
+        <label><input type="radio" name="lang" value="th" checked> <span data-i18n="settings.lang.th">ไทย</span></label>
+        <label><input type="radio" name="lang" value="en"> <span data-i18n="settings.lang.en">English</span></label>
       </div>
 
-      <p class="set-sub" style="margin-bottom:10px;">การเชื่อมต่อ</p>
+      <p class="set-sub" style="margin-bottom:10px;" data-i18n="settings.connections">การเชื่อมต่อ</p>
 
       <div class="set-conn" id="line-oa">
         <div class="set-conn__icon set-conn__icon--line"><span class="material-symbols-outlined">chat</span></div>
@@ -255,8 +257,8 @@
 
       <div id="gcal-reminders-row" class="hidden items-center justify-between gap-3 rounded-2xl border border-[rgba(151,66,88,.14)] px-4 py-3 mt-2 mb-2">
         <div>
-          <p class="font-semibold text-sm">การแจ้งเตือนก่อนวันเรียน</p>
-          <p class="text-xs text-on-surface-variant mt-0.5">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
+          <p class="font-semibold text-sm" data-i18n="settings.gcalReminders">การแจ้งเตือนก่อนวันเรียน</p>
+          <p class="text-xs text-on-surface-variant mt-0.5" data-i18n="settings.gcalRemindersHint">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
         </div>
         <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
           <input type="checkbox" id="gcal-reminders-toggle">
@@ -265,17 +267,17 @@
       </div>
 
       <div class="set-actions">
-        <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google</a>
-        <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียน</button>
-        <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
+        <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#" data-i18n="settings.gcalConnect">เชื่อม Google</a>
+        <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden" data-i18n="settings.gcalSync">ซิงค์ตารางเรียน</button>
+        <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden" data-i18n="settings.gcalDisconnect">ยกเลิกการเชื่อมต่อ</button>
       </div>
       <p id="gcal-msg" class="pts-msg"></p>
       <div id="gcal-howto" class="hidden mt-2 text-sm text-on-surface-variant space-y-1">
-        <p class="font-semibold text-on-surface">วิธีใช้งาน</p>
+        <p class="font-semibold text-on-surface" data-i18n="settings.gcalHowto">วิธีใช้งาน</p>
         <ol class="list-decimal pl-5 space-y-1">
-          <li>สมัครหลักสูตรที่ต้องการ</li>
-          <li>ให้แอดมินสร้างตารางที่ <a class="text-primary underline" href="Admin.html">Admin → ตารางเรียน</a></li>
-          <li>กดซิงค์ตารางเรียน แล้วเปิด Google Calendar</li>
+          <li data-i18n="settings.gcalStep1">สมัครหลักสูตรที่ต้องการ</li>
+          <li data-i18n="settings.gcalStep2">ให้แอดมินสร้างตารางที่ Admin → ตารางเรียน</li>
+          <li data-i18n="settings.gcalStep3">กดซิงค์ตารางเรียน แล้วเปิด Google Calendar</li>
         </ol>
       </div>
       <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-2 hidden">
@@ -291,11 +293,11 @@
     <section class="set-card" style="margin-top:18px;">
       <div class="set-privacy">
         <div class="set-privacy__links">
-          <a href="Legal.html"><span class="material-symbols-outlined">policy</span> นโยบายความเป็นส่วนตัว</a>
-          <a href="Legal.html"><span class="material-symbols-outlined">description</span> ข้อกำหนดการใช้งาน</a>
-          <a href="mailto:businessdev@thanvasu.com?subject=ขอข้อมูลส่วนตัว%20PTS"><span class="material-symbols-outlined">download</span> ดาวน์โหลดข้อมูลส่วนตัว</a>
+          <a href="Legal.html"><span class="material-symbols-outlined">policy</span> <span data-i18n="settings.privacyPolicy">นโยบายความเป็นส่วนตัว</span></a>
+          <a href="Legal.html"><span class="material-symbols-outlined">description</span> <span data-i18n="settings.terms">ข้อกำหนดการใช้งาน</span></a>
+          <a href="mailto:businessdev@thanvasu.com?subject=ขอข้อมูลส่วนตัว%20PTS"><span class="material-symbols-outlined">download</span> <span data-i18n="settings.downloadData">ดาวน์โหลดข้อมูลส่วนตัว</span></a>
         </div>
-        <button type="button" id="delete-account-btn" class="pts-btn pts-btn-ghost" style="color:#ba1a1a;">ลบบัญชีผู้ใช้</button>
+        <button type="button" id="delete-account-btn" class="pts-btn pts-btn-ghost" style="color:#ba1a1a;" data-i18n="settings.deleteAccount">ลบบัญชีผู้ใช้</button>
       </div>
       <p id="privacy-msg" class="pts-msg"></p>
     </section>
@@ -330,6 +332,23 @@ function syncProfileMeta() {
   document.getElementById('meta-phone').textContent = phone;
 }
 
+function t(key, fallback) {
+  return (window.PTSLang && window.PTSLang.t) ? window.PTSLang.t(key, fallback) : (fallback || key);
+}
+
+function syncLangRadios() {
+  const lang = (window.PTSLang && window.PTSLang.get()) || localStorage.getItem(LANG_KEY) || 'th';
+  document.querySelectorAll('input[name="lang"]').forEach((el) => {
+    el.checked = el.value === lang;
+  });
+}
+
+function syncRoleLabel() {
+  document.getElementById('display-role').textContent = isAdminUser
+    ? t('common.admin', 'ผู้ดูแลระบบ')
+    : t('common.member', 'สมาชิก PTS');
+}
+
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
@@ -337,7 +356,7 @@ function syncProfileMeta() {
     me.user?.role || me.user?.Role || me.role || me.Role || ''
   ).toLowerCase();
   isAdminUser = role === 'admin';
-  document.getElementById('display-role').textContent = isAdminUser ? 'ผู้ดูแลระบบ' : 'สมาชิก PTS';
+  syncRoleLabel();
 
   const profile = await fetch('/api/profile', { credentials: 'include' }).then(r => r.json());
   if (!profile.success) { console.error(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ'); return location.href = 'Login.html'; }
@@ -347,11 +366,7 @@ function syncProfileMeta() {
   currentAvatarUrl = profile.data.Url || '';
   setAvatarPreview(currentAvatarUrl, profile.data.full_name);
   syncProfileMeta();
-
-  const lang = localStorage.getItem(LANG_KEY) || 'th';
-  document.querySelectorAll('input[name="lang"]').forEach((el) => {
-    el.checked = el.value === lang;
-  });
+  syncLangRadios();
 
   await refreshGcalStatus();
   await refreshLineOaStatus();
@@ -362,18 +377,43 @@ document.getElementById('toggle-edit-profile').onclick = () => {
   const open = panel.hasAttribute('hidden');
   if (open) panel.removeAttribute('hidden');
   else panel.setAttribute('hidden', '');
-  document.getElementById('toggle-edit-profile').textContent = open ? 'ปิดการแก้ไข' : 'แก้ไขข้อมูลส่วนตัว';
+  const btn = document.getElementById('toggle-edit-profile');
+  btn.textContent = open
+    ? t('settings.closeEdit', 'ปิดการแก้ไข')
+    : t('settings.editProfile', 'แก้ไขข้อมูลส่วนตัว');
+  btn.removeAttribute('data-i18n');
 };
 
 document.querySelectorAll('input[name="lang"]').forEach((el) => {
   el.addEventListener('change', () => {
-    if (el.checked) localStorage.setItem(LANG_KEY, el.value);
+    if (!el.checked) return;
+    if (window.PTSLang && typeof window.PTSLang.set === 'function') {
+      window.PTSLang.set(el.value);
+    } else {
+      localStorage.setItem(LANG_KEY, el.value);
+    }
   });
+});
+
+document.addEventListener('pts-lang-change', () => {
+  syncLangRadios();
+  syncRoleLabel();
+  const panel = document.getElementById('edit-profile-panel');
+  const btn = document.getElementById('toggle-edit-profile');
+  if (btn && panel) {
+    const open = !panel.hasAttribute('hidden');
+    btn.textContent = open
+      ? t('settings.closeEdit', 'ปิดการแก้ไข')
+      : t('settings.editProfile', 'แก้ไขข้อมูลส่วนตัว');
+  }
 });
 
 document.getElementById('delete-account-btn').onclick = () => {
   const msg = document.getElementById('privacy-msg');
-  msg.textContent = 'หากต้องการลบบัญชี กรุณาติดต่อผู้ดูแลระบบผ่านอีเมล businessdev@thanvasu.com';
+  msg.textContent = t(
+    'settings.deleteHint',
+    'หากต้องการลบบัญชี กรุณาติดต่อผู้ดูแลระบบผ่านอีเมล businessdev@thanvasu.com'
+  );
   msg.className = 'pts-msg pts-msg--err';
 };
 
@@ -781,7 +821,7 @@ document.getElementById('save-password').onclick = async () => {
 };
 </script>
 <script src="password-toggle.js?v=20260720e"></script>
-<script src="/comp/user-sidebar.js?v=20260724u"></script>
-<script src="/comp/navbar.js?v=20260723d"></script>
+<script src="/comp/user-sidebar.js?v=20260725lang"></script>
+<script src="/comp/navbar.js?v=20260725lang"></script>
 </body>
 </html>
