@@ -455,8 +455,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await pool.request().query(`
-                SELECT TOP 100
-                    p.post_id, p.content, p.created_at, p.flag_use, u.full_name AS author_name, u.email
+                SELECT TOP 200
+                    p.post_id, p.user_id, p.content, p.created_at, p.flag_use,
+                    u.full_name AS author_name, u.email
                 FROM BD_PTS.dbo.community_posts p
                 INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
                 ORDER BY p.created_at DESC
@@ -476,6 +477,34 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('postId', sql.Int, postId)
                 .query(`UPDATE BD_PTS.dbo.community_posts SET flag_use = 0 WHERE post_id = @postId`);
             res.json({ success: true, message: 'ซ่อนโพสต์แล้ว' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.patch('/posts/:postId', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const postId = parseInt(req.params.postId, 10);
+        if (!postId) return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
+
+        const visible = !(req.body.flag_use === false || req.body.flag_use === 0 || req.body.flag_use === '0');
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request()
+                .input('postId', sql.Int, postId)
+                .input('flag', sql.Bit, visible ? 1 : 0)
+                .query(`
+                    UPDATE BD_PTS.dbo.community_posts
+                    SET flag_use = @flag
+                    WHERE post_id = @postId
+                `);
+            if (!result.rowsAffected?.[0]) {
+                return res.status(404).json({ success: false, message: 'ไม่พบโพสต์' });
+            }
+            res.json({
+                success: true,
+                message: visible ? 'แสดงโพสต์อีกครั้งแล้ว' : 'ซ่อนโพสต์แล้ว'
+            });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

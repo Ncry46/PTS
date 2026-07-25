@@ -1267,21 +1267,174 @@ async function renderUsers() {
 
 async function renderPosts() {
   const { data } = await api('/api/admin/posts');
+  const postsCache = data || [];
+
+  const isVisible = (p) => Number(p.flag_use) === 1 || p.flag_use === true;
+
+  const fmtDate = (v) => {
+    if (!v) return '—';
+    try {
+      return new Date(v).toLocaleString('th-TH', {
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+    } catch (_) { return '—'; }
+  };
+
   document.getElementById('panel').innerHTML = `
-    <div class="space-y-2">${data.map(p => `
-      <div class="border rounded-xl p-3 ${p.flag_use ? '' : 'opacity-50'}">
-        <div class="flex justify-between gap-2">
-          <div>
-            <p class="font-bold">${escapeHtml(p.author_name)} <span class="text-xs font-normal text-on-surface-variant">${escapeHtml(p.email)}</span></p>
-            <p class="text-sm whitespace-pre-line mt-1">${escapeHtml(p.content)}</p>
-          </div>
-          ${p.flag_use ? `<button class="hide-post text-red-600 font-bold h-fit" data-id="${p.post_id}">ซ่อน</button>` : '<span class="text-xs">ซ่อนแล้ว</span>'}
+    <div class="adm-c-head">
+      <div>
+        <h3>ดูแลโพสต์คอมมูนิตี้</h3>
+        <p>โหมด Auto-Publish — โพสต์ขึ้นทันที แอดมินค่อยซ่อนเนื้อหาไม่เหมาะสมทีหลัง</p>
+      </div>
+    </div>
+    <div class="adm-c-tools">
+      <input id="post-search" class="adm-c-search" type="search" placeholder="ค้นหาเนื้อหา / ผู้โพสต์ / อีเมล / ID..." autocomplete="off">
+      <span class="adm-c-count" id="post-count">0 โพสต์</span>
+    </div>
+    <div id="post-list-area"></div>
+  `;
+
+  const searchInput = document.getElementById('post-search');
+  const countEl = document.getElementById('post-count');
+  const listArea = document.getElementById('post-list-area');
+
+  const snippet = (text, n = 140) => {
+    const t = String(text || '').replace(/\s+/g, ' ').trim();
+    if (t.length <= n) return t;
+    return t.slice(0, n) + '…';
+  };
+
+  const actionBtns = (p) => isVisible(p)
+    ? `<div class="adm-c-actions">
+        <button type="button" class="pts-btn pts-btn-ghost hide-post" data-id="${p.post_id}" style="color:#ba1a1a;">ซ่อน</button>
+      </div>`
+    : `<div class="adm-c-actions">
+        <button type="button" class="pts-btn pts-btn-outline restore-post" data-id="${p.post_id}">แสดงอีกครั้ง</button>
+      </div>`;
+
+  const rowHtml = (p) => `
+    <tr data-post-id="${p.post_id}" class="${isVisible(p) ? '' : 'opacity-60'}">
+      <td>
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
+          <div class="adm-c-name" style="font-weight:600;white-space:pre-wrap;">${escapeHtml(snippet(p.content, 160))}</div>
         </div>
-      </div>`).join('') || '<p>ไม่มีโพสต์</p>'}
-    </div>`;
-  document.querySelectorAll('.hide-post').forEach(btn => {
-    btn.onclick = async () => { await api(`/api/admin/posts/${btn.dataset.id}`, { method: 'DELETE' }); renderPosts(); };
-  });
+      </td>
+      <td>
+        <div class="adm-c-name" style="font-size:13px;">${escapeHtml(p.author_name || '—')}</div>
+        <div class="adm-c-id" style="margin-top:4px;border:0;background:transparent;padding:0;color:#5c4f55;">${escapeHtml(p.email || '')}</div>
+      </td>
+      <td>${fmtDate(p.created_at)}</td>
+      <td><span class="adm-c-badge${isVisible(p) ? ' is-on' : ''}">${isVisible(p) ? 'แสดงอยู่' : 'ซ่อนแล้ว'}</span></td>
+      <td>${actionBtns(p)}</td>
+    </tr>`;
+
+  const cardHtml = (p) => `
+    <article class="adm-c-card ${isVisible(p) ? '' : 'opacity-70'}" data-post-id="${p.post_id}">
+      <div class="adm-c-card__top">
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
+          <div class="adm-c-name" style="font-weight:600;white-space:pre-wrap;">${escapeHtml(snippet(p.content, 180))}</div>
+        </div>
+        <span class="adm-c-badge${isVisible(p) ? ' is-on' : ''}">${isVisible(p) ? 'แสดงอยู่' : 'ซ่อนแล้ว'}</span>
+      </div>
+      <div class="adm-c-card__meta">
+        <span>${escapeHtml(p.author_name || '—')}</span>
+        <span>${escapeHtml(p.email || '—')}</span>
+        <span>${fmtDate(p.created_at)}</span>
+      </div>
+      ${actionBtns(p)}
+    </article>`;
+
+  const matchesQuery = (p, q) => {
+    if (!q) return true;
+    const idStr = String(p.post_id ?? '').trim();
+    const idQuery = q
+      .replace(/^ไอดี\s*/i, '')
+      .replace(/^id\s*/i, '')
+      .replace(/^#\s*/, '')
+      .trim();
+    if (idQuery && /^\d+$/.test(idQuery) && idStr === idQuery) return true;
+    if (idStr && (q === idStr || q === `#${idStr}` || q === `id${idStr}` || q === `id ${idStr}`)) return true;
+
+    const hay = [
+      idStr,
+      `id ${idStr}`,
+      `#${idStr}`,
+      p.content,
+      p.author_name,
+      p.email,
+      isVisible(p) ? 'แสดงอยู่ เปิด' : 'ซ่อนแล้ว ซ่อน'
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  };
+
+  const bindListActions = () => {
+    document.querySelectorAll('.hide-post').forEach((btn) => {
+      btn.onclick = async () => {
+        if (!window.confirm('ซ่อนโพสต์นี้จากคอมมูนิตี้ใช่หรือไม่?')) return;
+        try {
+          await api(`/api/admin/posts/${btn.dataset.id}`, { method: 'DELETE' });
+          await renderPosts();
+        } catch (e) {
+          alert(e.message || 'ซ่อนไม่สำเร็จ');
+        }
+      };
+    });
+    document.querySelectorAll('.restore-post').forEach((btn) => {
+      btn.onclick = async () => {
+        try {
+          await api(`/api/admin/posts/${btn.dataset.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ flag_use: 1 })
+          });
+          await renderPosts();
+        } catch (e) {
+          alert(e.message || 'แสดงโพสต์ไม่สำเร็จ');
+        }
+      };
+    });
+  };
+
+  const renderList = (query = '') => {
+    const q = String(query || '').trim().toLowerCase();
+    const filtered = postsCache.filter((p) => matchesQuery(p, q));
+    countEl.textContent = q
+      ? `${filtered.length} / ${postsCache.length} โพสต์`
+      : `${postsCache.length} โพสต์`;
+
+    if (!postsCache.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ยังไม่มีโพสต์ในคอมมูนิตี้</div>';
+      return;
+    }
+    if (!filtered.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ไม่พบโพสต์ที่ตรงกับคำค้นหา</div>';
+      return;
+    }
+
+    listArea.innerHTML = `
+      <div class="adm-c-table-wrap">
+        <table class="adm-c-table">
+          <thead>
+            <tr>
+              <th>เนื้อหา</th>
+              <th>ผู้โพสต์</th>
+              <th>เวลา</th>
+              <th>สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>${filtered.map(rowHtml).join('')}</tbody>
+        </table>
+      </div>
+      <div class="adm-c-cards">${filtered.map(cardHtml).join('')}</div>
+    `;
+    bindListActions();
+  };
+
+  searchInput.addEventListener('input', () => renderList(searchInput.value));
+  renderList();
 }
 
 async function renderPayments() {
