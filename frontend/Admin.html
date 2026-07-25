@@ -286,8 +286,18 @@
     border-left: 4px solid #974258;
     padding-left: 10px;
   }
-  .adm-c-name { font-weight:700; line-height:1.3; }
-  .adm-c-id { font-size:11px; color:#5c4f55; margin-top:2px; }
+  .adm-c-name { font-weight:700; line-height:1.35; }
+  .adm-c-course {
+    display:flex; flex-direction:column; align-items:flex-start; gap:6px; min-width:0;
+  }
+  .adm-c-id {
+    display:inline-flex; align-items:center;
+    font-size:11px; font-weight:700; letter-spacing:.04em;
+    color:#974258; background:rgba(151,66,88,.1);
+    border:1px solid rgba(151,66,88,.18);
+    padding:2px 8px; border-radius:999px; line-height:1.3;
+    font-variant-numeric: tabular-nums;
+  }
   .adm-c-mode {
     display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px;
     font-size:11px; font-weight:700; background:rgba(151,66,88,.1); color:#974258; text-transform:capitalize;
@@ -407,6 +417,8 @@ async function renderCourses() {
     catch (_) { return '—'; }
   };
 
+  const courseCode = (id) => `C-${String(id).padStart(3, '0')}`;
+
   const actionBtns = (c) => `
     <div class="adm-c-actions">
       <button type="button" class="pts-btn pts-btn-outline edit-course" data-id="${c.course_id}">แก้ไข</button>
@@ -419,8 +431,10 @@ async function renderCourses() {
   const rowHtml = (c) => `
     <tr data-course-id="${c.course_id}">
       <td>
-        <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
-        <div class="adm-c-id">#${c.course_id}</div>
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสหลักสูตร">${courseCode(c.course_id)}</span>
+          <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
+        </div>
       </td>
       <td>${escapeHtml(c.instructor_name || '—')}</td>
       <td><span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span></td>
@@ -434,9 +448,9 @@ async function renderCourses() {
   const cardHtml = (c) => `
     <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
-        <div>
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสหลักสูตร">${courseCode(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
-          <div class="adm-c-id">#${c.course_id}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
       </div>
@@ -454,6 +468,7 @@ async function renderCourses() {
     if (!q) return true;
     const hay = [
       c.course_id,
+      courseCode(c.course_id),
       c.course_name,
       c.instructor_name,
       c.delivery_mode,
@@ -487,7 +502,7 @@ async function renderCourses() {
       </div>
     </div>
     <div class="adm-c-tools">
-      <input id="course-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / วิทยากร / รูปแบบ / รหัส..." autocomplete="off">
+      <input id="course-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / รหัส C-001 / วิทยากร / รูปแบบ..." autocomplete="off">
       <span class="adm-c-count" id="course-count">0 หลักสูตร</span>
     </div>
     <div id="course-list-area"></div>
@@ -519,7 +534,7 @@ async function renderCourses() {
       formTitle.textContent = 'แก้ไขหลักสูตร';
       createBtn.textContent = 'บันทึกการแก้ไข';
       cancelBtn.classList.remove('hidden');
-      formMsg.textContent = `กำลังแก้ไข #${course.course_id}`;
+      formMsg.textContent = `กำลังแก้ไข ${courseCode(course.course_id)}`;
       formMsg.className = 'pts-msg mb-4';
       document.querySelectorAll(`[data-course-id="${course.course_id}"]`).forEach((el) => {
         el.classList.add('is-editing');
