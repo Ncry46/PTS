@@ -263,6 +263,10 @@
   }
   .adm-c-table tr:last-child td { border-bottom:0; }
   .adm-c-table tr:hover td { background:rgba(151,66,88,.03); }
+  .adm-c-table tr.is-editing td {
+    background: rgba(151,66,88,.12);
+    box-shadow: inset 3px 0 0 #974258;
+  }
   .adm-c-name { font-weight:700; line-height:1.3; }
   .adm-c-id { font-size:11px; color:#5c4f55; margin-top:2px; }
   .adm-c-mode {
@@ -282,6 +286,12 @@
   .adm-c-card {
     border:1px solid rgba(151,66,88,.14); border-radius:14px; background:#fff;
     padding:12px 14px; display:grid; gap:8px;
+    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .adm-c-card.is-editing {
+    border-color: #974258;
+    background: rgba(151,66,88,.08);
+    box-shadow: 0 0 0 3px rgba(151,66,88,.18);
   }
   .adm-c-card__top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
   .adm-c-card__meta {
@@ -476,6 +486,9 @@ async function renderCourses() {
 
   const setEditMode = (course) => {
     editingId = course ? course.course_id : null;
+    document.querySelectorAll('[data-course-id].is-editing').forEach((el) => {
+      el.classList.remove('is-editing');
+    });
     if (course) {
       fillForm(course);
       formTitle.textContent = 'แก้ไขหลักสูตร';
@@ -483,6 +496,9 @@ async function renderCourses() {
       cancelBtn.classList.remove('hidden');
       formMsg.textContent = `กำลังแก้ไข #${course.course_id}`;
       formMsg.className = 'pts-msg mb-4';
+      document.querySelectorAll(`[data-course-id="${course.course_id}"]`).forEach((el) => {
+        el.classList.add('is-editing');
+      });
       document.getElementById('c-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       fillForm(null);
