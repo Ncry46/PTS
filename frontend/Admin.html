@@ -417,7 +417,7 @@ async function renderCourses() {
     </article>`).join('');
 
   document.getElementById('panel').innerHTML = `
-    <h2 class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
+    <h2 id="course-form-title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร">
       <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
@@ -462,6 +462,7 @@ async function renderCourses() {
   `;
 
   const formMsg = document.getElementById('course-form-msg');
+  const formTitle = document.getElementById('course-form-title');
   const createBtn = document.getElementById('create-course');
   const cancelBtn = document.getElementById('cancel-edit-course');
 
@@ -477,6 +478,7 @@ async function renderCourses() {
     editingId = course ? course.course_id : null;
     if (course) {
       fillForm(course);
+      formTitle.textContent = 'แก้ไขหลักสูตร';
       createBtn.textContent = 'บันทึกการแก้ไข';
       cancelBtn.classList.remove('hidden');
       formMsg.textContent = `กำลังแก้ไข #${course.course_id}`;
@@ -484,6 +486,7 @@ async function renderCourses() {
       document.getElementById('c-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       fillForm(null);
+      formTitle.textContent = 'สร้างหลักสูตรใหม่';
       createBtn.textContent = 'สร้างหลักสูตร';
       cancelBtn.classList.add('hidden');
       formMsg.textContent = '';
