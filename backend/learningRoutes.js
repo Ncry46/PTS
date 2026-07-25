@@ -1,11 +1,43 @@
 const express = require('express');
 const sql = require('mssql');
-const { syncAfterEnroll } = require('./googleCalendar');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
 const { buildPromptPayPayload, getPromptPayId } = require('./promptpay');
 const { mapHeroSlidesImages } = require('./heroImages');
+const { markPaidAndEnroll } = require('./paymentActions');
+
+const SLIP_DIR = path.join(__dirname, '..', 'uploads', 'slips');
+const SLIP_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+
+function ensureSlipDir() {
+    try { fs.mkdirSync(SLIP_DIR, { recursive: true }); } catch (_) { /* ignore */ }
+}
+
+const slipUpload = multer({
+    storage: multer.diskStorage({
+        destination: (_req, _file, cb) => {
+            ensureSlipDir();
+            cb(null, SLIP_DIR);
+        },
+        filename: (_req, file, cb) => {
+            const ext = path.extname(file.originalname || '').toLowerCase();
+            const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)
+                ? (ext === '.jpeg' ? '.jpg' : ext)
+                : '.jpg';
+            cb(null, `slip-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${safeExt}`);
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+        if (SLIP_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+        else cb(new Error('รองรับเฉพาะไฟล์รูปสลิป JPG, PNG, WEBP หรือ GIF'));
+    }
+});
 
 function createLearningRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
+    ensureSlipDir();
 
     /** LINE Official Account add-friend link (public; used on Course Detail). */
     router.get('/line/oa', (req, res) => {
@@ -303,24 +335,6 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
-    async function markPaidAndEnroll(pool, userId, paymentId, courseId) {
-        await pool.request()
-            .input('paymentId', sql.Int, paymentId)
-            .query(`UPDATE BD_PTS.dbo.payments SET status = 'paid', paid_at = GETDATE() WHERE payment_id = @paymentId`);
-
-        const enrolled = await ensureEnrolled(pool, userId, courseId);
-        if (!enrolled) {
-            await pool.request()
-                .input('userId', sql.Int, userId)
-                .input('courseId', sql.Int, courseId)
-                .query(`
-                    INSERT INTO BD_PTS.dbo.course_enrollments (user_id, course_id, progress_percent, status)
-                    VALUES (@userId, @courseId, 0, 'in_progress')
-                `);
-            syncAfterEnroll(pool, userId, courseId).catch(() => {});
-        }
-    }
-
     function luhnOk(num) {
         const s = String(num || '').replace(/\D/g, '');
         if (s.length < 13 || s.length > 19) return false;
@@ -349,8 +363,9 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        p.payment_id, p.amount, p.currency, p.status, p.method,
-                        p.reference_code, p.paid_at, p.created_at,
+                        p.payment_id, p.amount, p.currency, p.status, p.method, p.source,
+                        p.reference_code, p.paid_at, p.created_at, p.slip_image_url, p.transfer_at,
+                        p.reject_reason,
                         c.course_id, c.course_name, c.cover_image_url
                     FROM BD_PTS.dbo.payments p
                     INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = p.course_id
@@ -376,8 +391,9 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        p.payment_id, p.amount, p.currency, p.status, p.method,
+                        p.payment_id, p.amount, p.currency, p.status, p.method, p.source,
                         p.reference_code, p.paid_at, p.created_at, p.course_id,
+                        p.slip_image_url, p.transfer_at, p.reject_reason,
                         c.course_name
                     FROM BD_PTS.dbo.payments p
                     INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = p.course_id
@@ -415,6 +431,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
 
         const methodRaw = String(req.body.method || 'promptpay').toLowerCase();
         const method = methodRaw === 'card' ? 'card' : 'promptpay';
+        const source = 'direct_signup';
 
         try {
             const pool = await poolPromise;
@@ -444,9 +461,11 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .input('method', sql.VarChar, method)
                 .query(`
-                    SELECT TOP 1 payment_id, reference_code, amount, status, method
+                    SELECT TOP 1 payment_id, reference_code, amount, status, method, source
                     FROM BD_PTS.dbo.payments
-                    WHERE user_id = @userId AND course_id = @courseId AND status = 'pending' AND method = @method
+                    WHERE user_id = @userId AND course_id = @courseId
+                      AND status IN ('pending', 'pending_review', 'rejected')
+                      AND method = @method
                     ORDER BY created_at DESC
                 `);
 
@@ -456,8 +475,17 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 await pool.request()
                     .input('paymentId', sql.Int, paymentRow.payment_id)
                     .input('amount', sql.Decimal(10, 2), amount)
-                    .query(`UPDATE BD_PTS.dbo.payments SET amount = @amount WHERE payment_id = @paymentId`);
+                    .input('source', sql.VarChar, source)
+                    .query(`
+                        UPDATE BD_PTS.dbo.payments
+                        SET amount = @amount, status = 'pending', source = @source,
+                            slip_image_url = NULL, transfer_at = NULL, reject_reason = NULL,
+                            reviewed_by = NULL, reviewed_at = NULL
+                        WHERE payment_id = @paymentId
+                    `);
                 paymentRow.amount = amount;
+                paymentRow.status = 'pending';
+                paymentRow.source = source;
             } else {
                 const reference = `PAY${Date.now()}${user.user_id}`;
                 const inserted = await pool.request()
@@ -465,12 +493,13 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('courseId', sql.Int, courseId)
                     .input('amount', sql.Decimal(10, 2), amount)
                     .input('method', sql.VarChar, method)
+                    .input('source', sql.VarChar, source)
                     .input('reference', sql.VarChar, reference)
                     .query(`
                         INSERT INTO BD_PTS.dbo.payments
-                        (user_id, course_id, amount, currency, status, method, reference_code)
-                        OUTPUT INSERTED.payment_id, INSERTED.reference_code, INSERTED.amount, INSERTED.status, INSERTED.method
-                        VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @reference)
+                        (user_id, course_id, amount, currency, status, method, source, reference_code)
+                        OUTPUT INSERTED.payment_id, INSERTED.reference_code, INSERTED.amount, INSERTED.status, INSERTED.method, INSERTED.source
+                        VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference)
                     `);
                 paymentRow = inserted.recordset[0];
             }
@@ -483,7 +512,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             res.json({
                 success: true,
                 message: method === 'promptpay'
-                    ? 'สร้างรายการ PromptPay แล้ว สแกน QR เพื่อชำระ'
+                    ? 'สร้างรายการ PromptPay แล้ว สแกน QR แล้วแนบสลิปเพื่อรอแอดมินตรวจสอบ'
                     : 'พร้อมชำระด้วยบัตรเครดิต',
                 data: paymentRow,
                 course: course.recordset[0],
@@ -497,44 +526,97 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
-    router.post('/payments/:paymentId/confirm', async (req, res) => {
-        const user = requireLogin(req, res);
-        if (!user) return;
-
-        const paymentId = parseInt(req.params.paymentId, 10);
-        if (!paymentId) return res.status(400).json({ success: false, message: 'รหัสการชำระไม่ถูกต้อง' });
-
-        try {
-            const pool = await poolPromise;
-            const payment = await pool.request()
-                .input('paymentId', sql.Int, paymentId)
-                .input('userId', sql.Int, user.user_id)
-                .query(`
-                    SELECT payment_id, course_id, status, method
-                    FROM BD_PTS.dbo.payments
-                    WHERE payment_id = @paymentId AND user_id = @userId
-                `);
-
-            if (!payment.recordset.length) {
-                return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงิน' });
+    router.post('/payments/:paymentId/confirm', (req, res) => {
+        slipUpload.single('slip')(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: err.message || 'อัปโหลดสลิปไม่สำเร็จ' });
             }
+            const user = requireLogin(req, res);
+            if (!user) return;
 
-            const row = payment.recordset[0];
-            if (row.status === 'paid') {
-                return res.json({ success: true, message: 'ชำระเงินแล้วก่อนหน้านี้' });
-            }
-            if (row.method === 'card') {
-                return res.status(400).json({
-                    success: false,
-                    message: 'รายการบัตรเครดิตต้องชำระผ่านฟอร์มบัตร ไม่ใช่ปุ่มยืนยันโอน'
+            const paymentId = parseInt(req.params.paymentId, 10);
+            if (!paymentId) return res.status(400).json({ success: false, message: 'รหัสการชำระไม่ถูกต้อง' });
+
+            try {
+                const pool = await poolPromise;
+                const payment = await pool.request()
+                    .input('paymentId', sql.Int, paymentId)
+                    .input('userId', sql.Int, user.user_id)
+                    .query(`
+                        SELECT payment_id, course_id, status, method, slip_image_url
+                        FROM BD_PTS.dbo.payments
+                        WHERE payment_id = @paymentId AND user_id = @userId
+                    `);
+
+                if (!payment.recordset.length) {
+                    return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงิน' });
+                }
+
+                const row = payment.recordset[0];
+                if (row.status === 'paid') {
+                    return res.json({ success: true, message: 'ชำระเงินแล้วก่อนหน้านี้', already_paid: true });
+                }
+                if (row.status === 'pending_review') {
+                    return res.json({
+                        success: true,
+                        message: 'ส่งสลิปแล้ว รอแอดมินตรวจสอบ',
+                        pending_review: true
+                    });
+                }
+                if (row.method === 'card') {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'รายการบัตรเครดิตต้องชำระผ่านฟอร์มบัตร ไม่ใช่แนบสลิป'
+                    });
+                }
+
+                if (!req.file) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'กรุณาแนบรูปสลิปโอนเงินก่อนส่งตรวจสอบ'
+                    });
+                }
+
+                const slipUrl = `/uploads/slips/${req.file.filename}`;
+                const transferRaw = String(req.body.transfer_at || '').trim();
+                let transferAt = null;
+                if (transferRaw) {
+                    const d = new Date(transferRaw);
+                    if (!Number.isNaN(d.getTime())) transferAt = d;
+                }
+
+                // Remove previous slip file if re-submitting after reject
+                if (row.slip_image_url && String(row.slip_image_url).startsWith('/uploads/slips/')) {
+                    try {
+                        const prev = path.join(SLIP_DIR, path.basename(row.slip_image_url));
+                        if (fs.existsSync(prev)) fs.unlinkSync(prev);
+                    } catch (_) { /* ignore */ }
+                }
+
+                await pool.request()
+                    .input('paymentId', sql.Int, paymentId)
+                    .input('slipUrl', sql.NVarChar, slipUrl)
+                    .input('transferAt', sql.DateTime, transferAt)
+                    .query(`
+                        UPDATE BD_PTS.dbo.payments
+                        SET status = 'pending_review',
+                            slip_image_url = @slipUrl,
+                            transfer_at = COALESCE(@transferAt, GETDATE()),
+                            reject_reason = NULL,
+                            reviewed_by = NULL,
+                            reviewed_at = NULL
+                        WHERE payment_id = @paymentId
+                    `);
+
+                res.json({
+                    success: true,
+                    pending_review: true,
+                    message: 'ส่งสลิปแล้ว — รอแอดมินตรวจสอบ เมื่ออนุมัติแล้วจะเปิดสิทธิ์เรียนให้อัตโนมัติ'
                 });
+            } catch (error) {
+                res.status(500).json({ success: false, message: error.message });
             }
-
-            await markPaidAndEnroll(pool, user.user_id, paymentId, row.course_id);
-            res.json({ success: true, message: 'ยืนยันชำระเงินสำเร็จ และเปิดสิทธิ์เรียนแล้ว' });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
-        }
+        });
     });
 
     // ชำระด้วยบัตรเครดิต (ประมวลผลในระบบ — ไม่เก็บเลขบัตรเต็ม)
@@ -591,19 +673,127 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: 'รายการนี้ไม่ใช่ช่องทางบัตรเครดิต' });
             }
 
-            // Demo / sandbox charge — approve valid cards (no gateway keys configured)
+            // Demo / sandbox charge — approve valid cards (gateway auto-approved)
             await pool.request()
                 .input('paymentId', sql.Int, paymentId)
                 .input('method', sql.VarChar, 'card')
-                .query(`UPDATE BD_PTS.dbo.payments SET method = @method WHERE payment_id = @paymentId`);
+                .input('source', sql.VarChar, 'direct_signup')
+                .query(`
+                    UPDATE BD_PTS.dbo.payments
+                    SET method = @method, source = @source
+                    WHERE payment_id = @paymentId
+                `);
 
             await markPaidAndEnroll(pool, user.user_id, paymentId, row.course_id);
 
             const last4 = cardNumber.slice(-4);
             res.json({
                 success: true,
-                message: `ชำระด้วยบัตร •••• ${last4} สำเร็จ และเปิดสิทธิ์เรียนแล้ว`,
+                auto_approved: true,
+                message: `ชำระด้วยบัตร •••• ${last4} สำเร็จ — อนุมัติอัตโนมัติและเปิดสิทธิ์เรียนแล้ว`,
                 last4
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    /** Redeem access code → enroll (source = access_code) */
+    router.post('/access-codes/redeem', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+
+        const code = String(req.body.code || '').trim().toUpperCase();
+        if (!code) {
+            return res.status(400).json({ success: false, message: 'กรุณากรอกรหัสเข้าเรียน' });
+        }
+
+        try {
+            const pool = await poolPromise;
+            const found = await pool.request()
+                .input('code', sql.VarChar, code)
+                .query(`
+                    SELECT TOP 1
+                        a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
+                        a.expires_at, a.flag_use, c.course_name, ISNULL(c.price, 0) AS price
+                    FROM BD_PTS.dbo.access_codes a
+                    INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = a.course_id
+                    WHERE UPPER(a.code) = @code
+                `);
+            if (!found.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบรหัสเข้าเรียน' });
+            }
+            const row = found.recordset[0];
+            if (!(row.flag_use === true || row.flag_use === 1)) {
+                return res.status(400).json({ success: false, message: 'รหัสนี้ถูกปิดใช้งานแล้ว' });
+            }
+            if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+                return res.status(400).json({ success: false, message: 'รหัสนี้หมดอายุแล้ว' });
+            }
+            if (row.max_uses != null && Number(row.used_count || 0) >= Number(row.max_uses)) {
+                return res.status(400).json({ success: false, message: 'รหัสนี้ถูกใช้ครบจำนวนแล้ว' });
+            }
+
+            const alreadyPaid = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, row.course_id)
+                .query(`
+                    SELECT TOP 1 payment_id FROM BD_PTS.dbo.payments
+                    WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'
+                `);
+            if (alreadyPaid.recordset.length) {
+                return res.json({
+                    success: true,
+                    already_paid: true,
+                    message: 'คุณมีสิทธิ์เรียนหลักสูตรนี้อยู่แล้ว'
+                });
+            }
+
+            const enrolled = await ensureEnrolled(pool, user.user_id, row.course_id);
+            if (enrolled) {
+                return res.json({
+                    success: true,
+                    already_enrolled: true,
+                    message: 'คุณลงทะเบียนหลักสูตรนี้อยู่แล้ว'
+                });
+            }
+
+            const reference = `CODE${Date.now()}${user.user_id}`;
+            const inserted = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, row.course_id)
+                .input('amount', sql.Decimal(10, 2), 0)
+                .input('method', sql.VarChar, 'access_code')
+                .input('source', sql.VarChar, 'access_code')
+                .input('reference', sql.VarChar, reference)
+                .input('accessCodeId', sql.Int, row.access_code_id)
+                .query(`
+                    INSERT INTO BD_PTS.dbo.payments
+                    (user_id, course_id, amount, currency, status, method, source, reference_code, access_code_id, paid_at)
+                    OUTPUT INSERTED.payment_id
+                    VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @accessCodeId, NULL)
+                `);
+            const paymentId = inserted.recordset[0].payment_id;
+
+            await pool.request()
+                .input('accessCodeId', sql.Int, row.access_code_id)
+                .query(`
+                    UPDATE BD_PTS.dbo.access_codes
+                    SET used_count = ISNULL(used_count, 0) + 1
+                    WHERE access_code_id = @accessCodeId
+                `);
+
+            await markPaidAndEnroll(pool, user.user_id, paymentId, row.course_id);
+
+            res.json({
+                success: true,
+                message: `ใช้รหัสสำเร็จ — เปิดสิทธิ์เรียนหลักสูตร ${row.course_name} แล้ว`,
+                data: {
+                    payment_id: paymentId,
+                    course_id: row.course_id,
+                    course_name: row.course_name,
+                    source: 'access_code'
+                }
             });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

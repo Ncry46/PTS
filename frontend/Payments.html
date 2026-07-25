@@ -20,7 +20,7 @@
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Payments</span>
     <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.payments.title">ชำระเงินหลักสูตร</h1>
-    <p class="text-on-surface-variant max-w-xl" data-i18n="page.payments.sub">เลือกชำระด้วย QR PromptPay หรือบัตรเครดิต — หลังชำระสำเร็จระบบจะเปิดสิทธิ์เรียนให้ทันที</p>
+    <p class="text-on-surface-variant max-w-xl" data-i18n="page.payments.sub">ชำระด้วยบัตร (อนุมัติอัตโนมัติ) หรือโอน PromptPay แล้วแนบสลิปให้แอดมินตรวจสอบ — หรือใช้รหัสเข้าเรียนได้</p>
   </section>
 
   <div class="pay-layout">
@@ -40,22 +40,36 @@
       <div class="pay-methods" role="tablist" aria-label="ช่องทางชำระเงิน">
         <button type="button" class="pay-method is-active" data-method="promptpay" id="method-qr" role="tab" aria-selected="true">
           <span class="material-symbols-outlined">qr_code_2</span>
-          <strong>QR PromptPay</strong>
-          <span>สแกนจ่ายด้วยแอปธนาคาร</span>
+          <strong>โอน PromptPay</strong>
+          <span>สแกน QR แล้วแนบสลิป</span>
         </button>
         <button type="button" class="pay-method" data-method="card" id="method-card" role="tab" aria-selected="false">
           <span class="material-symbols-outlined">credit_card</span>
           <strong>บัตรเครดิต</strong>
-          <span>Visa / Mastercard</span>
+          <span>อนุมัติอัตโนมัติทันที</span>
+        </button>
+        <button type="button" class="pay-method" data-method="access_code" id="method-code" role="tab" aria-selected="false">
+          <span class="material-symbols-outlined">vpn_key</span>
+          <strong>รหัสเข้าเรียน</strong>
+          <span>กรอกรหัสเพื่อเปิดคอร์ส</span>
         </button>
       </div>
 
-      <!-- PromptPay QR -->
+      <!-- PromptPay QR + slip -->
       <div class="pay-qr-box is-open" id="qr-panel">
         <div class="pay-qr-frame" id="qr-frame"><span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span></div>
         <p class="pay-qr-meta" id="qr-meta">เลือกหลักสูตรแล้วกด “สร้าง QR PromptPay”</p>
         <button type="button" id="create-qr" class="pts-btn pts-btn-primary w-full">สร้าง QR PromptPay</button>
-        <button type="button" id="confirm-qr" class="pts-btn pts-btn-outline w-full mt-2" hidden>ฉันโอนแล้ว — ยืนยันการชำระ</button>
+        <div id="slip-box" class="mt-3" hidden>
+          <label class="pts-field"><span>แนบสลิปโอนเงิน</span>
+            <input type="file" id="slip-file" class="pts-input" accept="image/jpeg,image/png,image/webp,image/gif">
+          </label>
+          <label class="pts-field"><span>วัน-เวลาที่โอน (ถ้าทราบ)</span>
+            <input type="datetime-local" id="transfer-at" class="pts-input">
+          </label>
+          <button type="button" id="confirm-qr" class="pts-btn pts-btn-outline w-full mt-2">ส่งสลิปให้แอดมินตรวจสอบ</button>
+          <p class="text-xs text-on-surface-variant mt-2">หลังส่งสลิป รายการจะรอแอดมินอนุมัติ — เมื่ออนุมัติแล้วจะเปิดสิทธิ์เรียนให้อัตโนมัติ</p>
+        </div>
       </div>
 
       <!-- Credit card -->
@@ -69,7 +83,16 @@
           </div>
         </div>
         <button type="button" id="pay-card" class="pts-btn pts-btn-primary w-full">ชำระด้วยบัตรเครดิต</button>
-        <p class="text-xs text-on-surface-variant mt-2">ระบบไม่เก็บเลขบัตรเต็ม — ใช้เฉพาะเพื่อประมวลผลรายการนี้</p>
+        <p class="text-xs text-on-surface-variant mt-2">ชำระสำเร็จ = อนุมัติอัตโนมัติและเปิดสิทธิ์เรียนทันที · ระบบไม่เก็บเลขบัตรเต็ม</p>
+      </div>
+
+      <!-- Access code -->
+      <div class="pay-card-box" id="code-panel">
+        <label class="pts-field"><span>รหัสเข้าเรียน</span>
+          <input id="access-code" class="pts-input" placeholder="เช่น PTS-CLASS-A1" autocomplete="off">
+        </label>
+        <button type="button" id="redeem-code" class="pts-btn pts-btn-primary w-full">ใช้รหัสเปิดคอร์ส</button>
+        <p class="text-xs text-on-surface-variant mt-2">ใช้รหัสที่ได้รับจากแอดมิน/เจ้าหน้าที่ — ไม่ต้องชำระเงินเพิ่ม</p>
       </div>
 
       <p id="pay-msg" class="pts-msg"></p>
@@ -110,7 +133,9 @@ function syncAmount() {
 }
 
 function setMethod(method) {
-  activeMethod = method === 'card' ? 'card' : 'promptpay';
+  if (method === 'card') activeMethod = 'card';
+  else if (method === 'access_code') activeMethod = 'access_code';
+  else activeMethod = 'promptpay';
   document.querySelectorAll('.pay-method').forEach((btn) => {
     const on = btn.dataset.method === activeMethod;
     btn.classList.toggle('is-active', on);
@@ -118,6 +143,7 @@ function setMethod(method) {
   });
   document.getElementById('qr-panel').classList.toggle('is-open', activeMethod === 'promptpay');
   document.getElementById('card-panel').classList.toggle('is-open', activeMethod === 'card');
+  document.getElementById('code-panel').classList.toggle('is-open', activeMethod === 'access_code');
   setMsg('');
 }
 
@@ -173,7 +199,7 @@ async function init() {
   select.onchange = () => {
     syncAmount();
     activePaymentId = null;
-    document.getElementById('confirm-qr').hidden = true;
+    document.getElementById('slip-box').hidden = true;
     document.getElementById('qr-frame').innerHTML = '<span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span>';
     document.getElementById('qr-meta').textContent = 'เลือกหลักสูตรแล้วกด “สร้าง QR PromptPay”';
   };
@@ -208,8 +234,8 @@ async function init() {
         `ยอด <strong>${money(data.data.amount)}</strong><br>` +
         `รหัสอ้างอิง <strong>${escapeHtml(data.data.reference_code)}</strong><br>` +
         `PromptPay ${escapeHtml(data.promptpay.id_masked || '')}`;
-      document.getElementById('confirm-qr').hidden = false;
-      setMsg(data.message || 'สร้าง QR แล้ว', true);
+      document.getElementById('slip-box').hidden = false;
+      setMsg(data.message || 'สร้าง QR แล้ว — โอนแล้วแนบสลิปด้านล่าง', true);
       await loadPayments();
     } catch (err) {
       setMsg(err.message || 'สร้าง QR ไม่สำเร็จ', false);
@@ -221,14 +247,51 @@ async function init() {
 
   document.getElementById('confirm-qr').onclick = async () => {
     if (!activePaymentId) return setMsg('ยังไม่มีรายการ QR', false);
+    const fileInput = document.getElementById('slip-file');
+    if (!fileInput.files || !fileInput.files[0]) {
+      return setMsg('กรุณาแนบรูปสลิปก่อนส่ง', false);
+    }
     const btn = document.getElementById('confirm-qr');
     btn.disabled = true;
     try {
-      const res = await fetch(`/api/payments/${activePaymentId}/confirm`, { method: 'POST', credentials: 'include' });
+      const fd = new FormData();
+      fd.append('slip', fileInput.files[0]);
+      const transferAt = document.getElementById('transfer-at').value;
+      if (transferAt) fd.append('transfer_at', transferAt);
+      const res = await fetch(`/api/payments/${activePaymentId}/confirm`, {
+        method: 'POST',
+        credentials: 'include',
+        body: fd
+      });
       const data = await res.json();
-      if (!res.ok || data.success === false) throw new Error(data.message || 'ยืนยันไม่สำเร็จ');
-      setMsg(data.message || 'ชำระสำเร็จ', true);
-      document.getElementById('confirm-qr').hidden = true;
+      if (!res.ok || data.success === false) throw new Error(data.message || 'ส่งสลิปไม่สำเร็จ');
+      setMsg(data.message || 'ส่งสลิปแล้ว รอแอดมินตรวจสอบ', true);
+      document.getElementById('slip-box').hidden = true;
+      fileInput.value = '';
+      await loadPayments();
+    } catch (err) {
+      setMsg(err.message, false);
+    } finally {
+      btn.disabled = false;
+    }
+  };
+
+  document.getElementById('redeem-code').onclick = async () => {
+    const btn = document.getElementById('redeem-code');
+    btn.disabled = true;
+    try {
+      const code = document.getElementById('access-code').value.trim();
+      if (!code) throw new Error('กรุณากรอกรหัสเข้าเรียน');
+      const res = await fetch('/api/access-codes/redeem', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code })
+      });
+      const data = await res.json();
+      if (!res.ok || data.success === false) throw new Error(data.message || 'ใช้รหัสไม่สำเร็จ');
+      setMsg(data.message || 'เปิดสิทธิ์เรียนแล้ว', true);
+      document.getElementById('access-code').value = '';
       await loadPayments();
     } catch (err) {
       setMsg(err.message, false);
@@ -292,35 +355,49 @@ async function loadPayments() {
   }
 
   el.innerHTML = data.data.map((p) => {
-    const methodLabel = p.method === 'card' ? 'บัตรเครดิต' : 'QR PromptPay';
-    const status = p.status === 'paid'
-      ? '<span class="pay-status pay-status--paid">ชำระแล้ว</span>'
-      : '<span class="pay-status pay-status--pending">รอชำระ</span>';
-    const action = p.status === 'pending' && p.method !== 'card'
-      ? `<button data-id="${p.payment_id}" class="confirm-pay pts-btn pts-btn-primary">ยืนยันโอนแล้ว</button>`
+    const methodLabel = p.method === 'card'
+      ? 'บัตรเครดิต'
+      : (p.method === 'access_code' ? 'รหัสเข้าเรียน' : 'โอน PromptPay');
+    const sourceLabel = p.source === 'access_code' ? 'ใช้รหัสเข้าเรียน' : 'สมัครผ่านเว็บ';
+    let status;
+    if (p.status === 'paid') {
+      status = p.method === 'card'
+        ? '<span class="pay-status pay-status--paid">อนุมัติอัตโนมัติ</span>'
+        : '<span class="pay-status pay-status--paid">ชำระแล้ว</span>';
+    } else if (p.status === 'pending_review') {
+      status = '<span class="pay-status pay-status--pending">รอแอดมินตรวจสอบ</span>';
+    } else if (p.status === 'rejected') {
+      status = `<span class="pay-status" style="background:#fde8e8;color:#a12626">ถูกปฏิเสธ</span>`;
+    } else {
+      status = '<span class="pay-status pay-status--pending">รอชำระ / รอสลิป</span>';
+    }
+    const action = p.status === 'pending' && p.method !== 'card' && p.method !== 'access_code'
+      ? `<button data-id="${p.payment_id}" class="resume-slip pts-btn pts-btn-primary">แนบสลิป</button>`
       : (p.status === 'pending' && p.method === 'card'
         ? `<button data-id="${p.payment_id}" data-amount="${p.amount}" class="resume-card pts-btn pts-btn-outline">ชำระด้วยบัตร</button>`
-        : '');
+        : (p.status === 'rejected'
+          ? `<button data-id="${p.payment_id}" class="resume-slip pts-btn pts-btn-outline">ส่งสลิปใหม่</button>`
+          : ''));
     return `
       <div class="pts-row" style="padding:14px;margin-bottom:10px">
         <div>
-          <p class="pay-history-method">${methodLabel}</p>
+          <p class="pay-history-method">${methodLabel} · ${sourceLabel}</p>
           <p class="font-bold">${escapeHtml(p.course_name)}</p>
           <p class="text-sm text-on-surface-variant">${money(p.amount)} · ${status}</p>
           <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(p.reference_code || '')}</p>
+          ${p.reject_reason ? `<p class="text-xs mt-1" style="color:#a12626">${escapeHtml(p.reject_reason)}</p>` : ''}
         </div>
         ${action}
       </div>`;
   }).join('');
 
-  el.querySelectorAll('.confirm-pay').forEach((btn) => {
-    btn.onclick = async () => {
-      btn.disabled = true;
-      const r = await fetch(`/api/payments/${btn.dataset.id}/confirm`, { method: 'POST', credentials: 'include' });
-      const j = await r.json();
-      if (!r.ok) setMsg(j.message || 'ยืนยันไม่สำเร็จ', false);
-      else setMsg(j.message || 'ชำระสำเร็จ', true);
-      await loadPayments();
+  el.querySelectorAll('.resume-slip').forEach((btn) => {
+    btn.onclick = () => {
+      activePaymentId = Number(btn.dataset.id);
+      setMethod('promptpay');
+      document.getElementById('slip-box').hidden = false;
+      setMsg('แนบสลิปแล้วกดส่งให้แอดมินตรวจสอบ', true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     };
   });
 

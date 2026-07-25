@@ -70,6 +70,35 @@ async function ensureLearningSchema(pool) {
             paid_at DATETIME NULL,
             created_at DATETIME NOT NULL CONSTRAINT DF_payments_created DEFAULT (GETDATE())
          )`,
+        `IF COL_LENGTH('dbo.payments', 'source') IS NULL
+         ALTER TABLE dbo.payments ADD source VARCHAR(32) NOT NULL
+            CONSTRAINT DF_payments_source DEFAULT ('direct_signup')`,
+        `IF COL_LENGTH('dbo.payments', 'slip_image_url') IS NULL
+         ALTER TABLE dbo.payments ADD slip_image_url NVARCHAR(500) NULL`,
+        `IF COL_LENGTH('dbo.payments', 'transfer_at') IS NULL
+         ALTER TABLE dbo.payments ADD transfer_at DATETIME NULL`,
+        `IF COL_LENGTH('dbo.payments', 'reviewed_by') IS NULL
+         ALTER TABLE dbo.payments ADD reviewed_by INT NULL`,
+        `IF COL_LENGTH('dbo.payments', 'reviewed_at') IS NULL
+         ALTER TABLE dbo.payments ADD reviewed_at DATETIME NULL`,
+        `IF COL_LENGTH('dbo.payments', 'reject_reason') IS NULL
+         ALTER TABLE dbo.payments ADD reject_reason NVARCHAR(500) NULL`,
+        `IF COL_LENGTH('dbo.payments', 'access_code_id') IS NULL
+         ALTER TABLE dbo.payments ADD access_code_id INT NULL`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'access_codes')
+         CREATE TABLE dbo.access_codes (
+            access_code_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            code VARCHAR(64) NOT NULL,
+            course_id INT NOT NULL,
+            max_uses INT NULL,
+            used_count INT NOT NULL CONSTRAINT DF_access_codes_used DEFAULT (0),
+            expires_at DATETIME NULL,
+            note NVARCHAR(255) NULL,
+            flag_use BIT NOT NULL CONSTRAINT DF_access_codes_flag DEFAULT (1),
+            created_by INT NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_access_codes_created DEFAULT (GETDATE()),
+            CONSTRAINT UQ_access_codes_code UNIQUE (code)
+         )`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'course_favorites')
          CREATE TABLE dbo.course_favorites (
             favorite_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

@@ -183,6 +183,96 @@ async function sendOtpEmail(to, otp, purpose) {
     throw err;
 }
 
+/** Generic transactional email (enrollment / payment confirmation). Soft-fail friendly. */
+async function sendHtmlEmail(to, subject, text, html) {
+    const settings = getMergedMailSettings();
+    const from = resolveFrom(settings);
+    if (!from) {
+        const err = new Error('ยังไม่ได้ตั้งอีเมลผู้ส่ง (From Email)');
+        err.code = 'MAIL_FROM_MISSING';
+        throw err;
+    }
+    const mode = String(settings.mode || 'auto').toLowerCase();
+
+    async function viaBrevo() {
+        if (!hasBrevoConfig(settings)) {
+            const err = new Error('ยังไม่ได้ตั้ง Brevo API Key');
+            err.code = 'BREVO_MISSING';
+            throw err;
+        }
+        const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                accept: 'application/json',
+                'content-type': 'application/json',
+                'api-key': String(settings.brevoApiKey || '').trim()
+            },
+            body: JSON.stringify({
+                sender: { name: from.name, email: from.email },
+                to: [{ email: String(to).trim() }],
+                subject,
+                textContent: text,
+                htmlContent: html
+            })
+        });
+        if (!res.ok) {
+            const body = await res.text().catch(() => '');
+            throw new Error(`Brevo error ${res.status}: ${body.slice(0, 200)}`);
+        }
+        return { delivered: true, mode: 'brevo' };
+    }
+
+    async function viaSmtp() {
+        const transporter = createTransporter(settings);
+        if (!transporter) {
+            const err = new Error('ยังไม่ได้ตั้ง SMTP');
+            err.code = 'SMTP_MISSING';
+            throw err;
+        }
+        const info = await transporter.sendMail({
+            from: from.formatted,
+            to: String(to).trim(),
+            subject,
+            text,
+            html
+        });
+        return { delivered: true, mode: 'smtp', messageId: info.messageId || null };
+    }
+
+    if (mode === 'brevo') return viaBrevo();
+    if (mode === 'smtp') return viaSmtp();
+    if (hasBrevoConfig(settings)) {
+        try {
+            return await viaBrevo();
+        } catch (e) {
+            console.error('⚠️ Brevo failed:', e.message);
+            if (!hasSmtpConfig(settings)) throw e;
+        }
+    }
+    if (hasSmtpConfig(settings)) return viaSmtp();
+
+    const err = new Error('ยังไม่ได้ตั้งค่าการส่งอีเมลจริง');
+    err.code = 'MAIL_NOT_CONFIGURED';
+    throw err;
+}
+
+async function sendEnrollmentConfirmEmail(to, { fullName, courseName }) {
+    const name = String(fullName || '').trim() || 'ผู้เรียน';
+    const course = String(courseName || '').trim() || 'หลักสูตร';
+    const subject = `ยืนยันการเปิดสิทธิ์เรียน — ${course} | PTS Learning`;
+    const text = `สวัสดีคุณ ${name}\n\nการชำระเงินได้รับการยืนยันแล้ว และเปิดสิทธิ์เข้าเรียนหลักสูตร "${course}" ให้คุณแล้ว\nเข้าสู่ระบบแล้วไปที่หน้าหลักสูตรของฉันเพื่อเริ่มเรียนได้ทันที\n\n— PTS Learning`;
+    const html = `
+      <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:520px;margin:0 auto;padding:28px;color:#1c1520;background:#fff;border:1px solid #f0e4e7;border-radius:16px">
+        <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#974258;margin-bottom:12px">PTS Learning</div>
+        <h2 style="margin:0 0 12px;font-size:22px;color:#1c1520">เปิดสิทธิ์เรียนแล้ว</h2>
+        <p style="margin:0 0 12px;color:#5c4f55;line-height:1.55">สวัสดีคุณ <strong>${name.replace(/</g, '')}</strong></p>
+        <p style="margin:0 0 18px;color:#5c4f55;line-height:1.55">การชำระเงินได้รับการยืนยันแล้ว และเปิดสิทธิ์เข้าเรียนหลักสูตร <strong>${course.replace(/</g, '')}</strong> ให้คุณแล้ว — รีเฟรชหน้าเว็บแล้วเริ่มเรียนได้ทันที</p>
+        <p style="margin:0;color:#5c4f55;font-size:13px;line-height:1.5">หากมีคำถาม ติดต่อทีม PTS Learning ได้ตามช่องทางในเว็บไซต์</p>
+      </div>
+    `;
+    return sendHtmlEmail(to, subject, text, html);
+}
+
 async function issueEmailOtp(email, purpose = 'reset') {
     const normalized = String(email || '').trim().toLowerCase();
     if (!normalized || !normalized.includes('@')) {
@@ -248,5 +338,7 @@ module.exports = {
     verifyEmailOtp,
     getMailStatus,
     maskEmail,
-    sendOtpEmail
+    sendOtpEmail,
+    sendHtmlEmail,
+    sendEnrollmentConfirmEmail
 };

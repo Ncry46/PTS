@@ -360,6 +360,47 @@
     .adm-c-table-wrap { display:block; }
     .adm-c-cards { display:none; }
   }
+
+  /* —— Admin payments —— */
+  .adm-pay-tabs {
+    display:flex; flex-wrap:wrap; gap:8px; margin:0 0 14px;
+  }
+  .adm-pay-tab {
+    border:1px solid rgba(151,66,88,.2); background:#fff; color:#5c4f55;
+    border-radius:999px; padding:8px 14px; font:inherit; font-size:13px; font-weight:700;
+    cursor:pointer;
+  }
+  .adm-pay-tab.is-active {
+    background:#974258; border-color:#974258; color:#fff;
+  }
+  .adm-pay-tab__n {
+    display:inline-flex; min-width:1.4em; justify-content:center;
+    margin-left:6px; opacity:.85; font-variant-numeric:tabular-nums;
+  }
+  .adm-pay-src {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700;
+    background:#eee; color:#555; white-space:nowrap;
+  }
+  .adm-pay-src--direct { background:#e8f1fb; color:#1e4f8c; }
+  .adm-pay-src--code { background:#f3e8fb; color:#6b2d8b; }
+  .adm-pay-st {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700;
+    white-space:nowrap;
+  }
+  .adm-pay-st--auto { background:#e6f6ec; color:#166c39; }
+  .adm-pay-st--pending { background:#fff4df; color:#9a6700; }
+  .adm-pay-st--paid { background:#e8f1fb; color:#1e4f8c; }
+  .adm-pay-st--rejected { background:#fde8e8; color:#a12626; }
+  .adm-pay-st--wait { background:#f0f0f0; color:#666; }
+  .adm-pay-slip {
+    width:64px; height:64px; object-fit:cover; border-radius:10px;
+    border:1px solid rgba(151,66,88,.18); background:#f7f2f5; cursor:zoom-in;
+  }
+  .adm-pay-slip-link { display:inline-block; }
+  .adm-pay-meta { font-size:12px; color:#5c4f55; line-height:1.45; }
+  .adm-pay-section { margin-top:28px; padding-top:18px; border-top:1px solid rgba(151,66,88,.12); }
 </style>
 </head>
 <body class="pts-body text-on-surface">
@@ -1738,14 +1779,313 @@ async function renderPosts() {
 }
 
 async function renderPayments() {
-  const { data } = await api('/api/admin/payments');
-  document.getElementById('panel').innerHTML = `
-    <div class="space-y-2">${data.map(p => `
-      <div class="border rounded-xl p-3">
-        <p class="font-bold">${escapeHtml(p.full_name)} · ${escapeHtml(p.course_name)}</p>
-        <p class="text-sm text-on-surface-variant">${Number(p.amount).toLocaleString('th-TH')} บาท · ${escapeHtml(p.status)} · ${escapeHtml(p.reference_code || '')}</p>
-      </div>`).join('') || '<p>ยังไม่มีรายการชำระเงิน</p>'}
-    </div>`;
+  if (!coursesCache.length) {
+    try {
+      const { data } = await api('/api/admin/courses');
+      coursesCache = data || [];
+    } catch (_) { coursesCache = []; }
+  }
+
+  const [payRes, codeRes] = await Promise.all([
+    api('/api/admin/payments'),
+    api('/api/admin/access-codes').catch(() => ({ data: [] }))
+  ]);
+  let payments = Array.isArray(payRes.data) ? payRes.data.slice() : [];
+  let accessCodes = Array.isArray(codeRes.data) ? codeRes.data.slice() : [];
+  let filter = 'pending_review';
+
+  const fmtMoney = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+  const fmtDt = (v) => {
+    if (!v) return '—';
+    try { return new Date(v).toLocaleString('th-TH'); } catch (_) { return '—'; }
+  };
+
+  const sourceBadge = (p) => {
+    const src = String(p.source || 'direct_signup');
+    if (src === 'access_code') {
+      return `<span class="adm-pay-src adm-pay-src--code" title="ใช้รหัสเข้าเรียน">🔑 ใช้รหัสเข้าเรียน</span>`;
+    }
+    return `<span class="adm-pay-src adm-pay-src--direct" title="สมัครผ่านเว็บ">🏷️ สมัครผ่านเว็บ</span>`;
+  };
+
+  const statusBadge = (p) => {
+    const w = p.workflow || p.status;
+    if (w === 'auto_approved' || (p.status === 'paid' && p.is_gateway)) {
+      return `<span class="adm-pay-st adm-pay-st--auto">🟢 อนุมัติอัตโนมัติ</span>`;
+    }
+    if (p.status === 'pending_review') {
+      return `<span class="adm-pay-st adm-pay-st--pending">🟡 รอตรวจสอบ</span>`;
+    }
+    if (p.status === 'paid') {
+      return `<span class="adm-pay-st adm-pay-st--paid">อนุมัติแล้ว</span>`;
+    }
+    if (p.status === 'rejected') {
+      return `<span class="adm-pay-st adm-pay-st--rejected">ปฏิเสธ</span>`;
+    }
+    return `<span class="adm-pay-st adm-pay-st--wait">รอชำระ / รอสลิป</span>`;
+  };
+
+  const methodLabel = (p) => {
+    const m = String(p.method || '').toLowerCase();
+    if (m === 'card') return 'บัตรเครดิต (Gateway)';
+    if (m === 'access_code') return 'รหัสเข้าเรียน';
+    if (m === 'promptpay' || m === 'bank_transfer') return 'โอนเงิน / PromptPay + สลิป';
+    return m || '—';
+  };
+
+  const counts = () => ({
+    pending_review: payments.filter((p) => p.status === 'pending_review').length,
+    paid: payments.filter((p) => p.status === 'paid').length,
+    rejected: payments.filter((p) => p.status === 'rejected').length,
+    all: payments.length
+  });
+
+  const filteredRows = () => {
+    if (filter === 'pending_review') return payments.filter((p) => p.status === 'pending_review');
+    if (filter === 'paid') return payments.filter((p) => p.status === 'paid');
+    if (filter === 'rejected') return payments.filter((p) => p.status === 'rejected');
+    return payments;
+  };
+
+  const rowActions = (p) => {
+    if (p.status === 'pending_review' || (p.status === 'rejected' && p.slip_image_url)) {
+      return `<div class="adm-c-actions">
+        <button type="button" class="pts-btn pts-btn-primary pay-approve" data-id="${p.payment_id}">อนุมัติ</button>
+        ${p.status === 'pending_review'
+          ? `<button type="button" class="pts-btn pts-btn-ghost pay-reject" data-id="${p.payment_id}" style="color:#ba1a1a;">ปฏิเสธ</button>`
+          : ''}
+      </div>`;
+    }
+    return `<span class="adm-pay-meta">ไม่ต้องดำเนินการ</span>`;
+  };
+
+  const paint = () => {
+    const c = counts();
+    const rows = filteredRows();
+    document.getElementById('panel').innerHTML = `
+      <div class="adm-c-head">
+        <div>
+          <h3>จัดการการชำระเงิน</h3>
+          <p>แยกที่มาสมัคร · Gateway อนุมัติอัตโนมัติ · โอนแนบสลิปรอตรวจสอบ</p>
+        </div>
+      </div>
+      <div class="adm-pay-tabs" role="tablist">
+        <button type="button" class="adm-pay-tab ${filter === 'pending_review' ? 'is-active' : ''}" data-filter="pending_review">
+          รอตรวจสอบ<span class="adm-pay-tab__n">${c.pending_review}</span>
+        </button>
+        <button type="button" class="adm-pay-tab ${filter === 'paid' ? 'is-active' : ''}" data-filter="paid">
+          อนุมัติแล้ว / อัตโนมัติ<span class="adm-pay-tab__n">${c.paid}</span>
+        </button>
+        <button type="button" class="adm-pay-tab ${filter === 'rejected' ? 'is-active' : ''}" data-filter="rejected">
+          ปฏิเสธ<span class="adm-pay-tab__n">${c.rejected}</span>
+        </button>
+        <button type="button" class="adm-pay-tab ${filter === 'all' ? 'is-active' : ''}" data-filter="all">
+          ทั้งหมด<span class="adm-pay-tab__n">${c.all}</span>
+        </button>
+      </div>
+
+      <div class="adm-c-table-wrap">
+        <table class="adm-c-table">
+          <thead>
+            <tr>
+              <th>นักเรียน</th>
+              <th>หลักสูตร</th>
+              <th>ที่มา</th>
+              <th>ช่องทาง</th>
+              <th>ยอด / เวลาโอน</th>
+              <th>สลิป</th>
+              <th>สถานะ</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((p) => `
+              <tr>
+                <td>
+                  <div class="adm-c-name">${escapeHtml(p.full_name || '—')}</div>
+                  <div class="adm-pay-meta">${escapeHtml(p.email || '')}</div>
+                </td>
+                <td>${escapeHtml(p.course_name || '—')}</td>
+                <td>${sourceBadge(p)}</td>
+                <td><span class="adm-pay-meta">${escapeHtml(methodLabel(p))}</span></td>
+                <td>
+                  <div class="adm-c-name">฿${fmtMoney(p.amount)}</div>
+                  <div class="adm-pay-meta">${fmtDt(p.transfer_at || p.paid_at || p.created_at)}</div>
+                  <div class="adm-pay-meta">${escapeHtml(p.reference_code || '')}</div>
+                </td>
+                <td>
+                  ${p.slip_image_url
+                    ? `<a class="adm-pay-slip-link" href="${escapeHtml(p.slip_image_url)}" target="_blank" rel="noopener">
+                        <img class="adm-pay-slip" src="${escapeHtml(p.slip_image_url)}" alt="สลิป">
+                      </a>`
+                    : '<span class="adm-pay-meta">—</span>'}
+                </td>
+                <td>
+                  ${statusBadge(p)}
+                  ${p.reject_reason ? `<div class="adm-pay-meta mt-1">${escapeHtml(p.reject_reason)}</div>` : ''}
+                </td>
+                <td>${rowActions(p)}</td>
+              </tr>`).join('') || '<tr><td colspan="8" class="adm-c-empty" style="border:0">ไม่มีรายการในแท็บนี้</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="adm-c-cards">
+        ${rows.map((p) => `
+          <article class="adm-c-card">
+            <div class="adm-c-card__top">
+              <div>
+                <div class="adm-c-name">${escapeHtml(p.full_name || '—')}</div>
+                <div class="adm-pay-meta">${escapeHtml(p.email || '')}</div>
+              </div>
+              ${statusBadge(p)}
+            </div>
+            <div class="adm-c-card__meta">
+              <span>${escapeHtml(p.course_name || '—')}</span>
+              <span>฿${fmtMoney(p.amount)}</span>
+              <span>${fmtDt(p.transfer_at || p.paid_at || p.created_at)}</span>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0">
+              ${sourceBadge(p)}
+              <span class="adm-pay-meta">${escapeHtml(methodLabel(p))}</span>
+            </div>
+            ${p.slip_image_url
+              ? `<a href="${escapeHtml(p.slip_image_url)}" target="_blank" rel="noopener"><img class="adm-pay-slip" src="${escapeHtml(p.slip_image_url)}" alt="สลิป"></a>`
+              : ''}
+            ${rowActions(p)}
+          </article>`).join('') || '<div class="adm-c-empty">ไม่มีรายการในแท็บนี้</div>'}
+      </div>
+
+      <div class="adm-pay-section">
+        <div class="adm-c-head">
+          <div>
+            <h3>รหัสเข้าเรียน (Access Code)</h3>
+            <p>สร้างรหัสให้นักเรียนกรอกเพื่อเปิดคอร์ส — จะบันทึกเป็นที่มา “ใช้รหัสเข้าเรียน”</p>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
+            <select id="ac-course" class="mt-1 w-full border rounded-xl px-3 py-2">
+              <option value="">-- เลือก --</option>
+              ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+            </select>
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">รหัส (ว่าง = สุ่มให้)
+            <input id="ac-code" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น PTS-CLASS-A1">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">จำนวนครั้งใช้ได้ (ว่าง = ไม่จำกัด)
+            <input id="ac-max" type="number" min="1" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 30">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">หมดอายุ (ถ้ามี)
+            <input id="ac-exp" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant md:col-span-2">หมายเหตุ
+            <input id="ac-note" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น รุ่น ก.ค. 69">
+          </label>
+        </div>
+        <button type="button" id="ac-create" class="pts-btn pts-btn-primary mb-2">สร้างรหัส</button>
+        <p id="ac-msg" class="pts-msg mb-3"></p>
+        <div class="space-y-2">
+          ${accessCodes.map((a) => `
+            <div class="border rounded-xl p-3 flex flex-wrap justify-between gap-2 items-start">
+              <div>
+                <p class="font-bold font-mono tracking-wide">${escapeHtml(a.code)}</p>
+                <p class="adm-pay-meta">${escapeHtml(a.course_name || '')} · ใช้แล้ว ${Number(a.used_count || 0)}${a.max_uses != null ? ` / ${a.max_uses}` : ''}</p>
+                <p class="adm-pay-meta">${a.expires_at ? `หมดอายุ ${fmtDt(a.expires_at)}` : 'ไม่หมดอายุ'}${a.note ? ` · ${escapeHtml(a.note)}` : ''}</p>
+              </div>
+              <button type="button" class="pts-btn pts-btn-outline ac-toggle" data-id="${a.access_code_id}" data-flag="${a.flag_use ? 0 : 1}">
+                ${a.flag_use ? 'ปิดใช้' : 'เปิดใช้'}
+              </button>
+            </div>`).join('') || '<p class="adm-pay-meta">ยังไม่มีรหัสเข้าเรียน</p>'}
+        </div>
+      </div>
+    `;
+
+    document.querySelectorAll('.adm-pay-tab').forEach((btn) => {
+      btn.onclick = () => { filter = btn.dataset.filter; paint(); };
+    });
+
+    document.querySelectorAll('.pay-approve').forEach((btn) => {
+      btn.onclick = async () => {
+        if (!confirm('อนุมัติรายการนี้และเปิดสิทธิ์คอร์สให้นักเรียนทันที?')) return;
+        btn.disabled = true;
+        try {
+          await api(`/api/admin/payments/${btn.dataset.id}/approve`, { method: 'POST', body: '{}' });
+          const fresh = await api('/api/admin/payments');
+          payments = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          paint();
+        } catch (e) {
+          alert(e.message || 'อนุมัติไม่สำเร็จ');
+          btn.disabled = false;
+        }
+      };
+    });
+
+    document.querySelectorAll('.pay-reject').forEach((btn) => {
+      btn.onclick = async () => {
+        const reason = prompt('เหตุผลที่ปฏิเสธ', 'สลิปไม่ถูกต้องหรือยอดไม่ตรง');
+        if (reason == null) return;
+        btn.disabled = true;
+        try {
+          await api(`/api/admin/payments/${btn.dataset.id}/reject`, {
+            method: 'POST',
+            body: JSON.stringify({ reason })
+          });
+          const fresh = await api('/api/admin/payments');
+          payments = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          paint();
+        } catch (e) {
+          alert(e.message || 'ปฏิเสธไม่สำเร็จ');
+          btn.disabled = false;
+        }
+      };
+    });
+
+    const createBtn = document.getElementById('ac-create');
+    if (createBtn) {
+      createBtn.onclick = async () => {
+        const msg = document.getElementById('ac-msg');
+        try {
+          msg.textContent = 'กำลังสร้าง...';
+          msg.className = 'pts-msg mb-3';
+          await api('/api/admin/access-codes', {
+            method: 'POST',
+            body: JSON.stringify({
+              course_id: document.getElementById('ac-course').value,
+              code: document.getElementById('ac-code').value,
+              max_uses: document.getElementById('ac-max').value,
+              expires_at: document.getElementById('ac-exp').value,
+              note: document.getElementById('ac-note').value
+            })
+          });
+          const fresh = await api('/api/admin/access-codes');
+          accessCodes = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          paint();
+        } catch (e) {
+          msg.textContent = e.message || 'สร้างไม่สำเร็จ';
+          msg.className = 'pts-msg pts-msg--err mb-3';
+        }
+      };
+    }
+
+    document.querySelectorAll('.ac-toggle').forEach((btn) => {
+      btn.onclick = async () => {
+        try {
+          await api(`/api/admin/access-codes/${btn.dataset.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ flag_use: Number(btn.dataset.flag) })
+          });
+          const fresh = await api('/api/admin/access-codes');
+          accessCodes = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          paint();
+        } catch (e) {
+          alert(e.message || 'อัปเดตไม่สำเร็จ');
+        }
+      };
+    });
+  };
+
+  paint();
 }
 
 async function renderMail() {

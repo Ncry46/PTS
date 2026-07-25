@@ -86,7 +86,7 @@ window.PTSLangDict = {
   'page.certificates.title': { th: 'ใบประกาศนียบัตรของคุณ', en: 'Your certificates' },
   'page.certificates.sub': { th: 'ใบประกาศมาตรฐาน Personal Assistant Academy — ออกอัตโนมัติเมื่อเรียนจบหลักสูตร ฟอร์แมตเดียวกันทุกใบ', en: 'Standard Personal Assistant Academy certificates — issued automatically when you complete a course' },
   'page.payments.title': { th: 'ชำระเงินหลักสูตร', en: 'Course payments' },
-  'page.payments.sub': { th: 'เลือกชำระด้วย QR PromptPay หรือบัตรเครดิต — หลังชำระสำเร็จระบบจะเปิดสิทธิ์เรียนให้ทันที', en: 'Pay with PromptPay QR or card — access unlocks right after payment' },
+  'page.payments.sub': { th: 'ชำระด้วยบัตร (อนุมัติอัตโนมัติ) หรือโอน PromptPay แล้วแนบสลิปให้แอดมินตรวจสอบ — หรือใช้รหัสเข้าเรียนได้', en: 'Pay by card (auto-approved), transfer with slip for admin review, or redeem an access code' },
   'page.favorites.title': { th: 'รายการโปรด', en: 'Favorites' },
   'page.favorites.sub': { th: 'รวมหลักสูตรโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว', en: 'Saved courses and liked posts in one place' },
   'page.schedule.title': { th: 'ตารางเรียนของฉัน', en: 'My schedule' },

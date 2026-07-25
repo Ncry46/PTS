@@ -13,6 +13,7 @@ const {
     ensureCertDir,
     listCertAssets
 } = require('./certAssets');
+const { markPaidAndEnroll } = require('./paymentActions');
 
 const HERO_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const HERO_ICONS = new Set([
@@ -514,16 +515,274 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!requireAdmin(req, res)) return;
         try {
             const pool = await poolPromise;
-            const result = await pool.request().query(`
-                SELECT TOP 200
-                    p.payment_id, p.amount, p.status, p.method, p.reference_code, p.paid_at, p.created_at,
-                    u.full_name, u.email, c.course_name
+            const statusFilter = String(req.query.status || '').trim().toLowerCase();
+            const sourceFilter = String(req.query.source || '').trim().toLowerCase();
+            const request = pool.request();
+            let where = 'WHERE 1=1';
+            if (statusFilter === 'pending' || statusFilter === 'pending_review') {
+                where += ` AND p.status = 'pending_review'`;
+            } else if (statusFilter === 'paid') {
+                where += ` AND p.status = 'paid'`;
+            } else if (statusFilter === 'rejected') {
+                where += ` AND p.status = 'rejected'`;
+            } else if (statusFilter === 'open') {
+                where += ` AND p.status IN ('pending', 'pending_review')`;
+            }
+            if (sourceFilter === 'direct_signup' || sourceFilter === 'access_code') {
+                request.input('source', sql.VarChar, sourceFilter);
+                where += ' AND ISNULL(p.source, \'direct_signup\') = @source';
+            }
+            const result = await request.query(`
+                SELECT TOP 300
+                    p.payment_id, p.user_id, p.course_id, p.amount, p.status, p.method,
+                    ISNULL(p.source, 'direct_signup') AS source,
+                    p.reference_code, p.paid_at, p.created_at,
+                    p.slip_image_url, p.transfer_at, p.reviewed_by, p.reviewed_at, p.reject_reason,
+                    p.access_code_id,
+                    u.full_name, u.email,
+                    c.course_name,
+                    reviewer.full_name AS reviewer_name,
+                    ac.code AS access_code
                 FROM BD_PTS.dbo.payments p
                 INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
                 INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = p.course_id
-                ORDER BY p.created_at DESC
+                LEFT JOIN BD_PTS.dbo.users_main reviewer ON reviewer.user_id = p.reviewed_by
+                LEFT JOIN BD_PTS.dbo.access_codes ac ON ac.access_code_id = p.access_code_id
+                ${where}
+                ORDER BY
+                    CASE WHEN p.status = 'pending_review' THEN 0
+                         WHEN p.status = 'pending' THEN 1
+                         WHEN p.status = 'rejected' THEN 2
+                         ELSE 3 END,
+                    COALESCE(p.transfer_at, p.created_at) DESC
+            `);
+
+            const rows = result.recordset.map((p) => {
+                const method = String(p.method || '').toLowerCase();
+                const status = String(p.status || '').toLowerCase();
+                const isGateway = method === 'card';
+                const isManual = method === 'promptpay' || method === 'bank_transfer';
+                let workflow = 'other';
+                if (status === 'pending_review') workflow = 'pending_review';
+                else if (status === 'paid' && isGateway) workflow = 'auto_approved';
+                else if (status === 'paid' && String(p.source) === 'access_code') workflow = 'access_code';
+                else if (status === 'paid' && isManual && p.reviewed_by) workflow = 'manual_approved';
+                else if (status === 'paid') workflow = 'paid';
+                else if (status === 'rejected') workflow = 'rejected';
+                else if (status === 'pending') workflow = 'awaiting_payment';
+                return { ...p, workflow, is_gateway: isGateway, is_manual_transfer: isManual };
+            });
+
+            const counts = {
+                pending_review: rows.filter((r) => r.status === 'pending_review').length,
+                paid: rows.filter((r) => r.status === 'paid').length,
+                rejected: rows.filter((r) => r.status === 'rejected').length,
+                all: rows.length
+            };
+
+            res.json({ success: true, data: rows, counts });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.post('/payments/:id/approve', async (req, res) => {
+        const admin = requireAdmin(req, res);
+        if (!admin) return;
+        const paymentId = parseInt(req.params.id, 10);
+        if (!paymentId) return res.status(400).json({ success: false, message: 'รหัสรายการไม่ถูกต้อง' });
+
+        try {
+            const pool = await poolPromise;
+            const payment = await pool.request()
+                .input('paymentId', sql.Int, paymentId)
+                .query(`
+                    SELECT payment_id, user_id, course_id, status, method, slip_image_url
+                    FROM BD_PTS.dbo.payments
+                    WHERE payment_id = @paymentId
+                `);
+            if (!payment.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงิน' });
+            }
+            const row = payment.recordset[0];
+            if (row.status === 'paid') {
+                return res.json({ success: true, message: 'รายการนี้ได้รับการอนุมัติแล้วก่อนหน้านี้' });
+            }
+            if (row.status !== 'pending_review' && row.status !== 'pending' && row.status !== 'rejected') {
+                return res.status(400).json({ success: false, message: 'สถานะรายการนี้ไม่อนุมัติได้' });
+            }
+
+            await markPaidAndEnroll(pool, row.user_id, paymentId, row.course_id, {
+                reviewedBy: admin.user_id
+            });
+
+            res.json({
+                success: true,
+                message: 'อนุมัติแล้ว — เปิดสิทธิ์คอร์สให้นักเรียนและส่งการแจ้งเตือนแล้ว'
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.post('/payments/:id/reject', async (req, res) => {
+        const admin = requireAdmin(req, res);
+        if (!admin) return;
+        const paymentId = parseInt(req.params.id, 10);
+        if (!paymentId) return res.status(400).json({ success: false, message: 'รหัสรายการไม่ถูกต้อง' });
+        const reason = String(req.body.reason || '').trim() || 'สลิปไม่ถูกต้องหรือยอดไม่ตรง';
+
+        try {
+            const pool = await poolPromise;
+            const payment = await pool.request()
+                .input('paymentId', sql.Int, paymentId)
+                .query(`
+                    SELECT payment_id, user_id, course_id, status
+                    FROM BD_PTS.dbo.payments
+                    WHERE payment_id = @paymentId
+                `);
+            if (!payment.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงิน' });
+            }
+            const row = payment.recordset[0];
+            if (row.status === 'paid') {
+                return res.status(400).json({ success: false, message: 'รายการที่อนุมัติแล้ว ไม่สามารถปฏิเสธได้' });
+            }
+
+            await pool.request()
+                .input('paymentId', sql.Int, paymentId)
+                .input('reason', sql.NVarChar, reason.slice(0, 500))
+                .input('reviewedBy', sql.Int, admin.user_id)
+                .query(`
+                    UPDATE BD_PTS.dbo.payments
+                    SET status = 'rejected',
+                        reject_reason = @reason,
+                        reviewed_by = @reviewedBy,
+                        reviewed_at = GETDATE()
+                    WHERE payment_id = @paymentId
+                `);
+
+            const { createNotification } = require('./ensureSchema');
+            await createNotification(
+                pool,
+                row.user_id,
+                'การชำระเงินไม่ผ่านการตรวจสอบ',
+                reason,
+                'Payments.html'
+            ).catch(() => {});
+
+            res.json({ success: true, message: 'ปฏิเสธรายการแล้ว' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.get('/access-codes', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request().query(`
+                SELECT TOP 200
+                    a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
+                    a.expires_at, a.note, a.flag_use, a.created_at, a.created_by,
+                    c.course_name, u.full_name AS created_by_name
+                FROM BD_PTS.dbo.access_codes a
+                INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = a.course_id
+                LEFT JOIN BD_PTS.dbo.users_main u ON u.user_id = a.created_by
+                ORDER BY a.created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.post('/access-codes', async (req, res) => {
+        const admin = requireAdmin(req, res);
+        if (!admin) return;
+        const courseId = parseInt(req.body.course_id, 10);
+        let code = String(req.body.code || '').trim().toUpperCase().replace(/\s+/g, '');
+        const note = String(req.body.note || '').trim().slice(0, 255) || null;
+        const maxUsesRaw = req.body.max_uses;
+        const maxUses = maxUsesRaw === '' || maxUsesRaw == null ? null : parseInt(maxUsesRaw, 10);
+        const expiresRaw = String(req.body.expires_at || '').trim();
+
+        if (!courseId) return res.status(400).json({ success: false, message: 'เลือกหลักสูตรก่อน' });
+        if (!code) {
+            code = `PTS-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        }
+        if (code.length < 4) return res.status(400).json({ success: false, message: 'รหัสสั้นเกินไป' });
+        if (maxUses != null && (Number.isNaN(maxUses) || maxUses < 1)) {
+            return res.status(400).json({ success: false, message: 'จำนวนครั้งใช้ไม่ถูกต้อง' });
+        }
+
+        let expiresAt = null;
+        if (expiresRaw) {
+            const d = new Date(expiresRaw);
+            if (Number.isNaN(d.getTime())) {
+                return res.status(400).json({ success: false, message: 'วันหมดอายุไม่ถูกต้อง' });
+            }
+            expiresAt = d;
+        }
+
+        try {
+            const pool = await poolPromise;
+            const course = await pool.request()
+                .input('courseId', sql.Int, courseId)
+                .query(`SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
+            if (!course.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
+            }
+
+            const inserted = await pool.request()
+                .input('code', sql.VarChar, code)
+                .input('courseId', sql.Int, courseId)
+                .input('maxUses', sql.Int, maxUses)
+                .input('expiresAt', sql.DateTime, expiresAt)
+                .input('note', sql.NVarChar, note)
+                .input('createdBy', sql.Int, admin.user_id)
+                .query(`
+                    INSERT INTO BD_PTS.dbo.access_codes
+                    (code, course_id, max_uses, used_count, expires_at, note, flag_use, created_by)
+                    OUTPUT INSERTED.access_code_id, INSERTED.code, INSERTED.course_id, INSERTED.max_uses,
+                           INSERTED.used_count, INSERTED.expires_at, INSERTED.note, INSERTED.flag_use, INSERTED.created_at
+                    VALUES (@code, @courseId, @maxUses, 0, @expiresAt, @note, 1, @createdBy)
+                `);
+
+            res.json({
+                success: true,
+                message: 'สร้างรหัสเข้าเรียนแล้ว',
+                data: { ...inserted.recordset[0], course_name: course.recordset[0].course_name }
+            });
+        } catch (error) {
+            if (String(error.message || '').includes('UQ_access_codes_code') || String(error.number) === '2627') {
+                return res.status(409).json({ success: false, message: 'รหัสนี้มีอยู่แล้ว' });
+            }
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.patch('/access-codes/:id', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ success: false, message: 'รหัสไม่ถูกต้อง' });
+        const flag = req.body.flag_use;
+        if (flag !== 0 && flag !== 1 && flag !== true && flag !== false) {
+            return res.status(400).json({ success: false, message: 'ระบุ flag_use เป็น 0 หรือ 1' });
+        }
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request()
+                .input('id', sql.Int, id)
+                .input('flag', sql.Bit, flag ? 1 : 0)
+                .query(`
+                    UPDATE BD_PTS.dbo.access_codes SET flag_use = @flag
+                    WHERE access_code_id = @id
+                `);
+            if (!result.rowsAffected?.[0]) {
+                return res.status(404).json({ success: false, message: 'ไม่พบรหัส' });
+            }
+            res.json({ success: true, message: flag ? 'เปิดใช้รหัสแล้ว' : 'ปิดใช้รหัสแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

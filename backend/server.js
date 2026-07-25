@@ -62,6 +62,7 @@ try {
 } catch (_) {
     try { fs.mkdirSync(path.join(uploadsDir, 'cert'), { recursive: true }); } catch (__) {}
 }
+try { fs.mkdirSync(path.join(uploadsDir, 'slips'), { recursive: true }); } catch (_) {}
 
 // เสิร์ฟหน้าบ้านจาก frontend/
 app.use(express.static(frontendDir));
