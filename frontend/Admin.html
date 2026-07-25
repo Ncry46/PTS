@@ -417,8 +417,6 @@ async function renderCourses() {
     catch (_) { return '—'; }
   };
 
-  const courseCode = (id) => `C-${String(id).padStart(3, '0')}`;
-
   const actionBtns = (c) => `
     <div class="adm-c-actions">
       <button type="button" class="pts-btn pts-btn-outline edit-course" data-id="${c.course_id}">แก้ไข</button>
@@ -432,7 +430,7 @@ async function renderCourses() {
     <tr data-course-id="${c.course_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสหลักสูตร">${courseCode(c.course_id)}</span>
+          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
         </div>
       </td>
@@ -449,7 +447,7 @@ async function renderCourses() {
     <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสหลักสูตร">${courseCode(c.course_id)}</span>
+          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
@@ -468,7 +466,6 @@ async function renderCourses() {
     if (!q) return true;
     const hay = [
       c.course_id,
-      courseCode(c.course_id),
       c.course_name,
       c.instructor_name,
       c.delivery_mode,
@@ -502,7 +499,7 @@ async function renderCourses() {
       </div>
     </div>
     <div class="adm-c-tools">
-      <input id="course-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / รหัส C-001 / วิทยากร / รูปแบบ..." autocomplete="off">
+      <input id="course-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / ID / วิทยากร / รูปแบบ..." autocomplete="off">
       <span class="adm-c-count" id="course-count">0 หลักสูตร</span>
     </div>
     <div id="course-list-area"></div>
@@ -534,7 +531,7 @@ async function renderCourses() {
       formTitle.textContent = 'แก้ไขหลักสูตร';
       createBtn.textContent = 'บันทึกการแก้ไข';
       cancelBtn.classList.remove('hidden');
-      formMsg.textContent = `กำลังแก้ไข ${courseCode(course.course_id)}`;
+      formMsg.textContent = `กำลังแก้ไข ID ${course.course_id}`;
       formMsg.className = 'pts-msg mb-4';
       document.querySelectorAll(`[data-course-id="${course.course_id}"]`).forEach((el) => {
         el.classList.add('is-editing');
