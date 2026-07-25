@@ -242,20 +242,36 @@
   /* —— Admin courses: table (desktop) / compact cards (mobile) —— */
   .adm-c-head {
     display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
-    gap:10px; margin: 8px 0 14px;
+    gap:10px; margin: 8px 0 12px;
   }
   .adm-c-head h3 { margin:0; font-size:1.05rem; font-weight:700; }
   .adm-c-head p { margin:4px 0 0; font-size:13px; color:var(--pts-muted,#5c4f55); }
+  .adm-c-tools {
+    display:flex; flex-wrap:wrap; align-items:center; gap:10px; margin:0 0 12px;
+  }
+  .adm-c-search {
+    flex:1 1 220px; min-width:180px; max-width:420px;
+    border:1px solid rgba(151,66,88,.18); border-radius:12px;
+    padding:10px 12px; font:inherit; background:#fff; color:#1c1520;
+  }
+  .adm-c-search:focus {
+    outline:none; border-color:rgba(151,66,88,.45); box-shadow:0 0 0 3px rgba(151,66,88,.12);
+  }
   .adm-c-count {
     font-size:12px; font-weight:700; color:#974258;
     background:rgba(151,66,88,.1); padding:6px 10px; border-radius:999px;
+    white-space:nowrap;
   }
-  .adm-c-table-wrap { display:none; overflow:auto; border:1px solid rgba(151,66,88,.14); border-radius:16px; background:#fff; }
+  .adm-c-table-wrap {
+    display:none; overflow:auto; border:1px solid rgba(151,66,88,.14);
+    border-radius:16px; background:#fff;
+    max-height: calc(44px + (10 * 58px));
+  }
   .adm-c-table { width:100%; border-collapse:collapse; min-width:780px; font-size:13px; }
   .adm-c-table th {
     text-align:left; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
     color:#5c4f55; padding:12px 14px; background:#f7f2f5; border-bottom:1px solid rgba(151,66,88,.12);
-    white-space:nowrap;
+    white-space:nowrap; position:sticky; top:0; z-index:2;
   }
   .adm-c-table td {
     padding:12px 14px; border-bottom:1px solid rgba(151,66,88,.08);
@@ -285,7 +301,12 @@
   .adm-c-badge.is-on { background:rgba(151,66,88,.12); color:#974258; }
   .adm-c-actions { display:flex; flex-wrap:wrap; gap:6px; }
   .adm-c-actions .pts-btn { padding:6px 10px; font-size:12px; height:auto; min-height:0; }
-  .adm-c-cards { display:grid; gap:10px; }
+  .adm-c-cards {
+    display:grid; gap:10px;
+    max-height: calc(10 * 108px);
+    overflow:auto;
+    padding-right:2px;
+  }
   .adm-c-card {
     border:1px solid rgba(151,66,88,.14); border-radius:14px; background:#fff;
     padding:12px 14px; display:grid; gap:8px;
@@ -395,7 +416,7 @@ async function renderCourses() {
       <button type="button" class="pts-btn pts-btn-ghost del-course" data-id="${c.course_id}" style="color:#ba1a1a;">ลบ</button>
     </div>`;
 
-  const tableRows = data.map((c) => `
+  const rowHtml = (c) => `
     <tr data-course-id="${c.course_id}">
       <td>
         <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
@@ -408,9 +429,9 @@ async function renderCourses() {
       <td><span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span></td>
       <td>${fmtDate(c.created_at)}</td>
       <td>${actionBtns(c)}</td>
-    </tr>`).join('');
+    </tr>`;
 
-  const cards = data.map((c) => `
+  const cardHtml = (c) => `
     <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
         <div>
@@ -427,7 +448,22 @@ async function renderCourses() {
         <span>${fmtDate(c.created_at)}</span>
       </div>
       ${actionBtns(c)}
-    </article>`).join('');
+    </article>`;
+
+  const matchesQuery = (c, q) => {
+    if (!q) return true;
+    const hay = [
+      c.course_id,
+      c.course_name,
+      c.instructor_name,
+      c.delivery_mode,
+      c.difficulty_level,
+      c.total_hours,
+      c.is_featured ? 'แนะนำ featured' : 'ปกติ',
+      fmtDate(c.created_at)
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  };
 
   document.getElementById('panel').innerHTML = `
     <h2 id="course-form-title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
@@ -447,37 +483,23 @@ async function renderCourses() {
     <div class="adm-c-head">
       <div>
         <h3>รายการหลักสูตร</h3>
-        <p>เดสก์ท็อป = ตาราง · มือถือ = การ์ดแบบย่อ</p>
+        <p>แสดงประมาณ 10 รายการต่อหน้าจอ · เลื่อนด้านข้างถ้ามีมากกว่านั้น</p>
       </div>
-      <span class="adm-c-count">${data.length} หลักสูตร</span>
     </div>
-
-    ${data.length ? `
-      <div class="adm-c-table-wrap">
-        <table class="adm-c-table">
-          <thead>
-            <tr>
-              <th>หลักสูตร</th>
-              <th>วิทยากร</th>
-              <th>รูปแบบ</th>
-              <th>ชั่วโมง</th>
-              <th>ระดับ</th>
-              <th>สถานะ</th>
-              <th>สร้างเมื่อ</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody>${tableRows}</tbody>
-        </table>
-      </div>
-      <div class="adm-c-cards">${cards}</div>
-    ` : '<div class="adm-c-empty">ยังไม่มีหลักสูตร</div>'}
+    <div class="adm-c-tools">
+      <input id="course-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / วิทยากร / รูปแบบ / รหัส..." autocomplete="off">
+      <span class="adm-c-count" id="course-count">0 หลักสูตร</span>
+    </div>
+    <div id="course-list-area"></div>
   `;
 
   const formMsg = document.getElementById('course-form-msg');
   const formTitle = document.getElementById('course-form-title');
   const createBtn = document.getElementById('create-course');
   const cancelBtn = document.getElementById('cancel-edit-course');
+  const searchInput = document.getElementById('course-search');
+  const countEl = document.getElementById('course-count');
+  const listArea = document.getElementById('course-list-area');
 
   const fillForm = (c) => {
     document.getElementById('c-name').value = c?.course_name || '';
@@ -510,6 +532,80 @@ async function renderCourses() {
       cancelBtn.classList.add('hidden');
       formMsg.textContent = '';
       formMsg.className = 'pts-msg mb-4';
+    }
+  };
+
+  const bindListActions = () => {
+    document.querySelectorAll('.edit-course').forEach((btn) => {
+      btn.onclick = () => {
+        const course = coursesCache.find((c) => String(c.course_id) === String(btn.dataset.id));
+        if (course) setEditMode(course);
+      };
+    });
+    document.querySelectorAll('.feature-btn').forEach((btn) => {
+      btn.onclick = async () => {
+        await api(`/api/admin/courses/${btn.dataset.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ is_featured: btn.dataset.featured === '1' })
+        });
+        renderCourses();
+      };
+    });
+    document.querySelectorAll('.del-course').forEach((btn) => {
+      btn.onclick = async () => {
+        const ok = window.confirm('ลบหลักสูตรนี้ใช่หรือไม่? (จะซ่อนจากรายการหลักสูตร)');
+        if (!ok) return;
+        try {
+          await api(`/api/admin/courses/${btn.dataset.id}`, { method: 'DELETE' });
+          await renderCourses();
+        } catch (e) {
+          alert(e.message || 'ลบไม่สำเร็จ');
+        }
+      };
+    });
+  };
+
+  const renderList = (query = '') => {
+    const q = String(query || '').trim().toLowerCase();
+    const filtered = coursesCache.filter((c) => matchesQuery(c, q));
+    countEl.textContent = q
+      ? `${filtered.length} / ${coursesCache.length} หลักสูตร`
+      : `${coursesCache.length} หลักสูตร`;
+
+    if (!coursesCache.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ยังไม่มีหลักสูตร</div>';
+      return;
+    }
+    if (!filtered.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ไม่พบหลักสูตรที่ตรงกับคำค้นหา</div>';
+      return;
+    }
+
+    listArea.innerHTML = `
+      <div class="adm-c-table-wrap">
+        <table class="adm-c-table">
+          <thead>
+            <tr>
+              <th>หลักสูตร</th>
+              <th>วิทยากร</th>
+              <th>รูปแบบ</th>
+              <th>ชั่วโมง</th>
+              <th>ระดับ</th>
+              <th>สถานะ</th>
+              <th>สร้างเมื่อ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>${filtered.map(rowHtml).join('')}</tbody>
+        </table>
+      </div>
+      <div class="adm-c-cards">${filtered.map(cardHtml).join('')}</div>
+    `;
+    bindListActions();
+    if (editingId) {
+      document.querySelectorAll(`[data-course-id="${editingId}"]`).forEach((el) => {
+        el.classList.add('is-editing');
+      });
     }
   };
 
@@ -546,35 +642,8 @@ async function renderCourses() {
     }
   };
 
-  document.querySelectorAll('.edit-course').forEach((btn) => {
-    btn.onclick = () => {
-      const course = coursesCache.find((c) => String(c.course_id) === String(btn.dataset.id));
-      if (course) setEditMode(course);
-    };
-  });
-
-  document.querySelectorAll('.feature-btn').forEach((btn) => {
-    btn.onclick = async () => {
-      await api(`/api/admin/courses/${btn.dataset.id}`, {
-        method: 'PUT',
-        body: JSON.stringify({ is_featured: btn.dataset.featured === '1' })
-      });
-      renderCourses();
-    };
-  });
-
-  document.querySelectorAll('.del-course').forEach((btn) => {
-    btn.onclick = async () => {
-      const ok = window.confirm('ลบหลักสูตรนี้ใช่หรือไม่? (จะซ่อนจากรายการหลักสูตร)');
-      if (!ok) return;
-      try {
-        await api(`/api/admin/courses/${btn.dataset.id}`, { method: 'DELETE' });
-        await renderCourses();
-      } catch (e) {
-        alert(e.message || 'ลบไม่สำเร็จ');
-      }
-    };
-  });
+  searchInput.addEventListener('input', () => renderList(searchInput.value));
+  renderList();
 }
 
 async function renderLessons() {
