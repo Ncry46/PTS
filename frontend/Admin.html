@@ -219,13 +219,28 @@
   .ban-adv[open] summary { margin-bottom:12px; }
   .ban-list-item {
     display:grid; gap:12px; align-items:center;
+    grid-template-columns: 1fr;
     border:1px solid var(--pts-border,rgba(151,66,88,.14));
     border-radius:16px; padding:12px; background:var(--pts-surface,#fff);
+    cursor:grab;
+  }
+  .ban-list-item.is-dragging { opacity:.55; cursor:grabbing; }
+  .ban-list-item.is-drag-over {
+    border-color:#974258;
+    box-shadow: inset 0 0 0 2px rgba(151,66,88,.25);
   }
   @media (min-width:800px) {
-    .ban-list-item { grid-template-columns: 120px minmax(0,1fr) auto; }
+    .ban-list-item { grid-template-columns: 28px 140px minmax(0,1fr) auto; }
+  }
+  .ban-list-handle {
+    display:none; align-items:center; justify-content:center;
+    color:#974258; font-size:18px; user-select:none;
+  }
+  @media (min-width:800px) {
+    .ban-list-handle { display:flex; }
   }
   .ban-list-item.is-hidden { opacity:.55; }
+  .ban-order-msg { font-size:12px; color:#5c4f55; margin:8px 0 0; min-height:1.2em; }
   .ban-mini-themes { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
   .ban-mini-themes button {
     width:22px; height:22px; border-radius:999px; border:2px solid #fff;
