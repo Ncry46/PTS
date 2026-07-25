@@ -264,8 +264,11 @@
   .adm-c-table tr:last-child td { border-bottom:0; }
   .adm-c-table tr:hover td { background:rgba(151,66,88,.03); }
   .adm-c-table tr.is-editing td {
-    background: rgba(151,66,88,.12);
-    box-shadow: inset 3px 0 0 #974258;
+    background: #f3d9e1;
+  }
+  .adm-c-table tr.is-editing td:first-child {
+    border-left: 4px solid #974258;
+    padding-left: 10px;
   }
   .adm-c-name { font-weight:700; line-height:1.3; }
   .adm-c-id { font-size:11px; color:#5c4f55; margin-top:2px; }
@@ -286,12 +289,12 @@
   .adm-c-card {
     border:1px solid rgba(151,66,88,.14); border-radius:14px; background:#fff;
     padding:12px 14px; display:grid; gap:8px;
-    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    transition: border-color .15s ease, background .15s ease;
   }
   .adm-c-card.is-editing {
-    border-color: #974258;
-    background: rgba(151,66,88,.08);
-    box-shadow: 0 0 0 3px rgba(151,66,88,.18);
+    border-color: transparent;
+    background: #f3d9e1;
+    border-left: 4px solid #974258;
   }
   .adm-c-card__top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
   .adm-c-card__meta {
