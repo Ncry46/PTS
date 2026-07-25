@@ -327,10 +327,44 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT lesson_id, course_id, title, content_html, video_url, sort_order, duration_minutes, flag_use
                     FROM BD_PTS.dbo.course_lessons
-                    WHERE course_id = @courseId
+                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
                     ORDER BY sort_order ASC, lesson_id ASC
                 `);
             res.json({ success: true, data: result.recordset });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.put('/lessons/:lessonId', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const lessonId = parseInt(req.params.lessonId, 10);
+        if (!lessonId) return res.status(400).json({ success: false, message: 'รหัสบทเรียนไม่ถูกต้อง' });
+
+        const { title, content_html, video_url, sort_order, duration_minutes } = req.body;
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request()
+                .input('lessonId', sql.Int, lessonId)
+                .input('title', sql.NVarChar, title || null)
+                .input('content', sql.NVarChar, content_html != null ? content_html : null)
+                .input('video', sql.NVarChar, video_url != null ? video_url : null)
+                .input('sort', sql.Int, sort_order != null ? Number(sort_order) : null)
+                .input('duration', sql.Int, duration_minutes != null ? Number(duration_minutes) : null)
+                .query(`
+                    UPDATE BD_PTS.dbo.course_lessons
+                    SET
+                        title = COALESCE(@title, title),
+                        content_html = COALESCE(@content, content_html),
+                        video_url = COALESCE(@video, video_url),
+                        sort_order = COALESCE(@sort, sort_order),
+                        duration_minutes = COALESCE(@duration, duration_minutes)
+                    WHERE lesson_id = @lessonId AND ISNULL(flag_use, 1) = 1
+                `);
+            if (!result.rowsAffected?.[0]) {
+                return res.status(404).json({ success: false, message: 'ไม่พบบทเรียน หรือถูกลบไปแล้ว' });
+            }
+            res.json({ success: true, message: 'อัปเดตบทเรียนแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

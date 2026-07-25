@@ -675,48 +675,256 @@ async function renderLessons() {
     const { data } = await api('/api/admin/courses');
     coursesCache = data;
   }
+
+  let lessonsCache = [];
+  let editingLessonId = null;
+
   document.getElementById('panel').innerHTML = `
+    <h2 id="lesson-form-title" class="font-bold text-lg mb-3">เพิ่มบทเรียนใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <select id="l-course" class="border rounded-xl px-3 py-2">${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}</select>
+      <select id="l-course" class="border rounded-xl px-3 py-2">
+        ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)} (ID ${c.course_id})</option>`).join('')}
+      </select>
       <input id="l-title" class="border rounded-xl px-3 py-2" placeholder="ชื่อบทเรียน">
       <input id="l-video" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="Video embed URL (เช่น YouTube embed)">
       <textarea id="l-content" class="border rounded-xl px-3 py-2 md:col-span-2" rows="4" placeholder="เนื้อหา HTML/ข้อความ"></textarea>
       <input id="l-sort" type="number" class="border rounded-xl px-3 py-2" value="1" placeholder="ลำดับ">
       <input id="l-duration" type="number" class="border rounded-xl px-3 py-2" value="15" placeholder="นาที">
     </div>
-    <button id="add-lesson" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-4">เพิ่มบทเรียน</button>
-    <div id="lesson-admin-list" class="space-y-2 text-sm text-on-surface-variant">เลือกหลักสูตรแล้วกดโหลด...</div>
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button id="add-lesson" class="bg-primary text-white px-5 py-2 rounded-full font-bold">เพิ่มบทเรียน</button>
+      <button id="cancel-edit-lesson" type="button" class="pts-btn pts-btn-ghost hidden">ยกเลิกแก้ไข</button>
+    </div>
+    <p id="lesson-form-msg" class="pts-msg mb-4"></p>
+
+    <div class="adm-c-head">
+      <div>
+        <h3>รายการบทเรียน</h3>
+        <p>เดสก์ท็อป = ตาราง · มือถือ = การ์ด · แสดงประมาณ 10 รายการแล้วเลื่อนดูต่อ</p>
+      </div>
+    </div>
+    <div class="adm-c-tools">
+      <input id="lesson-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / ID / ลำดับ..." autocomplete="off">
+      <span class="adm-c-count" id="lesson-count">0 บทเรียน</span>
+    </div>
+    <div id="lesson-list-area"></div>
   `;
 
-  const loadLessons = async () => {
-    const courseId = document.getElementById('l-course').value;
-    const { data } = await api(`/api/admin/courses/${courseId}/lessons`);
-    document.getElementById('lesson-admin-list').innerHTML = data.map(l => `
-      <div class="border rounded-xl p-3 flex justify-between gap-2 ${l.flag_use ? '' : 'opacity-50'}">
-        <div><p class="font-bold">${escapeHtml(l.title)}</p><p class="text-xs">#${l.lesson_id} · ลำดับ ${l.sort_order} · ${l.duration_minutes} นาที</p></div>
-        ${l.flag_use ? `<button class="del-lesson text-red-600 font-bold" data-id="${l.lesson_id}">ปิดใช้</button>` : '<span>ปิดแล้ว</span>'}
-      </div>`).join('') || '<p>ยังไม่มีบทเรียน</p>';
-    document.querySelectorAll('.del-lesson').forEach(btn => {
-      btn.onclick = async () => { await api(`/api/admin/lessons/${btn.dataset.id}`, { method: 'DELETE' }); loadLessons(); };
+  const formTitle = document.getElementById('lesson-form-title');
+  const formMsg = document.getElementById('lesson-form-msg');
+  const saveBtn = document.getElementById('add-lesson');
+  const cancelBtn = document.getElementById('cancel-edit-lesson');
+  const courseSelect = document.getElementById('l-course');
+  const searchInput = document.getElementById('lesson-search');
+  const countEl = document.getElementById('lesson-count');
+  const listArea = document.getElementById('lesson-list-area');
+
+  const fillForm = (l) => {
+    document.getElementById('l-title').value = l?.title || '';
+    document.getElementById('l-video').value = l?.video_url || '';
+    document.getElementById('l-content').value = l?.content_html || '';
+    document.getElementById('l-sort').value = l?.sort_order != null ? Number(l.sort_order) : 1;
+    document.getElementById('l-duration').value = l?.duration_minutes != null ? Number(l.duration_minutes) : 15;
+  };
+
+  const setEditMode = (lesson) => {
+    editingLessonId = lesson ? lesson.lesson_id : null;
+    document.querySelectorAll('[data-lesson-id].is-editing').forEach((el) => el.classList.remove('is-editing'));
+    if (lesson) {
+      fillForm(lesson);
+      formTitle.textContent = 'แก้ไขบทเรียน';
+      saveBtn.textContent = 'บันทึกการแก้ไข';
+      cancelBtn.classList.remove('hidden');
+      formMsg.textContent = `กำลังแก้ไข ID ${lesson.lesson_id}`;
+      formMsg.className = 'pts-msg mb-4';
+      document.querySelectorAll(`[data-lesson-id="${lesson.lesson_id}"]`).forEach((el) => {
+        el.classList.add('is-editing');
+      });
+      document.getElementById('l-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      fillForm(null);
+      formTitle.textContent = 'เพิ่มบทเรียนใหม่';
+      saveBtn.textContent = 'เพิ่มบทเรียน';
+      cancelBtn.classList.add('hidden');
+      formMsg.textContent = '';
+      formMsg.className = 'pts-msg mb-4';
+    }
+  };
+
+  const actionBtns = (l) => `
+    <div class="adm-c-actions">
+      <button type="button" class="pts-btn pts-btn-outline edit-lesson" data-id="${l.lesson_id}">แก้ไข</button>
+      <button type="button" class="pts-btn pts-btn-ghost del-lesson" data-id="${l.lesson_id}" style="color:#ba1a1a;">ลบ</button>
+    </div>`;
+
+  const rowHtml = (l) => `
+    <tr data-lesson-id="${l.lesson_id}">
+      <td>
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
+          <div class="adm-c-name">${escapeHtml(l.title)}</div>
+        </div>
+      </td>
+      <td>${Number(l.sort_order || 0)}</td>
+      <td>${Number(l.duration_minutes || 0)} นาที</td>
+      <td class="text-xs text-on-surface-variant">${l.video_url ? 'มีวิดีโอ' : '—'}</td>
+      <td>${actionBtns(l)}</td>
+    </tr>`;
+
+  const cardHtml = (l) => `
+    <article class="adm-c-card" data-lesson-id="${l.lesson_id}">
+      <div class="adm-c-card__top">
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
+          <div class="adm-c-name">${escapeHtml(l.title)}</div>
+        </div>
+        <span class="adm-c-badge">ลำดับ ${Number(l.sort_order || 0)}</span>
+      </div>
+      <div class="adm-c-card__meta">
+        <span>${Number(l.duration_minutes || 0)} นาที</span>
+        <span>${l.video_url ? 'มีวิดีโอ' : 'ไม่มีวิดีโอ'}</span>
+      </div>
+      ${actionBtns(l)}
+    </article>`;
+
+  const matchesQuery = (l, q) => {
+    if (!q) return true;
+    const idStr = String(l.lesson_id ?? '').trim();
+    const idQuery = q
+      .replace(/^ไอดี\s*/i, '')
+      .replace(/^id\s*/i, '')
+      .replace(/^#\s*/, '')
+      .trim();
+    if (idQuery && /^\d+$/.test(idQuery) && idStr === idQuery) return true;
+    if (idStr && (q === idStr || q === `#${idStr}` || q === `id${idStr}` || q === `id ${idStr}`)) return true;
+
+    const hay = [
+      idStr,
+      `id ${idStr}`,
+      `#${idStr}`,
+      l.title,
+      l.sort_order,
+      l.duration_minutes,
+      l.video_url,
+      l.content_html
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  };
+
+  const bindListActions = () => {
+    document.querySelectorAll('.edit-lesson').forEach((btn) => {
+      btn.onclick = () => {
+        const lesson = lessonsCache.find((l) => String(l.lesson_id) === String(btn.dataset.id));
+        if (lesson) setEditMode(lesson);
+      };
+    });
+    document.querySelectorAll('.del-lesson').forEach((btn) => {
+      btn.onclick = async () => {
+        const ok = window.confirm('ลบบทเรียนนี้ใช่หรือไม่?');
+        if (!ok) return;
+        try {
+          await api(`/api/admin/lessons/${btn.dataset.id}`, { method: 'DELETE' });
+          if (String(editingLessonId) === String(btn.dataset.id)) setEditMode(null);
+          await loadLessons();
+        } catch (e) {
+          alert(e.message || 'ลบไม่สำเร็จ');
+        }
+      };
     });
   };
 
-  document.getElementById('l-course').onchange = loadLessons;
-  document.getElementById('add-lesson').onclick = async () => {
-    const courseId = document.getElementById('l-course').value;
-    await api(`/api/admin/courses/${courseId}/lessons`, {
-      method: 'POST',
-      body: JSON.stringify({
-        title: document.getElementById('l-title').value,
-        content_html: document.getElementById('l-content').value,
-        video_url: document.getElementById('l-video').value,
-        sort_order: Number(document.getElementById('l-sort').value || 1),
-        duration_minutes: Number(document.getElementById('l-duration').value || 15)
-      })
-    });
-    loadLessons();
+  const renderList = (query = '') => {
+    const q = String(query || '').trim().toLowerCase();
+    const filtered = lessonsCache.filter((l) => matchesQuery(l, q));
+    countEl.textContent = q
+      ? `${filtered.length} / ${lessonsCache.length} บทเรียน`
+      : `${lessonsCache.length} บทเรียน`;
+
+    if (!lessonsCache.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ยังไม่มีบทเรียนในหลักสูตรนี้</div>';
+      return;
+    }
+    if (!filtered.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ไม่พบบทเรียนที่ตรงกับคำค้นหา</div>';
+      return;
+    }
+
+    listArea.innerHTML = `
+      <div class="adm-c-table-wrap">
+        <table class="adm-c-table">
+          <thead>
+            <tr>
+              <th>บทเรียน</th>
+              <th>ลำดับ</th>
+              <th>ระยะเวลา</th>
+              <th>วิดีโอ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>${filtered.map(rowHtml).join('')}</tbody>
+        </table>
+      </div>
+      <div class="adm-c-cards">${filtered.map(cardHtml).join('')}</div>
+    `;
+    bindListActions();
+    if (editingLessonId) {
+      document.querySelectorAll(`[data-lesson-id="${editingLessonId}"]`).forEach((el) => {
+        el.classList.add('is-editing');
+      });
+    }
   };
+
+  const loadLessons = async () => {
+    const courseId = courseSelect.value;
+    if (!courseId) {
+      lessonsCache = [];
+      renderList(searchInput.value);
+      return;
+    }
+    listArea.innerHTML = '<div class="adm-c-empty">กำลังโหลด...</div>';
+    const { data } = await api(`/api/admin/courses/${courseId}/lessons`);
+    lessonsCache = data || [];
+    setEditMode(null);
+    renderList(searchInput.value);
+  };
+
+  cancelBtn.onclick = () => setEditMode(null);
+  courseSelect.onchange = () => loadLessons();
+  searchInput.addEventListener('input', () => renderList(searchInput.value));
+
+  saveBtn.onclick = async () => {
+    const courseId = courseSelect.value;
+    const payload = {
+      title: document.getElementById('l-title').value,
+      content_html: document.getElementById('l-content').value,
+      video_url: document.getElementById('l-video').value,
+      sort_order: Number(document.getElementById('l-sort').value || 1),
+      duration_minutes: Number(document.getElementById('l-duration').value || 15)
+    };
+    saveBtn.disabled = true;
+    try {
+      if (editingLessonId) {
+        await api(`/api/admin/lessons/${editingLessonId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await api(`/api/admin/courses/${courseId}/lessons`, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+      }
+      await loadLessons();
+    } catch (e) {
+      formMsg.textContent = e.message || 'บันทึกไม่สำเร็จ';
+      formMsg.className = 'pts-msg pts-msg--err mb-4';
+    } finally {
+      saveBtn.disabled = false;
+    }
+  };
+
   if (coursesCache.length) loadLessons();
+  else listArea.innerHTML = '<div class="adm-c-empty">ยังไม่มีหลักสูตร ให้สร้างหลักสูตรก่อน</div>';
 }
 
 async function renderSchedules() {
