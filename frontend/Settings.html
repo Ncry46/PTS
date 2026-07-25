@@ -5,153 +5,367 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ตั้งค่าบัญชี | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260724settings-line">
+<link rel="stylesheet" href="site.css?v=20260725settings-layout">
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
+
+  .set-page { max-width: 980px; margin: 0 auto; }
+  .set-card {
+    background: #fff;
+    border: 1px solid rgba(151,66,88,.12);
+    border-radius: 22px;
+    box-shadow: 0 10px 28px -14px rgba(28,21,32,.12);
+    padding: 22px;
+  }
+  .set-card + .set-card { margin-top: 18px; }
+  .set-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  @media (min-width: 900px) {
+    .set-grid-2 { grid-template-columns: 1fr 1.15fr; gap: 28px; }
+    .set-mid { grid-template-columns: 1fr 1fr; }
+  }
+  .set-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1c1520;
+    margin: 0 0 14px;
+  }
+  .set-sub { font-size: 13px; color: #5c4f55; margin: 0 0 16px; line-height: 1.45; }
+  .set-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    padding: 8px 4px 4px;
+  }
+  .set-avatar-wrap { position: relative; }
+  .set-avatar {
+    width: 112px; height: 112px;
+    border-radius: 999px;
+    object-fit: cover;
+    border: 3px solid #f3e4e8;
+    background: #f7eef1;
+  }
+  .set-avatar-edit {
+    position: absolute; right: 2px; bottom: 2px;
+    width: 34px; height: 34px; border-radius: 999px;
+    border: 0; cursor: pointer;
+    background: #974258; color: #fff;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .set-avatar-edit .material-symbols-outlined { font-size: 18px; }
+  .set-name { font-size: 1.2rem; font-weight: 700; color: #1c1520; margin: 0; }
+  .set-role {
+    display: inline-flex; align-items: center;
+    font-size: 12px; font-weight: 700;
+    color: #974258; background: rgba(151,66,88,.1);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .set-meta {
+    width: 100%;
+    margin-top: 8px;
+    text-align: left;
+    font-size: 13px;
+    color: #5c4f55;
+    display: grid; gap: 8px;
+  }
+  .set-meta div {
+    display: flex; justify-content: space-between; gap: 10px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: #f7f2f5;
+  }
+  .set-meta strong { color: #1c1520; font-weight: 600; }
+  .set-field { display: grid; gap: 6px; margin-bottom: 14px; }
+  .set-field > span { font-size: 13px; font-weight: 600; color: #5c4f55; }
+  .set-input {
+    width: 100%;
+    border: 1px solid rgba(151,66,88,.16);
+    background: #f7f2f5;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font: inherit;
+    color: #1c1520;
+  }
+  .set-input:disabled { opacity: .85; }
+  .set-input:focus {
+    outline: none;
+    border-color: rgba(151,66,88,.45);
+    background: #fff;
+  }
+  .set-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(151,66,88,.08);
+  }
+  .set-row:last-child { border-bottom: 0; }
+  .set-row__label { font-size: 14px; font-weight: 600; color: #1c1520; }
+  .set-row__hint { font-size: 12px; color: #5c4f55; margin-top: 2px; }
+  .set-check {
+    width: 22px; height: 22px; border-radius: 999px;
+    border: 2px solid rgba(151,66,88,.35);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: transparent; flex-shrink: 0; cursor: pointer; background: #fff;
+  }
+  .set-check.is-on {
+    background: #974258; border-color: #974258; color: #fff;
+  }
+  .set-check .material-symbols-outlined { font-size: 16px; }
+  .set-conn {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #f7f2f5;
+    margin-bottom: 10px;
+  }
+  .set-conn__icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #fff; color: #974258; flex-shrink: 0;
+  }
+  .set-conn__icon--line { color: #06C755; }
+  .set-conn__body { flex: 1; min-width: 0; }
+  .set-conn__title { font-size: 14px; font-weight: 700; color: #1c1520; }
+  .set-conn__status { font-size: 12px; color: #5c4f55; margin-top: 2px; }
+  .set-conn__status.is-on { color: #2e7d32; font-weight: 600; }
+  .set-radio {
+    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .set-radio label {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: #1c1520; cursor: pointer;
+  }
+  .set-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .set-privacy {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .set-privacy__links {
+    display: flex; flex-wrap: wrap; gap: 14px;
+  }
+  .set-privacy__links a {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: #5c4f55; text-decoration: none;
+  }
+  .set-privacy__links a:hover { color: #974258; }
+  .set-privacy__links .material-symbols-outlined { font-size: 18px; }
+  .set-edit-panel[hidden] { display: none !important; }
+  .set-divider { height: 1px; background: rgba(151,66,88,.1); margin: 14px 0; }
+  .pts-btn-line {
+    background: #06C755; border-color: #06C755; color: #fff;
+  }
+  .pts-btn-line:hover { filter: brightness(.96); color: #fff; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 </head>
 <body class="pts-body">
-<div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
-    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
-        PTS Learning
-      </a>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
-      </div>
-    </div>
-  </nav>
-</div>
+<div id="app-navbar"></div>
 <main class="pts-main" data-user-shell>
-  <section class="pts-page-hero">
-    <span class="pts-chip mb-3">Account</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตั้งค่าบัญชี</h1>
-    <p class="text-on-surface-variant">จัดการโปรไฟล์และรหัสผ่านของคุณ</p>
-  </section>
+  <div class="set-page">
+    <section class="pts-page-hero" style="margin-bottom:18px;">
+      <span class="pts-chip mb-3">Account</span>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">ตั้งค่าบัญชี</h1>
+      <p class="text-on-surface-variant">จัดการโปรไฟล์ การแจ้งเตือน และการเชื่อมต่อของคุณ</p>
+    </section>
 
-  <section class="pts-panel mb-5">
-    <h2 class="font-bold text-lg mb-4">โปรไฟล์</h2>
-    <div class="flex flex-col sm:flex-row items-start gap-4 mb-4">
-      <div class="shrink-0">
-        <img id="avatar-preview" src="" alt="รูปโปรไฟล์" class="w-24 h-24 rounded-full object-cover border border-[rgba(151,66,88,.2)] bg-[#faf7f8]">
-      </div>
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-semibold mb-1">รูปโปรไฟล์</p>
-        <p class="text-xs text-on-surface-variant mb-3">เลือกไฟล์จากเครื่อง (JPG, PNG, WEBP, GIF · สูงสุด 5MB)</p>
-        <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
-        <div class="flex flex-wrap gap-2">
-          <button type="button" id="pick-avatar" class="pts-btn pts-btn-outline">เลือกไฟล์จากเครื่อง</button>
-          <button type="button" id="clear-avatar-pick" class="pts-btn pts-btn-ghost hidden">ยกเลิกไฟล์ที่เลือก</button>
+    <!-- Top: Profile + Account -->
+    <section class="set-card">
+      <div class="set-grid-2">
+        <div>
+          <h2 class="set-title">ข้อมูลส่วนตัว</h2>
+          <div class="set-profile">
+            <div class="set-avatar-wrap">
+              <img id="avatar-preview" class="set-avatar" src="" alt="รูปโปรไฟล์">
+              <button type="button" id="pick-avatar" class="set-avatar-edit" title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
+                <span class="material-symbols-outlined">photo_camera</span>
+              </button>
+              <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
+            </div>
+            <p class="set-name" id="display-name">—</p>
+            <span class="set-role" id="display-role">สมาชิก PTS</span>
+            <div class="set-meta">
+              <div><span>ชื่อ-นามสกุล</span><strong id="meta-name">—</strong></div>
+              <div><span>เบอร์โทร</span><strong id="meta-phone">—</strong></div>
+            </div>
+            <button type="button" id="toggle-edit-profile" class="pts-btn pts-btn-outline" style="margin-top:8px;width:100%;">แก้ไขข้อมูลส่วนตัว</button>
+            <p id="avatar-file-name" class="text-xs text-on-surface-variant"></p>
+            <button type="button" id="clear-avatar-pick" class="pts-btn pts-btn-ghost hidden">ยกเลิกไฟล์ที่เลือก</button>
+          </div>
+
+          <div id="edit-profile-panel" class="set-edit-panel" hidden>
+            <div class="set-divider"></div>
+            <label class="set-field"><span>ชื่อ-นามสกุล</span><input id="full_name" class="set-input"></label>
+            <label class="set-field"><span>เบอร์โทร</span><input id="phone" class="set-input"></label>
+            <button id="save-profile" class="pts-btn pts-btn-primary" style="width:100%;">บันทึกโปรไฟล์</button>
+            <p id="profile-msg" class="pts-msg"></p>
+          </div>
         </div>
-        <p id="avatar-file-name" class="text-xs text-on-surface-variant mt-2"></p>
-      </div>
-    </div>
-    <label class="pts-field"><span>ชื่อ-นามสกุล</span><input id="full_name" class="pts-input"></label>
-    <label class="pts-field"><span>อีเมล</span><input id="email" disabled class="pts-input"></label>
-    <label class="pts-field"><span>เบอร์โทร</span><input id="phone" class="pts-input"></label>
-    <button id="save-profile" class="pts-btn pts-btn-primary">บันทึกโปรไฟล์</button>
-    <p id="profile-msg" class="pts-msg"></p>
-  </section>
 
-  <section id="google-calendar" class="pts-panel mb-5 scroll-mt-24">
-    <h2 class="font-bold text-lg mb-2">Google Calendar</h2>
-    <p class="text-sm text-on-surface-variant mb-4">
-      เชื่อมปฏิทิน Google เพื่อรับการแจ้งเตือนอัตโนมัติก่อนวันเรียนของหลักสูตรที่สมัครไว้
-      (แจ้งเตือนล่วงหน้า 1 วัน และ 1 ชั่วโมง)
-    </p>
-    <div id="gcal-status-box" class="rounded-2xl border border-[rgba(151,66,88,.14)] bg-[#faf7f8] p-4 mb-4">
-      <p id="gcal-status-text" class="text-sm text-on-surface-variant">กำลังตรวจสอบสถานะ...</p>
-    </div>
-    <div id="gcal-reminders-row" class="hidden items-center justify-between gap-3 rounded-2xl border border-[rgba(151,66,88,.14)] px-4 py-3 mb-4">
-      <div>
-        <p class="font-semibold text-sm">การแจ้งเตือนก่อนวันเรียน</p>
-        <p class="text-xs text-on-surface-variant mt-0.5">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
+        <div>
+          <h2 class="set-title">บัญชีและความปลอดภัย</h2>
+          <label class="set-field"><span>อีเมล</span><input id="email" class="set-input" disabled></label>
+          <label class="set-field"><span>รหัสผ่านปัจจุบัน</span>
+            <div class="pts-pw-wrap relative">
+              <input id="current_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1">
+              <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
+            </div>
+          </label>
+          <label class="set-field"><span>รหัสผ่านใหม่</span>
+            <div class="pts-pw-wrap relative">
+              <input id="new_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1">
+              <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
+            </div>
+          </label>
+          <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
+            <label class="set-field flex-1 mb-0" style="margin-bottom:0;"><span>รหัส OTP จากอีเมล</span>
+              <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="set-input text-center tracking-[0.3em] font-bold" placeholder="••••••">
+            </label>
+            <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap">ส่ง OTP</button>
+          </div>
+          <button id="save-password" class="pts-btn pts-btn-primary" style="width:100%;">บันทึกการเปลี่ยนแปลงทั้งหมด</button>
+          <p id="password-msg" class="pts-msg"></p>
+        </div>
       </div>
-      <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
-        <input type="checkbox" id="gcal-reminders-toggle">
-        <span class="pts-switch__slider"></span>
-      </label>
-    </div>
-    <div class="flex flex-wrap gap-2">
-      <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อมต่อ Google Calendar</a>
-      <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียนตอนนี้</button>
-      <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
-    </div>
-    <p id="gcal-msg" class="pts-msg"></p>
-    <div id="gcal-howto" class="hidden mt-4 text-sm text-on-surface-variant space-y-1">
-      <p class="font-semibold text-on-surface">วิธีทดสอบ</p>
-      <ol class="list-decimal pl-5 space-y-1">
-        <li>สมัครหลักสูตรที่ต้องการ (หน้าหลักสูตร) ด้วยบัญชีนี้</li>
-        <li>ให้แอดมินไป <a class="text-primary underline" href="Admin.html">Admin → ตารางเรียน</a> สร้างตารางแล้ว<strong>เลือกหลักสูตรที่สมัครไว้</strong></li>
-        <li>เปิด <a class="text-primary underline" href="Schedule.html">ตารางเรียนของฉัน</a> ต้องเห็นรายการก่อน</li>
-        <li>กลับมาหน้านี้ กด <strong>ซิงค์ตารางเรียนตอนนี้</strong> แล้วเปิด Google Calendar</li>
-      </ol>
-    </div>
-    <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-3 hidden">
-      <span id="gcal-setup-user">ระบบยังไม่เปิดใช้ Google Calendar บนเซิร์ฟเวอร์นี้ — ผู้ใช้ทั่วไปไม่ต้องตั้งค่าอะไร ติดต่อผู้ดูแลระบบให้เปิดใช้งาน</span>
-      <span id="gcal-setup-admin" class="hidden">
-        <strong>สำหรับผู้ดูแล / นักพัฒนา:</strong>
-        Client ID/Secret ตั้งที่<strong>เซิร์ฟเวอร์</strong>ครั้งเดียว (ไม่ใช่ที่เครื่องผู้ใช้)
-        · ตรวจด้วย <code>npm run google:check</code>
-        · ตั้งค่า <code>node backend/write-google-local.js CLIENT_ID CLIENT_SECRET</code>
-        หรือใส่ <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> ใน `.env` ของเซิร์ฟเวอร์ แล้วรีสตาร์ท
-      </span>
-      <span id="gcal-diagnose-line" class="block mt-1"></span>
-    </p>
-  </section>
+    </section>
 
-  <section id="line-oa" class="pts-panel mb-5 scroll-mt-24">
-    <h2 class="font-bold text-lg mb-2">LINE Official Account</h2>
-    <p class="text-sm text-on-surface-variant mb-4">
-      เพิ่มเพื่อน LINE OA ของ PTS เพื่อรับข่าวสารและแจ้งเตือนจากเพจอย่างเป็นทางการ
-    </p>
-    <div id="line-status-box" class="rounded-2xl border border-[rgba(151,66,88,.14)] bg-[#faf7f8] p-4 mb-4">
-      <p id="line-status-text" class="text-sm text-on-surface-variant">กำลังตรวจสอบสถานะ...</p>
-    </div>
-    <div class="flex flex-wrap gap-2">
-      <a id="line-connect" class="pts-btn hidden" href="#" target="_blank" rel="noopener noreferrer"
-         style="background:#06C755;border-color:#06C755;color:#fff;">เชื่อม LINE OA</a>
-    </div>
-    <p id="line-msg" class="pts-msg"></p>
-  </section>
+    <!-- Middle: Notifications + Language/Connections -->
+    <div class="set-grid-2 set-mid" style="margin-top:18px;">
+      <section class="set-card">
+        <h2 class="set-title">การแจ้งเตือน</h2>
+        <p class="set-sub">เลือกช่องทางที่ต้องการรับข่าวสารจาก PTS</p>
+        <div id="notify-prefs">
+          <div class="set-row" data-pref="line_oa">
+            <div><div class="set-row__label">LINE OA</div><div class="set-row__hint">ข่าวสารจากเพจอย่างเป็นทางการ</div></div>
+            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
+          </div>
+          <div class="set-row" data-pref="email">
+            <div><div class="set-row__label">ประกาศทางอีเมล</div><div class="set-row__hint">อัปเดตหลักสูตรและข่าวสาร</div></div>
+            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
+          </div>
+          <div class="set-row" data-pref="class_reminder">
+            <div><div class="set-row__label">เตือนคลาสเรียน</div><div class="set-row__hint">แจ้งก่อนวันเรียน</div></div>
+            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
+          </div>
+          <div class="set-row" data-pref="new_course">
+            <div><div class="set-row__label">หลักสูตรใหม่</div><div class="set-row__hint">เมื่อมีคอร์สเปิดรับสมัคร</div></div>
+            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
+          </div>
+          <div class="set-row" data-pref="certificate">
+            <div><div class="set-row__label">ใบประกาศ</div><div class="set-row__hint">เมื่อได้รับใบประกาศ</div></div>
+            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
+          </div>
+          <div class="set-row" data-pref="community">
+            <div><div class="set-row__label">กิจกรรมคอมมูนิตี้</div><div class="set-row__hint">โพสต์และการตอบกลับ</div></div>
+            <button type="button" class="set-check" aria-pressed="false"><span class="material-symbols-outlined">check</span></button>
+          </div>
+        </div>
+      </section>
 
-  <section class="pts-panel">
-    <h2 class="font-bold text-lg mb-2">เปลี่ยนรหัสผ่าน</h2>
-    <p class="text-sm text-on-surface-variant mb-4">ระบบส่ง OTP ไปที่อีเมลบัญชีเพื่อยืนยันก่อนเปลี่ยนรหัสผ่าน</p>
-    <label class="pts-field"><span>รหัสผ่านปัจจุบัน</span>
-      <div class="pts-pw-wrap relative">
-        <input id="current_password" type="password" class="pts-input pts-pw-input" data-pts-pw-field="1">
-        <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
-      </div>
-    </label>
-    <label class="pts-field"><span>รหัสผ่านใหม่</span>
-      <div class="pts-pw-wrap relative">
-        <input id="new_password" type="password" class="pts-input pts-pw-input" data-pts-pw-field="1">
-        <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
-      </div>
-    </label>
-    <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
-      <label class="pts-field flex-1 mb-0"><span>รหัส OTP จากอีเมล</span>
-        <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="pts-input text-center tracking-[0.3em] font-bold" placeholder="••••••">
-      </label>
-      <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap">ส่ง OTP ไปอีเมล</button>
+      <section class="set-card" id="connections">
+        <h2 class="set-title">ภาษาและการเชื่อมต่อ</h2>
+        <p class="set-sub">ภาษา</p>
+        <div class="set-radio" role="radiogroup" aria-label="ภาษา">
+          <label><input type="radio" name="lang" value="th" checked> ไทย</label>
+          <label><input type="radio" name="lang" value="en"> English</label>
+        </div>
+
+        <p class="set-sub" style="margin-bottom:10px;">การเชื่อมต่อ</p>
+
+        <div class="set-conn" id="line-oa">
+          <div class="set-conn__icon set-conn__icon--line"><span class="material-symbols-outlined">chat</span></div>
+          <div class="set-conn__body">
+            <div class="set-conn__title">LINE OA</div>
+            <div class="set-conn__status" id="line-status-text">กำลังตรวจสอบ...</div>
+          </div>
+          <label class="pts-switch" title="เชื่อม LINE OA">
+            <input type="checkbox" id="line-toggle">
+            <span class="pts-switch__slider"></span>
+          </label>
+          <a id="line-connect" class="hidden" href="#" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+        <p id="line-msg" class="pts-msg" style="margin-top:-2px;"></p>
+
+        <div class="set-conn scroll-mt-24" id="google-calendar">
+          <div class="set-conn__icon"><span class="material-symbols-outlined">calendar_month</span></div>
+          <div class="set-conn__body">
+            <div class="set-conn__title">Google Calendar</div>
+            <div class="set-conn__status" id="gcal-status-text">กำลังตรวจสอบ...</div>
+          </div>
+          <label class="pts-switch" title="เชื่อม Google Calendar">
+            <input type="checkbox" id="gcal-toggle">
+            <span class="pts-switch__slider"></span>
+          </label>
+        </div>
+
+        <div id="gcal-reminders-row" class="hidden items-center justify-between gap-3 rounded-2xl border border-[rgba(151,66,88,.14)] px-4 py-3 mt-2 mb-2">
+          <div>
+            <p class="font-semibold text-sm">การแจ้งเตือนก่อนวันเรียน</p>
+            <p class="text-xs text-on-surface-variant mt-0.5">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
+          </div>
+          <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
+            <input type="checkbox" id="gcal-reminders-toggle">
+            <span class="pts-switch__slider"></span>
+          </label>
+        </div>
+
+        <div class="set-actions">
+          <a id="gcal-connect" class="pts-btn pts-btn-primary hidden" href="#">เชื่อม Google</a>
+          <button id="gcal-sync" type="button" class="pts-btn pts-btn-outline hidden">ซิงค์ตารางเรียน</button>
+          <button id="gcal-disconnect" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อมต่อ</button>
+        </div>
+        <p id="gcal-msg" class="pts-msg"></p>
+        <div id="gcal-howto" class="hidden mt-2 text-sm text-on-surface-variant space-y-1">
+          <p class="font-semibold text-on-surface">วิธีใช้งาน</p>
+          <ol class="list-decimal pl-5 space-y-1">
+            <li>สมัครหลักสูตรที่ต้องการ</li>
+            <li>ให้แอดมินสร้างตารางที่ <a class="text-primary underline" href="Admin.html">Admin → ตารางเรียน</a></li>
+            <li>กดซิงค์ตารางเรียน แล้วเปิด Google Calendar</li>
+          </ol>
+        </div>
+        <p id="gcal-setup-hint" class="text-xs text-on-surface-variant mt-2 hidden">
+          <span id="gcal-setup-user">ระบบยังไม่เปิดใช้ Google Calendar บนเซิร์ฟเวอร์นี้ — ติดต่อผู้ดูแลระบบ</span>
+          <span id="gcal-setup-admin" class="hidden">
+            ตั้งค่าที่เซิร์ฟเวอร์: <code>GOOGLE_CLIENT_ID</code> / <code>GOOGLE_CLIENT_SECRET</code> หรือ <code>google.local.js</code>
+          </span>
+          <span id="gcal-diagnose-line" class="block mt-1"></span>
+        </p>
+      </section>
     </div>
-    <button id="save-password" class="pts-btn pts-btn-primary">ยืนยันเปลี่ยนรหัสผ่าน</button>
-    <p id="password-msg" class="pts-msg"></p>
-  </section>
+
+    <!-- Bottom: Privacy -->
+    <section class="set-card" style="margin-top:18px;">
+      <div class="set-privacy">
+        <div class="set-privacy__links">
+          <a href="Legal.html"><span class="material-symbols-outlined">policy</span> นโยบายความเป็นส่วนตัว</a>
+          <a href="Legal.html"><span class="material-symbols-outlined">description</span> ข้อกำหนดการใช้งาน</a>
+          <a href="mailto:businessdev@thanvasu.com?subject=ขอข้อมูลส่วนตัว%20PTS"><span class="material-symbols-outlined">download</span> ดาวน์โหลดข้อมูลส่วนตัว</a>
+        </div>
+        <button type="button" id="delete-account-btn" class="pts-btn pts-btn-ghost" style="color:#ba1a1a;">ลบบัญชีผู้ใช้</button>
+      </div>
+      <p id="privacy-msg" class="pts-msg"></p>
+    </section>
+  </div>
 </main>
 <div class="pts-footer-note">© PTS Learning</div>
 <script>
 let pendingAvatarFile = null;
 let currentAvatarUrl = '';
 let isAdminUser = false;
+let gcalConnected = false;
+let gcalBusy = false;
+let lineUrl = '';
+let lineConfigured = false;
+
+const NOTIFY_KEY = 'pts_notify_prefs_v1';
+const LANG_KEY = 'pts_lang_pref';
 
 function defaultAvatar(name) {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'P')}&background=F8BBD0&color=880E4F&size=128`;
@@ -162,6 +376,34 @@ function setAvatarPreview(url, name) {
   img.src = url || defaultAvatar(name);
 }
 
+function syncProfileMeta() {
+  const name = document.getElementById('full_name').value || '—';
+  const phone = document.getElementById('phone').value || '—';
+  document.getElementById('display-name').textContent = name;
+  document.getElementById('meta-name').textContent = name;
+  document.getElementById('meta-phone').textContent = phone;
+}
+
+function loadNotifyPrefs() {
+  let prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem(NOTIFY_KEY) || '{}') || {}; } catch (_) {}
+  document.querySelectorAll('#notify-prefs .set-row').forEach((row) => {
+    const key = row.dataset.pref;
+    const on = prefs[key] !== false; // default on
+    const btn = row.querySelector('.set-check');
+    btn.classList.toggle('is-on', on);
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+}
+
+function saveNotifyPrefs() {
+  const prefs = {};
+  document.querySelectorAll('#notify-prefs .set-row').forEach((row) => {
+    prefs[row.dataset.pref] = row.querySelector('.set-check').classList.contains('is-on');
+  });
+  localStorage.setItem(NOTIFY_KEY, JSON.stringify(prefs));
+}
+
 (async () => {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
@@ -169,6 +411,8 @@ function setAvatarPreview(url, name) {
     me.user?.role || me.user?.Role || me.role || me.Role || ''
   ).toLowerCase();
   isAdminUser = role === 'admin';
+  document.getElementById('display-role').textContent = isAdminUser ? 'ผู้ดูแลระบบ' : 'สมาชิก PTS';
+
   const profile = await fetch('/api/profile', { credentials: 'include' }).then(r => r.json());
   if (!profile.success) { console.error(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ'); return location.href = 'Login.html'; }
   document.getElementById('full_name').value = profile.data.full_name || '';
@@ -176,45 +420,104 @@ function setAvatarPreview(url, name) {
   document.getElementById('phone').value = profile.data.phone || '';
   currentAvatarUrl = profile.data.Url || '';
   setAvatarPreview(currentAvatarUrl, profile.data.full_name);
+  syncProfileMeta();
+  loadNotifyPrefs();
+
+  const lang = localStorage.getItem(LANG_KEY) || 'th';
+  document.querySelectorAll('input[name="lang"]').forEach((el) => {
+    el.checked = el.value === lang;
+  });
+
   await refreshGcalStatus();
   await refreshLineOaStatus();
 })();
 
+document.getElementById('toggle-edit-profile').onclick = () => {
+  const panel = document.getElementById('edit-profile-panel');
+  const open = panel.hasAttribute('hidden');
+  if (open) panel.removeAttribute('hidden');
+  else panel.setAttribute('hidden', '');
+  document.getElementById('toggle-edit-profile').textContent = open ? 'ปิดการแก้ไข' : 'แก้ไขข้อมูลส่วนตัว';
+};
+
+document.querySelectorAll('#notify-prefs .set-check').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    btn.classList.toggle('is-on');
+    btn.setAttribute('aria-pressed', btn.classList.contains('is-on') ? 'true' : 'false');
+    saveNotifyPrefs();
+  });
+});
+
+document.querySelectorAll('input[name="lang"]').forEach((el) => {
+  el.addEventListener('change', () => {
+    if (el.checked) localStorage.setItem(LANG_KEY, el.value);
+  });
+});
+
+document.getElementById('delete-account-btn').onclick = () => {
+  const msg = document.getElementById('privacy-msg');
+  msg.textContent = 'หากต้องการลบบัญชี กรุณาติดต่อผู้ดูแลระบบผ่านอีเมล businessdev@thanvasu.com';
+  msg.className = 'pts-msg pts-msg--err';
+};
+
 async function refreshLineOaStatus() {
   const statusText = document.getElementById('line-status-text');
   const connectBtn = document.getElementById('line-connect');
+  const toggle = document.getElementById('line-toggle');
   const msg = document.getElementById('line-msg');
   if (!statusText || !connectBtn) return;
-  connectBtn.classList.add('hidden');
+  lineConfigured = false;
+  lineUrl = '';
+  toggle.checked = false;
   try {
     const res = await fetch('/api/line/oa', { credentials: 'include', cache: 'no-store' });
     const data = await res.json();
     if (!res.ok || data.success === false) throw new Error(data.message || 'โหลดสถานะ LINE ไม่สำเร็จ');
     if (data.configured && data.url) {
-      const name = data.name || 'PTS Learning';
-      statusText.textContent = `พร้อมเพิ่มเพื่อน ${name} — กดปุ่มด้านล่างเพื่อเปิด LINE`;
+      lineConfigured = true;
+      lineUrl = data.url;
       connectBtn.href = data.url;
-      connectBtn.classList.remove('hidden');
+      statusText.textContent = 'พร้อมเพิ่มเพื่อน ' + (data.name || 'PTS Learning');
+      statusText.classList.add('is-on');
       if (msg) { msg.textContent = ''; msg.className = 'pts-msg'; }
     } else {
       statusText.textContent = isAdminUser
-        ? 'ยังไม่ได้ตั้งค่า LINE_OA_ADD_FRIEND_URL บนเซิร์ฟเวอร์'
-        : 'ระบบยังไม่เปิดลิงก์ LINE OA — ติดต่อผู้ดูแล';
+        ? 'ยังไม่ได้ตั้งค่า LINE_OA_ADD_FRIEND_URL'
+        : 'ยังไม่เปิดลิงก์ LINE OA';
+      statusText.classList.remove('is-on');
       if (msg) {
-        msg.textContent = isAdminUser
-          ? 'ตั้งค่า LINE_OA_ADD_FRIEND_URL ใน .env แล้วรีสตาร์ทเซิร์ฟเวอร์'
-          : '';
+        msg.textContent = isAdminUser ? 'ตั้งค่าใน .env แล้วรีสตาร์ทเซิร์ฟเวอร์' : '';
         msg.className = msg.textContent ? 'pts-msg pts-msg--err' : 'pts-msg';
       }
     }
   } catch (e) {
-    statusText.textContent = 'ตรวจสอบสถานะ LINE ไม่สำเร็จ';
+    statusText.textContent = 'ตรวจสอบ LINE ไม่สำเร็จ';
+    statusText.classList.remove('is-on');
     if (msg) {
       msg.textContent = e.message || 'เกิดข้อผิดพลาด';
       msg.className = 'pts-msg pts-msg--err';
     }
   }
 }
+
+document.getElementById('line-toggle').onchange = (e) => {
+  const msg = document.getElementById('line-msg');
+  if (!lineConfigured || !lineUrl) {
+    e.target.checked = false;
+    if (msg) {
+      msg.textContent = 'ยังไม่มีลิงก์ LINE OA บนเซิร์ฟเวอร์';
+      msg.className = 'pts-msg pts-msg--err';
+    }
+    return;
+  }
+  if (e.target.checked) {
+    window.open(lineUrl, '_blank', 'noopener');
+    document.getElementById('line-status-text').textContent = 'เปิดหน้าเพิ่มเพื่อนแล้ว';
+    document.getElementById('line-status-text').classList.add('is-on');
+  } else {
+    document.getElementById('line-status-text').textContent = 'พร้อมเพิ่มเพื่อน PTS Learning';
+  }
+};
 
 document.getElementById('pick-avatar').onclick = () => {
   document.getElementById('avatar-file').click();
@@ -225,7 +528,10 @@ document.getElementById('avatar-file').onchange = (e) => {
   const clearBtn = document.getElementById('clear-avatar-pick');
   const nameEl = document.getElementById('avatar-file-name');
   const msg = document.getElementById('profile-msg');
+  const panel = document.getElementById('edit-profile-panel');
   if (!file) return;
+  panel.removeAttribute('hidden');
+  document.getElementById('toggle-edit-profile').textContent = 'ปิดการแก้ไข';
   if (!String(file.type || '').startsWith('image/')) {
     msg.textContent = 'กรุณาเลือกไฟล์รูปภาพ';
     msg.className = 'pts-msg pts-msg--err';
@@ -293,6 +599,7 @@ document.getElementById('save-profile').onclick = async () => {
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.message || 'บันทึกไม่สำเร็จ');
+    syncProfileMeta();
     msg.textContent = data.message || 'บันทึกโปรไฟล์แล้ว';
     msg.className = 'pts-msg pts-msg--ok';
   } catch (e) {
@@ -313,12 +620,15 @@ async function refreshGcalStatus() {
   const remindersRow = document.getElementById('gcal-reminders-row');
   const remindersToggle = document.getElementById('gcal-reminders-toggle');
   const howto = document.getElementById('gcal-howto');
+  const toggle = document.getElementById('gcal-toggle');
   connectBtn.classList.add('hidden');
   syncBtn.classList.add('hidden');
   disconnectBtn.classList.add('hidden');
   remindersRow.classList.add('hidden');
   remindersRow.classList.remove('flex');
   howto.classList.add('hidden');
+  gcalConnected = false;
+  toggle.checked = false;
   try {
     const res = await fetch('/api/google/status', { credentials: 'include', cache: 'no-store' });
     const raw = await res.text();
@@ -326,12 +636,12 @@ async function refreshGcalStatus() {
     try {
       st = JSON.parse(raw);
     } catch (_) {
-      statusText.textContent = 'เซิร์ฟเวอร์ยังไม่มีระบบ Google Calendar — รีสตาร์ท npm start แล้วรีเฟรชแรง (Ctrl+F5)';
+      statusText.textContent = 'เซิร์ฟเวอร์ยังไม่มีระบบ Google Calendar';
+      statusText.classList.remove('is-on');
       hint.classList.remove('hidden');
       return;
     }
 
-    // ถ้า status บอกว่ายังไม่พร้อม ให้ยืนยันกับ /diagnose อีกรอบ (กัน cache / เซิร์ฟเวอร์เก่า)
     let configured = st.configured === true;
     if (!configured) {
       try {
@@ -342,42 +652,31 @@ async function refreshGcalStatus() {
           st = { ...st, ...diag, configured: true };
         } else {
           statusText.textContent = isAdminUser
-            ? 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่า Google OAuth (Client ID/Secret)'
-            : 'ระบบยังไม่เปิดใช้การเชื่อม Google Calendar — ติดต่อผู้ดูแล';
+            ? 'ยังไม่ได้ตั้งค่า Google OAuth'
+            : 'ยังไม่เปิดใช้ Google Calendar';
+          statusText.classList.remove('is-on');
           hint.classList.remove('hidden');
           document.getElementById('gcal-setup-user')?.classList.toggle('hidden', isAdminUser);
           document.getElementById('gcal-setup-admin')?.classList.toggle('hidden', !isAdminUser);
-          const diagEl = document.getElementById('gcal-diagnose-line');
-          if (isAdminUser && diagEl) {
-            const bits = [];
-            if (diag.hasLocalFile) bits.push('พบ google.local.js');
-            else bits.push('ไม่พบ google.local.js');
-            if (diag.envHasClientId) bits.push('.env มี CLIENT_ID');
-            else bits.push('.env ยังว่าง');
-            if (diag.redirectUri) bits.push('redirect: ' + diag.redirectUri);
-            diagEl.textContent = bits.length ? ('ตรวจพบ: ' + bits.join(' · ')) : '';
-          } else if (diagEl) {
-            diagEl.textContent = '';
-          }
           return;
         }
       } catch (_) {
-        statusText.textContent = isAdminUser
-          ? 'เซิร์ฟเวอร์ยังไม่ได้ตั้งค่า Google OAuth (Client ID/Secret)'
-          : 'ระบบยังไม่เปิดใช้การเชื่อม Google Calendar — ติดต่อผู้ดูแล';
+        statusText.textContent = 'ยังไม่เปิดใช้ Google Calendar';
+        statusText.classList.remove('is-on');
         hint.classList.remove('hidden');
-        document.getElementById('gcal-setup-user')?.classList.toggle('hidden', isAdminUser);
-        document.getElementById('gcal-setup-admin')?.classList.toggle('hidden', !isAdminUser);
         return;
       }
     }
 
     hint.classList.add('hidden');
     if (st.connected) {
+      gcalConnected = true;
+      toggle.checked = true;
       const remOn = st.reminders_enabled !== false;
       statusText.textContent = st.google_email
-        ? `เชื่อมต่อแล้วกับ ${st.google_email}`
-        : 'เชื่อมต่อ Google Calendar แล้ว';
+        ? `เชื่อมต่อแล้ว · ${st.google_email}`
+        : 'เชื่อมต่อแล้ว';
+      statusText.classList.add('is-on');
       syncBtn.classList.remove('hidden');
       disconnectBtn.classList.remove('hidden');
       remindersRow.classList.remove('hidden');
@@ -385,11 +684,13 @@ async function refreshGcalStatus() {
       remindersToggle.checked = remOn;
       howto.classList.remove('hidden');
     } else {
-      statusText.textContent = 'ยังไม่ได้เชื่อมต่อ — กดปุ่มด้านล่างเพื่ออนุญาตให้ PTS เพิ่มตารางเรียนลงปฏิทินของคุณ';
+      statusText.textContent = 'ยังไม่ได้เชื่อมต่อ';
+      statusText.classList.remove('is-on');
       connectBtn.classList.remove('hidden');
     }
   } catch (e) {
-    statusText.textContent = 'ตรวจสอบสถานะไม่สำเร็จ: ' + e.message;
+    statusText.textContent = 'ตรวจสอบไม่สำเร็จ';
+    statusText.classList.remove('is-on');
     hint.classList.remove('hidden');
   }
 
@@ -411,6 +712,22 @@ async function refreshGcalStatus() {
     document.getElementById('line-oa')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }
+
+document.getElementById('gcal-toggle').onchange = async (e) => {
+  if (gcalBusy) return;
+  const wantOn = e.target.checked;
+  if (wantOn && !gcalConnected) {
+    e.target.checked = false;
+    document.getElementById('gcal-connect').click();
+    return;
+  }
+  if (!wantOn && gcalConnected) {
+    e.target.checked = true;
+    const ok = window.confirm('ยกเลิกการเชื่อมต่อ Google Calendar และลบอีเวนต์ที่ซิงค์ไว้หรือไม่?');
+    if (!ok) return;
+    document.getElementById('gcal-disconnect').click();
+  }
+};
 
 document.getElementById('gcal-reminders-toggle').onchange = async (e) => {
   const msg = document.getElementById('gcal-msg');
@@ -440,6 +757,7 @@ document.getElementById('gcal-connect').onclick = async (e) => {
   const msg = document.getElementById('gcal-msg');
   const btn = document.getElementById('gcal-connect');
   btn.textContent = 'กำลังเปิด Google...';
+  gcalBusy = true;
   try {
     const res = await fetch('/api/google/oauth/start?redirect=0', {
       credentials: 'include',
@@ -457,7 +775,10 @@ document.getElementById('gcal-connect').onclick = async (e) => {
   } catch (err) {
     msg.textContent = err.message;
     msg.className = 'pts-msg pts-msg--err';
-    btn.textContent = 'เชื่อมต่อ Google Calendar';
+    btn.textContent = 'เชื่อม Google';
+    document.getElementById('gcal-toggle').checked = false;
+  } finally {
+    gcalBusy = false;
   }
 };
 
@@ -476,12 +797,13 @@ document.getElementById('gcal-sync').onclick = async () => {
     msg.className = 'pts-msg pts-msg--err';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'ซิงค์ตารางเรียนตอนนี้';
+    btn.textContent = 'ซิงค์ตารางเรียน';
   }
 };
 
 document.getElementById('gcal-disconnect').onclick = async () => {
   const msg = document.getElementById('gcal-msg');
+  gcalBusy = true;
   try {
     const res = await fetch('/api/google/disconnect', {
       method: 'POST',
@@ -496,6 +818,8 @@ document.getElementById('gcal-disconnect').onclick = async () => {
   } catch (e) {
     msg.textContent = e.message;
     msg.className = 'pts-msg pts-msg--err';
+  } finally {
+    gcalBusy = false;
   }
 };
 
@@ -514,7 +838,7 @@ document.getElementById('request-password-otp').onclick = async () => {
     msg.className = 'pts-msg pts-msg--err';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'ส่ง OTP ไปอีเมล';
+    btn.textContent = 'ส่ง OTP';
   }
 };
 
@@ -538,27 +862,6 @@ document.getElementById('save-password').onclick = async () => {
     document.getElementById('password_otp').value = '';
   }
 };
-</script>
-<!-- PTS-NAV-INLINE-BOOT -->
-<script>
-(function(){
-  var box = document.getElementById('app-navbar');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'app-navbar';
-    if (document.body) document.body.insertBefore(box, document.body.firstChild);
-  }
-  if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
-      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
-      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
-      + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
-      + '</div></div></nav>';
-  }
-})();
 </script>
 <script src="password-toggle.js?v=20260720e"></script>
 <script src="/comp/user-sidebar.js?v=20260724u"></script>
