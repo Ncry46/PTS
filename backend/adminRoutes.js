@@ -6,7 +6,7 @@ const multer = require('multer');
 const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = require('./mailSecrets');
 const { issueEmailOtp, getMailStatus } = require('./emailOtp');
 const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
-const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath, listGalleryBanners, deleteGalleryBanner, isGalleryBannerFilename } = require('./heroImages');
+const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath, listGalleryBanners, deleteGalleryBanner, isGalleryBannerFilename, reorderGalleryBanners, appendBannerToOrder } = require('./heroImages');
 const {
     CERT_DIR,
     CERT_SLOTS,
@@ -757,6 +757,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             if (!req.file) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
             }
+            try { appendBannerToOrder(req.file.filename); } catch (_) { /* ignore */ }
             const items = listGalleryBanners();
             const item = items.find((x) => x.filename === req.file.filename) || {
                 filename: req.file.filename,
@@ -769,6 +770,20 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 list: items
             });
         });
+    });
+
+    router.put('/home-banners/reorder', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const order = req.body?.order || req.body?.filenames || req.body;
+        if (!Array.isArray(order) || !order.length) {
+            return res.status(400).json({ success: false, message: 'กรุณาส่งลำดับไฟล์แบนเนอร์' });
+        }
+        try {
+            const data = reorderGalleryBanners(order);
+            res.json({ success: true, message: 'อัปเดตลำดับแบนเนอร์แล้ว', data });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message || 'เรียงลำดับไม่สำเร็จ' });
+        }
     });
 
     router.delete('/home-banners/:filename', (req, res) => {

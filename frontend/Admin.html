@@ -1015,87 +1015,176 @@ async function renderSchedules() {
 
 async function renderBanners() {
   const { data } = await api('/api/admin/home-banners');
-  const list = Array.isArray(data) ? data : [];
+  let list = Array.isArray(data) ? data.slice() : [];
 
   document.getElementById('panel').innerHTML = `
     <div class="space-y-4">
       <div class="pts-card p-5">
         <h2 class="font-bold text-lg mb-1">เพิ่มแบนเนอร์หน้าแรก</h2>
         <p class="text-sm text-on-surface-variant mb-4">
-          อัปโหลดรูปแล้วจะโชว์บนหน้าแรกทันที · สร้างรูป <strong>1920 × 1000 px</strong> (กว้างเต็มจอ · สูงพอดีจอใต้แถบนำทาง) — ระบบขยายเต็มกรอบไม่มีแถบดำข้าง
-          · เก็บไฟล์ที่ <code>uploads/hero/</code>
+          อัปโหลดรูปแล้วจะโชว์บนหน้าแรกทันที · แนะนำ <strong>1920 × 1000 px</strong>
+          · ลากไฟล์มาวางด้านล่างได้เลย
         </p>
-        <input type="file" id="banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="block w-full text-sm mb-2">
-        <button type="button" class="pts-btn pts-btn-primary" id="banner-upload">เพิ่มแบนเนอร์</button>
+        <div class="ban-drop" id="banner-drop" tabindex="0" role="button" aria-label="ลากไฟล์รูปมาวางหรือคลิกเพื่อเลือกไฟล์">
+          <p class="ban-drop__hint"><strong>ลากไฟล์รูปมาวางที่นี่</strong> หรือคลิกเพื่อเลือกไฟล์</p>
+          <p class="ban-drop__hint" style="margin-top:6px;">รองรับ JPG / PNG / WEBP / GIF</p>
+          <input type="file" id="banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" multiple>
+        </div>
         <p id="banner-msg" class="text-xs mt-2 text-on-surface-variant"></p>
       </div>
 
       <div class="pts-card p-5">
-        <h3 class="font-bold mb-3">รายการแบนเนอร์ (${list.length})</h3>
-        ${list.length ? `
-          <div class="grid gap-3 md:grid-cols-2">
-            ${list.map((b, i) => `
-              <article class="rounded-2xl border border-[var(--pts-border,rgba(151,66,88,.14))] overflow-hidden bg-[var(--pts-surface,#fff)]">
-                <div class="bg-[#0b1020]">
-                  <img src="${escapeHtml(b.url)}" alt="" class="w-full h-40 object-cover"
-                    onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
-                </div>
-                <div class="p-3 flex items-center justify-between gap-2">
-                  <div class="min-w-0">
-                    <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}</p>
-                    <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
-                  </div>
-                  <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
-                </div>
-              </article>
-            `).join('')}
-          </div>
-        ` : `<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปด้านบนได้เลย</div>`}
+        <h3 class="font-bold mb-1">รายการแบนเนอร์ (<span id="banner-count">${list.length}</span>)</h3>
+        <p class="text-sm text-on-surface-variant mb-3">ลากการ์ดขึ้น–ลงเพื่อเปลี่ยนลำดับสไลด์ · อันบนสุดขึ้นก่อน</p>
+        <div id="banner-list" class="grid gap-3"></div>
+        <p id="banner-order-msg" class="ban-order-msg"></p>
         <p class="text-xs text-on-surface-variant mt-3">
           <a class="text-primary font-bold" href="Home.html" target="_blank" rel="noopener">เปิดหน้าแรก</a> เพื่อดูสไลด์แบนเนอร์
         </p>
       </div>
     </div>`;
 
-  document.getElementById('banner-upload')?.addEventListener('click', async () => {
-    const input = document.getElementById('banner-file');
-    const msg = document.getElementById('banner-msg');
-    const file = input?.files?.[0];
-    if (!file) {
-      if (msg) msg.textContent = 'กรุณาเลือกไฟล์ก่อน';
+  const msg = document.getElementById('banner-msg');
+  const orderMsg = document.getElementById('banner-order-msg');
+  const listEl = document.getElementById('banner-list');
+  const countEl = document.getElementById('banner-count');
+  const drop = document.getElementById('banner-drop');
+  const fileInput = document.getElementById('banner-file');
+  let dragFrom = -1;
+
+  const renderList = () => {
+    countEl.textContent = String(list.length);
+    if (!list.length) {
+      listEl.innerHTML = '<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปด้านบนได้เลย</div>';
       return;
     }
-    if (msg) msg.textContent = 'กำลังอัปโหลด...';
-    try {
-      const fd = new FormData();
-      fd.append('image', file);
-      const res = await fetch('/api/admin/home-banners/upload', {
-        method: 'POST',
-        credentials: 'include',
-        body: fd
+    listEl.innerHTML = list.map((b, i) => `
+      <article class="ban-list-item" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
+        <div class="ban-list-handle" title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
+        <div class="rounded-xl overflow-hidden bg-[#0b1020]">
+          <img src="${escapeHtml(b.url)}" alt="" class="w-full h-24 object-cover"
+            onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
+        </div>
+        <div class="min-w-0">
+          <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}</p>
+          <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
+        </div>
+        <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
+      </article>
+    `).join('');
+
+    listEl.querySelectorAll('.banner-del').forEach((btn) => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        const filename = btn.dataset.file;
+        if (!filename) return;
+        if (!confirm(`ลบแบนเนอร์ ${filename} ?`)) return;
+        try {
+          await api(`/api/admin/home-banners/${encodeURIComponent(filename)}`, { method: 'DELETE' });
+          renderBanners();
+        } catch (err) {
+          alert(err.message || 'ลบไม่สำเร็จ');
+        }
+      };
+    });
+
+    listEl.querySelectorAll('.ban-list-item').forEach((item) => {
+      item.addEventListener('dragstart', (e) => {
+        dragFrom = Number(item.dataset.index);
+        item.classList.add('is-dragging');
+        try { e.dataTransfer.setData('text/plain', String(dragFrom)); e.dataTransfer.effectAllowed = 'move'; } catch (_) {}
       });
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
-      if (msg) msg.textContent = 'เพิ่มแบนเนอร์แล้ว ✓';
+      item.addEventListener('dragend', () => {
+        item.classList.remove('is-dragging');
+        listEl.querySelectorAll('.ban-list-item').forEach((el) => el.classList.remove('is-drag-over'));
+        dragFrom = -1;
+      });
+      item.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        item.classList.add('is-drag-over');
+        try { e.dataTransfer.dropEffect = 'move'; } catch (_) {}
+      });
+      item.addEventListener('dragleave', () => item.classList.remove('is-drag-over'));
+      item.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        item.classList.remove('is-drag-over');
+        const to = Number(item.dataset.index);
+        const from = dragFrom >= 0 ? dragFrom : Number(e.dataTransfer.getData('text/plain'));
+        if (!Number.isFinite(from) || !Number.isFinite(to) || from === to) return;
+        const next = list.slice();
+        const [moved] = next.splice(from, 1);
+        next.splice(to, 0, moved);
+        list = next;
+        renderList();
+        orderMsg.textContent = 'กำลังบันทึกลำดับ...';
+        try {
+          const res = await api('/api/admin/home-banners/reorder', {
+            method: 'PUT',
+            body: JSON.stringify({ order: list.map((x) => x.filename || x.id) })
+          });
+          list = Array.isArray(res.data) ? res.data : list;
+          renderList();
+          orderMsg.textContent = 'บันทึกลำดับแล้ว ✓';
+        } catch (err) {
+          orderMsg.textContent = err.message || 'บันทึกลำดับไม่สำเร็จ';
+          renderBanners();
+        }
+      });
+    });
+  };
+
+  const uploadFiles = async (files) => {
+    const arr = Array.from(files || []).filter((f) => String(f.type || '').startsWith('image/'));
+    if (!arr.length) {
+      msg.textContent = 'กรุณาเลือกไฟล์รูปภาพ';
+      return;
+    }
+    msg.textContent = `กำลังอัปโหลด ${arr.length} ไฟล์...`;
+    try {
+      for (const file of arr) {
+        const fd = new FormData();
+        fd.append('image', file);
+        const res = await fetch('/api/admin/home-banners/upload', {
+          method: 'POST',
+          credentials: 'include',
+          body: fd
+        });
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok || json.success === false) throw new Error(json.message || 'อัปโหลดไม่สำเร็จ');
+      }
+      msg.textContent = 'เพิ่มแบนเนอร์แล้ว ✓';
       renderBanners();
     } catch (e) {
-      if (msg) msg.textContent = e.message || 'อัปโหลดไม่สำเร็จ';
+      msg.textContent = e.message || 'อัปโหลดไม่สำเร็จ';
     }
+  };
+
+  drop.addEventListener('click', () => fileInput.click());
+  drop.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  });
+  ['dragenter', 'dragover'].forEach((ev) => {
+    drop.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.add('is-drag');
+    });
+  });
+  ['dragleave', 'drop'].forEach((ev) => {
+    drop.addEventListener(ev, (e) => {
+      e.preventDefault();
+      drop.classList.remove('is-drag');
+    });
+  });
+  drop.addEventListener('drop', (e) => {
+    const files = e.dataTransfer?.files;
+    if (files?.length) uploadFiles(files);
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files?.length) uploadFiles(fileInput.files);
+    fileInput.value = '';
   });
 
-  document.querySelectorAll('.banner-del').forEach((btn) => {
-    btn.onclick = async () => {
-      const filename = btn.dataset.file;
-      if (!filename) return;
-      if (!confirm(`ลบแบนเนอร์ ${filename} ?`)) return;
-      try {
-        await api(`/api/admin/home-banners/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-        renderBanners();
-      } catch (e) {
-        alert(e.message || 'ลบไม่สำเร็จ');
-      }
-    };
-  });
+  renderList();
 }
 
 async function renderUsers() {

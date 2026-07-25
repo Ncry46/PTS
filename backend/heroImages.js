@@ -57,6 +57,42 @@ function isGalleryBannerFilename(name) {
     return false;
 }
 
+const BANNER_ORDER_FILE = 'banner-order.json';
+
+function bannerOrderPath() {
+    return path.join(HERO_DIR, BANNER_ORDER_FILE);
+}
+
+function readBannerOrder() {
+    ensureHeroDir();
+    const file = bannerOrderPath();
+    try {
+        if (!fs.existsSync(file)) return [];
+        const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
+        const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.order) ? raw.order : []);
+        return list.map((x) => path.basename(String(x || ''))).filter(isGalleryBannerFilename);
+    } catch (_) {
+        return [];
+    }
+}
+
+function writeBannerOrder(order) {
+    ensureHeroDir();
+    const clean = (Array.isArray(order) ? order : [])
+        .map((x) => path.basename(String(x || '')))
+        .filter(isGalleryBannerFilename);
+    // unique preserve order
+    const seen = new Set();
+    const unique = [];
+    for (const name of clean) {
+        if (seen.has(name)) continue;
+        seen.add(name);
+        unique.push(name);
+    }
+    fs.writeFileSync(bannerOrderPath(), JSON.stringify({ order: unique }, null, 2), 'utf8');
+    return unique;
+}
+
 function listGalleryBanners() {
     ensureHeroDir();
     let names = [];
@@ -81,8 +117,44 @@ function listGalleryBanners() {
         };
     }).filter(Boolean);
 
-    items.sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
-    return items;
+    const byName = new Map(items.map((x) => [x.filename, x]));
+    const saved = readBannerOrder().filter((name) => byName.has(name));
+    const remaining = items
+        .filter((x) => !saved.includes(x.filename))
+        .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
+
+    const ordered = [
+        ...saved.map((name) => byName.get(name)),
+        ...remaining
+    ].filter(Boolean);
+
+    // keep order file in sync with existing files
+    if (ordered.length && (saved.length !== ordered.length || saved.some((n, i) => n !== ordered[i].filename))) {
+        try { writeBannerOrder(ordered.map((x) => x.filename)); } catch (_) { /* ignore */ }
+    }
+
+    return ordered.map((item, index) => ({ ...item, sort_order: index + 1 }));
+}
+
+function reorderGalleryBanners(order) {
+    const current = listGalleryBanners();
+    const byName = new Map(current.map((x) => [x.filename, x]));
+    const wanted = (Array.isArray(order) ? order : [])
+        .map((x) => path.basename(String(x || '')))
+        .filter((name) => byName.has(name));
+    const rest = current
+        .map((x) => x.filename)
+        .filter((name) => !wanted.includes(name));
+    writeBannerOrder([...wanted, ...rest]);
+    return listGalleryBanners();
+}
+
+function appendBannerToOrder(filename) {
+    const safe = path.basename(String(filename || ''));
+    if (!isGalleryBannerFilename(safe)) return readBannerOrder();
+    const order = readBannerOrder().filter((n) => n !== safe);
+    order.push(safe);
+    return writeBannerOrder(order);
 }
 
 function deleteGalleryBanner(filename) {
@@ -99,6 +171,8 @@ function deleteGalleryBanner(filename) {
     }
     try {
         fs.unlinkSync(abs);
+        const order = readBannerOrder().filter((n) => n !== safe);
+        writeBannerOrder(order);
         return { ok: true };
     } catch (err) {
         return { ok: false, message: err.message || 'ลบไม่สำเร็จ' };
@@ -251,6 +325,8 @@ module.exports = {
     publicHomeBannerUrl,
     getHomeBannerInfo,
     listGalleryBanners,
+    reorderGalleryBanners,
+    appendBannerToOrder,
     deleteGalleryBanner,
     isGalleryBannerFilename,
     listLocalHeroFiles,
