@@ -464,8 +464,20 @@ async function renderCourses() {
 
   const matchesQuery = (c, q) => {
     if (!q) return true;
+    const idStr = String(c.course_id ?? '').trim();
+    // support: 1, #1, id 1, ID1, ไอดี 1
+    const idQuery = q
+      .replace(/^ไอดี\s*/i, '')
+      .replace(/^id\s*/i, '')
+      .replace(/^#\s*/, '')
+      .trim();
+    if (idQuery && /^\d+$/.test(idQuery) && idStr === idQuery) return true;
+    if (idStr && (q === idStr || q === `#${idStr}` || q === `id${idStr}` || q === `id ${idStr}`)) return true;
+
     const hay = [
-      c.course_id,
+      idStr,
+      `id ${idStr}`,
+      `#${idStr}`,
       c.course_name,
       c.instructor_name,
       c.delivery_mode,
