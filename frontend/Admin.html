@@ -404,6 +404,31 @@
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 let coursesCache = [];
+const pad2 = (n) => String(n).padStart(2, '0');
+function toDateKey(value) {
+  if (value == null) return '';
+  if (typeof value === 'string') {
+    const m = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  }
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function parseScheduleDate(value) {
+  if (value instanceof Date) return value;
+  if (typeof value === 'string') {
+    const m = value.trim().match(/^(\d{4})-(\d{2})-(\d{2})[ T](\d{2}):(\d{2})(?::(\d{2}))?/);
+    if (m) {
+      return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]), Number(m[6] || 0));
+    }
+  }
+  return new Date(value);
+}
+let adminSchedulesCache = [];
+let adminCalViewYear = new Date().getFullYear();
+let adminCalViewMonth = new Date().getMonth();
+let adminCalSelectedDay = null;
 
 async function api(url, options = {}) {
   const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
@@ -948,14 +973,163 @@ async function renderSchedules() {
     coursesCache = data;
   }
   const { data } = await api('/api/admin/schedules');
+  adminSchedulesCache = Array.isArray(data) ? data.slice() : [];
+
+  if (adminSchedulesCache.length) {
+    const now = new Date();
+    const hasThisMonth = adminSchedulesCache.some((s) => {
+      const d = parseScheduleDate(s.start_at);
+      return !Number.isNaN(d.getTime()) && d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    });
+    if (!hasThisMonth && adminCalSelectedDay == null) {
+      const first = parseScheduleDate(adminSchedulesCache[0].start_at);
+      if (!Number.isNaN(first.getTime())) {
+        adminCalViewYear = first.getFullYear();
+        adminCalViewMonth = first.getMonth();
+      }
+    }
+  }
+
   const now = new Date();
-  const start = new Date(now.getTime() + 86400000); start.setMinutes(0,0,0);
-  const end = new Date(start.getTime() + 2*3600000);
-  const toLocalInput = (d) => {
-    const pad = (n) => String(n).padStart(2, '0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const start = new Date(now.getTime() + 86400000); start.setMinutes(0, 0, 0);
+  const end = new Date(start.getTime() + 2 * 3600000);
+  const toLocalInput = (d) =>
+    `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+
+  const groupByDay = (schedules) => {
+    const map = new Map();
+    for (const s of schedules) {
+      const key = toDateKey(s.start_at);
+      if (!key) continue;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(s);
+    }
+    return map;
   };
+
+  const paintCalendar = () => {
+    const grid = document.getElementById('admin-cal-grid');
+    const label = document.getElementById('admin-cal-month-label');
+    if (!grid || !label) return;
+    const byDay = groupByDay(adminSchedulesCache);
+    const monthDate = new Date(adminCalViewYear, adminCalViewMonth, 1);
+    label.textContent = monthDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+    const firstDow = (monthDate.getDay() + 6) % 7;
+    const daysInMonth = new Date(adminCalViewYear, adminCalViewMonth + 1, 0).getDate();
+    const prevDays = new Date(adminCalViewYear, adminCalViewMonth, 0).getDate();
+    const todayKey = toDateKey(new Date());
+    const cells = [];
+    for (let i = 0; i < 42; i += 1) {
+      let y = adminCalViewYear;
+      let m = adminCalViewMonth;
+      let day;
+      let muted = false;
+      if (i < firstDow) {
+        day = prevDays - firstDow + i + 1;
+        m -= 1;
+        if (m < 0) { m = 11; y -= 1; }
+        muted = true;
+      } else if (i >= firstDow + daysInMonth) {
+        day = i - firstDow - daysInMonth + 1;
+        m += 1;
+        if (m > 11) { m = 0; y += 1; }
+        muted = true;
+      } else {
+        day = i - firstDow + 1;
+      }
+      const key = `${y}-${pad2(m + 1)}-${pad2(day)}`;
+      const events = byDay.get(key) || [];
+      const classes = ['pts-cal__day'];
+      if (muted) classes.push('pts-cal__day--muted');
+      if (key === todayKey) classes.push('pts-cal__day--today');
+      if (events.length) classes.push('pts-cal__day--has');
+      if (adminCalSelectedDay === key) classes.push('pts-cal__day--selected');
+      const dots = events.slice(0, 3).map(() => '<span class="pts-cal__dot"></span>').join('');
+      const count = events.length > 1 ? `<span class="pts-cal__day-count">${events.length}</span>` : '';
+      cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" ${events.length ? '' : 'disabled'}>
+        <span class="pts-cal__day-num">${day}</span>
+        <span class="pts-cal__dots">${dots}</span>
+        ${count}
+      </button>`);
+    }
+    grid.innerHTML = cells.join('');
+    grid.querySelectorAll('.pts-cal__day--has').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        adminCalSelectedDay = btn.getAttribute('data-day');
+        paintCalendar();
+        paintList();
+      });
+    });
+  };
+
+  const paintList = () => {
+    const el = document.getElementById('admin-schedule-list');
+    const title = document.getElementById('admin-schedule-list-title');
+    const clearBtn = document.getElementById('admin-cal-clear-filter');
+    if (!el || !title) return;
+    let rows = adminSchedulesCache.slice();
+    if (adminCalSelectedDay) {
+      rows = rows.filter((s) => toDateKey(s.start_at) === adminCalSelectedDay);
+      title.textContent = `รายการวันที่ ${adminCalSelectedDay.replace(/-/g, '/')}`;
+      clearBtn?.classList.remove('hidden');
+    } else {
+      title.textContent = 'ตารางที่มีอยู่';
+      clearBtn?.classList.add('hidden');
+    }
+    if (!adminSchedulesCache.length) {
+      el.innerHTML = '<p class="text-sm text-on-surface-variant">ยังไม่มีตาราง</p>';
+      return;
+    }
+    if (!rows.length) {
+      el.innerHTML = '<p class="text-sm text-on-surface-variant">ไม่มีตารางในวันที่เลือก</p>';
+      return;
+    }
+    el.innerHTML = rows.map((s) => {
+      const d = parseScheduleDate(s.start_at);
+      const end = parseScheduleDate(s.end_at);
+      const range = Number.isNaN(d.getTime())
+        ? '—'
+        : `${d.toLocaleString('th-TH')} – ${end.toLocaleString('th-TH')}`;
+      return `<div class="border rounded-xl p-3 flex justify-between gap-2">
+        <div>
+          <p class="font-bold">${escapeHtml(s.title)}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${escapeHtml(range)}</p>
+          <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(s.delivery_mode || 'online')}${s.location ? ` · ${escapeHtml(s.location)}` : ''}</p>
+        </div>
+        <button type="button" class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
+      </div>`;
+    }).join('');
+    el.querySelectorAll('.del-schedule').forEach((btn) => {
+      btn.onclick = async () => {
+        await api(`/api/admin/schedules/${btn.dataset.id}`, { method: 'DELETE' });
+        renderSchedules();
+      };
+    });
+  };
+
   document.getElementById('panel').innerHTML = `
+    <div id="admin-schedule-calendar" class="pts-cal">
+      <div class="pts-cal__head">
+        <h2 class="pts-cal__title" id="admin-cal-month-label">—</h2>
+        <div class="pts-cal__nav">
+          <button type="button" class="pts-btn pts-btn-outline" id="admin-cal-prev" aria-label="เดือนก่อน">‹</button>
+          <button type="button" class="pts-btn pts-btn-ghost" id="admin-cal-today">วันนี้</button>
+          <button type="button" class="pts-btn pts-btn-outline" id="admin-cal-next" aria-label="เดือนถัดไป">›</button>
+        </div>
+      </div>
+      <div class="pts-cal__weekdays" aria-hidden="true">
+        <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
+      </div>
+      <div class="pts-cal__grid" id="admin-cal-grid"></div>
+      <p class="pts-cal__legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อกรองรายการด้านล่าง</p>
+    </div>
+
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <h3 class="font-bold text-lg m-0" id="admin-schedule-list-title">ตารางที่มีอยู่</h3>
+      <button type="button" class="pts-btn pts-btn-ghost hidden" id="admin-cal-clear-filter">แสดงทั้งหมด</button>
+    </div>
+    <div id="admin-schedule-list" class="space-y-2 mb-6"></div>
+
     <h2 class="font-bold text-lg mb-3">เพิ่มตารางเรียน</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
@@ -964,7 +1138,7 @@ async function renderSchedules() {
       <label class="text-sm font-semibold text-on-surface-variant">ผูกกับหลักสูตร (จำเป็น — ต้องเป็นหลักสูตรที่นักเรียนสมัครไว้)
         <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
           <option value="">-- เลือกหลักสูตร --</option>
-          ${coursesCache.map(c => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+          ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
         </select>
       </label>
       <label class="text-sm font-semibold text-on-surface-variant">วันเวลาเริ่ม
@@ -984,17 +1158,34 @@ async function renderSchedules() {
       </label>
     </div>
     <button id="add-schedule" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-2">เพิ่มตาราง</button>
-    <p id="schedule-form-msg" class="pts-msg mb-4"></p>
-    <h3 class="font-bold mb-2">ตารางที่มีอยู่</h3>
-    <div class="space-y-2">${data.map(s => `
-      <div class="border rounded-xl p-3 flex justify-between gap-2">
-        <div>
-          <p class="font-bold">${escapeHtml(s.title)}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${new Date(s.start_at).toLocaleString('th-TH')} – ${new Date(s.end_at).toLocaleString('th-TH')}</p>
-        </div>
-        <button class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
-      </div>`).join('') || '<p>ยังไม่มีตาราง</p>'}
-    </div>`;
+    <p id="schedule-form-msg" class="pts-msg mb-4"></p>`;
+
+  paintCalendar();
+  paintList();
+
+  document.getElementById('admin-cal-prev').onclick = () => {
+    adminCalViewMonth -= 1;
+    if (adminCalViewMonth < 0) { adminCalViewMonth = 11; adminCalViewYear -= 1; }
+    paintCalendar();
+  };
+  document.getElementById('admin-cal-next').onclick = () => {
+    adminCalViewMonth += 1;
+    if (adminCalViewMonth > 11) { adminCalViewMonth = 0; adminCalViewYear += 1; }
+    paintCalendar();
+  };
+  document.getElementById('admin-cal-today').onclick = () => {
+    const t = new Date();
+    adminCalViewYear = t.getFullYear();
+    adminCalViewMonth = t.getMonth();
+    adminCalSelectedDay = toDateKey(t);
+    paintCalendar();
+    paintList();
+  };
+  document.getElementById('admin-cal-clear-filter').onclick = () => {
+    adminCalSelectedDay = null;
+    paintCalendar();
+    paintList();
+  };
 
   document.getElementById('add-schedule').onclick = async () => {
     const formMsg = document.getElementById('schedule-form-msg');
@@ -1018,14 +1209,19 @@ async function renderSchedules() {
           delivery_mode: document.getElementById('s-mode').value
         })
       });
+      const startVal = document.getElementById('s-start').value;
+      const dayKey = toDateKey(startVal);
+      if (dayKey) {
+        const [y, m] = dayKey.split('-').map(Number);
+        adminCalViewYear = y;
+        adminCalViewMonth = m - 1;
+        adminCalSelectedDay = dayKey;
+      }
       renderSchedules();
     } catch (e) {
       showErr(e.message || 'เพิ่มตารางไม่สำเร็จ');
     }
   };
-  document.querySelectorAll('.del-schedule').forEach(btn => {
-    btn.onclick = async () => { await api(`/api/admin/schedules/${btn.dataset.id}`, { method: 'DELETE' }); renderSchedules(); };
-  });
 }
 
 async function renderBanners() {
