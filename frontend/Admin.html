@@ -1100,27 +1100,169 @@ async function renderBanners() {
 
 async function renderUsers() {
   const { data } = await api('/api/admin/users');
+  const usersCache = data || [];
+
+  const isAdminRole = (u) => String(u.Role || u.role || '').toLowerCase() === 'admin';
+  const isActive = (u) => {
+    const f = String(u.FlagUse ?? u.flag_use ?? 'Y').toUpperCase();
+    return f === 'Y' || f === '1' || f === 'TRUE';
+  };
+
   document.getElementById('panel').innerHTML = `
-    <div class="space-y-2">${data.map(u => `
-      <div class="border rounded-xl p-3 flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div>
-          <p class="font-bold">${escapeHtml(u.full_name || '-')}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(u.email)} · ${escapeHtml(u.Role || 'student')} · Flag ${escapeHtml(u.FlagUse || '-')}</p>
-        </div>
-        <div class="flex gap-2">
-          <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="student">student</button>
-          <button class="set-role border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-role="admin">admin</button>
-          <button class="set-flag border px-3 py-1 rounded-full text-sm" data-id="${u.user_id}" data-flag="Y">เปิดใช้</button>
-          <button class="set-flag border px-3 py-1 rounded-full text-sm text-red-600" data-id="${u.user_id}" data-flag="N">ระงับ</button>
-        </div>
-      </div>`).join('')}
+    <div class="adm-c-head">
+      <div>
+        <h3>รายการผู้ใช้</h3>
+        <p>เดสก์ท็อป = ตาราง · มือถือ = การ์ด · แสดงประมาณ 10 รายการแล้วเลื่อนดูต่อ</p>
+      </div>
+    </div>
+    <div class="adm-c-tools">
+      <input id="user-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / อีเมล / ID / เบอร์ / บทบาท..." autocomplete="off">
+      <span class="adm-c-count" id="user-count">0 ผู้ใช้</span>
+    </div>
+    <div id="user-list-area"></div>
+  `;
+
+  const searchInput = document.getElementById('user-search');
+  const countEl = document.getElementById('user-count');
+  const listArea = document.getElementById('user-list-area');
+
+  const actionBtns = (u) => `
+    <div class="adm-c-actions">
+      <button type="button" class="pts-btn pts-btn-outline set-role" data-id="${u.user_id}" data-role="student" ${!isAdminRole(u) ? 'disabled style="opacity:.45"' : ''}>student</button>
+      <button type="button" class="pts-btn pts-btn-outline set-role" data-id="${u.user_id}" data-role="admin" ${isAdminRole(u) ? 'disabled style="opacity:.45"' : ''}>admin</button>
+      ${isActive(u)
+        ? `<button type="button" class="pts-btn pts-btn-ghost set-flag" data-id="${u.user_id}" data-flag="N" style="color:#ba1a1a;">ระงับ</button>`
+        : `<button type="button" class="pts-btn pts-btn-ghost set-flag" data-id="${u.user_id}" data-flag="Y">เปิดใช้</button>`}
     </div>`;
-  document.querySelectorAll('.set-role').forEach(btn => {
-    btn.onclick = async () => { await api(`/api/admin/users/${btn.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ role: btn.dataset.role }) }); renderUsers(); };
-  });
-  document.querySelectorAll('.set-flag').forEach(btn => {
-    btn.onclick = async () => { await api(`/api/admin/users/${btn.dataset.id}`, { method: 'PATCH', body: JSON.stringify({ flag_use: btn.dataset.flag }) }); renderUsers(); };
-  });
+
+  const rowHtml = (u) => `
+    <tr data-user-id="${u.user_id}">
+      <td>
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
+          <div class="adm-c-name">${escapeHtml(u.full_name || '—')}</div>
+        </div>
+      </td>
+      <td>${escapeHtml(u.email || '—')}</td>
+      <td>${escapeHtml(u.phone || '—')}</td>
+      <td><span class="adm-c-badge${isAdminRole(u) ? ' is-on' : ''}">${escapeHtml(String(u.Role || u.role || 'student').toLowerCase())}</span></td>
+      <td><span class="adm-c-badge${isActive(u) ? ' is-on' : ''}">${isActive(u) ? 'ใช้งาน' : 'ระงับ'}</span></td>
+      <td>${actionBtns(u)}</td>
+    </tr>`;
+
+  const cardHtml = (u) => `
+    <article class="adm-c-card" data-user-id="${u.user_id}">
+      <div class="adm-c-card__top">
+        <div class="adm-c-course">
+          <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
+          <div class="adm-c-name">${escapeHtml(u.full_name || '—')}</div>
+        </div>
+        <span class="adm-c-badge${isAdminRole(u) ? ' is-on' : ''}">${escapeHtml(String(u.Role || u.role || 'student').toLowerCase())}</span>
+      </div>
+      <div class="adm-c-card__meta">
+        <span>${escapeHtml(u.email || '—')}</span>
+        <span>${escapeHtml(u.phone || '—')}</span>
+        <span class="adm-c-badge${isActive(u) ? ' is-on' : ''}">${isActive(u) ? 'ใช้งาน' : 'ระงับ'}</span>
+      </div>
+      ${actionBtns(u)}
+    </article>`;
+
+  const matchesQuery = (u, q) => {
+    if (!q) return true;
+    const idStr = String(u.user_id ?? '').trim();
+    const idQuery = q
+      .replace(/^ไอดี\s*/i, '')
+      .replace(/^id\s*/i, '')
+      .replace(/^#\s*/, '')
+      .trim();
+    if (idQuery && /^\d+$/.test(idQuery) && idStr === idQuery) return true;
+    if (idStr && (q === idStr || q === `#${idStr}` || q === `id${idStr}` || q === `id ${idStr}`)) return true;
+
+    const hay = [
+      idStr,
+      `id ${idStr}`,
+      `#${idStr}`,
+      u.full_name,
+      u.email,
+      u.phone,
+      u.Role || u.role,
+      isActive(u) ? 'ใช้งาน เปิดใช้ active' : 'ระงับ ปิดใช้ suspended',
+      isAdminRole(u) ? 'admin' : 'student'
+    ].join(' ').toLowerCase();
+    return hay.includes(q);
+  };
+
+  const bindListActions = () => {
+    document.querySelectorAll('.set-role').forEach((btn) => {
+      btn.onclick = async () => {
+        if (btn.disabled) return;
+        try {
+          await api(`/api/admin/users/${btn.dataset.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ role: btn.dataset.role })
+          });
+          await renderUsers();
+        } catch (e) {
+          alert(e.message || 'อัปเดตบทบาทไม่สำเร็จ');
+        }
+      };
+    });
+    document.querySelectorAll('.set-flag').forEach((btn) => {
+      btn.onclick = async () => {
+        const label = btn.dataset.flag === 'N' ? 'ระงับผู้ใช้นี้ใช่หรือไม่?' : 'เปิดใช้งานผู้ใช้นี้ใช่หรือไม่?';
+        if (!window.confirm(label)) return;
+        try {
+          await api(`/api/admin/users/${btn.dataset.id}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ flag_use: btn.dataset.flag })
+          });
+          await renderUsers();
+        } catch (e) {
+          alert(e.message || 'อัปเดตสถานะไม่สำเร็จ');
+        }
+      };
+    });
+  };
+
+  const renderList = (query = '') => {
+    const q = String(query || '').trim().toLowerCase();
+    const filtered = usersCache.filter((u) => matchesQuery(u, q));
+    countEl.textContent = q
+      ? `${filtered.length} / ${usersCache.length} ผู้ใช้`
+      : `${usersCache.length} ผู้ใช้`;
+
+    if (!usersCache.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ยังไม่มีผู้ใช้</div>';
+      return;
+    }
+    if (!filtered.length) {
+      listArea.innerHTML = '<div class="adm-c-empty">ไม่พบผู้ใช้ที่ตรงกับคำค้นหา</div>';
+      return;
+    }
+
+    listArea.innerHTML = `
+      <div class="adm-c-table-wrap">
+        <table class="adm-c-table">
+          <thead>
+            <tr>
+              <th>ผู้ใช้</th>
+              <th>อีเมล</th>
+              <th>เบอร์โทร</th>
+              <th>บทบาท</th>
+              <th>สถานะ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>${filtered.map(rowHtml).join('')}</tbody>
+        </table>
+      </div>
+      <div class="adm-c-cards">${filtered.map(cardHtml).join('')}</div>
+    `;
+    bindListActions();
+  };
+
+  searchInput.addEventListener('input', () => renderList(searchInput.value));
+  renderList();
 }
 
 async function renderPosts() {
