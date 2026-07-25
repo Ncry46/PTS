@@ -213,7 +213,7 @@ window.PTSLangDict = {
 
   /* —— Favorites —— */
   'fav.courses': { th: 'หลักสูตรโปรด', en: 'Favorite courses' },
-  'fav.posts': { th: 'โพสต์ที่ถูกใจ', en: 'Liked posts' },
+  'fav.posts': { th: 'โพสต์โปรด', en: 'Liked posts' },
 
   /* —— Community —— */
   'community.newPost': { th: 'สร้างโพสต์', en: 'New post' },
