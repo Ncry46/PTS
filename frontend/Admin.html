@@ -393,7 +393,7 @@ async function renderCourses() {
     </div>`;
 
   const tableRows = data.map((c) => `
-    <tr>
+    <tr data-course-id="${c.course_id}">
       <td>
         <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
         <div class="adm-c-id">#${c.course_id}</div>
@@ -408,7 +408,7 @@ async function renderCourses() {
     </tr>`).join('');
 
   const cards = data.map((c) => `
-    <article class="adm-c-card">
+    <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
         <div>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
