@@ -408,6 +408,7 @@ app.get('/api/courses', async (req, res) => {
                         ) THEN 1 ELSE 0
                     END AS is_enrolled
                 FROM BD_PTS.dbo.courses_main c
+                WHERE ISNULL(c.flag_use, 1) = 1
                 ORDER BY c.created_at DESC
             `);
 

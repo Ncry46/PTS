@@ -118,6 +118,9 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
         `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL
          ALTER TABLE dbo.courses_main ADD description NVARCHAR(MAX) NULL`,
+        `IF COL_LENGTH('dbo.courses_main', 'flag_use') IS NULL
+         ALTER TABLE dbo.courses_main ADD flag_use BIT NOT NULL
+            CONSTRAINT DF_courses_main_flag_use DEFAULT (1)`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
          CREATE TABLE dbo.attendance_logs (
             log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

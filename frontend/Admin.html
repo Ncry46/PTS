@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260724admin-gap">
+<link rel="stylesheet" href="site.css?v=20260725admin-courses">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -238,6 +238,69 @@
   .ban-mini-themes button[data-theme="ink"] { background:linear-gradient(135deg,#2c3a48,#8c9cb4); }
   .ban-mini-themes button[data-theme="ocean"] { background:linear-gradient(135deg,#2a6a72,#64bec8); }
   .ban-mini-themes button[data-theme="sunset"] { background:linear-gradient(135deg,#c45a3a,#ffc08c); }
+
+  /* —— Admin courses: table (desktop) / compact cards (mobile) —— */
+  .adm-c-head {
+    display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between;
+    gap:10px; margin: 8px 0 14px;
+  }
+  .adm-c-head h3 { margin:0; font-size:1.05rem; font-weight:700; }
+  .adm-c-head p { margin:4px 0 0; font-size:13px; color:var(--pts-muted,#5c4f55); }
+  .adm-c-count {
+    font-size:12px; font-weight:700; color:#974258;
+    background:rgba(151,66,88,.1); padding:6px 10px; border-radius:999px;
+  }
+  .adm-c-table-wrap { display:none; overflow:auto; border:1px solid rgba(151,66,88,.14); border-radius:16px; background:#fff; }
+  .adm-c-table { width:100%; border-collapse:collapse; min-width:780px; font-size:13px; }
+  .adm-c-table th {
+    text-align:left; font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;
+    color:#5c4f55; padding:12px 14px; background:#f7f2f5; border-bottom:1px solid rgba(151,66,88,.12);
+    white-space:nowrap;
+  }
+  .adm-c-table td {
+    padding:12px 14px; border-bottom:1px solid rgba(151,66,88,.08);
+    vertical-align:middle; color:#1c1520;
+  }
+  .adm-c-table tr:last-child td { border-bottom:0; }
+  .adm-c-table tr:hover td { background:rgba(151,66,88,.03); }
+  .adm-c-name { font-weight:700; line-height:1.3; }
+  .adm-c-id { font-size:11px; color:#5c4f55; margin-top:2px; }
+  .adm-c-mode {
+    display:inline-flex; align-items:center; padding:3px 8px; border-radius:999px;
+    font-size:11px; font-weight:700; background:rgba(151,66,88,.1); color:#974258; text-transform:capitalize;
+  }
+  .adm-c-mode--onsite { background:#eef5ea; color:#4c6548; }
+  .adm-c-mode--hybrid { background:#e8f6ec; color:#166c39; }
+  .adm-c-badge {
+    display:inline-flex; padding:3px 8px; border-radius:999px; font-size:11px; font-weight:700;
+    background:#eee; color:#666;
+  }
+  .adm-c-badge.is-on { background:rgba(151,66,88,.12); color:#974258; }
+  .adm-c-actions { display:flex; flex-wrap:wrap; gap:6px; }
+  .adm-c-actions .pts-btn { padding:6px 10px; font-size:12px; height:auto; min-height:0; }
+  .adm-c-cards { display:grid; gap:10px; }
+  .adm-c-card {
+    border:1px solid rgba(151,66,88,.14); border-radius:14px; background:#fff;
+    padding:12px 14px; display:grid; gap:8px;
+  }
+  .adm-c-card__top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+  .adm-c-card__meta {
+    display:flex; flex-wrap:wrap; gap:6px 10px; font-size:12px; color:#5c4f55;
+  }
+  .adm-c-card__meta span { display:inline-flex; align-items:center; gap:4px; }
+  .adm-c-empty {
+    border:1px dashed rgba(151,66,88,.25); border-radius:14px; padding:28px 16px;
+    text-align:center; color:#5c4f55; font-size:14px;
+  }
+  .adm-c-edit[hidden] { display:none !important; }
+  .adm-c-edit {
+    margin-top:14px; padding:14px; border-radius:16px;
+    border:1px solid rgba(151,66,88,.2); background:#faf6f8;
+  }
+  @media (min-width: 900px) {
+    .adm-c-table-wrap { display:block; }
+    .adm-c-cards { display:none; }
+  }
 </style>
 </head>
 <body class="pts-body text-on-surface">
@@ -295,6 +358,64 @@ async function api(url, options = {}) {
 async function renderCourses() {
   const { data } = await api('/api/admin/courses');
   coursesCache = data;
+  let editingId = null;
+
+  const modeClass = (mode) => {
+    const m = String(mode || '').toLowerCase();
+    if (m === 'onsite') return 'adm-c-mode adm-c-mode--onsite';
+    if (m === 'hybrid') return 'adm-c-mode adm-c-mode--hybrid';
+    return 'adm-c-mode';
+  };
+
+  const fmtDate = (v) => {
+    if (!v) return '—';
+    try { return new Date(v).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch (_) { return '—'; }
+  };
+
+  const actionBtns = (c) => `
+    <div class="adm-c-actions">
+      <button type="button" class="pts-btn pts-btn-outline edit-course" data-id="${c.course_id}">แก้ไข</button>
+      <button type="button" class="pts-btn pts-btn-ghost feature-btn" data-id="${c.course_id}" data-featured="${c.is_featured ? 0 : 1}">
+        ${c.is_featured ? 'เลิกแนะนำ' : 'ตั้งแนะนำ'}
+      </button>
+      <button type="button" class="pts-btn pts-btn-ghost del-course" data-id="${c.course_id}" style="color:#ba1a1a;">ลบ</button>
+    </div>`;
+
+  const tableRows = data.map((c) => `
+    <tr>
+      <td>
+        <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
+        <div class="adm-c-id">#${c.course_id}</div>
+      </td>
+      <td>${escapeHtml(c.instructor_name || '—')}</td>
+      <td><span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span></td>
+      <td>${Number(c.total_hours || 0)} ชม.</td>
+      <td>${escapeHtml(c.difficulty_level || '—')}</td>
+      <td><span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span></td>
+      <td>${fmtDate(c.created_at)}</td>
+      <td>${actionBtns(c)}</td>
+    </tr>`).join('');
+
+  const cards = data.map((c) => `
+    <article class="adm-c-card">
+      <div class="adm-c-card__top">
+        <div>
+          <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
+          <div class="adm-c-id">#${c.course_id}</div>
+        </div>
+        <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
+      </div>
+      <div class="adm-c-card__meta">
+        <span>${escapeHtml(c.instructor_name || '—')}</span>
+        <span>${Number(c.total_hours || 0)} ชม.</span>
+        <span>${escapeHtml(c.difficulty_level || '—')}</span>
+        <span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span>
+        <span>${fmtDate(c.created_at)}</span>
+      </div>
+      ${actionBtns(c)}
+    </article>`).join('');
+
   document.getElementById('panel').innerHTML = `
     <h2 class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
@@ -304,39 +425,132 @@ async function renderCourses() {
       <input id="c-hours" type="number" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง" value="4">
       <input id="c-cover" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="URL รูปปก">
     </div>
-    <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold mb-6">สร้างหลักสูตร</button>
-    <div class="space-y-2">${data.map(c => `
-      <div class="border rounded-xl p-3 flex justify-between gap-3 items-start">
-        <div>
-          <p class="font-bold">${escapeHtml(c.course_name)}</p>
-          <p class="text-sm text-on-surface-variant">#${c.course_id} · ${escapeHtml(c.delivery_mode)} · ${escapeHtml(c.instructor_name || '-')}</p>
-        </div>
-        <button class="text-sm text-primary font-bold feature-btn" data-id="${c.course_id}" data-featured="${c.is_featured ? 0 : 1}">${c.is_featured ? 'เลิกแนะนำ' : 'ตั้งแนะนำ'}</button>
-      </div>`).join('') || '<p>ยังไม่มีหลักสูตร</p>'}
-    </div>`;
+    <div class="flex flex-wrap gap-2 mb-6">
+      <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold">สร้างหลักสูตร</button>
+      <button id="cancel-edit-course" type="button" class="pts-btn pts-btn-ghost hidden">ยกเลิกแก้ไข</button>
+    </div>
+    <p id="course-form-msg" class="pts-msg mb-4"></p>
 
-  document.getElementById('create-course').onclick = async () => {
-    await api('/api/admin/courses', {
-      method: 'POST',
-      body: JSON.stringify({
-        course_name: document.getElementById('c-name').value,
-        instructor_name: document.getElementById('c-instructor').value,
-        delivery_mode: document.getElementById('c-mode').value,
-        total_hours: Number(document.getElementById('c-hours').value || 1),
-        cover_image_url: document.getElementById('c-cover').value,
-        is_featured: false
-      })
-    });
-    await renderCourses();
+    <div class="adm-c-head">
+      <div>
+        <h3>รายการหลักสูตร</h3>
+        <p>เดสก์ท็อป = ตาราง · มือถือ = การ์ดแบบย่อ</p>
+      </div>
+      <span class="adm-c-count">${data.length} หลักสูตร</span>
+    </div>
+
+    ${data.length ? `
+      <div class="adm-c-table-wrap">
+        <table class="adm-c-table">
+          <thead>
+            <tr>
+              <th>หลักสูตร</th>
+              <th>วิทยากร</th>
+              <th>รูปแบบ</th>
+              <th>ชั่วโมง</th>
+              <th>ระดับ</th>
+              <th>สถานะ</th>
+              <th>สร้างเมื่อ</th>
+              <th>จัดการ</th>
+            </tr>
+          </thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+      <div class="adm-c-cards">${cards}</div>
+    ` : '<div class="adm-c-empty">ยังไม่มีหลักสูตร</div>'}
+  `;
+
+  const formMsg = document.getElementById('course-form-msg');
+  const createBtn = document.getElementById('create-course');
+  const cancelBtn = document.getElementById('cancel-edit-course');
+
+  const fillForm = (c) => {
+    document.getElementById('c-name').value = c?.course_name || '';
+    document.getElementById('c-instructor').value = c?.instructor_name || '';
+    document.getElementById('c-mode').value = c?.delivery_mode || 'online';
+    document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : 4;
+    document.getElementById('c-cover').value = c?.cover_image_url || '';
   };
 
-  document.querySelectorAll('.feature-btn').forEach(btn => {
+  const setEditMode = (course) => {
+    editingId = course ? course.course_id : null;
+    if (course) {
+      fillForm(course);
+      createBtn.textContent = 'บันทึกการแก้ไข';
+      cancelBtn.classList.remove('hidden');
+      formMsg.textContent = `กำลังแก้ไข #${course.course_id}`;
+      formMsg.className = 'pts-msg mb-4';
+      document.getElementById('c-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      fillForm(null);
+      createBtn.textContent = 'สร้างหลักสูตร';
+      cancelBtn.classList.add('hidden');
+      formMsg.textContent = '';
+      formMsg.className = 'pts-msg mb-4';
+    }
+  };
+
+  cancelBtn.onclick = () => setEditMode(null);
+
+  createBtn.onclick = async () => {
+    const payload = {
+      course_name: document.getElementById('c-name').value,
+      instructor_name: document.getElementById('c-instructor').value,
+      delivery_mode: document.getElementById('c-mode').value,
+      total_hours: Number(document.getElementById('c-hours').value || 1),
+      cover_image_url: document.getElementById('c-cover').value
+    };
+    if (!editingId) payload.is_featured = false;
+    createBtn.disabled = true;
+    try {
+      if (editingId) {
+        await api(`/api/admin/courses/${editingId}`, {
+          method: 'PUT',
+          body: JSON.stringify(payload)
+        });
+      } else {
+        await api('/api/admin/courses', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+      }
+      await renderCourses();
+    } catch (e) {
+      formMsg.textContent = e.message || 'บันทึกไม่สำเร็จ';
+      formMsg.className = 'pts-msg pts-msg--err mb-4';
+    } finally {
+      createBtn.disabled = false;
+    }
+  };
+
+  document.querySelectorAll('.edit-course').forEach((btn) => {
+    btn.onclick = () => {
+      const course = coursesCache.find((c) => String(c.course_id) === String(btn.dataset.id));
+      if (course) setEditMode(course);
+    };
+  });
+
+  document.querySelectorAll('.feature-btn').forEach((btn) => {
     btn.onclick = async () => {
       await api(`/api/admin/courses/${btn.dataset.id}`, {
         method: 'PUT',
         body: JSON.stringify({ is_featured: btn.dataset.featured === '1' })
       });
       renderCourses();
+    };
+  });
+
+  document.querySelectorAll('.del-course').forEach((btn) => {
+    btn.onclick = async () => {
+      const ok = window.confirm('ลบหลักสูตรนี้ใช่หรือไม่? (จะซ่อนจากรายการหลักสูตร)');
+      if (!ok) return;
+      try {
+        await api(`/api/admin/courses/${btn.dataset.id}`, { method: 'DELETE' });
+        await renderCourses();
+      } catch (e) {
+        alert(e.message || 'ลบไม่สำเร็จ');
+      }
     };
   });
 }

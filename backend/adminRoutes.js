@@ -181,6 +181,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     difficulty_level, total_hours, average_rating, total_reviews,
                     cover_image_url, is_featured, created_at
                 FROM BD_PTS.dbo.courses_main
+                WHERE ISNULL(flag_use, 1) = 1
                 ORDER BY created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -259,6 +260,29 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     WHERE course_id = @courseId
                 `);
             res.json({ success: true, message: 'อัปเดตหลักสูตรแล้ว' });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.delete('/courses/:courseId', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const courseId = parseInt(req.params.courseId, 10);
+        if (!courseId) return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
+
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request()
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    UPDATE BD_PTS.dbo.courses_main
+                    SET flag_use = 0
+                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
+                `);
+            if (!result.rowsAffected?.[0]) {
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร หรือถูกลบไปแล้ว' });
+            }
+            res.json({ success: true, message: 'ลบหลักสูตรแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
