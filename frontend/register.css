@@ -1,30 +1,31 @@
-/* Register — modern soft brand wash (no icons / photos) */
+/* Register — clean studio canvas (single soft tone, no banded wash) */
 
 body.pts-body.pts-register {
   --reg-deep: #974258;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(900px 520px at 12% -5%, rgba(217, 119, 142, 0.28), transparent 58%),
-    radial-gradient(760px 480px at 96% 8%, rgba(151, 66, 88, 0.12), transparent 55%),
-    radial-gradient(640px 420px at 78% 100%, rgba(61, 90, 76, 0.1), transparent 58%),
-    linear-gradient(165deg, #faf7f8 0%, #f3eef0 45%, #efe9ea 100%) !important;
+  /* One calm base + one soft corner glow — no horizontal bands */
+  background-color: #f5f2f3 !important;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.14), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.06), transparent 65%) !important;
+  background-attachment: fixed !important;
   color: var(--pts-text, #1c1520);
   overflow-x: hidden;
 }
 
 @keyframes pts-reg-card-in {
-  from { opacity: 0; transform: translateY(18px); }
+  from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 .pts-auth-shell {
   flex: 1;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: calc(var(--pts-nav-h, 68px) + 36px) 20px 48px;
+  padding: calc(var(--pts-nav-h, 68px) + 40px) 20px 56px;
   position: relative;
   z-index: 1;
 }
@@ -32,31 +33,42 @@ body.pts-body.pts-register {
 .pts-auth-card {
   width: 100%;
   max-width: 440px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(16px) saturate(1.1);
-  -webkit-backdrop-filter: blur(16px) saturate(1.1);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-  border-radius: 24px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.9) inset,
-    0 18px 48px rgba(28, 21, 32, 0.08),
-    0 0 0 1px rgba(151, 66, 88, 0.06);
-  padding: 36px 28px 28px;
+  background: #ffffff;
+  border: 1px solid rgba(151, 66, 88, 0.1);
+  border-radius: 22px;
+  box-shadow: 0 12px 40px rgba(28, 21, 32, 0.07);
+  padding: 36px 28px 32px;
   color: var(--pts-text, #1c1520);
   position: relative;
-  animation: pts-reg-card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pts-reg-card-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .pts-auth-card::before { display: none; }
 .pts-auth-card > * { position: relative; z-index: 1; }
 
 @media (min-width: 640px) {
-  .pts-auth-card { padding: 40px 36px 32px; }
+  .pts-auth-card { padding: 40px 36px 36px; }
 }
 
-.pts-auth-card .pts-auth-title { text-align: center; margin-bottom: 24px; }
+.pts-auth-card .pts-auth-title {
+  text-align: center;
+  margin-bottom: 28px;
+}
 
 .pts-auth-card .pts-reg-or {
-  background: rgba(255, 252, 253, 0.95) !important;
+  background: #ffffff !important;
+}
+
+/* Breathing room near footer of the card */
+.pts-auth-card form .pt-base {
+  padding-top: 8px;
+}
+.pts-auth-card > p.mt-lg {
+  margin-top: 28px !important;
+}
+.pts-auth-card > p.mt-6 {
+  margin-top: 18px !important;
+  padding-bottom: 4px;
+  opacity: 0.72;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -64,15 +76,15 @@ body.pts-body.pts-register {
 }
 
 html[data-theme="dark"] body.pts-body.pts-register {
-  background:
-    radial-gradient(880px 480px at 10% 0%, rgba(217, 119, 142, 0.16), transparent 55%),
-    radial-gradient(720px 440px at 95% 12%, rgba(151, 66, 88, 0.14), transparent 52%),
-    linear-gradient(165deg, #161218 0%, #121014 50%, #100e12 100%) !important;
+  background-color: #141218 !important;
+  background-image:
+    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.12), transparent 70%),
+    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.08), transparent 65%) !important;
 }
 html[data-theme="dark"] .pts-auth-card {
-  background: rgba(28, 22, 26, 0.92);
+  background: #1c161a;
   border-color: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 html[data-theme="dark"] .pts-auth-card input:not([type="checkbox"]),
 html[data-theme="dark"] .pts-auth-card textarea,
@@ -82,5 +94,5 @@ html[data-theme="dark"] .pts-auth-card select {
   border-color: var(--pts-border) !important;
 }
 html[data-theme="dark"] .pts-auth-card .pts-reg-or {
-  background: var(--pts-surface, #1c161a) !important;
+  background: #1c161a !important;
 }
