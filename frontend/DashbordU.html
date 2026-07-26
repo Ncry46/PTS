@@ -5,7 +5,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260726match">
+<link rel="stylesheet" href="site.css?v=20260726whiteall">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -17,15 +17,7 @@
     position: relative;
   }
   .user-main::before {
-    content: '';
-    position: absolute;
-    inset: -24px -12px auto;
-    height: 280px;
-    pointer-events: none;
-    z-index: 0;
-    background:
-      radial-gradient(ellipse 70% 80% at 12% 0%, rgba(151, 66, 88, 0.14), transparent 62%),
-      radial-gradient(ellipse 55% 70% at 88% 8%, rgba(61, 90, 76, 0.10), transparent 58%);
+    display: none;
   }
   .user-main > .space-y-lg {
     position: relative;

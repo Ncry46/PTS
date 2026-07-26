@@ -69,13 +69,18 @@ body.pts-body {
   flex-direction: column;
   font-family: var(--pts-font);
   color: var(--pts-text);
+  background: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  transition: background 0.35s ease, color 0.25s ease;
+}
+
+/* Home keeps the branded wash; all other pages stay solid white */
+body.pts-body.pts-home {
   background:
     radial-gradient(1000px 480px at 8% -8%, var(--pts-wash-a), transparent 55%),
     radial-gradient(800px 400px at 100% 0%, var(--pts-wash-b), transparent 50%),
     linear-gradient(180deg, var(--pts-wash-top) 0%, var(--pts-bg) 40%, var(--pts-wash-bottom) 100%);
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
-  transition: background 0.35s ease, color 0.25s ease;
 }
 
 /* Login / Register — solid white */
@@ -2808,6 +2813,17 @@ html[data-theme="dark"] .pts-section-alt {
 .pts-theme-toggle .pts-theme-icon--moon { display: block; }
 html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--sun { display: block; }
 html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--moon { display: none; }
+
+html[data-theme="dark"] body.pts-body {
+  background: #141218;
+}
+
+html[data-theme="dark"] body.pts-body.pts-home {
+  background:
+    radial-gradient(1000px 480px at 8% -8%, var(--pts-wash-a), transparent 55%),
+    radial-gradient(800px 400px at 100% 0%, var(--pts-wash-b), transparent 50%),
+    linear-gradient(180deg, var(--pts-wash-top) 0%, var(--pts-bg) 40%, var(--pts-wash-bottom) 100%);
+}
 
 html[data-theme="dark"] body.pts-body.pts-login,
 html[data-theme="dark"] body.pts-body.pts-register {
