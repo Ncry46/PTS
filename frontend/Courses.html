@@ -111,20 +111,20 @@ function makeCourseCard(course) {
           <span class="px-3 py-1 rounded-full text-[12px] font-bold ${badge.classes}">${badge.label}</span>
         </div>
         ${currentUser ? `
-          <button type="button" class="fav-btn absolute top-3 right-3 w-10 h-10 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด">
-            <span class="material-symbols-outlined">favorite</span>
+          <button type="button" class="fav-btn absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด">
+            <span class="material-symbols-outlined text-[20px]">favorite</span>
           </button>` : ''}
       </div>
-      <div class="p-5 flex flex-col flex-1">
-        <p class="text-sm text-on-surface-variant mb-2">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
-        <h3 class="font-bold text-lg mb-2 line-clamp-2">${escapeHtml(formatText(course.course_name))}</h3>
-        <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
-        <div class="mt-auto space-y-3">
-          <div class="flex justify-between text-sm text-on-surface-variant">
+      <div class="p-3.5 flex flex-col flex-1 min-w-0">
+        <p class="text-xs text-on-surface-variant mb-1.5">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
+        <h3 class="font-bold text-[0.95rem] mb-1.5 line-clamp-2 leading-snug">${escapeHtml(formatText(course.course_name))}</h3>
+        <p class="text-xs text-on-surface-variant mb-3 truncate">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
+        <div class="mt-auto space-y-2.5">
+          <div class="flex justify-between text-xs text-on-surface-variant gap-2">
             <span>${hours} ชั่วโมง</span>
-            <span>${sentenceCase(course.difficulty_level)}</span>
+            <span class="truncate">${sentenceCase(course.difficulty_level)}</span>
           </div>
-          <a href="CourseDetail.html?courseId=${course.course_id}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'} w-full">
+          <a href="CourseDetail.html?courseId=${course.course_id}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'} w-full text-sm" style="padding:8px 10px;font-size:12px;border-radius:12px">
             ${enrolled ? 'เข้าเรียน / รายละเอียด' : (currentUser ? 'ดูรายละเอียด / สมัครเรียน' : 'ดูรายละเอียด')}
           </a>
         </div>
