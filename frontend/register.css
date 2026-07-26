@@ -1,16 +1,11 @@
-/* Register — clean studio canvas (single soft tone, no banded wash) */
+/* Register — solid white canvas */
 
 body.pts-body.pts-register {
   --reg-deep: #974258;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  /* One calm base + one soft corner glow — no horizontal bands */
-  background-color: #f5f2f3 !important;
-  background-image:
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.14), transparent 70%),
-    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.06), transparent 65%) !important;
-  background-attachment: fixed !important;
+  background: #ffffff !important;
   color: var(--pts-text, #1c1520);
   overflow-x: hidden;
 }
@@ -76,10 +71,7 @@ body.pts-body.pts-register {
 }
 
 html[data-theme="dark"] body.pts-body.pts-register {
-  background-color: #141218 !important;
-  background-image:
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.12), transparent 70%),
-    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.08), transparent 65%) !important;
+  background: #141218 !important;
 }
 html[data-theme="dark"] .pts-auth-card {
   background: #1c161a;

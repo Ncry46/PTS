@@ -12,12 +12,7 @@ input[type="password"]::-ms-reveal,
     --login-pearl: #fff9f7;
     --login-champagne: #f4e6d4;
     --login-mint: #d9ebe0;
-    /* Clean studio: one base tone + soft corner glow (no bands) */
-    background-color: #f5f2f3 !important;
-    background-image:
-      radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.14), transparent 70%),
-      radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.06), transparent 65%) !important;
-    background-attachment: fixed !important;
+    background: #ffffff !important;
     color: var(--pts-text, #1c1520);
     overflow-x: hidden;
   }
@@ -840,10 +835,7 @@ input[type="password"]::-ms-reveal,
 
   /* Dark theme — clean studio */
   html[data-theme="dark"] body.pts-body.pts-login {
-    background-color: #141218 !important;
-    background-image:
-      radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.12), transparent 70%),
-      radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.08), transparent 65%) !important;
+    background: #141218 !important;
     color: var(--pts-text);
   }
   html[data-theme="dark"] .pts-login__shell,

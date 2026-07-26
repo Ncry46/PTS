@@ -78,14 +78,10 @@ body.pts-body {
   transition: background 0.35s ease, color 0.25s ease;
 }
 
-/* Login — clean studio canvas */
+/* Login / Register — solid white */
 body.pts-body.pts-login,
 body.pts-body.pts-register {
-  background-color: #f5f2f3;
-  background-image:
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.14), transparent 70%),
-    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.06), transparent 65%);
-  background-attachment: fixed;
+  background: #ffffff;
   color: #1c1520;
 }
 
@@ -2815,10 +2811,7 @@ html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--moon { display: none;
 
 html[data-theme="dark"] body.pts-body.pts-login,
 html[data-theme="dark"] body.pts-body.pts-register {
-  background-color: #141218 !important;
-  background-image:
-    radial-gradient(ellipse 70% 55% at 100% 0%, rgba(217, 119, 142, 0.12), transparent 70%),
-    radial-gradient(ellipse 55% 45% at 0% 100%, rgba(151, 66, 88, 0.08), transparent 65%) !important;
+  background: #141218 !important;
   color: var(--pts-text);
 }
 
