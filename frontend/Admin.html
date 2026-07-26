@@ -1098,7 +1098,8 @@ async function renderSchedules() {
     grid.innerHTML = cells.join('');
     grid.querySelectorAll('.pts-cal__day--has').forEach((btn) => {
       btn.addEventListener('click', () => {
-        adminCalSelectedDay = btn.getAttribute('data-day');
+        const key = btn.getAttribute('data-day');
+        adminCalSelectedDay = adminCalSelectedDay === key ? null : key;
         paintCalendar();
         paintList();
       });
