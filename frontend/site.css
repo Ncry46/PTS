@@ -957,34 +957,30 @@ textarea.pts-input {
   padding: 8px 6px 12px;
   cursor: default;
   text-align: left;
+  appearance: none;
+  -webkit-appearance: none;
   transition:
     transform 0.16s ease,
     border-color 0.2s ease,
     background 0.2s ease,
-    box-shadow 0.2s ease;
-  animation: pts-cal-day-in 0.35s ease both;
+    box-shadow 0.2s ease,
+    color 0.2s ease;
+  animation: pts-cal-day-in 0.32s ease both;
 }
 @keyframes pts-cal-day-in {
-  from { opacity: 0; transform: scale(0.96); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.pts-cal__day:nth-child(1) { animation-delay: 0.01s; }
-.pts-cal__day:nth-child(2) { animation-delay: 0.02s; }
-.pts-cal__day:nth-child(3) { animation-delay: 0.03s; }
-.pts-cal__day:nth-child(4) { animation-delay: 0.04s; }
-.pts-cal__day:nth-child(5) { animation-delay: 0.05s; }
-.pts-cal__day:nth-child(6) { animation-delay: 0.06s; }
-.pts-cal__day:nth-child(7) { animation-delay: 0.07s; }
 .pts-cal__day--muted {
   color: color-mix(in srgb, var(--pts-muted) 70%, transparent);
   background: transparent;
   border-color: transparent;
   opacity: 0.55;
 }
-.pts-cal__day--weekend:not(.pts-cal__day--muted) {
+.pts-cal__day--weekend:not(.pts-cal__day--muted):not(.pts-cal__day--selected) {
   background: color-mix(in srgb, var(--pts-primary) 4%, var(--pts-surface));
 }
-.pts-cal__day--today {
+.pts-cal__day--today:not(.pts-cal__day--selected) {
   border-color: color-mix(in srgb, var(--pts-primary) 45%, transparent);
   background:
     linear-gradient(160deg,
@@ -992,7 +988,7 @@ textarea.pts-input {
       color-mix(in srgb, var(--pts-primary) 5%, var(--pts-surface)));
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--pts-primary) 18%, transparent) inset;
 }
-.pts-cal__day--today .pts-cal__day-num {
+.pts-cal__day--today:not(.pts-cal__day--selected) .pts-cal__day-num {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1004,7 +1000,7 @@ textarea.pts-input {
   color: #fff;
   box-shadow: 0 4px 10px color-mix(in srgb, var(--pts-primary) 35%, transparent);
 }
-.pts-cal__day--has {
+.pts-cal__day--has:not(.pts-cal__day--selected) {
   cursor: pointer;
   border-color: color-mix(in srgb, var(--pts-primary) 28%, transparent);
   background:
@@ -1012,32 +1008,43 @@ textarea.pts-input {
       color-mix(in srgb, var(--pts-primary) 11%, var(--pts-surface)),
       color-mix(in srgb, var(--pts-primary) 3%, var(--pts-surface)));
 }
-.pts-cal__day--has:hover {
+.pts-cal__day--has:not(.pts-cal__day--selected):hover {
   transform: translateY(-2px);
   border-color: var(--pts-primary);
   box-shadow: 0 8px 18px color-mix(in srgb, var(--pts-primary) 16%, transparent);
 }
-.pts-cal__day--selected {
-  border-color: var(--pts-primary);
-  background: linear-gradient(160deg, var(--pts-primary-deep), var(--pts-primary));
+/* Selected must win over today/has (and Tailwind button resets) */
+button.pts-cal__day.pts-cal__day--selected,
+.pts-cal__day.pts-cal__day--selected {
+  cursor: pointer;
+  border-color: #7a2f42;
+  background-color: #974258;
+  background-image: linear-gradient(160deg, #7a2f42 0%, #974258 55%, #b45d74 100%);
   color: #fff;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--pts-primary) 28%, transparent);
+  box-shadow: 0 10px 22px rgba(151, 66, 88, 0.28);
   transform: translateY(-1px);
+  opacity: 1;
 }
-.pts-cal__day--selected .pts-cal__day-num {
+button.pts-cal__day.pts-cal__day--selected .pts-cal__day-num,
+.pts-cal__day.pts-cal__day--selected .pts-cal__day-num {
+  display: block;
   background: transparent;
+  background-image: none;
   color: #fff;
   box-shadow: none;
   min-width: 0;
   height: auto;
   padding: 0;
 }
-.pts-cal__day--selected .pts-cal__dot {
+button.pts-cal__day.pts-cal__day--selected .pts-cal__dot,
+.pts-cal__day.pts-cal__day--selected .pts-cal__dot {
   background: #fff;
+  box-shadow: none;
 }
-.pts-cal__day--selected .pts-cal__day-count {
+button.pts-cal__day.pts-cal__day--selected .pts-cal__day-count,
+.pts-cal__day.pts-cal__day--selected .pts-cal__day-count {
   color: #fff;
-  background: color-mix(in srgb, #fff 22%, transparent);
+  background: rgba(255, 255, 255, 0.22);
 }
 .pts-cal__day-num {
   display: block;
@@ -1051,16 +1058,15 @@ textarea.pts-input {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
   margin-top: 8px;
   min-height: 8px;
 }
 .pts-cal__dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 999px;
   background: var(--pts-primary);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--pts-primary) 16%, transparent);
 }
 .pts-cal__day-count {
   position: absolute;

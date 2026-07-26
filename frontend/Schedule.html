@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260726cal">
+<link rel="stylesheet" href="site.css?v=20260726cal2">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55'}}}}</script>
@@ -192,7 +192,9 @@ function renderCalendar() {
   grid.innerHTML = cells.join('');
   grid.querySelectorAll('.pts-cal__day--has').forEach((btn) => {
     btn.addEventListener('click', () => {
-      selectedDayKey = btn.getAttribute('data-day');
+      const key = btn.getAttribute('data-day');
+      // กดวันเดิมอีกครั้ง = ยกเลิกตัวกรอง
+      selectedDayKey = selectedDayKey === key ? null : key;
       renderCalendar();
       renderList();
     });
@@ -233,10 +235,15 @@ function renderList() {
 
   el.innerHTML = rows.map((s) => {
     const d = parseScheduleDate(s.start_at);
+    const endD = parseScheduleDate(s.end_at);
     const month = d.toLocaleDateString('th-TH', { month: 'short' });
     const day = d.getDate();
-    const time = d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
-    const end = parseScheduleDate(s.end_at).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    const timeOpts = { hour: '2-digit', minute: '2-digit', hour12: false };
+    const time = d.toLocaleTimeString('th-TH', timeOpts);
+    const endSameDay = !Number.isNaN(endD.getTime()) && toDateKey(d) === toDateKey(endD);
+    const end = endSameDay
+      ? endD.toLocaleTimeString('th-TH', timeOpts)
+      : endD.toLocaleString('th-TH', { ...timeOpts, day: 'numeric', month: 'short' });
     return `<article class="pts-row">
       <div class="flex items-start gap-4">
         <div class="pts-date-badge"><span class="text-xs font-bold uppercase">${escapeHtml(month)}</span><strong>${day}</strong></div>
