@@ -57,7 +57,7 @@
         <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
       </div>
       <div class="pts-cal__grid" id="cal-grid"></div>
-      <p class="pts-cal__legend" id="cal-legend" data-i18n="schedule.legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อดูรายการ</p>
+      <p class="pts-cal__legend" id="cal-legend" data-i18n="schedule.legend">จุดสี = มีตารางเรียน — กดวันใดก็ได้เพื่อดูรายการ (ถ้าไม่มีจะขึ้นว่าไม่มีรายการ)</p>
     </div>
   </div>
 
@@ -183,16 +183,23 @@ function renderCalendar() {
     const count = events.length > 1
       ? `<span class="pts-cal__day-count">${events.length}</span>`
       : '';
-    cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" style="animation-delay:${(i % 14) * 0.012}s" ${events.length ? '' : 'disabled'}>
+    classes.push('pts-cal__day--pick');
+    cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" data-y="${y}" data-m="${m}" style="animation-delay:${(i % 14) * 0.012}s">
       <span class="pts-cal__day-num">${day}</span>
       <span class="pts-cal__dots">${dots}</span>
       ${count}
     </button>`);
   }
   grid.innerHTML = cells.join('');
-  grid.querySelectorAll('.pts-cal__day--has').forEach((btn) => {
+  grid.querySelectorAll('.pts-cal__day--pick').forEach((btn) => {
     btn.addEventListener('click', () => {
       const key = btn.getAttribute('data-day');
+      const y = Number(btn.getAttribute('data-y'));
+      const m = Number(btn.getAttribute('data-m'));
+      if (!Number.isNaN(y) && !Number.isNaN(m)) {
+        viewYear = y;
+        viewMonth = m;
+      }
       // กดวันเดิมอีกครั้ง = ยกเลิกตัวกรอง
       selectedDayKey = selectedDayKey === key ? null : key;
       renderCalendar();
@@ -229,7 +236,11 @@ function renderList() {
   }
 
   if (!rows.length) {
-    el.innerHTML = `<div class="pts-empty">ไม่มีตารางในวันที่เลือก</div>`;
+    el.innerHTML = `<div class="pts-empty">
+      <div class="pts-empty__icon"><span class="material-symbols-outlined">event_busy</span></div>
+      <p class="font-semibold mb-1">ไม่มีรายการ</p>
+      <p class="text-sm">วันที่เลือกยังไม่มีตารางเรียน</p>
+    </div>`;
     return;
   }
 

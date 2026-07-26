@@ -1089,16 +1089,23 @@ async function renderSchedules() {
       if (adminCalSelectedDay === key) classes.push('pts-cal__day--selected');
       const dots = events.slice(0, 3).map(() => '<span class="pts-cal__dot"></span>').join('');
       const count = events.length > 1 ? `<span class="pts-cal__day-count">${events.length}</span>` : '';
-      cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" style="animation-delay:${(i % 14) * 0.012}s" ${events.length ? '' : 'disabled'}>
+      classes.push('pts-cal__day--pick');
+      cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" data-y="${y}" data-m="${m}" style="animation-delay:${(i % 14) * 0.012}s">
         <span class="pts-cal__day-num">${day}</span>
         <span class="pts-cal__dots">${dots}</span>
         ${count}
       </button>`);
     }
     grid.innerHTML = cells.join('');
-    grid.querySelectorAll('.pts-cal__day--has').forEach((btn) => {
+    grid.querySelectorAll('.pts-cal__day--pick').forEach((btn) => {
       btn.addEventListener('click', () => {
         const key = btn.getAttribute('data-day');
+        const y = Number(btn.getAttribute('data-y'));
+        const m = Number(btn.getAttribute('data-m'));
+        if (!Number.isNaN(y) && !Number.isNaN(m)) {
+          adminCalViewYear = y;
+          adminCalViewMonth = m;
+        }
         adminCalSelectedDay = adminCalSelectedDay === key ? null : key;
         paintCalendar();
         paintList();
@@ -1125,7 +1132,7 @@ async function renderSchedules() {
       return;
     }
     if (!rows.length) {
-      el.innerHTML = '<p class="text-sm text-on-surface-variant">ไม่มีตารางในวันที่เลือก</p>';
+      el.innerHTML = '<div class="pts-empty" style="padding:20px"><p class="font-semibold mb-1">ไม่มีรายการ</p><p class="text-sm">วันที่เลือกยังไม่มีตารางเรียน</p></div>';
       return;
     }
     el.innerHTML = rows.map((s) => {
@@ -1166,7 +1173,7 @@ async function renderSchedules() {
           <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
         </div>
         <div class="pts-cal__grid" id="admin-cal-grid"></div>
-        <p class="pts-cal__legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อกรองรายการด้านล่าง</p>
+        <p class="pts-cal__legend">จุดสี = มีตารางเรียน — กดวันใดก็ได้เพื่อดูรายการ (ถ้าไม่มีจะขึ้นว่าไม่มีรายการ)</p>
       </div>
     </div>
 

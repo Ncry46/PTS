@@ -1000,8 +1000,15 @@ textarea.pts-input {
   color: #fff;
   box-shadow: 0 4px 10px color-mix(in srgb, var(--pts-primary) 35%, transparent);
 }
-.pts-cal__day--has:not(.pts-cal__day--selected) {
+.pts-cal__day--pick {
   cursor: pointer;
+}
+.pts-cal__day--pick:not(.pts-cal__day--selected):hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--pts-primary) 40%, transparent);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--pts-primary) 12%, transparent);
+}
+.pts-cal__day--has:not(.pts-cal__day--selected) {
   border-color: color-mix(in srgb, var(--pts-primary) 28%, transparent);
   background:
     linear-gradient(165deg,
@@ -1009,7 +1016,6 @@ textarea.pts-input {
       color-mix(in srgb, var(--pts-primary) 3%, var(--pts-surface)));
 }
 .pts-cal__day--has:not(.pts-cal__day--selected):hover {
-  transform: translateY(-2px);
   border-color: var(--pts-primary);
   box-shadow: 0 8px 18px color-mix(in srgb, var(--pts-primary) 16%, transparent);
 }
