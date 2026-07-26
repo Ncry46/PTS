@@ -372,24 +372,24 @@ a { color: inherit; }
 
 /* Home sections that should align with Courses (pts-main--wide) */
 .pts-home-wide {
-  width: 100%;
-  max-width: 1480px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 16px;
-  padding-right: 16px;
-  box-sizing: border-box;
+  width: 100% !important;
+  max-width: 1480px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  box-sizing: border-box !important;
 }
 @media (min-width: 768px) {
   .pts-home-wide {
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: 28px !important;
+    padding-right: 28px !important;
   }
 }
 @media (min-width: 1280px) {
   .pts-home-wide {
-    padding-left: 32px;
-    padding-right: 32px;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
   }
 }
 
