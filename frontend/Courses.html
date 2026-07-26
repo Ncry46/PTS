@@ -9,7 +9,25 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260726course5">
+<link rel="stylesheet" href="site.css?v=20260726c5fix">
+<style>
+  /* hard guarantee: 4–5 course cards / row */
+  #courses-grid.pts-course-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  @media (min-width: 700px) {
+    #courses-grid.pts-course-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  }
+  @media (min-width: 960px) {
+    #courses-grid.pts-course-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 16px !important; }
+  }
+  @media (min-width: 1180px) {
+    #courses-grid.pts-course-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+  }
+</style>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
 tailwind.config = {

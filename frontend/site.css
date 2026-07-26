@@ -368,7 +368,7 @@ a { color: inherit; }
   .pts-main { padding-left: 32px; padding-right: 32px; }
 }
 
-.pts-main--wide { max-width: 1240px; }
+.pts-main--wide { max-width: 1480px; }
 
 /* —— User / Admin shell: full-bleed + left rail (no extra top gap) ——
    #app-navbar already reserves --pts-nav-h in document flow for the fixed nav,
@@ -645,32 +645,34 @@ html[data-theme="dark"] .pts-page-hero {
   box-shadow: var(--pts-shadow);
 }
 
-/* Course cards — ~4–5 per row on desktop (≈200–220px feels balanced) */
+/* Course cards — aim for 4–5 per row on typical desktops */
 .pts-course-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px;
+  width: 100%;
 }
-@media (min-width: 640px) {
+@media (min-width: 700px) {
   .pts-course-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 14px;
+  }
+}
+@media (min-width: 960px) {
+  .pts-course-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
     gap: 16px;
   }
 }
-@media (min-width: 900px) {
+@media (min-width: 1180px) {
   .pts-course-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-  }
-}
-@media (min-width: 1200px) {
-  .pts-course-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
   }
 }
 .pts-course-grid > .pts-empty,
 .pts-course-grid > .pts-msg,
-.pts-course-grid > .pts-card.col-span-full {
-  grid-column: 1 / -1;
+.pts-course-grid > .col-span-full {
+  grid-column: 1 / -1 !important;
   max-width: 100%;
 }
 .pts-course-card {
@@ -758,7 +760,7 @@ html[data-theme="dark"] .pts-page-hero {
 }
 @media (max-width: 479px) {
   .pts-course-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 10px;
   }
   .pts-course-card__body { padding: 10px; }

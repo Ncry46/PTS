@@ -5,7 +5,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260724gap">
+<link rel="stylesheet" href="site.css?v=20260726c5fix">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -98,22 +98,23 @@
   }
 
   .dash-myc-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 14px;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px;
+    width: 100%;
   }
-  @media (min-width: 640px) {
-    .dash-myc-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  @media (min-width: 700px) {
+    .dash-myc-list { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 14px; }
   }
-  @media (min-width: 900px) {
-    .dash-myc-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  @media (min-width: 960px) {
+    .dash-myc-list { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 16px; }
   }
-  @media (min-width: 1200px) {
-    .dash-myc-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  @media (min-width: 1180px) {
+    .dash-myc-list { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
   }
   .dash-myc-list > .pts-empty,
   .dash-myc-list > .dash-myc-empty {
-    grid-column: 1 / -1;
+    grid-column: 1 / -1 !important;
   }
   .myc-card {
     display: flex;
