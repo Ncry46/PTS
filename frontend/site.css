@@ -78,9 +78,13 @@ body.pts-body {
   transition: background 0.35s ease, color 0.25s ease;
 }
 
-/* Login — plain canvas (decorative FX removed) */
+/* Login — modern soft brand wash */
 body.pts-body.pts-login {
-  background: #f3f0f1;
+  background:
+    radial-gradient(900px 520px at 12% -5%, rgba(217, 119, 142, 0.28), transparent 58%),
+    radial-gradient(760px 480px at 96% 8%, rgba(151, 66, 88, 0.12), transparent 55%),
+    radial-gradient(640px 420px at 78% 100%, rgba(61, 90, 76, 0.1), transparent 58%),
+    linear-gradient(165deg, #faf7f8 0%, #f3eef0 45%, #efe9ea 100%);
   color: #1c1520;
 }
 
@@ -2809,7 +2813,10 @@ html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--sun { display: block;
 html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--moon { display: none; }
 
 html[data-theme="dark"] body.pts-body.pts-login {
-  background: #141218 !important;
+  background:
+    radial-gradient(880px 480px at 10% 0%, rgba(217, 119, 142, 0.16), transparent 55%),
+    radial-gradient(720px 440px at 95% 12%, rgba(151, 66, 88, 0.14), transparent 52%),
+    linear-gradient(165deg, #161218 0%, #121014 50%, #100e12 100%) !important;
   color: var(--pts-text);
 }
 

@@ -12,17 +12,28 @@ input[type="password"]::-ms-reveal,
     --login-pearl: #fff9f7;
     --login-champagne: #f4e6d4;
     --login-mint: #d9ebe0;
-    background: #f3f0f1 !important;
+    /* Modern soft brand wash — no icons / photos */
+    background:
+      radial-gradient(900px 520px at 12% -5%, rgba(217, 119, 142, 0.28), transparent 58%),
+      radial-gradient(760px 480px at 96% 8%, rgba(151, 66, 88, 0.12), transparent 55%),
+      radial-gradient(640px 420px at 78% 100%, rgba(61, 90, 76, 0.1), transparent 58%),
+      linear-gradient(165deg, #faf7f8 0%, #f3eef0 45%, #efe9ea 100%) !important;
     color: var(--pts-text, #1c1520);
     overflow-x: hidden;
   }
 
-  /* Plain centered login card (no image / decorative campus FX) */
+  /* Centered glass-soft card */
   .pts-login__shell--plain {
-    max-width: 460px !important;
+    max-width: 440px !important;
     grid-template-columns: 1fr !important;
-    background: #ffffff !important;
-    box-shadow: 0 10px 36px rgba(28, 21, 32, 0.08) !important;
+    background: rgba(255, 255, 255, 0.88) !important;
+    backdrop-filter: blur(16px) saturate(1.1);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    border: 1px solid rgba(255, 255, 255, 0.9) !important;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.9) inset,
+      0 18px 48px rgba(28, 21, 32, 0.08),
+      0 0 0 1px rgba(151, 66, 88, 0.06) !important;
   }
   @media (min-width: 900px) {
     .pts-login__shell--plain {
@@ -830,19 +841,22 @@ input[type="password"]::-ms-reveal,
     .pts-login__visual:hover .pts-login__visual-img { transform: none; }
   }
 
-  /* Dark theme — plain */
+  /* Dark theme — soft modern */
   html[data-theme="dark"] body.pts-body.pts-login {
-    background: #141218 !important;
+    background:
+      radial-gradient(880px 480px at 10% 0%, rgba(217, 119, 142, 0.16), transparent 55%),
+      radial-gradient(720px 440px at 95% 12%, rgba(151, 66, 88, 0.14), transparent 52%),
+      linear-gradient(165deg, #161218 0%, #121014 50%, #100e12 100%) !important;
     color: var(--pts-text);
   }
   html[data-theme="dark"] .pts-login__shell,
   html[data-theme="dark"] .pts-login__shell--plain {
-    background: var(--pts-surface, #1c161a) !important;
-    border-color: rgba(255, 255, 255, 0.1);
-    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    background: rgba(28, 22, 26, 0.92) !important;
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45) !important;
   }
   html[data-theme="dark"] .pts-login__panel {
-    background: var(--pts-surface, #1c161a);
+    background: transparent;
   }
   html[data-theme="dark"] .pts-login__input,
   html[data-theme="dark"] .pts-login-modal__card input,
