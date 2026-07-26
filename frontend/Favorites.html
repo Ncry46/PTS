@@ -9,14 +9,14 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260726dense">
+<link rel="stylesheet" href="site.css?v=20260726breath">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
 <style>
   #course-list.pts-course-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(max(140px, calc((100% - 48px) / 5)), 1fr)) !important;
-    gap: 12px !important;
+    grid-template-columns: repeat(auto-fill, minmax(max(190px, calc((100% - 56px) / 5)), 1fr)) !important;
+    gap: 14px !important;
     width: 100% !important;
   }
 </style>
@@ -85,9 +85,13 @@ function courseCard(c) {
         <span class="pts-course-card__badge">${escapeHtml(mode)}</span>
       </div>
       <div class="pts-course-card__body">
-        <div>
+        <div class="pts-course-card__copy">
           <h3 class="pts-course-card__title">${escapeHtml(c.course_name)}</h3>
-          <p class="pts-course-card__meta">โดย ${escapeHtml(c.instructor_name || '-')}${hours ? ` · ${escapeHtml(hours)}` : ''}</p>
+          <div class="pts-course-card__meta-row" title="${escapeHtml(c.instructor_name || '-')}">
+            <span class="material-symbols-outlined" aria-hidden="true">person</span>
+            <span>${escapeHtml(c.instructor_name || '-')}</span>
+          </div>
+          ${hours ? `<div class="pts-course-card__meta-row"><span class="material-symbols-outlined" aria-hidden="true">schedule</span><span>${escapeHtml(hours)}</span></div>` : ''}
         </div>
         <div class="pts-course-card__actions">
           <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
