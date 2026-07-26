@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260725admin-lessons">
+<link rel="stylesheet" href="site.css?v=20260726cal">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -1080,14 +1080,16 @@ async function renderSchedules() {
       }
       const key = `${y}-${pad2(m + 1)}-${pad2(day)}`;
       const events = byDay.get(key) || [];
+      const weekend = i % 7 >= 5;
       const classes = ['pts-cal__day'];
       if (muted) classes.push('pts-cal__day--muted');
+      if (weekend) classes.push('pts-cal__day--weekend');
       if (key === todayKey) classes.push('pts-cal__day--today');
       if (events.length) classes.push('pts-cal__day--has');
       if (adminCalSelectedDay === key) classes.push('pts-cal__day--selected');
       const dots = events.slice(0, 3).map(() => '<span class="pts-cal__dot"></span>').join('');
       const count = events.length > 1 ? `<span class="pts-cal__day-count">${events.length}</span>` : '';
-      cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" ${events.length ? '' : 'disabled'}>
+      cells.push(`<button type="button" class="${classes.join(' ')}" data-day="${key}" style="animation-delay:${(i % 14) * 0.012}s" ${events.length ? '' : 'disabled'}>
         <span class="pts-cal__day-num">${day}</span>
         <span class="pts-cal__dots">${dots}</span>
         ${count}
@@ -1158,11 +1160,13 @@ async function renderSchedules() {
           <button type="button" class="pts-btn pts-btn-outline" id="admin-cal-next" aria-label="เดือนถัดไป">›</button>
         </div>
       </div>
-      <div class="pts-cal__weekdays" aria-hidden="true">
-        <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
+      <div class="pts-cal__body">
+        <div class="pts-cal__weekdays" aria-hidden="true">
+          <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
+        </div>
+        <div class="pts-cal__grid" id="admin-cal-grid"></div>
+        <p class="pts-cal__legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อกรองรายการด้านล่าง</p>
       </div>
-      <div class="pts-cal__grid" id="admin-cal-grid"></div>
-      <p class="pts-cal__legend">จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อกรองรายการด้านล่าง</p>
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
