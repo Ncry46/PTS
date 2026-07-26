@@ -127,8 +127,9 @@
         color:var(--pts-text,#1c1520);
       }
       .pts-topnav__inner {
-        max-width:1120px; margin:0 auto; height:100%; padding:0 16px;
+        max-width:none; width:100%; margin:0; height:100%; padding:0 16px;
         display:flex; align-items:center; justify-content:space-between; gap:12px;
+        box-sizing:border-box;
       }
       .pts-topnav__start {
         display:flex; align-items:center; gap:4px; min-width:0; flex-shrink:0;
