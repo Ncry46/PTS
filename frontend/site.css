@@ -370,6 +370,29 @@ a { color: inherit; }
 
 .pts-main--wide { max-width: 1480px; }
 
+/* Home sections that should align with Courses (pts-main--wide) */
+.pts-home-wide {
+  width: 100%;
+  max-width: 1480px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 16px;
+  padding-right: 16px;
+  box-sizing: border-box;
+}
+@media (min-width: 768px) {
+  .pts-home-wide {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+@media (min-width: 1280px) {
+  .pts-home-wide {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
 /* —— User / Admin shell: full-bleed + left rail (no extra top gap) ——
    #app-navbar already reserves --pts-nav-h in document flow for the fixed nav,
    so these shells must NOT add another padding-top or a visible gap appears. */

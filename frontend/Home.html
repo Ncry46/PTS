@@ -5,14 +5,17 @@
         <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260726breath">
+        <link rel="stylesheet" href="site.css?v=20260726wide">
 <style>
   #home-courses.pts-course-grid {
     display: grid !important;
     grid-template-columns: repeat(auto-fill, minmax(max(190px, calc((100% - 56px) / 5)), 1fr)) !important;
     gap: 14px !important;
     width: 100% !important;
-    max-width: 1480px !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 </style>
         <!-- pts-build:20260724x-image-banner -->
@@ -239,9 +242,9 @@
 </div>
 </div>
 </section>
-<!-- Featured Courses (Recommended) -->
+<!-- Featured Courses (Recommended) — same width/padding as Courses.html -->
 <section class="py-xl pts-section-alt">
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg mb-xl">
+<div class="pts-home-wide mb-xl">
 <div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
 <div class="text-left">
 <h2 class="font-headline-lg text-headline-lg text-on-background mb-base">หลักสูตรแนะนำ</h2>
@@ -258,9 +261,9 @@
 <button type="button" data-mode="onsite" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
 <button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
 </div>
-</div>
-<div id="home-courses" class="mx-auto px-margin-mobile md:px-lg pts-course-grid" style="max-width:1480px">
+<div id="home-courses" class="pts-course-grid">
   <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
+</div>
 </div>
 </section>
 <!-- Learning Steps (How to Start) -->
