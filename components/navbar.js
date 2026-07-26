@@ -1,7 +1,7 @@
 /* PTS shared top navigation — self-contained so the header always shows */
 (function () {
   const PTS_LOGO =
-    'https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog';
+    '/logo.png';
 
   function ensureThemeApi() {
     if (window.PTSTheme) return window.PTSTheme;
