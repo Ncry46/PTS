@@ -78,12 +78,9 @@ body.pts-body {
   transition: background 0.35s ease, color 0.25s ease;
 }
 
-/* Login owns a soft split-card canvas — not the default light shell wash */
+/* Login — plain canvas (decorative FX removed) */
 body.pts-body.pts-login {
-  background:
-    radial-gradient(900px 520px at 8% -5%, rgba(217,119,142,.28), transparent 55%),
-    radial-gradient(780px 480px at 100% 10%, rgba(151,66,88,.12), transparent 50%),
-    linear-gradient(165deg, #f3e8ec 0%, #ebe4ea 42%, #e7e2e8 100%);
+  background: #f3f0f1;
   color: #1c1520;
 }
 
@@ -2812,10 +2809,7 @@ html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--sun { display: block;
 html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--moon { display: none; }
 
 html[data-theme="dark"] body.pts-body.pts-login {
-  background:
-    radial-gradient(900px 520px at 8% -5%, rgba(217,119,142,.18), transparent 55%),
-    radial-gradient(780px 480px at 100% 10%, rgba(151,66,88,.14), transparent 50%),
-    linear-gradient(165deg, #1a1418 0%, #141218 42%, #100e14 100%) !important;
+  background: #141218 !important;
   color: var(--pts-text);
 }
 

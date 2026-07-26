@@ -12,14 +12,22 @@ input[type="password"]::-ms-reveal,
     --login-pearl: #fff9f7;
     --login-champagne: #f4e6d4;
     --login-mint: #d9ebe0;
-    background:
-      radial-gradient(900px 520px at 12% 8%, rgba(247, 215, 223, 0.95), transparent 58%),
-      radial-gradient(820px 480px at 92% 12%, rgba(244, 230, 212, 0.9), transparent 55%),
-      radial-gradient(780px 520px at 78% 92%, rgba(217, 235, 224, 0.85), transparent 58%),
-      radial-gradient(640px 420px at 18% 88%, rgba(255, 228, 214, 0.75), transparent 55%),
-      linear-gradient(160deg, #fffaf8 0%, #f8eef1 38%, #f6f1ea 72%, #eef5f0 100%) !important;
+    background: #f3f0f1 !important;
     color: var(--pts-text, #1c1520);
     overflow-x: hidden;
+  }
+
+  /* Plain centered login card (no image / decorative campus FX) */
+  .pts-login__shell--plain {
+    max-width: 460px !important;
+    grid-template-columns: 1fr !important;
+    background: #ffffff !important;
+    box-shadow: 0 10px 36px rgba(28, 21, 32, 0.08) !important;
+  }
+  @media (min-width: 900px) {
+    .pts-login__shell--plain {
+      grid-template-columns: 1fr !important;
+    }
   }
 
   /* —— Light atelier FX (ไม่ใช้ aurora/mesh แบบหน้าแรก) —— */
@@ -822,39 +830,19 @@ input[type="password"]::-ms-reveal,
     .pts-login__visual:hover .pts-login__visual-img { transform: none; }
   }
 
-  /* Dark theme — campus muted (distinct from Home hero) */
+  /* Dark theme — plain */
   html[data-theme="dark"] body.pts-body.pts-login {
-    background:
-      radial-gradient(900px 520px at 10% 0%, rgba(151, 66, 88, 0.28), transparent 55%),
-      radial-gradient(820px 480px at 95% 10%, rgba(180, 140, 80, 0.16), transparent 52%),
-      radial-gradient(780px 520px at 70% 100%, rgba(80, 120, 100, 0.14), transparent 55%),
-      linear-gradient(160deg, #161014 0%, #1c1418 40%, #18161a 100%) !important;
+    background: #141218 !important;
     color: var(--pts-text);
   }
-  html[data-theme="dark"] .pts-campus__wash { opacity: 0.2; }
-  html[data-theme="dark"] .pts-campus__bloom { opacity: 0.4; filter: blur(64px); }
-  html[data-theme="dark"] .pts-campus__spotlight {
-    background: radial-gradient(ellipse at center, rgba(255,255,255,.12) 0%, transparent 70%);
-  }
-  html[data-theme="dark"] .pts-campus__book::before,
-  html[data-theme="dark"] .pts-campus__book::after,
-  html[data-theme="dark"] .pts-campus__tile,
-  html[data-theme="dark"] .pts-campus__cert {
-    background: linear-gradient(160deg, rgba(40,30,34,.9), rgba(28,22,26,.85));
-    border-color: rgba(255,255,255,.12);
-  }
-  html[data-theme="dark"] .pts-campus__orb { opacity: 0.28; }
-  html[data-theme="dark"] .pts-login__shell {
-    background: linear-gradient(165deg, rgba(36, 28, 32, 0.92), rgba(28, 22, 26, 0.88));
+  html[data-theme="dark"] .pts-login__shell,
+  html[data-theme="dark"] .pts-login__shell--plain {
+    background: var(--pts-surface, #1c161a) !important;
     border-color: rgba(255, 255, 255, 0.1);
-    box-shadow:
-      0 40px 100px rgba(0, 0, 0, 0.55),
-      0 0 0 1px rgba(255, 255, 255, 0.06);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
   }
   html[data-theme="dark"] .pts-login__panel {
-    background:
-      radial-gradient(ellipse 90% 60% at 100% 0%, rgba(151, 66, 88, 0.18), transparent 55%),
-      var(--pts-surface, #1c161a);
+    background: var(--pts-surface, #1c161a);
   }
   html[data-theme="dark"] .pts-login__input,
   html[data-theme="dark"] .pts-login-modal__card input,

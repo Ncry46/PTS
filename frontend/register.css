@@ -5,13 +5,7 @@ body.pts-body.pts-register {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  background:
-    radial-gradient(920px 540px at 8% 6%, rgba(255, 210, 220, 0.95), transparent 58%),
-    radial-gradient(860px 500px at 94% 10%, rgba(255, 212, 184, 0.88), transparent 55%),
-    radial-gradient(780px 520px at 82% 94%, rgba(184, 228, 208, 0.82), transparent 58%),
-    radial-gradient(700px 460px at 12% 90%, rgba(197, 218, 245, 0.75), transparent 55%),
-    radial-gradient(640px 400px at 50% 48%, rgba(255, 255, 255, 0.7), transparent 60%),
-    linear-gradient(155deg, #fffaf8 0%, #f9eef2 32%, #f7f3ea 62%, #eef6f2 100%) !important;
+  background: #f3f0f1 !important;
   color: var(--pts-text, #1c1520);
   overflow-x: hidden;
 }
@@ -34,34 +28,16 @@ body.pts-body.pts-register {
 .pts-auth-card {
   width: 100%;
   max-width: 460px;
-  background:
-    linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(255, 250, 252, 0.82)),
-    rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(22px) saturate(1.2);
-  -webkit-backdrop-filter: blur(22px) saturate(1.2);
-  border: 1px solid rgba(255, 255, 255, 0.92);
-  border-radius: 28px;
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.95) inset,
-    0 0 0 1px rgba(151, 66, 88, 0.06),
-    0 28px 64px rgba(151, 66, 88, 0.12),
-    0 10px 28px rgba(180, 140, 100, 0.08),
-    0 0 50px rgba(255, 220, 230, 0.35);
+  background: #ffffff;
+  border: 1px solid rgba(151, 66, 88, 0.12);
+  border-radius: 24px;
+  box-shadow: 0 10px 36px rgba(28, 21, 32, 0.08);
   padding: 36px 28px 28px;
   color: var(--pts-text, #1c1520);
   position: relative;
-  animation: pts-reg-card-in 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: pts-reg-card-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.pts-auth-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse 90% 50% at 10% -10%, rgba(255, 220, 232, 0.4), transparent 55%),
-    radial-gradient(ellipse 70% 40% at 100% 0%, rgba(232, 210, 160, 0.2), transparent 50%);
-}
+.pts-auth-card::before { display: none; }
 .pts-auth-card > * { position: relative; z-index: 1; }
 
 @media (min-width: 640px) {
@@ -79,21 +55,12 @@ body.pts-body.pts-register {
 }
 
 html[data-theme="dark"] body.pts-body.pts-register {
-  background:
-    radial-gradient(900px 520px at 10% 0%, rgba(151, 66, 88, 0.3), transparent 55%),
-    radial-gradient(820px 480px at 95% 10%, rgba(180, 140, 80, 0.16), transparent 52%),
-    radial-gradient(780px 520px at 70% 100%, rgba(80, 120, 100, 0.14), transparent 55%),
-    linear-gradient(160deg, #161014 0%, #1c1418 40%, #18161a 100%) !important;
-}
-html[data-theme="dark"] .pts-campus__wash { opacity: 0.2; }
-html[data-theme="dark"] .pts-campus__bloom { opacity: 0.4; }
-html[data-theme="dark"] .pts-campus__spotlight {
-  background: radial-gradient(ellipse at center, rgba(255,255,255,.1) 0%, transparent 70%);
+  background: #141218 !important;
 }
 html[data-theme="dark"] .pts-auth-card {
-  background: linear-gradient(165deg, rgba(36, 28, 32, 0.92), rgba(28, 22, 26, 0.88));
+  background: var(--pts-surface, #1c161a);
   border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 28px 64px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
 }
 html[data-theme="dark"] .pts-auth-card input:not([type="checkbox"]),
 html[data-theme="dark"] .pts-auth-card textarea,
