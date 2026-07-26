@@ -9,7 +9,7 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260724gap">
+<link rel="stylesheet" href="site.css?v=20260726fav">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
 </head>
@@ -41,14 +41,15 @@
   </div>
 
   <section id="panel-courses">
-    <div id="course-list" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+    <div id="course-list" class="pts-course-grid"></div>
   </section>
   <section id="panel-posts" class="hidden">
-    <div id="post-list" class="space-y-4"></div>
+    <div id="post-list" class="space-y-4 max-w-3xl"></div>
   </section>
 </main>
 <script>
-const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const PLACEHOLDER = 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course';
 
 function setTab(tab) {
   const courses = tab === 'courses';
@@ -57,6 +58,35 @@ function setTab(tab) {
   document.getElementById('tab-courses').className = 'fav-tab pts-btn ' + (courses ? 'pts-btn-primary' : 'pts-btn-outline');
   document.getElementById('tab-posts').className = 'fav-tab pts-btn ' + (!courses ? 'pts-btn-primary' : 'pts-btn-outline');
   history.replaceState({}, '', courses ? 'Favorites.html' : 'Favorites.html#posts');
+}
+
+function courseCard(c) {
+  const image = c.cover_image_url || PLACEHOLDER;
+  const mode = (c.delivery_mode || 'หลักสูตร').toString();
+  const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '';
+  const enrolled = Number(c.is_enrolled) === 1;
+  const primaryHref = enrolled
+    ? `Learn.html?courseId=${c.course_id}`
+    : `CourseDetail.html?courseId=${c.course_id}`;
+  const primaryLabel = enrolled ? 'เข้าเรียน' : 'ดูรายละเอียด';
+
+  return `
+    <article class="pts-course-card" data-course-id="${c.course_id}">
+      <div class="pts-course-card__media">
+        <img src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
+        <span class="pts-course-card__badge">${escapeHtml(mode)}</span>
+      </div>
+      <div class="pts-course-card__body">
+        <div>
+          <h3 class="pts-course-card__title">${escapeHtml(c.course_name)}</h3>
+          <p class="pts-course-card__meta">โดย ${escapeHtml(c.instructor_name || '-')}${hours ? ` · ${escapeHtml(hours)}` : ''}</p>
+        </div>
+        <div class="pts-course-card__actions">
+          <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
+          <button type="button" class="unfav pts-btn pts-btn-outline" data-id="${c.course_id}">นำออกจากโปรด</button>
+        </div>
+      </div>
+    </article>`;
 }
 
 document.getElementById('tab-courses').onclick = () => setTab('courses');
@@ -77,23 +107,11 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   const postData = await postRes.json();
 
   if (!courseRes.ok || !courseData.success) {
-    courseBox.innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(courseData.message||'โหลดหลักสูตรโปรดไม่สำเร็จ')}</div>`;
+    courseBox.innerHTML = `<div class="pts-empty pts-card text-error">${escapeHtml(courseData.message||'โหลดหลักสูตรโปรดไม่สำเร็จ')}</div>`;
   } else if (!courseData.data.length) {
-    courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
+    courseBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
   } else {
-    courseBox.innerHTML = courseData.data.map(c => `
-      <article class="pts-card overflow-hidden">
-        <img class="w-full h-40 object-cover" src="${c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course'}" alt="">
-        <div class="p-4">
-          <p class="text-xs font-bold text-primary uppercase mb-1">${escapeHtml(c.delivery_mode||'')}</p>
-          <h2 class="font-bold text-lg mb-1">${escapeHtml(c.course_name)}</h2>
-          <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name||'-')}</p>
-          <div class="flex flex-wrap gap-2">
-            ${Number(c.is_enrolled) ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>` : `<a class="pts-btn pts-btn-primary" href="CourseDetail.html?courseId=${c.course_id}">สมัครเรียน</a>`}
-            <button class="unfav pts-btn pts-btn-outline" data-id="${c.course_id}">นำออกจากโปรด</button>
-          </div>
-        </div>
-      </article>`).join('');
+    courseBox.innerHTML = courseData.data.map(courseCard).join('');
   }
 
   if (!postRes.ok || !postData.success) {
@@ -104,14 +122,14 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
     postBox.innerHTML = postData.data.map(p => `
       <article class="pts-card p-5">
         <div class="flex items-start justify-between gap-3 mb-3">
-          <div class="flex items-center gap-3">
-            <img class="w-10 h-10 rounded-full object-cover" src="${p.author_avatar||''}" alt="">
-            <div>
-              <p class="font-bold">${escapeHtml(p.author_name||'')}</p>
+          <div class="flex items-center gap-3 min-w-0">
+            <img class="w-10 h-10 rounded-full object-cover flex-shrink-0" src="${escapeHtml(p.author_avatar||PLACEHOLDER)}" alt="" onerror="this.style.visibility='hidden'">
+            <div class="min-w-0">
+              <p class="font-bold truncate">${escapeHtml(p.author_name||'')}</p>
               <p class="text-xs text-on-surface-variant">${new Date(p.created_at).toLocaleString('th-TH')}</p>
             </div>
           </div>
-          <button class="unlike pts-btn pts-btn-ghost pts-like-active" data-id="${p.post_id}">
+          <button type="button" class="unlike pts-btn pts-btn-ghost pts-like-active flex-shrink-0" data-id="${p.post_id}">
             <span class="material-symbols-outlined">favorite</span> เลิกถูกใจ
           </button>
         </div>
@@ -126,9 +144,9 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
     const r = await fetch(`/api/courses/${btn.dataset.id}/favorite`, { method:'POST', credentials:'include' });
     const j = await r.json();
     if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
-    btn.closest('article').remove();
+    btn.closest('article')?.remove();
     if (!courseBox.querySelector('article')) {
-      courseBox.innerHTML = `<div class="pts-empty pts-card col-span-full">ยังไม่มีหลักสูตรโปรด</div>`;
+      courseBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
     }
   });
 
@@ -138,9 +156,9 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
     const r = await fetch(`/api/community/${btn.dataset.id}/like`, { method:'POST', credentials:'include' });
     const j = await r.json();
     if (!r.ok || !j.success) { console.error(j.message || 'ไม่สำเร็จ'); return; }
-    btn.closest('article').remove();
+    btn.closest('article')?.remove();
     if (!postBox.querySelector('article')) {
-      postBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ</div>`;
+      postBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ<br><a class="text-primary font-bold" href="Community.html">ไปสำรวจคอมมูนิตี้</a></div>`;
     }
   });
 
