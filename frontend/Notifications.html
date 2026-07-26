@@ -7,101 +7,129 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260724gap">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Sora:wght@600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260726notif">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 </head>
 <body class="pts-body">
-<div id="app-navbar">
-  <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
-    <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
-      <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
-        <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
-        PTS Learning
-      </a>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
-      </div>
-    </div>
-  </nav>
-</div>
+<div id="app-navbar"></div>
 <main class="pts-main" data-user-shell>
-  <section class="pts-page-hero flex flex-col md:flex-row md:items-end md:justify-between gap-3">
-    <div>
-      <span class="pts-chip mb-3">Notifications</span>
-      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.notifications.title">การแจ้งเตือน</h1>
-      <p class="text-on-surface-variant" data-i18n="page.notifications.sub">ข่าวสารและอัปเดตที่เกี่ยวข้องกับบัญชีของคุณ</p>
-    </div>
-    <button id="read-all" class="pts-btn pts-btn-outline" data-i18n="notif.markAll">อ่านทั้งหมด</button>
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Notifications</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.notifications.title">การแจ้งเตือน</h1>
+    <p class="text-on-surface-variant max-w-xl" data-i18n="page.notifications.sub">ข่าวสารและอัปเดตที่เกี่ยวข้องกับบัญชีของคุณ</p>
   </section>
-  <div id="list" class="space-y-3"></div>
+
+  <div class="pts-notif-toolbar">
+    <span class="pts-notif-count" id="notif-count" hidden></span>
+    <button type="button" id="read-all" class="pts-btn pts-btn-outline" data-i18n="notif.markAll">อ่านทั้งหมด</button>
+  </div>
+
+  <div id="list" class="pts-notif-list"></div>
 </main>
 <script>
-const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function notifIcon(title, body) {
+  const t = `${title || ''} ${body || ''}`.toLowerCase();
+  if (/ชำระ|จ่าย|สลิป|payment|paid/.test(t)) return 'payments';
+  if (/สิทธิ์|เรียน|หลักสูตร|enroll|course/.test(t)) return 'school';
+  if (/ปฏิทิน|ตาราง|calendar|schedule/.test(t)) return 'event';
+  if (/ใบประกาศ|certificate/.test(t)) return 'workspace_premium';
+  return 'notifications';
+}
+
+function relativeTime(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'เมื่อสักครู่';
+  if (mins < 60) return `${mins} นาทีที่แล้ว`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours} ชั่วโมงที่แล้ว`;
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} วันที่แล้ว`;
+  return d.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 async function load() {
   const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
+
   const res = await fetch('/api/notifications', { credentials:'include' });
   const data = await res.json();
   const box = document.getElementById('list');
+  const countEl = document.getElementById('notif-count');
+
   if (!res.ok || !data.success) {
-    box.innerHTML = `<div class="pts-card p-5 text-error">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
+    box.innerHTML = `<div class="pts-empty pts-card" style="color:var(--pts-error,#ba1a1a)">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
+    countEl.hidden = true;
     return;
   }
-  if (!data.data.length) {
-    box.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีการแจ้งเตือน</div>`;
+
+  const rows = Array.isArray(data.data) ? data.data : [];
+  const unread = rows.filter((n) => !n.is_read).length;
+  if (unread > 0) {
+    countEl.hidden = false;
+    countEl.textContent = `ยังไม่อ่าน ${unread} รายการ`;
+  } else {
+    countEl.hidden = false;
+    countEl.textContent = rows.length ? 'อ่านครบแล้ว' : 'ยังไม่มีรายการ';
+  }
+
+  if (!rows.length) {
+    box.innerHTML = `<div class="pts-empty pts-card">
+      <div class="pts-empty__icon"><span class="material-symbols-outlined">notifications_off</span></div>
+      <p class="font-semibold mb-1" data-i18n="notif.empty">ยังไม่มีการแจ้งเตือน</p>
+      <p class="text-sm">เมื่อมีอัปเดต เช่น เปิดสิทธิ์เรียนหรือผลตรวจสลิป จะแสดงที่นี่</p>
+    </div>`;
     return;
   }
-  box.innerHTML = data.data.map(n => `
-    <article class="pts-card p-4 ${n.is_read ? 'opacity-70' : 'border-primary/30'}">
-      <div class="flex justify-between gap-3">
-        <div>
-          <p class="font-bold">${escapeHtml(n.title)}</p>
-          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(n.body||'')}</p>
-          <p class="text-xs text-on-surface-variant mt-2">${new Date(n.created_at).toLocaleString('th-TH')}</p>
-        </div>
-        <div class="flex flex-col gap-2 items-end">
-          ${n.link_url ? `<a class="pts-btn pts-btn-primary" href="${escapeHtml(n.link_url)}">เปิด</a>` : ''}
-          ${n.is_read ? '' : `<button class="mark pts-btn pts-btn-ghost" data-id="${n.notification_id}">อ่านแล้ว</button>`}
-        </div>
+
+  box.innerHTML = rows.map((n) => {
+    const unreadItem = !n.is_read;
+    const icon = notifIcon(n.title, n.body);
+    return `
+    <article class="pts-notif ${unreadItem ? 'pts-notif--unread' : 'pts-notif--read'}">
+      <div class="pts-notif__icon" aria-hidden="true">
+        <span class="material-symbols-outlined">${icon}</span>
       </div>
-    </article>`).join('');
+      <div class="pts-notif__main">
+        <div class="pts-notif__head">
+          <h2 class="pts-notif__title">${escapeHtml(n.title)}</h2>
+          ${unreadItem ? '<span class="pts-notif__dot" title="ยังไม่อ่าน"></span>' : ''}
+        </div>
+        ${n.body ? `<p class="pts-notif__body">${escapeHtml(n.body)}</p>` : ''}
+        <p class="pts-notif__time">${escapeHtml(relativeTime(n.created_at))}</p>
+      </div>
+      <div class="pts-notif__actions">
+        ${n.link_url ? `<a class="pts-btn pts-btn-primary" href="${escapeHtml(n.link_url)}">เปิด</a>` : ''}
+        ${unreadItem ? `<button type="button" class="mark pts-btn pts-btn-ghost" data-id="${n.notification_id}">อ่านแล้ว</button>` : ''}
+      </div>
+    </article>`;
+  }).join('');
 }
+
 document.getElementById('list').addEventListener('click', async (e) => {
   const btn = e.target.closest('.mark');
   if (!btn) return;
+  btn.disabled = true;
   await fetch(`/api/notifications/${btn.dataset.id}/read`, { method:'POST', credentials:'include' });
   load();
 });
+
 document.getElementById('read-all').onclick = async () => {
+  const btn = document.getElementById('read-all');
+  btn.disabled = true;
   await fetch('/api/notifications/read-all', { method:'POST', credentials:'include' });
+  btn.disabled = false;
   load();
 };
+
 load();
-</script>
-<!-- PTS-NAV-INLINE-BOOT -->
-<script>
-(function(){
-  var box = document.getElementById('app-navbar');
-  if (!box) {
-    box = document.createElement('div');
-    box.id = 'app-navbar';
-    if (document.body) document.body.insertBefore(box, document.body.firstChild);
-  }
-  if (box && !box.querySelector('nav')) {
-    box.innerHTML = '<nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,#eadfe2)">'
-      + '<div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between">'
-      + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
-      + '<img src="https://lh3.googleusercontent.com/aida-public/AB6AXuABTNhK77NiL0IuFIQlI6OT3Vifm8qP13KVh2E7ow7C1nBZBzvCmxbfbPcqp_ufJqTB-yyShP5xCpLknrMb_L-Giu18pK_I31kIyaQ_R7QyIYjEwf6o5aRyjEY_AdnfLq2rmWtA8WnFI9-AaODwblGI-IcbELscflTPE3ViIRI0pz8sPdppAL4lmeCdpzCdbWVJVt8CsBOnK5aNpm5LSEzvcUIMq56MlbLb0noVVSeb7AcP1xu4117jog" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
-      + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
-      + '</div></div></nav>';
-  }
-})();
 </script>
 <script src="/comp/user-sidebar.js?v=20260725lang"></script>
 <script src="/comp/navbar.js?v=20260725lang"></script>
