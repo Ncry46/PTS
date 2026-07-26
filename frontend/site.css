@@ -645,15 +645,31 @@ html[data-theme="dark"] .pts-page-hero {
   box-shadow: var(--pts-shadow);
 }
 
-/* Compact course cards (Favorites / My Courses shell) — avoid full-bleed stretch */
+/* Course cards — ~4–5 per row on desktop (≈200–220px feels balanced) */
 .pts-course-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 240px));
-  gap: 16px;
-  justify-content: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (min-width: 640px) {
+  .pts-course-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+@media (min-width: 900px) {
+  .pts-course-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (min-width: 1200px) {
+  .pts-course-grid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
 }
 .pts-course-grid > .pts-empty,
-.pts-course-grid > .pts-msg {
+.pts-course-grid > .pts-msg,
+.pts-course-grid > .pts-card.col-span-full {
   grid-column: 1 / -1;
   max-width: 100%;
 }
@@ -661,7 +677,7 @@ html[data-theme="dark"] .pts-page-hero {
   display: flex;
   flex-direction: column;
   width: 100%;
-  max-width: 240px;
+  max-width: none;
   background: var(--pts-surface);
   border: 1px solid var(--pts-border);
   border-radius: 16px;
@@ -701,18 +717,18 @@ html[data-theme="dark"] .pts-page-hero {
 }
 .pts-course-card__body {
   flex: 1;
-  padding: 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 .pts-course-card__title {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 700;
   color: var(--pts-text);
-  line-height: 1.4;
+  line-height: 1.35;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -736,15 +752,17 @@ html[data-theme="dark"] .pts-page-hero {
 .pts-course-card__actions .pts-btn {
   width: 100%;
   justify-content: center;
-  padding: 9px 12px;
-  font-size: 13px;
+  padding: 8px 10px;
+  font-size: 12px;
   border-radius: 12px;
 }
-@media (max-width: 480px) {
+@media (max-width: 479px) {
   .pts-course-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
   }
-  .pts-course-card { max-width: none; }
+  .pts-course-card__body { padding: 10px; }
+  .pts-course-card__title { font-size: 0.85rem; }
 }
 
 .pts-panel {

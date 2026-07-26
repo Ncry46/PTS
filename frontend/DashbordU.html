@@ -99,9 +99,17 @@
 
   .dash-myc-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 220px));
-    gap: 16px;
-    justify-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  @media (min-width: 640px) {
+    .dash-myc-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  }
+  @media (min-width: 900px) {
+    .dash-myc-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1200px) {
+    .dash-myc-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   }
   .dash-myc-list > .pts-empty,
   .dash-myc-list > .dash-myc-empty {
@@ -111,7 +119,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 220px;
+    max-width: none;
     background: linear-gradient(180deg, #ffffff 0%, #fffafb 100%);
     border: 1px solid rgba(151,66,88,.12);
     border-radius: 16px;

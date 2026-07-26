@@ -9,7 +9,7 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260724gap">
+<link rel="stylesheet" href="site.css?v=20260726course5">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
 <style>
@@ -57,12 +57,20 @@
     font-size: 12px;
     color: var(--pts-muted, #544245);
   }
-  /* Proportioned card grid — room for Thai text without stretching full-width */
+  /* ~4–5 course cards per row */
   .myc-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 220px));
-    gap: 16px;
-    justify-content: start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  @media (min-width: 640px) {
+    .myc-list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  }
+  @media (min-width: 900px) {
+    .myc-list { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  }
+  @media (min-width: 1200px) {
+    .myc-list { grid-template-columns: repeat(5, minmax(0, 1fr)); }
   }
   .myc-list > .pts-empty,
   .myc-list > .pts-card {
@@ -72,7 +80,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
-    max-width: 220px;
+    max-width: none;
     background: var(--pts-card-bg, #fff);
     border: 1px solid var(--pts-border, rgba(151,66,88,.14));
     border-radius: 16px;
