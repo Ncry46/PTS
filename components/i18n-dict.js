@@ -193,7 +193,7 @@ window.PTSLangDict = {
   /* —— Schedule —— */
   'schedule.listTitle': { th: 'รายการตาราง', en: 'Schedule list' },
   'schedule.showAll': { th: 'แสดงทั้งหมด', en: 'Show all' },
-  'schedule.legend': { th: 'จุดสี = มีตารางเรียนวันนั้น — กดวันที่เพื่อดูรายการ', en: 'Colored dots = classes that day — tap a date to view' },
+  'schedule.legend': { th: 'จุดสี = มีตารางเรียน — กดวันใดก็ได้เพื่อดูรายการ (ถ้าไม่มีจะขึ้นว่าไม่มีรายการ)', en: 'Colored dots = classes — tap any date to view (empty days show no items)' },
   'schedule.gcalShortcut': { th: 'ผูก Google Calendar', en: 'Link Google Calendar' },
   'schedule.gcalShortcutText': { th: 'เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน', en: 'Connect your account in Settings to get class reminders' },
   'schedule.gcalShortcutBtn': { th: 'ไปตั้งค่าปฏิทิน', en: 'Go to calendar settings' },
