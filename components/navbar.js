@@ -309,6 +309,9 @@
         .pts-topnav__inner { padding:0 28px; }
         .pts-topnav__btn--desktop { display:inline-flex !important; }
       }
+      @media (min-width:1200px) {
+        .pts-topnav__inner { padding:0 40px; }
+      }
       @media (min-width:1024px) {
         .pts-topnav__links { display:flex; }
         .pts-topnav__burger { display:none !important; }
