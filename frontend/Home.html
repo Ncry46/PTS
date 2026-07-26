@@ -5,7 +5,16 @@
         <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&amp;family=Sora:wght@500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260726c5fix">
+        <link rel="stylesheet" href="site.css?v=20260726dense">
+<style>
+  #home-courses.pts-course-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(max(140px, calc((100% - 48px) / 5)), 1fr)) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    max-width: 1480px !important;
+  }
+</style>
         <!-- pts-build:20260724x-image-banner -->
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
@@ -250,7 +259,7 @@
 <button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
 </div>
 </div>
-<div id="home-courses" class="max-w-container-max mx-auto px-margin-mobile md:px-lg pts-course-grid">
+<div id="home-courses" class="mx-auto px-margin-mobile md:px-lg pts-course-grid" style="max-width:1480px">
   <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
 </div>
 </section>
@@ -618,13 +627,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       .catch(() => render([]));
   })();
 
-  const modeBadge = (mode) => {
-    const m = String(mode || 'online').toLowerCase();
-    if (m === 'onsite') return 'bg-[#f59e0b]';
-    if (m === 'hybrid') return 'bg-secondary';
-    return 'bg-tertiary';
-  };
-
   const renderCourses = () => {
     if (!grid) return;
     const list = allCourses.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
@@ -637,27 +639,18 @@ document.addEventListener('DOMContentLoaded', async () => {
       const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
       const price = Number(c.price || 0).toLocaleString('th-TH');
       const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
-      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="bg-surface-container-lowest rounded-2xl overflow-hidden soft-shadow border border-outline-variant/20 group block">
-        <div class="relative h-48 overflow-hidden">
-          <img alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="${img}">
-          <div class="absolute top-4 left-4">
-            <div class="${modeBadge(mode)} text-white px-3 py-1 rounded-full font-label-md text-label-md flex items-center gap-xs">
-              <span class="w-2 h-2 rounded-full bg-white"></span> ${escapeHtml(mode)}
-            </div>
-          </div>
+      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
+        <div class="pts-course-card__media">
+          <img alt="" src="${img}" loading="lazy">
+          <span class="pts-course-card__badge">${escapeHtml(mode)}</span>
         </div>
-        <div class="p-md">
-          <div class="flex items-center gap-xs mb-sm text-on-surface-variant">
-            <span class="material-symbols-outlined text-sm text-primary">person</span>
-            <span class="font-label-md text-label-md">${escapeHtml(c.instructor_name || '-')}</span>
-            <span class="mx-2 text-outline-variant">|</span>
-            <span class="material-symbols-outlined text-sm text-primary">schedule</span>
-            <span class="font-label-md text-label-md">${escapeHtml(hours)}</span>
+        <div class="pts-course-card__body">
+          <div>
+            <h3 class="pts-course-card__title">${escapeHtml(c.course_name)}</h3>
+            <p class="pts-course-card__meta">${escapeHtml(c.instructor_name || '-')} · ${escapeHtml(hours)}</p>
           </div>
-          <h4 class="font-headline-sm text-headline-sm text-on-surface mb-md h-14 overflow-hidden">${escapeHtml(c.course_name)}</h4>
-          <div class="flex items-center justify-between mt-auto">
-            <span class="text-primary font-bold text-headline-sm">฿${price}</span>
-            <span class="px-4 py-2 border border-primary text-primary rounded-full font-label-md text-label-md">รายละเอียด</span>
+          <div class="pts-course-card__actions">
+            <span class="pts-btn pts-btn-outline" style="pointer-events:none">฿${price} · รายละเอียด</span>
           </div>
         </div>
       </a>`;

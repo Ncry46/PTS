@@ -5,7 +5,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260726c5fix">
+<link rel="stylesheet" href="site.css?v=20260726dense">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -99,18 +99,9 @@
 
   .dash-myc-list {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(max(140px, calc((100% - 48px) / 5)), 1fr)) !important;
+    gap: 12px !important;
     width: 100%;
-  }
-  @media (min-width: 700px) {
-    .dash-myc-list { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 14px; }
-  }
-  @media (min-width: 960px) {
-    .dash-myc-list { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 16px; }
-  }
-  @media (min-width: 1180px) {
-    .dash-myc-list { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
   }
   .dash-myc-list > .pts-empty,
   .dash-myc-list > .dash-myc-empty {
@@ -123,20 +114,21 @@
     max-width: none;
     background: linear-gradient(180deg, #ffffff 0%, #fffafb 100%);
     border: 1px solid rgba(151,66,88,.12);
-    border-radius: 16px;
+    border-radius: 14px;
     overflow: hidden;
     min-height: 0;
+    min-width: 0;
     box-shadow: 0 6px 20px -10px rgba(28, 21, 32, 0.12);
     transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
   .myc-card:hover {
-    transform: translateY(-4px);
+    transform: translateY(-2px);
     box-shadow: 0 14px 32px -12px rgba(151, 66, 88, 0.22);
   }
   .myc-card__media {
     position: relative;
     width: 100%;
-    aspect-ratio: 16 / 10;
+    aspect-ratio: 16 / 9;
     flex-shrink: 0;
     overflow: hidden;
     background: linear-gradient(135deg, #f8e8ec, #efe8e6);
@@ -170,33 +162,33 @@
   }
   .myc-card__body {
     flex: 1;
-    padding: 14px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
   }
   .myc-card__info {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     min-width: 0;
   }
   .myc-card__title {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: var(--pts-text, #1c1520);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.3;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
   .myc-card__meta {
-    font-size: 12px;
+    font-size: 11px;
     color: var(--pts-muted, #544245);
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.35;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

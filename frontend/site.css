@@ -645,29 +645,15 @@ html[data-theme="dark"] .pts-page-hero {
   box-shadow: var(--pts-shadow);
 }
 
-/* Course cards — aim for 4–5 per row on typical desktops */
+/* Course cards — pack ~4–5 per row from the CONTAINER width (not viewport).
+   auto-fill + minmax(max(140px, (100%−gaps)/5), 1fr) caps at 5 columns
+   and still fits 2–4 on narrower content areas (e.g. beside the user sidebar). */
 .pts-course-grid {
   display: grid !important;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(max(140px, calc((100% - 48px) / 5)), 1fr)) !important;
+  gap: 12px !important;
   width: 100%;
-}
-@media (min-width: 700px) {
-  .pts-course-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-    gap: 14px;
-  }
-}
-@media (min-width: 960px) {
-  .pts-course-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-    gap: 16px;
-  }
-}
-@media (min-width: 1180px) {
-  .pts-course-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-  }
+  max-width: 100%;
 }
 .pts-course-grid > .pts-empty,
 .pts-course-grid > .pts-msg,
@@ -682,19 +668,21 @@ html[data-theme="dark"] .pts-page-hero {
   max-width: none;
   background: var(--pts-surface);
   border: 1px solid var(--pts-border);
-  border-radius: 16px;
+  border-radius: 14px;
   overflow: hidden;
   box-shadow: var(--pts-shadow-sm);
   min-height: 0;
+  min-width: 0;
   transition: box-shadow .2s ease, transform .2s ease;
 }
 .pts-course-card:hover {
   box-shadow: var(--pts-shadow);
+  transform: translateY(-2px);
 }
 .pts-course-card__media {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 16 / 9;
   flex-shrink: 0;
   overflow: hidden;
   background: var(--pts-primary-soft);
@@ -707,30 +695,30 @@ html[data-theme="dark"] .pts-page-hero {
 }
 .pts-course-card__badge {
   position: absolute;
-  left: 10px;
-  bottom: 10px;
+  left: 8px;
+  bottom: 8px;
   background: var(--pts-primary);
   color: #fff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  padding: 4px 9px;
+  padding: 3px 8px;
   border-radius: 999px;
   text-transform: capitalize;
 }
 .pts-course-card__body {
   flex: 1;
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 .pts-course-card__title {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.82rem;
   font-weight: 700;
   color: var(--pts-text);
-  line-height: 1.35;
+  line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -738,9 +726,9 @@ html[data-theme="dark"] .pts-page-hero {
 }
 .pts-course-card__meta {
   margin: 0;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--pts-muted);
-  line-height: 1.4;
+  line-height: 1.35;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -748,23 +736,22 @@ html[data-theme="dark"] .pts-page-hero {
 .pts-course-card__actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   margin-top: auto;
 }
 .pts-course-card__actions .pts-btn {
   width: 100%;
   justify-content: center;
-  padding: 8px 10px;
-  font-size: 12px;
-  border-radius: 12px;
+  padding: 7px 8px;
+  font-size: 11px;
+  border-radius: 10px;
 }
 @media (max-width: 479px) {
   .pts-course-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-    gap: 10px;
+    gap: 8px !important;
   }
-  .pts-course-card__body { padding: 10px; }
-  .pts-course-card__title { font-size: 0.85rem; }
+  .pts-course-card__body { padding: 8px; }
+  .pts-course-card__title { font-size: 0.78rem; }
 }
 
 .pts-panel {

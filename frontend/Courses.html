@@ -9,23 +9,14 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260726c5fix">
+<link rel="stylesheet" href="site.css?v=20260726dense">
 <style>
-  /* hard guarantee: 4–5 course cards / row */
+  /* hard guarantee: ~4–5 cards / row from container width */
   #courses-grid.pts-course-grid {
     display: grid !important;
-    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(auto-fill, minmax(max(140px, calc((100% - 48px) / 5)), 1fr)) !important;
     gap: 12px !important;
     width: 100% !important;
-  }
-  @media (min-width: 700px) {
-    #courses-grid.pts-course-grid { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-  }
-  @media (min-width: 960px) {
-    #courses-grid.pts-course-grid { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; gap: 16px !important; }
-  }
-  @media (min-width: 1180px) {
-    #courses-grid.pts-course-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
   }
 </style>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -120,30 +111,26 @@ function makeCourseCard(course) {
   const favorited = Number(course.is_favorited) === 1;
   const enrolled = Number(course.is_enrolled) === 1;
   const hours = Number(course.total_hours || 0).toFixed(1).replace('.0', '');
+  const img = course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course';
   return `
-    <article data-type="${mode}" class="pts-card overflow-hidden flex flex-col group">
-      <div class="relative aspect-[16/10] overflow-hidden">
-        <img class="w-full h-full object-cover transition duration-500 group-hover:scale-105" src="${course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" alt="${escapeHtml(course.course_name || '')}">
-        <div class="absolute top-3 left-3 flex flex-wrap gap-2">
-          ${course.is_featured ? '<span class="px-3 py-1 rounded-full text-[12px] font-bold bg-secondary-container text-on-secondary-container">ยอดนิยม</span>' : ''}
-          <span class="px-3 py-1 rounded-full text-[12px] font-bold ${badge.classes}">${badge.label}</span>
-        </div>
+    <article data-type="${mode}" class="pts-course-card group">
+      <div class="pts-course-card__media">
+        <img src="${img}" alt="${escapeHtml(course.course_name || '')}" loading="lazy">
+        <span class="pts-course-card__badge">${badge.label}${course.is_featured ? ' · ยอดนิยม' : ''}</span>
         ${currentUser ? `
-          <button type="button" class="fav-btn absolute top-3 right-3 w-9 h-9 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด">
-            <span class="material-symbols-outlined text-[20px]">favorite</span>
+          <button type="button" class="fav-btn absolute top-2 right-2 w-8 h-8 rounded-full bg-white/95 shadow flex items-center justify-center ${favorited ? 'pts-like-active' : 'text-on-surface-variant'}" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด" style="position:absolute;top:8px;right:8px;z-index:2">
+            <span class="material-symbols-outlined text-[18px]">favorite</span>
           </button>` : ''}
       </div>
-      <div class="p-3.5 flex flex-col flex-1 min-w-0">
-        <p class="text-xs text-on-surface-variant mb-1.5">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
-        <h3 class="font-bold text-[0.95rem] mb-1.5 line-clamp-2 leading-snug">${escapeHtml(formatText(course.course_name))}</h3>
-        <p class="text-xs text-on-surface-variant mb-3 truncate">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
-        <div class="mt-auto space-y-2.5">
-          <div class="flex justify-between text-xs text-on-surface-variant gap-2">
-            <span>${hours} ชั่วโมง</span>
-            <span class="truncate">${sentenceCase(course.difficulty_level)}</span>
-          </div>
-          <a href="CourseDetail.html?courseId=${course.course_id}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'} w-full text-sm" style="padding:8px 10px;font-size:12px;border-radius:12px">
-            ${enrolled ? 'เข้าเรียน / รายละเอียด' : (currentUser ? 'ดูรายละเอียด / สมัครเรียน' : 'ดูรายละเอียด')}
+      <div class="pts-course-card__body">
+        <div>
+          <p class="pts-course-card__meta">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
+          <h3 class="pts-course-card__title">${escapeHtml(formatText(course.course_name))}</h3>
+          <p class="pts-course-card__meta">โดย ${escapeHtml(formatText(course.instructor_name))} · ${hours} ชม.</p>
+        </div>
+        <div class="pts-course-card__actions">
+          <a href="CourseDetail.html?courseId=${course.course_id}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}">
+            ${enrolled ? 'เข้าเรียน' : (currentUser ? 'ดูรายละเอียด' : 'ดูรายละเอียด')}
           </a>
         </div>
       </div>
