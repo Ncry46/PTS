@@ -401,21 +401,12 @@ input[type="password"]::-ms-reveal,
   }
 
   .pts-login__brand-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
+    display: none;
   }
-  .pts-login__brand-row img {
-    height: 36px; width: auto; max-width: 120px;
-    object-fit: contain; display: block;
-  }
-  .pts-login__brand-row span {
-    font-family: 'Sora', sans-serif;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--pts-primary, #974258);
-    letter-spacing: .04em;
+
+  .pts-login__header {
+    text-align: center;
+    margin-bottom: 4px;
   }
 
   .pts-login__eyebrow {
@@ -438,10 +429,11 @@ input[type="password"]::-ms-reveal,
   }
 
   .pts-login__sub {
-    margin: 8px 0 0;
+    margin: 8px auto 0;
     font-size: 14px;
     line-height: 1.5;
     color: var(--pts-muted, #5c4f55);
+    max-width: 28rem;
   }
 
   .pts-login__form {
