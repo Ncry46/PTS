@@ -94,17 +94,11 @@ body.pts-body.pts-home {
   background-attachment: scroll;
 }
 
-/* Login / Register share the same soft studio white */
+/* Login / Register — Alwayzz-style hero scene handles the backdrop */
 body.pts-body.pts-login,
 body.pts-body.pts-register {
-  background-color: #ffffff;
-  background-image:
-    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.13), transparent 58%),
-    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.06), transparent 55%),
-    radial-gradient(ellipse 48% 36% at 72% 100%, rgba(61, 90, 76, 0.05), transparent 55%),
-    radial-gradient(circle at 1px 1px, rgba(151, 66, 88, 0.05) 1px, transparent 0);
-  background-size: auto, auto, auto, 22px 22px;
-  background-attachment: fixed;
+  background-color: transparent;
+  background-image: none;
   color: #1c1520;
 }
 
@@ -2854,13 +2848,8 @@ html[data-theme="dark"] body.pts-body.pts-home {
 
 html[data-theme="dark"] body.pts-body.pts-login,
 html[data-theme="dark"] body.pts-body.pts-register {
-  background-color: #141218 !important;
-  background-image:
-    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.1), transparent 58%),
-    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.07), transparent 55%),
-    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.035) 1px, transparent 0) !important;
-  background-size: auto, auto, 22px 22px !important;
-  background-attachment: fixed !important;
+  background-color: transparent !important;
+  background-image: none !important;
   color: var(--pts-text);
 }
 

@@ -12,17 +12,13 @@ input[type="password"]::-ms-reveal,
     --login-pearl: #fff9f7;
     --login-champagne: #f4e6d4;
     --login-mint: #d9ebe0;
-    /* inherit soft studio white from site.css — don't flatten to solid */
-    background-color: #ffffff !important;
-    background-image:
-      radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.13), transparent 58%),
-      radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.06), transparent 55%),
-      radial-gradient(ellipse 48% 36% at 72% 100%, rgba(61, 90, 76, 0.05), transparent 55%),
-      radial-gradient(circle at 1px 1px, rgba(151, 66, 88, 0.05) 1px, transparent 0) !important;
-    background-size: auto, auto, auto, 22px 22px !important;
-    background-attachment: fixed !important;
+    /* Hero scene (.pts-auth-scene) provides the background */
+    background-color: transparent !important;
+    background-image: none !important;
     color: var(--pts-text, #1c1520);
     overflow-x: hidden;
+    position: relative;
+    isolation: isolate;
   }
 
   /* Opaque white card — no frosted see-through bands */
@@ -835,7 +831,8 @@ input[type="password"]::-ms-reveal,
 
   /* Dark theme — clean studio */
   html[data-theme="dark"] body.pts-body.pts-login {
-    background: #141218 !important;
+    background: transparent !important;
+    background-image: none !important;
     color: var(--pts-text);
   }
   html[data-theme="dark"] .pts-login__shell,
