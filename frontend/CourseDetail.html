@@ -7,9 +7,9 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260727paytop">
-<link rel="stylesheet" href="payments.css?v=20260727paytop">
-<link rel="stylesheet" href="pay-modal.css?v=20260727paytop">
+<link rel="stylesheet" href="site.css?v=20260727enrollpay">
+<link rel="stylesheet" href="payments.css?v=20260727enrollpay">
+<link rel="stylesheet" href="pay-modal.css?v=20260727enrollpay">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -35,16 +35,6 @@
     margin: 0 0 16px;
     flex-wrap: wrap;
   }
-  .pts-course-toolbar__back {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--pts-muted, #5c4f55);
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 600;
-  }
-  .pts-course-toolbar__back:hover { color: var(--pts-primary, #974258); }
   .pts-course-toolbar__actions {
     display: flex;
     align-items: center;
@@ -216,8 +206,8 @@ async function mountCourseNotifyControls(hostEl) {
   const loggedIn = !!me.loggedIn;
   document.getElementById('content').innerHTML = `
     <div class="pts-course-toolbar">
-      <a class="pts-course-toolbar__back" href="Courses.html">
-        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+      <a class="pts-back-link" href="Courses.html">
+        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
         กลับรายการหลักสูตร
       </a>
       <div class="pts-course-toolbar__actions">
@@ -225,7 +215,7 @@ async function mountCourseNotifyControls(hostEl) {
           ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>`
           : enrolled
             ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
-            : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">ชำระเงิน</button>`}
+            : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
       </div>
     </div>
     <article class="pts-card overflow-hidden">
@@ -294,7 +284,7 @@ async function mountCourseNotifyControls(hostEl) {
   }
 })();
 </script>
-<script src="/comp/pay-modal.js?v=20260727paytop"></script>
+<script src="/comp/pay-modal.js?v=20260727enrollpay"></script>
 <script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>
