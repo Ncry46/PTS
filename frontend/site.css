@@ -626,6 +626,31 @@ table { max-width: 100%; }
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Shared back link (CourseDetail, Favorites, …) */
+.pts-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--pts-muted, #5c4f55);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0 0 14px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.pts-back-link .material-symbols-outlined {
+  font-size: 18px;
+  line-height: 1;
+}
+.pts-back-link:hover {
+  color: var(--pts-primary, #974258);
+}
+
 .pts-page-hero {
   width: 100%;
   border-radius: calc(var(--pts-radius) + 4px);

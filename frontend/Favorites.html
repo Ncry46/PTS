@@ -9,7 +9,7 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260727enrollpay">
+<link rel="stylesheet" href="site.css?v=20260727homecream">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
 <style>
@@ -80,7 +80,7 @@ function courseCard(c) {
   const primaryHref = enrolled
     ? `Learn.html?courseId=${c.course_id}`
     : `CourseDetail.html?courseId=${c.course_id}`;
-  const primaryLabel = enrolled ? 'เข้าเรียน' : 'ดูรายละเอียด';
+  const primaryLabel = enrolled ? 'เข้าเรียน' : 'สมัครเรียน';
 
   return `
     <article class="pts-course-card" data-course-id="${c.course_id}">
