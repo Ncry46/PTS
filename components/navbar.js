@@ -123,7 +123,7 @@
         height:68px; background:var(--pts-nav-bg,#fff) !important;
         border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));
         box-shadow:var(--pts-shadow-sm,0 2px 12px rgba(28,21,32,.06));
-        font-family:'IBM Plex Sans Thai',Sarabun,sans-serif;
+        font-family:'SN Pro','IBM Plex Sans Thai',Sarabun,sans-serif;
         color:var(--pts-text,#1c1520);
       }
       .pts-topnav__inner {

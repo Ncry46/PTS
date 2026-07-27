@@ -62,7 +62,7 @@
 }
 .pay-summary__label { font-size: 13px; color: var(--pts-muted, #5c4f55); font-weight: 600; }
 .pay-summary__amount {
-  font-family: 'Sora', 'IBM Plex Sans Thai', sans-serif;
+  font-family: 'SN Pro', 'IBM Plex Sans Thai', sans-serif;
   font-size: 1.35rem;
   font-weight: 700;
   color: var(--pts-primary, #974258);
