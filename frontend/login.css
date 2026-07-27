@@ -515,6 +515,15 @@ input[type="password"]::-ms-reveal,
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--pts-primary, #974258) 18%, transparent);
     transform: translateY(-1px);
   }
+  /* Kill browser autofill cyan/blue wash */
+  .pts-login__input:-webkit-autofill,
+  .pts-login__input:-webkit-autofill:hover,
+  .pts-login__input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--pts-text, #1c1520);
+    caret-color: var(--pts-text, #1c1520);
+    box-shadow: 0 0 0 1000px #faf7f8 inset !important;
+    transition: background-color 99999s ease-out;
+  }
   .pts-login__control .pts-pw-toggle { right: 12px !important; }
   .pts-login__input--pw { padding-right: 2.75rem; }
   .pts-login__kicker-ico { font-size: 15px; }

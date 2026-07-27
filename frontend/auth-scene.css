@@ -1,4 +1,4 @@
-/* Auth scene — Alwayzz hero photo + curved line pulse (Login / Register) */
+/* Auth scene — hero photo + cream curved lines at edges; no cyan */
 
 body.pts-body.pts-login,
 body.pts-body.pts-register {
@@ -9,17 +9,15 @@ body.pts-body.pts-register {
 }
 
 .pts-auth-scene {
-  --auth-line: rgba(217, 119, 142, 0.78);
-  --auth-line-deep: rgba(151, 66, 88, 0.55);
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #fff8fa;
+  background: #fff9f8;
 }
 
-/* Hero photo — cover / center */
+/* Hero photo */
 .pts-auth-scene__bg {
   position: absolute;
   inset: 0;
@@ -29,56 +27,46 @@ body.pts-body.pts-register {
   transform: scale(1.02);
 }
 
-/* Soft white center + stronger brand rose/pink side wash */
+/* Recolor photo cyan → brand rose/pink */
 .pts-auth-scene__bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #c4637b;
+  mix-blend-mode: color;
+  pointer-events: none;
+}
+
+/* Soft pink side panels + white center (covers leftover cool tones) */
+.pts-auth-scene__bg::after {
   content: "";
   position: absolute;
   inset: 0;
   background:
     linear-gradient(
       90deg,
-      rgba(151, 66, 88, 0.55) 0%,
-      rgba(217, 119, 142, 0.32) 18%,
-      rgba(240, 196, 206, 0.12) 34%,
-      transparent 46%,
-      transparent 54%,
-      rgba(240, 196, 206, 0.12) 66%,
-      rgba(217, 119, 142, 0.32) 82%,
-      rgba(151, 66, 88, 0.55) 100%
-    );
-  mix-blend-mode: soft-light;
-  pointer-events: none;
-}
-
-.pts-auth-scene__bg::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    /* extra rose bloom near the inset line zones */
-    radial-gradient(
-      ellipse 36% 70% at 18% 50%,
-      rgba(217, 119, 142, 0.28) 0%,
-      transparent 70%
+      #f4d0d9 0%,
+      #f8e2e7 10%,
+      rgba(255, 249, 248, 0.92) 24%,
+      transparent 38%,
+      transparent 62%,
+      rgba(255, 249, 248, 0.92) 76%,
+      #f8e2e7 90%,
+      #f4d0d9 100%
     ),
     radial-gradient(
-      ellipse 36% 70% at 82% 50%,
-      rgba(217, 119, 142, 0.28) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 58% 64% at 50% 42%,
-      rgba(255, 252, 253, 0.96) 0%,
-      rgba(255, 248, 250, 0.78) 40%,
-      rgba(255, 255, 255, 0.3) 64%,
-      transparent 80%
+      ellipse 56% 64% at 50% 42%,
+      rgba(255, 252, 252, 0.97) 0%,
+      rgba(255, 249, 248, 0.8) 42%,
+      rgba(255, 255, 255, 0.22) 68%,
+      transparent 82%
     ),
     linear-gradient(
       180deg,
-      rgba(255, 248, 250, 0.5) 0%,
-      transparent 22%,
+      rgba(255, 249, 248, 0.55) 0%,
+      transparent 24%,
       transparent 70%,
-      rgba(255, 248, 250, 0.6) 100%
+      rgba(255, 249, 248, 0.65) 100%
     );
   pointer-events: none;
 }
@@ -92,16 +80,16 @@ body.pts-body.pts-register {
 .pts-auth-scene__lines--right {
   top: 0;
   bottom: 0;
-  width: min(38vw, 380px);
+  width: min(42vw, 420px);
 }
 
-/* เขยิบเข้ามา — sit nearer the auth card, not flush to viewport edges */
+/* Outer edges — away from the form card */
 .pts-auth-scene__lines--left {
-  left: max(28px, calc(50% - 560px));
+  left: 0;
 }
 
 .pts-auth-scene__lines--right {
-  right: max(28px, calc(50% - 560px));
+  right: 0;
 }
 
 .pts-auth-scene__lines--top {
@@ -118,12 +106,10 @@ body.pts-body.pts-register {
   position: absolute;
   opacity: 0;
   animation: pts-auth-line-pulse 5s ease-in-out infinite;
-  border: 2.5px solid var(--auth-line);
+  border: 2.5px solid #FCFAF8;
   box-sizing: border-box;
-  box-shadow: 0 0 14px rgba(217, 119, 142, 0.28);
 }
 
-/* Left: no left border, radius on right — nested from outer edge */
 .pts-auth-line--left {
   left: 0;
   top: 50%;
@@ -134,7 +120,6 @@ body.pts-body.pts-register {
   transform-origin: left center;
 }
 
-/* Right: no right border, radius on left */
 .pts-auth-line--right {
   right: 0;
   top: 50%;
@@ -145,7 +130,6 @@ body.pts-body.pts-register {
   transform-origin: right center;
 }
 
-/* Mobile top: horizontal, bottom border-radius */
 .pts-auth-line--top {
   top: 0;
   left: 50%;
@@ -155,7 +139,7 @@ body.pts-body.pts-register {
   border-top: none;
   border-left: none;
   border-right: none;
-  border-bottom: 2.5px solid var(--auth-line);
+  border-bottom: 2.5px solid #FCFAF8;
   border-radius: 0 0 80% 80% / 0 0 100% 100%;
   transform-origin: center top;
 }
@@ -169,8 +153,8 @@ body.pts-body.pts-register {
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(255, 248, 250, 0.45) 40%,
-    #fff8fa 100%
+    rgba(255, 249, 248, 0.45) 40%,
+    #fff9f8 100%
   );
 }
 
@@ -202,11 +186,28 @@ body.pts-register > #app-navbar {
     display: none;
   }
   .pts-auth-scene__lines--top {
-    display: flex;
+    display: block;
   }
   .pts-auth-scene__bg {
     transform: rotate(90deg) scale(1.35);
     transform-origin: center center;
+  }
+  .pts-auth-scene__bg::after {
+    background:
+      linear-gradient(
+        180deg,
+        #f4d0d9 0%,
+        #f8e2e7 16%,
+        rgba(255, 249, 248, 0.9) 36%,
+        transparent 55%,
+        transparent 100%
+      ),
+      radial-gradient(
+        ellipse 80% 50% at 50% 40%,
+        rgba(255, 252, 252, 0.96) 0%,
+        rgba(255, 249, 248, 0.7) 50%,
+        transparent 80%
+      );
   }
 }
 
@@ -218,49 +219,31 @@ body.pts-register > #app-navbar {
 }
 
 html[data-theme="dark"] .pts-auth-scene {
-  --auth-line: rgba(232, 149, 168, 0.72);
-  --auth-line-deep: rgba(217, 119, 142, 0.45);
   background: #141218;
 }
 
 html[data-theme="dark"] .pts-auth-scene__bg::before {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(151, 66, 88, 0.6) 0%,
-      rgba(217, 119, 142, 0.28) 18%,
-      transparent 40%,
-      transparent 60%,
-      rgba(217, 119, 142, 0.28) 82%,
-      rgba(151, 66, 88, 0.6) 100%
-    );
+  background: #974258;
 }
 
 html[data-theme="dark"] .pts-auth-scene__bg::after {
   background:
-    radial-gradient(
-      ellipse 36% 70% at 18% 50%,
-      rgba(217, 119, 142, 0.22) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 36% 70% at 82% 50%,
-      rgba(217, 119, 142, 0.22) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 58% 64% at 50% 42%,
-      rgba(20, 18, 24, 0.92) 0%,
-      rgba(20, 18, 24, 0.55) 42%,
-      rgba(20, 18, 24, 0.2) 65%,
-      transparent 80%
-    ),
     linear-gradient(
-      180deg,
-      rgba(20, 18, 24, 0.5) 0%,
-      transparent 24%,
-      transparent 68%,
-      rgba(20, 18, 24, 0.7) 100%
+      90deg,
+      #1c1218 0%,
+      #18141a 12%,
+      rgba(20, 18, 24, 0.9) 30%,
+      transparent 44%,
+      transparent 56%,
+      rgba(20, 18, 24, 0.9) 70%,
+      #18141a 88%,
+      #1c1218 100%
+    ),
+    radial-gradient(
+      ellipse 56% 64% at 50% 42%,
+      rgba(20, 18, 24, 0.94) 0%,
+      rgba(20, 18, 24, 0.55) 45%,
+      transparent 80%
     );
 }
 
@@ -273,11 +256,8 @@ html[data-theme="dark"] .pts-auth-scene__fade {
   );
 }
 
-html[data-theme="dark"] .pts-auth-line {
-  border-color: var(--auth-line);
-  box-shadow: 0 0 16px rgba(217, 119, 142, 0.22);
-}
-
+html[data-theme="dark"] .pts-auth-line,
 html[data-theme="dark"] .pts-auth-line--top {
-  border-bottom-color: var(--auth-line);
+  border-color: rgba(252, 250, 248, 0.4);
+  border-bottom-color: rgba(252, 250, 248, 0.4);
 }
