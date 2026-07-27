@@ -14,7 +14,7 @@ body.pts-body.pts-register {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #fff8f7;
+  background: #fceef1;
 }
 
 /* Layer 1: hero image (cover / center), hue-shifted cyan → rose */
@@ -29,57 +29,62 @@ body.pts-body.pts-register {
   filter: hue-rotate(155deg) saturate(1.2) brightness(1.04);
 }
 
-/* Layer 2: lock palette to logo pink/red */
+/* Layer 2: lock palette to logo pink/red — wider bloom */
 .pts-auth-scene__tint {
   position: absolute;
   inset: 0;
   background:
     linear-gradient(
       90deg,
-      rgba(151, 66, 88, 0.55) 0%,
-      rgba(196, 99, 123, 0.4) 16%,
-      rgba(217, 119, 142, 0.18) 34%,
-      transparent 48%,
-      transparent 52%,
-      rgba(217, 119, 142, 0.18) 66%,
-      rgba(196, 99, 123, 0.4) 84%,
-      rgba(151, 66, 88, 0.55) 100%
+      rgba(151, 66, 88, 0.7) 0%,
+      rgba(196, 99, 123, 0.55) 22%,
+      rgba(217, 119, 142, 0.35) 42%,
+      rgba(217, 119, 142, 0.18) 50%,
+      rgba(217, 119, 142, 0.35) 58%,
+      rgba(196, 99, 123, 0.55) 78%,
+      rgba(151, 66, 88, 0.7) 100%
     ),
     #d9778e;
   mix-blend-mode: color;
-  opacity: 0.92;
+  opacity: 1;
 }
 
-/* Layer 3: soft rose side glow + white center for the form */
+/* Layer 3: broad rose bloom; lighter white only behind the form */
 .pts-auth-scene__veil {
   position: absolute;
   inset: 0;
   background:
     radial-gradient(
-      ellipse 42% 80% at 0% 50%,
-      rgba(217, 119, 142, 0.45) 0%,
-      rgba(240, 196, 206, 0.22) 40%,
-      transparent 72%
+      ellipse 58% 90% at 0% 50%,
+      rgba(196, 99, 123, 0.55) 0%,
+      rgba(217, 119, 142, 0.38) 35%,
+      rgba(240, 196, 206, 0.2) 58%,
+      transparent 78%
     ),
     radial-gradient(
-      ellipse 42% 80% at 100% 50%,
-      rgba(217, 119, 142, 0.45) 0%,
-      rgba(240, 196, 206, 0.22) 40%,
-      transparent 72%
+      ellipse 58% 90% at 100% 50%,
+      rgba(196, 99, 123, 0.55) 0%,
+      rgba(217, 119, 142, 0.38) 35%,
+      rgba(240, 196, 206, 0.2) 58%,
+      transparent 78%
     ),
     radial-gradient(
-      ellipse 58% 64% at 50% 42%,
-      rgba(255, 252, 252, 0.97) 0%,
-      rgba(255, 248, 247, 0.82) 40%,
-      rgba(255, 255, 255, 0.2) 68%,
-      transparent 82%
+      ellipse 70% 55% at 50% 100%,
+      rgba(217, 119, 142, 0.22) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 48% 52% at 50% 42%,
+      rgba(255, 252, 252, 0.78) 0%,
+      rgba(255, 244, 246, 0.45) 45%,
+      transparent 72%
     ),
     linear-gradient(
       180deg,
-      rgba(255, 248, 247, 0.5) 0%,
-      transparent 22%,
-      transparent 72%,
-      rgba(255, 248, 247, 0.6) 100%
+      rgba(255, 240, 243, 0.28) 0%,
+      transparent 18%,
+      transparent 78%,
+      rgba(255, 240, 243, 0.35) 100%
     );
 }
 
@@ -207,25 +212,26 @@ body.pts-register > #app-navbar {
     background:
       linear-gradient(
         180deg,
-        rgba(151, 66, 88, 0.5) 0%,
-        rgba(217, 119, 142, 0.28) 28%,
-        transparent 55%
+        rgba(151, 66, 88, 0.65) 0%,
+        rgba(217, 119, 142, 0.42) 35%,
+        rgba(217, 119, 142, 0.2) 60%,
+        transparent 80%
       ),
       #d9778e;
   }
   .pts-auth-scene__veil {
     background:
       radial-gradient(
-        ellipse 90% 42% at 50% 0%,
-        rgba(217, 119, 142, 0.4) 0%,
-        rgba(240, 196, 206, 0.2) 45%,
+        ellipse 100% 55% at 50% 0%,
+        rgba(196, 99, 123, 0.5) 0%,
+        rgba(217, 119, 142, 0.3) 40%,
         transparent 75%
       ),
       radial-gradient(
-        ellipse 80% 55% at 50% 42%,
-        rgba(255, 252, 252, 0.96) 0%,
-        rgba(255, 248, 247, 0.75) 48%,
-        transparent 80%
+        ellipse 70% 50% at 50% 42%,
+        rgba(255, 252, 252, 0.7) 0%,
+        rgba(255, 244, 246, 0.35) 50%,
+        transparent 78%
       );
   }
 }
