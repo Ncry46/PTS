@@ -159,7 +159,7 @@
 }
 .cert-card__title {
   margin: 0;
-  font-family: 'SN Pro', 'IBM Plex Sans Thai', sans-serif;
+  font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
   font-size: 0.92rem;
   font-weight: 700;
   color: var(--pts-text, #1c1520);
@@ -262,7 +262,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   padding: 25px;
   box-sizing: border-box;
-  font-family: 'Sarabun', 'IBM Plex Sans Thai', sans-serif;
+  font-family: 'Sarabun', 'Bai Jamjuree', sans-serif;
   color: #111;
 }
 
@@ -489,7 +489,7 @@
   margin-bottom: 18px;
 }
 .pts-cert__name {
-  font-family: 'Sarabun', 'IBM Plex Sans Thai', sans-serif;
+  font-family: 'Sarabun', 'Bai Jamjuree', sans-serif;
   font-size: 36px;
   font-weight: 700;
   color: #8B0000;

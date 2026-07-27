@@ -1,5 +1,5 @@
 /* PTS Learning — shared professional shell */
-@import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap');
 
 :root {
   --pts-primary: #974258;
@@ -17,9 +17,9 @@
   --pts-radius-sm: 12px;
   --pts-nav-h: 68px;
   --pts-max: 1120px;
-  /* SN Pro for Latin; IBM Plex Sans Thai covers Thai glyphs */
-  --pts-font: 'SN Pro', 'IBM Plex Sans Thai', sans-serif;
-  --pts-display: 'SN Pro', 'IBM Plex Sans Thai', sans-serif;
+  /* SN Pro for Latin; Bai Jamjuree covers Thai glyphs */
+  --pts-font: 'SN Pro', 'Bai Jamjuree', sans-serif;
+  --pts-display: 'SN Pro', 'Bai Jamjuree', sans-serif;
   --pts-nav-bg: #ffffff;
   --pts-nav-hover: #f6e6ea;
   --pts-wash-a: rgba(151, 66, 88, 0.12);
@@ -2734,7 +2734,7 @@ input.pts-pw-input::-ms-clear {
 .pts-attend-qr__chip .material-symbols-outlined { font-size: 16px; }
 .pts-attend-qr__title {
   margin: 0 0 6px;
-  font-family: var(--pts-display, 'SN Pro', 'IBM Plex Sans Thai', sans-serif);
+  font-family: var(--pts-display, 'SN Pro', 'Bai Jamjuree', sans-serif);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--pts-primary, #974258);
