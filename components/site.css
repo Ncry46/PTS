@@ -471,6 +471,7 @@ table { max-width: 100%; }
   text-align: center;
   color: var(--pts-muted);
   font-size: 13px;
+  background: #ffffff;
 }
 
 .pts-grid-2 {
