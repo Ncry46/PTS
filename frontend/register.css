@@ -2,7 +2,14 @@
 
 body.pts-body.pts-register {
   --reg-deep: #974258;
-  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image:
+    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.13), transparent 58%),
+    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.06), transparent 55%),
+    radial-gradient(ellipse 48% 36% at 72% 100%, rgba(61, 90, 76, 0.05), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(151, 66, 88, 0.05) 1px, transparent 0) !important;
+  background-size: auto, auto, auto, 22px 22px !important;
+  background-attachment: fixed !important;
 }
 
 /* Slightly taller card room for extra fields */

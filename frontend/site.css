@@ -69,24 +69,42 @@ body.pts-body {
   flex-direction: column;
   font-family: var(--pts-font);
   color: var(--pts-text);
-  background: #ffffff;
+  /* Soft studio white: faint brand glow + light dot grid (no icons / photos / hard bands) */
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.13), transparent 58%),
+    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.06), transparent 55%),
+    radial-gradient(ellipse 48% 36% at 72% 100%, rgba(61, 90, 76, 0.05), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(151, 66, 88, 0.05) 1px, transparent 0);
+  background-size: auto, auto, auto, 22px 22px;
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
   transition: background 0.35s ease, color 0.25s ease;
 }
 
-/* Home keeps the branded wash; all other pages stay solid white */
+/* Home keeps the branded wash */
 body.pts-body.pts-home {
-  background:
+  background-color: transparent;
+  background-image:
     radial-gradient(1000px 480px at 8% -8%, var(--pts-wash-a), transparent 55%),
     radial-gradient(800px 400px at 100% 0%, var(--pts-wash-b), transparent 50%),
     linear-gradient(180deg, var(--pts-wash-top) 0%, var(--pts-bg) 40%, var(--pts-wash-bottom) 100%);
+  background-size: auto;
+  background-attachment: scroll;
 }
 
-/* Login / Register — solid white */
+/* Login / Register share the same soft studio white */
 body.pts-body.pts-login,
 body.pts-body.pts-register {
-  background: #ffffff;
+  background-color: #ffffff;
+  background-image:
+    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.13), transparent 58%),
+    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.06), transparent 55%),
+    radial-gradient(ellipse 48% 36% at 72% 100%, rgba(61, 90, 76, 0.05), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(151, 66, 88, 0.05) 1px, transparent 0);
+  background-size: auto, auto, auto, 22px 22px;
+  background-attachment: fixed;
   color: #1c1520;
 }
 
@@ -2815,19 +2833,34 @@ html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--sun { display: block;
 html[data-theme="dark"] .pts-theme-toggle .pts-theme-icon--moon { display: none; }
 
 html[data-theme="dark"] body.pts-body {
-  background: #141218;
+  background-color: #141218;
+  background-image:
+    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.1), transparent 58%),
+    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.07), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.035) 1px, transparent 0);
+  background-size: auto, auto, 22px 22px;
+  background-attachment: fixed;
 }
 
 html[data-theme="dark"] body.pts-body.pts-home {
-  background:
+  background-color: transparent;
+  background-image:
     radial-gradient(1000px 480px at 8% -8%, var(--pts-wash-a), transparent 55%),
     radial-gradient(800px 400px at 100% 0%, var(--pts-wash-b), transparent 50%),
     linear-gradient(180deg, var(--pts-wash-top) 0%, var(--pts-bg) 40%, var(--pts-wash-bottom) 100%);
+  background-size: auto;
+  background-attachment: scroll;
 }
 
 html[data-theme="dark"] body.pts-body.pts-login,
 html[data-theme="dark"] body.pts-body.pts-register {
-  background: #141218 !important;
+  background-color: #141218 !important;
+  background-image:
+    radial-gradient(ellipse 78% 52% at 108% -8%, rgba(217, 119, 142, 0.1), transparent 58%),
+    radial-gradient(ellipse 58% 42% at -8% 108%, rgba(151, 66, 88, 0.07), transparent 55%),
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.035) 1px, transparent 0) !important;
+  background-size: auto, auto, 22px 22px !important;
+  background-attachment: fixed !important;
   color: var(--pts-text);
 }
 
