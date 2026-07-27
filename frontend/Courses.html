@@ -141,7 +141,7 @@ function makeCourseCard(course) {
         </div>
         <div class="pts-course-card__actions">
           <a href="${enrolled ? `Learn.html?courseId=${course.course_id}` : `CourseDetail.html?courseId=${course.course_id}`}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}">
-            ${enrolled ? 'เข้าเรียน' : 'สมัครเรียน'}
+            ${enrolled ? 'เข้าเรียน' : 'ดูรายละเอียด'}
           </a>
         </div>
       </div>
@@ -168,7 +168,7 @@ function openCourseModal(course) {
           <div class="flex items-center gap-2">
             ${enrolled
               ? `<a class="pts-btn pts-btn-primary flex-1" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
-              : `<a class="pts-btn pts-btn-primary flex-1" href="CourseDetail.html?courseId=${course.course_id}">สมัครเรียน</a>`}
+              : `<a class="pts-btn pts-btn-primary flex-1" href="CourseDetail.html?courseId=${course.course_id}">ดูรายละเอียด</a>`}
             <button type="button" id="fav-course-btn" class="pts-course-icon-btn${Number(course.is_favorited) ? ' is-active' : ''}" aria-label="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" style="width:44px;height:44px;border-radius:999px;border:1.5px solid rgba(151,66,88,.18);background:#fff;color:${Number(course.is_favorited) ? '#974258' : '#5c4f55'};display:inline-grid;place-items:center;cursor:pointer;flex-shrink:0;">
               <span class="material-symbols-outlined" aria-hidden="true" style="font-size:22px;${Number(course.is_favorited) ? "font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;" : ''}">favorite</span>
             </button>
