@@ -1,4 +1,4 @@
-/* Auth scene — same hero photo + cream curved lines, brand rose/pink (no cyan) */
+/* Auth scene — geometric pink circle pattern (Login / Register) */
 
 body.pts-body.pts-login,
 body.pts-body.pts-register {
@@ -14,168 +14,31 @@ body.pts-body.pts-register {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #fceef1;
+  background: #ffffff;
 }
 
-/* Layer 1: hero image (cover / center), hue-shifted cyan → rose */
-.pts-auth-scene__photo {
+.pts-auth-scene__geo {
   position: absolute;
   inset: 0;
-  background-image: url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260626_041422_4a459e05-abce-4150-9fb7-4ededc423cd1.png&w=1280&q=85");
+  background-color: #ffffff;
+  background-image: url("auth-geo.svg");
   background-size: cover;
   background-position: center;
-  transform: scale(1.02);
-  /* cyan (~180°) → magenta/rose (~330°) */
-  filter: hue-rotate(155deg) saturate(1.2) brightness(1.04);
-}
-
-/* Layer 2: lock palette to logo pink/red — wider bloom */
-.pts-auth-scene__tint {
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(151, 66, 88, 0.7) 0%,
-      rgba(196, 99, 123, 0.55) 22%,
-      rgba(217, 119, 142, 0.35) 42%,
-      rgba(217, 119, 142, 0.18) 50%,
-      rgba(217, 119, 142, 0.35) 58%,
-      rgba(196, 99, 123, 0.55) 78%,
-      rgba(151, 66, 88, 0.7) 100%
-    ),
-    #d9778e;
-  mix-blend-mode: color;
+  background-repeat: no-repeat;
   opacity: 1;
 }
 
-/* Layer 3: broad rose bloom + strong bottom-corner glows */
+/* Soft veil so the form stays readable over denser shapes */
 .pts-auth-scene__veil {
   position: absolute;
   inset: 0;
   background:
-    /* bottom-left corner bloom (circled) */
     radial-gradient(
-      ellipse 55% 48% at 0% 100%,
-      rgba(151, 66, 88, 0.55) 0%,
-      rgba(196, 99, 123, 0.42) 28%,
-      rgba(217, 119, 142, 0.22) 52%,
-      transparent 78%
-    ),
-    /* bottom-right corner bloom (circled) */
-    radial-gradient(
-      ellipse 55% 48% at 100% 100%,
-      rgba(151, 66, 88, 0.55) 0%,
-      rgba(196, 99, 123, 0.42) 28%,
-      rgba(217, 119, 142, 0.22) 52%,
-      transparent 78%
-    ),
-    radial-gradient(
-      ellipse 58% 90% at 0% 50%,
-      rgba(196, 99, 123, 0.55) 0%,
-      rgba(217, 119, 142, 0.38) 35%,
-      rgba(240, 196, 206, 0.2) 58%,
-      transparent 78%
-    ),
-    radial-gradient(
-      ellipse 58% 90% at 100% 50%,
-      rgba(196, 99, 123, 0.55) 0%,
-      rgba(217, 119, 142, 0.38) 35%,
-      rgba(240, 196, 206, 0.2) 58%,
-      transparent 78%
-    ),
-    radial-gradient(
-      ellipse 80% 45% at 50% 100%,
-      rgba(217, 119, 142, 0.28) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 48% 52% at 50% 42%,
-      rgba(255, 252, 252, 0.78) 0%,
-      rgba(255, 244, 246, 0.45) 45%,
-      transparent 72%
-    ),
-    linear-gradient(
-      180deg,
-      rgba(255, 240, 243, 0.28) 0%,
-      transparent 18%,
-      transparent 70%,
-      rgba(252, 230, 235, 0.25) 100%
+      ellipse 52% 58% at 50% 42%,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.55) 48%,
+      transparent 75%
     );
-}
-
-.pts-auth-scene__lines {
-  position: absolute;
-  pointer-events: none;
-}
-
-.pts-auth-scene__lines--left,
-.pts-auth-scene__lines--right {
-  top: 0;
-  bottom: 0;
-  width: min(42vw, 420px);
-}
-
-.pts-auth-scene__lines--left {
-  left: 0;
-}
-
-.pts-auth-scene__lines--right {
-  right: 0;
-}
-
-.pts-auth-scene__lines--top {
-  display: none;
-  top: calc(var(--pts-nav-h, 68px) + 8px);
-  left: 0;
-  right: 0;
-  height: 140px;
-  padding: 0 16px;
-}
-
-.pts-auth-line {
-  display: block;
-  position: absolute;
-  opacity: 0;
-  animation: pts-auth-line-pulse 5s ease-in-out infinite;
-  border: 2.5px solid #FCFAF8;
-  box-sizing: border-box;
-}
-
-.pts-auth-line--left {
-  left: 0;
-  top: 0;
-  bottom: 0;
-  height: 100%;
-  margin-top: 0;
-  border-left: none;
-  border-radius: 0 80% 80% 0 / 0 50% 50% 0;
-  transform-origin: left center;
-}
-
-.pts-auth-line--right {
-  right: 0;
-  top: 0;
-  bottom: 0;
-  height: 100%;
-  margin-top: 0;
-  border-right: none;
-  border-radius: 80% 0 0 80% / 50% 0 0 50%;
-  transform-origin: right center;
-}
-
-.pts-auth-line--top {
-  top: 0;
-  left: 50%;
-  width: min(42vw, 280px);
-  height: 48px;
-  margin-left: calc(min(42vw, 280px) / -2);
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  border-bottom: 2.5px solid #FCFAF8;
-  border-radius: 0 0 80% 80% / 0 0 100% 100%;
-  transform-origin: center top;
 }
 
 .pts-auth-scene__fade {
@@ -183,26 +46,16 @@ body.pts-body.pts-register {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 220px;
-  background:
-    radial-gradient(
-      ellipse 48% 90% at 8% 100%,
-      rgba(196, 99, 123, 0.35) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 48% 90% at 92% 100%,
-      rgba(196, 99, 123, 0.35) 0%,
-      transparent 70%
-    ),
-    linear-gradient(
-      180deg,
-      transparent 0%,
-      rgba(252, 230, 235, 0.25) 45%,
-      rgba(252, 238, 241, 0.55) 100%
-    );
+  height: 120px;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.35) 50%,
+    #ffffff 100%
+  );
 }
 
+/* Keep auth content above the scene */
 body.pts-login > #app-navbar,
 body.pts-register > #app-navbar,
 body.pts-login > .pts-login__stage,
@@ -218,57 +71,19 @@ body.pts-register > #app-navbar {
   z-index: 100;
 }
 
-@keyframes pts-auth-line-pulse {
-  0% { opacity: 0; transform: scale(1); }
-  15% { opacity: 0.9; }
-  70% { opacity: 0.4; }
-  100% { opacity: 0; transform: scale(0.85); }
-}
-
 @media (max-width: 810px) {
-  .pts-auth-scene__lines--left,
-  .pts-auth-scene__lines--right {
-    display: none;
-  }
-  .pts-auth-scene__lines--top {
-    display: block;
-  }
-  .pts-auth-scene__photo {
-    transform: rotate(90deg) scale(1.35);
-    transform-origin: center center;
-  }
-  .pts-auth-scene__tint {
-    background:
-      linear-gradient(
-        180deg,
-        rgba(151, 66, 88, 0.65) 0%,
-        rgba(217, 119, 142, 0.42) 35%,
-        rgba(217, 119, 142, 0.2) 60%,
-        transparent 80%
-      ),
-      #d9778e;
+  .pts-auth-scene__geo {
+    background-size: cover;
+    background-position: 30% center;
   }
   .pts-auth-scene__veil {
     background:
       radial-gradient(
-        ellipse 100% 55% at 50% 0%,
-        rgba(196, 99, 123, 0.5) 0%,
-        rgba(217, 119, 142, 0.3) 40%,
-        transparent 75%
-      ),
-      radial-gradient(
-        ellipse 70% 50% at 50% 42%,
-        rgba(255, 252, 252, 0.7) 0%,
-        rgba(255, 244, 246, 0.35) 50%,
+        ellipse 70% 55% at 50% 38%,
+        rgba(255, 255, 255, 0.92) 0%,
+        rgba(255, 255, 255, 0.6) 50%,
         transparent 78%
       );
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .pts-auth-line {
-    animation: none;
-    opacity: 0.25;
   }
 }
 
@@ -276,42 +91,19 @@ html[data-theme="dark"] .pts-auth-scene {
   background: #141218;
 }
 
-html[data-theme="dark"] .pts-auth-scene__photo {
-  filter: hue-rotate(155deg) saturate(1) brightness(0.7);
-}
-
-html[data-theme="dark"] .pts-auth-scene__tint {
-  background:
-    linear-gradient(
-      90deg,
-      rgba(151, 66, 88, 0.65) 0%,
-      rgba(196, 99, 123, 0.35) 20%,
-      transparent 45%,
-      transparent 55%,
-      rgba(196, 99, 123, 0.35) 80%,
-      rgba(151, 66, 88, 0.65) 100%
-    ),
-    #974258;
-  opacity: 0.85;
+html[data-theme="dark"] .pts-auth-scene__geo {
+  background-color: #141218;
+  opacity: 0.35;
+  filter: brightness(0.85) saturate(1.1);
 }
 
 html[data-theme="dark"] .pts-auth-scene__veil {
   background:
     radial-gradient(
-      ellipse 42% 80% at 0% 50%,
-      rgba(151, 66, 88, 0.35) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 42% 80% at 100% 50%,
-      rgba(151, 66, 88, 0.35) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 58% 64% at 50% 42%,
-      rgba(20, 18, 24, 0.94) 0%,
-      rgba(20, 18, 24, 0.55) 45%,
-      transparent 80%
+      ellipse 52% 58% at 50% 42%,
+      rgba(20, 18, 24, 0.92) 0%,
+      rgba(20, 18, 24, 0.55) 48%,
+      transparent 78%
     );
 }
 
@@ -319,13 +111,7 @@ html[data-theme="dark"] .pts-auth-scene__fade {
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(20, 18, 24, 0.45) 40%,
+    rgba(20, 18, 24, 0.45) 50%,
     #141218 100%
   );
-}
-
-html[data-theme="dark"] .pts-auth-line,
-html[data-theme="dark"] .pts-auth-line--top {
-  border-color: rgba(252, 250, 248, 0.4);
-  border-bottom-color: rgba(252, 250, 248, 0.4);
 }
