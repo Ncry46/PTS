@@ -9,7 +9,10 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260727homecream">
+<link rel="stylesheet" href="site.css?v=20260727paymodal">
+<link rel="stylesheet" href="payments.css?v=20260727paymodal">
+<link rel="stylesheet" href="pay-modal.css?v=20260727paymodal">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   /* hard guarantee: ~4–5 cards / row from container width */
   #courses-grid.pts-course-grid {
@@ -164,8 +167,8 @@ function openCourseModal(course) {
         <div class="space-y-2">
           ${enrolled
             ? `<a class="pts-btn pts-btn-primary w-full" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
-            : `<button type="button" id="enroll-course-btn" class="pts-btn pts-btn-primary w-full">สมัครเรียนหลักสูตรนี้</button>`}
-          <a class="pts-btn pts-btn-outline w-full" href="Payments.html?courseId=${course.course_id}">ชำระเงิน</a>
+            : `<button type="button" id="enroll-course-btn" class="pts-btn pts-btn-primary w-full">สมัครเรียนหลักสูตรนี้</button>
+               <button type="button" id="pay-course-btn" class="pts-btn pts-btn-outline w-full">ชำระเงิน</button>`}
           <button type="button" id="fav-course-btn" class="pts-btn pts-btn-ghost w-full">${Number(course.is_favorited) ? 'นำออกจากหลักสูตรโปรด' : 'บันทึกเป็นหลักสูตรโปรด'}</button>
         </div>` : `
         <div class="flex gap-2 mt-4">
@@ -180,21 +183,28 @@ function openCourseModal(course) {
 
   const enrollBtn = modal.querySelector('#enroll-course-btn');
   if (enrollBtn) {
-    enrollBtn.onclick = async () => {
-      enrollBtn.disabled = true;
-      enrollBtn.textContent = 'กำลังสมัครเรียน...';
-      try {
-        const res = await fetch(`/api/courses/${course.course_id}/enroll`, { method: 'POST', credentials: 'include' });
-        const data = await res.json();
-        if (res.status === 401) return location.href = 'Login.html';
-        if (!res.ok || !data.success) throw new Error(data.message || 'สมัครไม่สำเร็จ');
-        modal.querySelector('#enroll-message').textContent = data.message;
-        if (!data.already_enrolled) setTimeout(() => location.href = `Learn.html?courseId=${course.course_id}`, 700);
-        else location.href = `Learn.html?courseId=${course.course_id}`;
-      } catch (err) {
-        modal.querySelector('#enroll-message').textContent = err.message;
-        enrollBtn.disabled = false;
-        enrollBtn.textContent = 'สมัครเรียนหลักสูตรนี้';
+    enrollBtn.onclick = () => {
+      modal.remove();
+      if (window.PTSPayModal) {
+        window.PTSPayModal.open({
+          courseId: course.course_id,
+          courseName: course.course_name,
+          price: Number(course.price || 0)
+        });
+      }
+    };
+  }
+
+  const payBtn = modal.querySelector('#pay-course-btn');
+  if (payBtn) {
+    payBtn.onclick = () => {
+      modal.remove();
+      if (window.PTSPayModal) {
+        window.PTSPayModal.open({
+          courseId: course.course_id,
+          courseName: course.course_name,
+          price: Number(course.price || 0)
+        });
       }
     };
   }
@@ -307,6 +317,7 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
   }
 })();
 </script>
-<script src="/comp/navbar.js?v=20260727baijam"></script>
+<script src="/comp/pay-modal.js?v=20260727paymodal"></script>
+<script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>

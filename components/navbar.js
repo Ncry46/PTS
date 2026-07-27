@@ -396,7 +396,6 @@
     const studentLinks = `
           <a href="DashbordU.html" role="menuitem">${t('nav.dashboard', 'แดชบอร์ด')}</a>
           <a href="Certificates.html" role="menuitem">${t('nav.certificates', 'ใบประกาศ')}</a>
-          <a href="Payments.html" role="menuitem">${t('nav.payments', 'ชำระเงิน')}</a>
           <a href="Favorites.html" role="menuitem">${t('nav.favorites', 'รายการโปรด')}</a>
           <a href="Schedule.html" role="menuitem">${t('nav.schedule', 'ตารางเรียน / QR Onsite')}</a>
           <a href="Settings.html" role="menuitem">${t('nav.settings', 'ตั้งค่า')}</a>`;

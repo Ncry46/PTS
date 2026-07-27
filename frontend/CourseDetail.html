@@ -7,9 +7,12 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260727homecream">
+<link rel="stylesheet" href="site.css?v=20260727paymodal">
+<link rel="stylesheet" href="payments.css?v=20260727paymodal">
+<link rel="stylesheet" href="pay-modal.css?v=20260727paymodal">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 <style>
   .pts-notify {
@@ -202,8 +205,8 @@ async function mountCourseNotifyControls(hostEl) {
           <div class="flex flex-wrap gap-2 mb-4">
             ${!loggedIn ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>` : enrolled
               ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
-              : `<button id="enroll" class="pts-btn pts-btn-primary">สมัครเรียน</button>
-                 <a class="pts-btn pts-btn-outline" href="Payments.html?courseId=${c.course_id}">ชำระเงิน</a>`}
+              : `<button type="button" id="enroll" class="pts-btn pts-btn-primary">สมัครเรียน</button>
+                 <button type="button" id="pay-course" class="pts-btn pts-btn-outline" data-course-id="${c.course_id}" data-course-name="${escapeHtml(c.course_name)}" data-price="${price}">ชำระเงิน</button>`}
             ${loggedIn ? `<button id="fav" class="pts-btn pts-btn-ghost">${Number(c.is_favorited)?'นำออกจากโปรด':'บันทึกโปรด'}</button>` : ''}
             <a class="pts-btn pts-btn-outline" href="Courses.html">กลับรายการหลักสูตร</a>
           </div>
@@ -217,11 +220,30 @@ async function mountCourseNotifyControls(hostEl) {
     </article>`;
 
   document.getElementById('enroll')?.addEventListener('click', async () => {
+    // After signup intent → open payment mockup (QR / card / coupon)
+    if (window.PTSPayModal) {
+      window.PTSPayModal.open({
+        courseId: c.course_id,
+        courseName: c.course_name,
+        price: price
+      });
+      return;
+    }
     const r = await fetch(`/api/courses/${courseId}/enroll`, { method:'POST', credentials:'include' });
     const j = await r.json();
     if (!r.ok) { console.error(j.message || 'สมัครเรียนไม่สำเร็จ'); return; }
     location.href = `Learn.html?courseId=${courseId}`;
   });
+
+  document.getElementById('pay-course')?.addEventListener('click', () => {
+    if (!window.PTSPayModal) return;
+    window.PTSPayModal.open({
+      courseId: c.course_id,
+      courseName: c.course_name,
+      price: price
+    });
+  });
+
   document.getElementById('fav')?.addEventListener('click', async () => {
     const r = await fetch(`/api/courses/${courseId}/favorite`, { method:'POST', credentials:'include' });
     const j = await r.json();
@@ -255,6 +277,7 @@ async function mountCourseNotifyControls(hostEl) {
   }
 })();
 </script>
-<script src="/comp/navbar.js?v=20260727baijam"></script>
+<script src="/comp/pay-modal.js?v=20260727paymodal"></script>
+<script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>
