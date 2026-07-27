@@ -7,9 +7,9 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260727enrollpay">
+<link rel="stylesheet" href="site.css?v=20260727calendarbtn">
 <link rel="stylesheet" href="payments.css?v=20260727enrollpay">
-<link rel="stylesheet" href="pay-modal.css?v=20260727enrollpay">
+<link rel="stylesheet" href="pay-modal.css?v=20260727calendarbtn">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -216,8 +216,10 @@ async function mountCourseNotifyControls(hostEl) {
           : enrolled
             ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
             : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
+        ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline">เพิ่มปฏิทิน</button>` : ''}
       </div>
     </div>
+    <p id="course-toolbar-msg" class="pts-msg" style="margin:0 0 14px;" hidden></p>
     <article class="pts-card overflow-hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2">
         <div class="relative min-h-[240px] lg:min-h-[420px]">
@@ -249,6 +251,26 @@ async function mountCourseNotifyControls(hostEl) {
       courseName: c.course_name,
       price: price
     });
+  });
+
+  document.getElementById('calendar-course')?.addEventListener('click', () => {
+    const msg = document.getElementById('course-toolbar-msg');
+    if (!msg) return;
+    msg.hidden = false;
+
+    if (!enrolled) {
+      msg.textContent = 'สมัครเรียนก่อน แล้วจึงเพิ่มคอร์สนี้เข้าปฏิทินได้';
+      msg.className = 'pts-msg pts-msg--err';
+      return;
+    }
+
+    const host = document.getElementById('course-notify-host');
+    if (host) {
+      host.hidden = false;
+      host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    msg.textContent = 'เลื่อนลงไปที่ส่วนรับการแจ้งเตือน แล้วกดเพิ่มเข้าปฏิทินได้เลย';
+    msg.className = 'pts-msg pts-msg--ok';
   });
 
   document.getElementById('fav')?.addEventListener('click', async () => {
@@ -284,7 +306,7 @@ async function mountCourseNotifyControls(hostEl) {
   }
 })();
 </script>
-<script src="/comp/pay-modal.js?v=20260727enrollpay"></script>
+<script src="/comp/pay-modal.js?v=20260727calendarbtn"></script>
 <script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>
