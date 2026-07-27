@@ -103,6 +103,36 @@ body.pts-pay-modal-open { overflow: hidden; }
 .pts-pay-modal__msg.is-ok { color: #2f6b45; }
 .pts-pay-modal__msg.is-err { color: #a12626; }
 
+.pts-pay-modal .w-full { width: 100%; }
+.pts-pay-modal .pts-field {
+  display: block;
+  margin-bottom: 10px;
+  text-align: left;
+}
+.pts-pay-modal .pts-field > span {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5c4f55;
+  margin-bottom: 6px;
+}
+.pts-pay-modal .pts-input {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1.5px solid rgba(151, 66, 88, 0.18);
+  border-radius: 12px;
+  padding: 11px 12px;
+  font: inherit;
+  background: #faf7f8;
+  color: #1c1520;
+}
+.pts-pay-modal .pts-input:focus {
+  outline: none;
+  border-color: #974258;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(151, 66, 88, 0.14);
+}
+
 html[data-theme="dark"] .pts-pay-modal__card {
   background: #1c161a;
   border-color: rgba(255, 255, 255, 0.08);
@@ -116,4 +146,9 @@ html[data-theme="dark"] .pts-pay-modal__close {
 }
 html[data-theme="dark"] .pts-pay-modal__coupon {
   border-top-color: rgba(255, 255, 255, 0.08);
+}
+html[data-theme="dark"] .pts-pay-modal .pts-input {
+  background: #241e22;
+  border-color: rgba(255,255,255,.12);
+  color: #f5f0f2;
 }

@@ -7,9 +7,9 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260727paymodal">
-<link rel="stylesheet" href="payments.css?v=20260727paymodal">
-<link rel="stylesheet" href="pay-modal.css?v=20260727paymodal">
+<link rel="stylesheet" href="site.css?v=20260727paytop">
+<link rel="stylesheet" href="payments.css?v=20260727paytop">
+<link rel="stylesheet" href="pay-modal.css?v=20260727paytop">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -26,6 +26,31 @@
   .pts-notify__hint { font-size: 12px; color: var(--pts-muted, #5c4f55); margin: 0 0 12px; line-height: 1.45; }
   .pts-notify__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pts-notify__actions .pts-btn { flex: 1 1 160px; justify-content: center; text-align: center; }
+
+  .pts-course-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 0 0 16px;
+    flex-wrap: wrap;
+  }
+  .pts-course-toolbar__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--pts-muted, #5c4f55);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .pts-course-toolbar__back:hover { color: var(--pts-primary, #974258); }
+  .pts-course-toolbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
 </style>
 </head>
 <body class="pts-body">
@@ -190,6 +215,19 @@ async function mountCourseNotifyControls(hostEl) {
   const enrolled = Number(c.is_enrolled) === 1;
   const loggedIn = !!me.loggedIn;
   document.getElementById('content').innerHTML = `
+    <div class="pts-course-toolbar">
+      <a class="pts-course-toolbar__back" href="Courses.html">
+        <span class="material-symbols-outlined" style="font-size:18px">arrow_back</span>
+        กลับรายการหลักสูตร
+      </a>
+      <div class="pts-course-toolbar__actions">
+        ${!loggedIn
+          ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>`
+          : enrolled
+            ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
+            : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">ชำระเงิน</button>`}
+      </div>
+    </div>
     <article class="pts-card overflow-hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2">
         <div class="relative min-h-[240px] lg:min-h-[420px]">
@@ -203,12 +241,7 @@ async function mountCourseNotifyControls(hostEl) {
           <p class="text-on-surface-variant mb-5 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
           <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
           <div class="flex flex-wrap gap-2 mb-4">
-            ${!loggedIn ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>` : enrolled
-              ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
-              : `<button type="button" id="enroll" class="pts-btn pts-btn-primary">สมัครเรียน</button>
-                 <button type="button" id="pay-course" class="pts-btn pts-btn-outline" data-course-id="${c.course_id}" data-course-name="${escapeHtml(c.course_name)}" data-price="${price}">ชำระเงิน</button>`}
             ${loggedIn ? `<button id="fav" class="pts-btn pts-btn-ghost">${Number(c.is_favorited)?'นำออกจากโปรด':'บันทึกโปรด'}</button>` : ''}
-            <a class="pts-btn pts-btn-outline" href="Courses.html">กลับรายการหลักสูตร</a>
           </div>
           <div id="course-notify-host" hidden></div>
           <h2 class="font-bold mb-3">บทเรียนในหลักสูตร</h2>
@@ -218,22 +251,6 @@ async function mountCourseNotifyControls(hostEl) {
         </div>
       </div>
     </article>`;
-
-  document.getElementById('enroll')?.addEventListener('click', async () => {
-    // After signup intent → open payment mockup (QR / card / coupon)
-    if (window.PTSPayModal) {
-      window.PTSPayModal.open({
-        courseId: c.course_id,
-        courseName: c.course_name,
-        price: price
-      });
-      return;
-    }
-    const r = await fetch(`/api/courses/${courseId}/enroll`, { method:'POST', credentials:'include' });
-    const j = await r.json();
-    if (!r.ok) { console.error(j.message || 'สมัครเรียนไม่สำเร็จ'); return; }
-    location.href = `Learn.html?courseId=${courseId}`;
-  });
 
   document.getElementById('pay-course')?.addEventListener('click', () => {
     if (!window.PTSPayModal) return;
@@ -277,7 +294,7 @@ async function mountCourseNotifyControls(hostEl) {
   }
 })();
 </script>
-<script src="/comp/pay-modal.js?v=20260727paymodal"></script>
+<script src="/comp/pay-modal.js?v=20260727paytop"></script>
 <script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>
