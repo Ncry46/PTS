@@ -144,9 +144,10 @@ body.pts-body.pts-register {
 
 .pts-auth-line--left {
   left: 0;
-  top: 50%;
-  height: min(58vh, 520px);
-  margin-top: calc(min(58vh, 520px) / -2);
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  margin-top: 0;
   border-left: none;
   border-radius: 0 80% 80% 0 / 0 50% 50% 0;
   transform-origin: left center;
@@ -154,9 +155,10 @@ body.pts-body.pts-register {
 
 .pts-auth-line--right {
   right: 0;
-  top: 50%;
-  height: min(58vh, 520px);
-  margin-top: calc(min(58vh, 520px) / -2);
+  top: 0;
+  bottom: 0;
+  height: 100%;
+  margin-top: 0;
   border-right: none;
   border-radius: 80% 0 0 80% / 50% 0 0 50%;
   transform-origin: right center;
