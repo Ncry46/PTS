@@ -272,7 +272,7 @@ async function mountCourseNotifyControls(hostEl) {
               : enrolled
                 ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
                 : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
-            ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline">เพิ่มปฏิทิน</button>` : ''}
+            ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline"><span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;line-height:1">calendar_month</span>เพิ่มปฏิทิน</button>` : ''}
           </div>
           <p id="course-toolbar-msg" class="pts-msg" style="margin:0 0 14px;" hidden></p>
           <div id="course-notify-host" hidden></div>
