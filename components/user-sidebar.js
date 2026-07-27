@@ -19,8 +19,7 @@
       { href: 'Favorites.html', labelKey: 'side.favorites', label: 'รายการโปรด', match: /Favorites\.html/i },
       { href: 'Schedule.html', labelKey: 'side.schedule', label: 'ตารางเรียน', match: /Schedule\.html/i },
       { href: 'Notifications.html', labelKey: 'side.notifications', label: 'การแจ้งเตือน', match: /Notifications\.html/i },
-      { href: 'Settings.html', labelKey: 'side.settings', label: 'ตั้งค่า', match: /Settings\.html/i },
-      { href: 'Community.html', labelKey: 'side.community', label: 'คอมมูนิตี้', match: /Community\.html/i }
+      { href: 'Settings.html', labelKey: 'side.settings', label: 'ตั้งค่า', match: /Settings\.html/i }
     ];
   }
 
