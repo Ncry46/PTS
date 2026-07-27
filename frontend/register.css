@@ -15,8 +15,11 @@ body.pts-register .pts-login__shell--plain {
 
 body.pts-register .pts-login__stage {
   align-items: flex-start;
-  padding-top: calc(var(--pts-nav-h, 68px) + 28px);
-  padding-bottom: 48px;
+  /* #app-navbar spacer already clears the fixed nav */
+  margin-top: 0;
+  padding-top: 12px;
+  padding-bottom: 40px;
+  min-height: auto;
 }
 
 body.pts-register .pts-login__panel {
