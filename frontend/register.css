@@ -14,12 +14,12 @@ body.pts-register .pts-login__shell--plain {
 }
 
 body.pts-register .pts-login__stage {
-  align-items: flex-start;
+  align-items: center;
   /* #app-navbar spacer already clears the fixed nav */
   margin-top: 0;
-  padding-top: 12px;
-  padding-bottom: 40px;
-  min-height: auto;
+  padding-top: 20px;
+  padding-bottom: 36px;
+  min-height: calc(100dvh - var(--pts-nav-h, 68px));
 }
 
 body.pts-register .pts-login__panel {
