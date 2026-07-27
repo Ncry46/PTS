@@ -93,17 +93,18 @@ html[data-theme="dark"] .pts-auth-scene {
 
 html[data-theme="dark"] .pts-auth-scene__geo {
   background-color: #141218;
-  opacity: 0.35;
-  filter: brightness(0.85) saturate(1.1);
+  background-image: url("auth-geo-dark.svg");
+  opacity: 1;
+  filter: none;
 }
 
 html[data-theme="dark"] .pts-auth-scene__veil {
   background:
     radial-gradient(
-      ellipse 52% 58% at 50% 42%,
-      rgba(20, 18, 24, 0.92) 0%,
-      rgba(20, 18, 24, 0.55) 48%,
-      transparent 78%
+      ellipse 48% 54% at 50% 42%,
+      rgba(20, 18, 24, 0.82) 0%,
+      rgba(20, 18, 24, 0.4) 50%,
+      transparent 76%
     );
 }
 
@@ -111,7 +112,19 @@ html[data-theme="dark"] .pts-auth-scene__fade {
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(20, 18, 24, 0.45) 50%,
+    rgba(20, 18, 24, 0.25) 55%,
     #141218 100%
   );
+}
+
+@media (max-width: 810px) {
+  html[data-theme="dark"] .pts-auth-scene__veil {
+    background:
+      radial-gradient(
+        ellipse 68% 52% at 50% 38%,
+        rgba(20, 18, 24, 0.88) 0%,
+        rgba(20, 18, 24, 0.45) 52%,
+        transparent 78%
+      );
+  }
 }
