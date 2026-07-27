@@ -7,9 +7,9 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260727calendarbtn">
+<link rel="stylesheet" href="site.css?v=20260727cardicons">
 <link rel="stylesheet" href="payments.css?v=20260727enrollpay">
-<link rel="stylesheet" href="pay-modal.css?v=20260727calendarbtn">
+<link rel="stylesheet" href="pay-modal.css?v=20260727cardicons">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -27,19 +27,57 @@
   .pts-notify__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pts-notify__actions .pts-btn { flex: 1 1 160px; justify-content: center; text-align: center; }
 
-  .pts-course-toolbar {
+  .pts-course-card-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-    margin: 0 0 16px;
-    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
   }
-  .pts-course-toolbar__actions {
+  .pts-course-icon-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    border: 1.5px solid var(--pts-border, rgba(151,66,88,.18));
+    background: #fff;
+    color: var(--pts-muted, #5c4f55);
+    display: inline-grid;
+    place-items: center;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .pts-course-icon-btn .material-symbols-outlined { font-size: 20px; line-height: 1; }
+  .pts-course-icon-btn:hover {
+    border-color: color-mix(in srgb, var(--pts-primary, #974258) 45%, transparent);
+    color: var(--pts-primary, #974258);
+  }
+  .pts-course-icon-btn.is-active {
+    color: var(--pts-primary, #974258);
+    background: var(--pts-primary-soft, #f6e6ea);
+    border-color: color-mix(in srgb, var(--pts-primary, #974258) 35%, transparent);
+  }
+  .pts-course-icon-btn.is-active .material-symbols-outlined {
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  }
+  .pts-course-cta-row {
     display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
     align-items: center;
-    gap: 8px;
-    margin-left: auto;
+    margin: 0 0 18px;
+  }
+  html[data-theme="dark"] .pts-course-icon-btn {
+    background: color-mix(in srgb, var(--pts-card-bg, #1c1520) 88%, #fff);
+    border-color: rgba(234, 223, 226, 0.22);
+    color: #d8c5cb;
+  }
+  html[data-theme="dark"] .pts-course-icon-btn:hover,
+  html[data-theme="dark"] .pts-course-icon-btn.is-active {
+    color: #f3b8c6;
+    border-color: color-mix(in srgb, var(--pts-primary, #974258) 45%, transparent);
+    background: color-mix(in srgb, var(--pts-primary, #974258) 18%, transparent);
   }
 </style>
 </head>
@@ -204,37 +242,39 @@ async function mountCourseNotifyControls(hostEl) {
   const price = Number(c.price || 0);
   const enrolled = Number(c.is_enrolled) === 1;
   const loggedIn = !!me.loggedIn;
+  const favorited = Number(c.is_favorited) === 1;
+  let isFavorited = favorited;
   document.getElementById('content').innerHTML = `
-    <div class="pts-course-toolbar">
-      <a class="pts-back-link" href="Courses.html">
-        <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
-        กลับรายการหลักสูตร
-      </a>
-      <div class="pts-course-toolbar__actions">
-        ${!loggedIn
-          ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>`
-          : enrolled
-            ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
-            : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
-        ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline">เพิ่มปฏิทิน</button>` : ''}
-      </div>
-    </div>
-    <p id="course-toolbar-msg" class="pts-msg" style="margin:0 0 14px;" hidden></p>
     <article class="pts-card overflow-hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2">
         <div class="relative min-h-[240px] lg:min-h-[420px]">
           <img class="absolute inset-0 w-full h-full object-cover" src="${c.cover_image_url || 'https://placehold.co/800x500/f8e8ec/974258?text=PTS+Course'}" alt="">
         </div>
         <div class="p-6 lg:p-8 flex flex-col">
+          <div class="pts-course-card-head">
+            <a class="pts-course-icon-btn" href="Courses.html" aria-label="ย้อนกลับไปรายการหลักสูตร" title="ย้อนกลับ">
+              <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
+            </a>
+            ${loggedIn ? `
+              <button type="button" id="fav" class="pts-course-icon-btn${isFavorited ? ' is-active' : ''}" aria-label="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}">
+                <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
+              </button>` : '<span></span>'}
+          </div>
           <span class="pts-chip mb-3 w-fit">${escapeHtml(c.delivery_mode || 'course')}</span>
           <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
           <h1 class="text-3xl font-bold text-primary mb-2 pts-display">${escapeHtml(c.course_name)}</h1>
           <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.difficulty_level||'-')}</p>
           <p class="text-on-surface-variant mb-5 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
           <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
-          <div class="flex flex-wrap gap-2 mb-4">
-            ${loggedIn ? `<button id="fav" class="pts-btn pts-btn-ghost">${Number(c.is_favorited)?'นำออกจากโปรด':'บันทึกโปรด'}</button>` : ''}
+          <div class="pts-course-cta-row">
+            ${!loggedIn
+              ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>`
+              : enrolled
+                ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
+                : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
+            ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline">เพิ่มปฏิทิน</button>` : ''}
           </div>
+          <p id="course-toolbar-msg" class="pts-msg" style="margin:0 0 14px;" hidden></p>
           <div id="course-notify-host" hidden></div>
           <h2 class="font-bold mb-3">บทเรียนในหลักสูตร</h2>
           <ul class="space-y-2">${(data.lessons||[]).length
@@ -273,11 +313,23 @@ async function mountCourseNotifyControls(hostEl) {
     msg.className = 'pts-msg pts-msg--ok';
   });
 
-  document.getElementById('fav')?.addEventListener('click', async () => {
-    const r = await fetch(`/api/courses/${courseId}/favorite`, { method:'POST', credentials:'include' });
-    const j = await r.json();
-    if (!r.ok) console.error(j.message || 'บันทึกโปรดไม่สำเร็จ');
-    location.reload();
+  document.getElementById('fav')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    btn.disabled = true;
+    try {
+      const r = await fetch(`/api/courses/${courseId}/favorite`, { method:'POST', credentials:'include' });
+      const j = await r.json();
+      if (!r.ok || j.success === false) throw new Error(j.message || 'บันทึกโปรดไม่สำเร็จ');
+      isFavorited = typeof j.favorited !== 'undefined' ? !!j.favorited : !isFavorited;
+      btn.classList.toggle('is-active', isFavorited);
+      const label = isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด';
+      btn.setAttribute('aria-label', label);
+      btn.setAttribute('title', label);
+    } catch (err) {
+      console.error(err.message || 'บันทึกโปรดไม่สำเร็จ');
+    } finally {
+      btn.disabled = false;
+    }
   });
 
   if (loggedIn && enrolled) {
@@ -306,7 +358,7 @@ async function mountCourseNotifyControls(hostEl) {
   }
 })();
 </script>
-<script src="/comp/pay-modal.js?v=20260727calendarbtn"></script>
+<script src="/comp/pay-modal.js?v=20260727cardicons"></script>
 <script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>

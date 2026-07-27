@@ -165,10 +165,14 @@ function openCourseModal(course) {
       <p class="text-sm text-on-surface-variant mb-4">${Number(course.total_hours || 0).toFixed(1).replace('.0','')} ชั่วโมง · ระดับ ${sentenceCase(course.difficulty_level)}</p>
       ${currentUser ? `
         <div class="space-y-2">
-          ${enrolled
-            ? `<a class="pts-btn pts-btn-primary w-full" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
-            : `<a class="pts-btn pts-btn-primary w-full" href="CourseDetail.html?courseId=${course.course_id}">สมัครเรียน</a>`}
-          <button type="button" id="fav-course-btn" class="pts-btn pts-btn-ghost w-full">${Number(course.is_favorited) ? 'นำออกจากหลักสูตรโปรด' : 'บันทึกเป็นหลักสูตรโปรด'}</button>
+          <div class="flex items-center gap-2">
+            ${enrolled
+              ? `<a class="pts-btn pts-btn-primary flex-1" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
+              : `<a class="pts-btn pts-btn-primary flex-1" href="CourseDetail.html?courseId=${course.course_id}">สมัครเรียน</a>`}
+            <button type="button" id="fav-course-btn" class="pts-course-icon-btn${Number(course.is_favorited) ? ' is-active' : ''}" aria-label="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" style="width:44px;height:44px;border-radius:999px;border:1.5px solid rgba(151,66,88,.18);background:#fff;color:${Number(course.is_favorited) ? '#974258' : '#5c4f55'};display:inline-grid;place-items:center;cursor:pointer;flex-shrink:0;">
+              <span class="material-symbols-outlined" aria-hidden="true" style="font-size:22px;${Number(course.is_favorited) ? "font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;" : ''}">favorite</span>
+            </button>
+          </div>
         </div>` : `
         <div class="flex gap-2 mt-4">
           <a class="pts-btn pts-btn-primary flex-1" href="Login.html">เข้าสู่ระบบ</a>
@@ -187,7 +191,16 @@ function openCourseModal(course) {
       const data = await res.json();
       if (!res.ok || !data.success) { console.error(data.message || 'ไม่สำเร็จ'); return; }
       course.is_favorited = data.favorited ? 1 : 0;
-      favBtn.textContent = data.favorited ? 'นำออกจากหลักสูตรโปรด' : 'บันทึกเป็นหลักสูตรโปรด';
+      const on = !!data.favorited;
+      favBtn.classList.toggle('is-active', on);
+      favBtn.style.color = on ? '#974258' : '#5c4f55';
+      const label = on ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด';
+      favBtn.setAttribute('aria-label', label);
+      favBtn.setAttribute('title', label);
+      const icon = favBtn.querySelector('.material-symbols-outlined');
+      if (icon) {
+        icon.style.fontVariationSettings = on ? "'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24" : '';
+      }
       renderCourses(allCourses);
     };
   }
