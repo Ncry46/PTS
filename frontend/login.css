@@ -396,7 +396,7 @@ input[type="password"]::-ms-reveal,
     background:
       radial-gradient(ellipse 90% 60% at 100% 0%, rgba(255, 232, 238, 0.45), transparent 55%),
       radial-gradient(ellipse 70% 50% at 0% 100%, rgba(244, 230, 212, 0.35), transparent 50%),
-      linear-gradient(180deg, #fffefd, #fffafb);
+      linear-gradient(180deg, #fffefd, #ffd7da);
     position: relative;
     color: var(--pts-text, #1c1520);
   }
