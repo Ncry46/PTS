@@ -9,12 +9,14 @@ body.pts-body.pts-register {
 }
 
 .pts-auth-scene {
+  --auth-line: rgba(217, 119, 142, 0.78);
+  --auth-line-deep: rgba(151, 66, 88, 0.55);
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #ffffff;
+  background: #fff8fa;
 }
 
 /* Hero photo — cover / center */
@@ -27,7 +29,7 @@ body.pts-body.pts-register {
   transform: scale(1.02);
 }
 
-/* Soft white center + brand-red side tint over the photo */
+/* Soft white center + stronger brand rose/pink side wash */
 .pts-auth-scene__bg::before {
   content: "";
   position: absolute;
@@ -35,14 +37,16 @@ body.pts-body.pts-register {
   background:
     linear-gradient(
       90deg,
-      rgba(151, 66, 88, 0.42) 0%,
-      rgba(217, 119, 142, 0.18) 14%,
-      transparent 32%,
-      transparent 68%,
-      rgba(217, 119, 142, 0.18) 86%,
-      rgba(151, 66, 88, 0.42) 100%
+      rgba(151, 66, 88, 0.55) 0%,
+      rgba(217, 119, 142, 0.32) 18%,
+      rgba(240, 196, 206, 0.12) 34%,
+      transparent 46%,
+      transparent 54%,
+      rgba(240, 196, 206, 0.12) 66%,
+      rgba(217, 119, 142, 0.32) 82%,
+      rgba(151, 66, 88, 0.55) 100%
     );
-  mix-blend-mode: color;
+  mix-blend-mode: soft-light;
   pointer-events: none;
 }
 
@@ -51,19 +55,30 @@ body.pts-body.pts-register {
   position: absolute;
   inset: 0;
   background:
+    /* extra rose bloom near the inset line zones */
     radial-gradient(
-      ellipse 62% 68% at 50% 42%,
-      rgba(255, 255, 255, 0.94) 0%,
-      rgba(255, 255, 255, 0.72) 38%,
-      rgba(255, 255, 255, 0.28) 62%,
-      transparent 78%
+      ellipse 36% 70% at 18% 50%,
+      rgba(217, 119, 142, 0.28) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 36% 70% at 82% 50%,
+      rgba(217, 119, 142, 0.28) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 64% at 50% 42%,
+      rgba(255, 252, 253, 0.96) 0%,
+      rgba(255, 248, 250, 0.78) 40%,
+      rgba(255, 255, 255, 0.3) 64%,
+      transparent 80%
     ),
     linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 248, 250, 0.5) 0%,
       transparent 22%,
       transparent 70%,
-      rgba(255, 255, 255, 0.55) 100%
+      rgba(255, 248, 250, 0.6) 100%
     );
   pointer-events: none;
 }
@@ -77,15 +92,16 @@ body.pts-body.pts-register {
 .pts-auth-scene__lines--right {
   top: 0;
   bottom: 0;
-  width: min(42vw, 420px);
+  width: min(38vw, 380px);
 }
 
+/* เขยิบเข้ามา — sit nearer the auth card, not flush to viewport edges */
 .pts-auth-scene__lines--left {
-  left: 0;
+  left: max(28px, calc(50% - 560px));
 }
 
 .pts-auth-scene__lines--right {
-  right: 0;
+  right: max(28px, calc(50% - 560px));
 }
 
 .pts-auth-scene__lines--top {
@@ -102,8 +118,9 @@ body.pts-body.pts-register {
   position: absolute;
   opacity: 0;
   animation: pts-auth-line-pulse 5s ease-in-out infinite;
-  border: 2.5px solid #FCFAF8;
+  border: 2.5px solid var(--auth-line);
   box-sizing: border-box;
+  box-shadow: 0 0 14px rgba(217, 119, 142, 0.28);
 }
 
 /* Left: no left border, radius on right — nested from outer edge */
@@ -138,7 +155,7 @@ body.pts-body.pts-register {
   border-top: none;
   border-left: none;
   border-right: none;
-  border-bottom: 2.5px solid #FCFAF8;
+  border-bottom: 2.5px solid var(--auth-line);
   border-radius: 0 0 80% 80% / 0 0 100% 100%;
   transform-origin: center top;
 }
@@ -152,8 +169,8 @@ body.pts-body.pts-register {
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.4) 40%,
-    #ffffff 100%
+    rgba(255, 248, 250, 0.45) 40%,
+    #fff8fa 100%
   );
 }
 
@@ -201,6 +218,8 @@ body.pts-register > #app-navbar {
 }
 
 html[data-theme="dark"] .pts-auth-scene {
+  --auth-line: rgba(232, 149, 168, 0.72);
+  --auth-line-deep: rgba(217, 119, 142, 0.45);
   background: #141218;
 }
 
@@ -208,20 +227,30 @@ html[data-theme="dark"] .pts-auth-scene__bg::before {
   background:
     linear-gradient(
       90deg,
-      rgba(151, 66, 88, 0.55) 0%,
-      rgba(217, 119, 142, 0.22) 16%,
-      transparent 36%,
-      transparent 64%,
-      rgba(217, 119, 142, 0.22) 84%,
-      rgba(151, 66, 88, 0.55) 100%
+      rgba(151, 66, 88, 0.6) 0%,
+      rgba(217, 119, 142, 0.28) 18%,
+      transparent 40%,
+      transparent 60%,
+      rgba(217, 119, 142, 0.28) 82%,
+      rgba(151, 66, 88, 0.6) 100%
     );
 }
 
 html[data-theme="dark"] .pts-auth-scene__bg::after {
   background:
     radial-gradient(
-      ellipse 62% 68% at 50% 42%,
-      rgba(20, 18, 24, 0.9) 0%,
+      ellipse 36% 70% at 18% 50%,
+      rgba(217, 119, 142, 0.22) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 36% 70% at 82% 50%,
+      rgba(217, 119, 142, 0.22) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 58% 64% at 50% 42%,
+      rgba(20, 18, 24, 0.92) 0%,
       rgba(20, 18, 24, 0.55) 42%,
       rgba(20, 18, 24, 0.2) 65%,
       transparent 80%
@@ -245,9 +274,10 @@ html[data-theme="dark"] .pts-auth-scene__fade {
 }
 
 html[data-theme="dark"] .pts-auth-line {
-  border-color: rgba(252, 250, 248, 0.4);
+  border-color: var(--auth-line);
+  box-shadow: 0 0 16px rgba(217, 119, 142, 0.22);
 }
 
 html[data-theme="dark"] .pts-auth-line--top {
-  border-bottom-color: rgba(252, 250, 248, 0.4);
+  border-bottom-color: var(--auth-line);
 }
