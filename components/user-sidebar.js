@@ -1,6 +1,7 @@
 /**
  * เมนูด้านข้างสำหรับผู้ใช้ (สไตล์เดียวกับแอดมิน)
- * ใส่ <aside id="user-sidebar"></aside> ในหน้า หรือเรียก PTSUserSidebar.mount(el)
+ * แสดงเฉพาะเมื่อล็อกอินแล้ว — และไม่ใช้บนหน้า Community
+ * ใส่ <main data-user-shell> หรือ <aside id="user-sidebar">
  */
 (function () {
   function t(key, fallback) {
@@ -8,6 +9,15 @@
       return window.PTSLang.t(key, fallback);
     }
     return fallback != null ? fallback : key;
+  }
+
+  function currentFile() {
+    const path = (location.pathname || '').split('/').pop() || '';
+    return path || 'DashbordU.html';
+  }
+
+  function isCommunityPage() {
+    return /Community\.html/i.test(currentFile());
   }
 
   function getLinks() {
@@ -21,11 +31,6 @@
       { href: 'Notifications.html', labelKey: 'side.notifications', label: 'การแจ้งเตือน', match: /Notifications\.html/i },
       { href: 'Settings.html', labelKey: 'side.settings', label: 'ตั้งค่า', match: /Settings\.html/i }
     ];
-  }
-
-  function currentFile() {
-    const path = (location.pathname || '').split('/').pop() || '';
-    return path || 'DashbordU.html';
   }
 
   function isActive(link) {
@@ -69,10 +74,46 @@
     return main;
   }
 
-  function mount(target) {
+  function teardownShell() {
+    const aside = document.getElementById('user-sidebar');
+    const main = document.querySelector('main.user-shell, main.pts-main--user, main[data-user-shell]');
+    if (aside) aside.remove();
+    if (!main) return;
+    const content = main.querySelector('.user-main');
+    if (content) {
+      while (content.firstChild) main.appendChild(content.firstChild);
+      content.remove();
+    }
+    main.classList.remove('pts-main--user', 'user-shell');
+  }
+
+  async function isLoggedIn() {
+    try {
+      const res = await fetch('/api/users/me', { credentials: 'include' });
+      const data = await res.json();
+      return !!(data && data.loggedIn);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function mount(target) {
+    // ไม่โชว์แท็บข้างบนหน้าคอมมูนิตี้ หรือเมื่อยังไม่ล็อกอิน
+    if (isCommunityPage()) {
+      teardownShell();
+      return;
+    }
+
+    const loggedIn = await isLoggedIn();
+    if (!loggedIn) {
+      teardownShell();
+      return;
+    }
+
     let aside = target || document.getElementById('user-sidebar');
     if (!aside) {
-      const main = document.querySelector('main[data-user-shell], main.pts-main, main.user-shell-host');
+      // เฉพาะหน้าที่ตั้งใจให้มี sidebar — ห้ามเกาะ main.pts-main ทั่วไป
+      const main = document.querySelector('main[data-user-shell], main.user-shell-host');
       if (main) {
         ensureShell(main);
         aside = document.getElementById('user-sidebar');
@@ -86,10 +127,10 @@
 
   window.PTSUserSidebar = { mount, get LINKS() { return getLinks(); }, renderHtml };
 
-  document.addEventListener('pts-lang-change', () => mount());
+  document.addEventListener('pts-lang-change', () => { mount(); });
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => mount());
+    document.addEventListener('DOMContentLoaded', () => { mount(); });
   } else {
     mount();
   }
