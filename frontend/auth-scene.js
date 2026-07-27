@@ -6,12 +6,16 @@
     for (var i = 0; i < count; i++) {
       var el = document.createElement('span');
       el.className = 'pts-auth-line pts-auth-line--' + side;
+      var size = 60 + i * 10;
       if (side === 'top') {
-        el.style.width = (60 + i * 10) + 'px';
+        el.style.width = size + 'px';
+        el.style.marginLeft = (-size / 2) + 'px';
+        el.style.height = Math.min(36 + i * 4, 72) + 'px';
       } else {
-        el.style.width = (60 + i * 10) + 'px';
+        el.style.width = size + 'px';
       }
       el.style.animationDelay = (i * 0.25) + 's';
+      el.style.zIndex = String(count - i);
       host.appendChild(el);
     }
   }

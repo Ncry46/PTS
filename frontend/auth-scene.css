@@ -1,4 +1,4 @@
-/* Auth scene — Alwayzz-style side washes + curved lines, PTS brand red */
+/* Auth scene — Alwayzz hero photo + curved line pulse (Login / Register) */
 
 body.pts-body.pts-login,
 body.pts-body.pts-register {
@@ -9,10 +9,6 @@ body.pts-body.pts-register {
 }
 
 .pts-auth-scene {
-  --auth-red: #974258;
-  --auth-rose: #d9778e;
-  --auth-blush: #f0c4ce;
-  --auth-line: rgba(252, 250, 248, 0.92);
   position: fixed;
   inset: 0;
   z-index: 0;
@@ -21,39 +17,33 @@ body.pts-body.pts-register {
   background: #ffffff;
 }
 
-/* Soft red side washes — white center (like Alwayzz, brand red instead of cyan) */
+/* Hero photo — cover / center */
 .pts-auth-scene__bg {
   position: absolute;
   inset: 0;
+  background-image: url("https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260626_041422_4a459e05-abce-4150-9fb7-4ededc423cd1.png&w=1280&q=85");
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.02);
+}
+
+/* Soft white center + brand-red side tint over the photo */
+.pts-auth-scene__bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
   background:
-    /* left wash */
-    radial-gradient(
-      ellipse 48% 88% at 0% 48%,
-      rgba(217, 119, 142, 0.55) 0%,
-      rgba(151, 66, 88, 0.28) 32%,
-      rgba(151, 66, 88, 0.08) 58%,
-      transparent 78%
-    ),
-    /* right wash */
-    radial-gradient(
-      ellipse 48% 88% at 100% 48%,
-      rgba(217, 119, 142, 0.55) 0%,
-      rgba(151, 66, 88, 0.28) 32%,
-      rgba(151, 66, 88, 0.08) 58%,
-      transparent 78%
-    ),
-    /* soft top/bottom blush */
-    radial-gradient(
-      ellipse 70% 40% at 50% -5%,
-      rgba(240, 196, 206, 0.35) 0%,
-      transparent 70%
-    ),
-    radial-gradient(
-      ellipse 60% 36% at 50% 105%,
-      rgba(151, 66, 88, 0.1) 0%,
-      transparent 70%
-    ),
-    #ffffff;
+    linear-gradient(
+      90deg,
+      rgba(151, 66, 88, 0.42) 0%,
+      rgba(217, 119, 142, 0.18) 14%,
+      transparent 32%,
+      transparent 68%,
+      rgba(217, 119, 142, 0.18) 86%,
+      rgba(151, 66, 88, 0.42) 100%
+    );
+  mix-blend-mode: color;
+  pointer-events: none;
 }
 
 .pts-auth-scene__bg::after {
@@ -61,13 +51,25 @@ body.pts-body.pts-register {
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(ellipse 58% 70% at 50% 45%, rgba(255, 255, 255, 0.92) 0%, rgba(255, 255, 255, 0.55) 42%, transparent 72%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.35) 0%, transparent 28%, transparent 72%, rgba(255, 255, 255, 0.55) 100%);
+    radial-gradient(
+      ellipse 62% 68% at 50% 42%,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(255, 255, 255, 0.72) 38%,
+      rgba(255, 255, 255, 0.28) 62%,
+      transparent 78%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      transparent 22%,
+      transparent 70%,
+      rgba(255, 255, 255, 0.55) 100%
+    );
+  pointer-events: none;
 }
 
 .pts-auth-scene__lines {
   position: absolute;
-  display: flex;
   pointer-events: none;
 }
 
@@ -76,19 +78,14 @@ body.pts-body.pts-register {
   top: 0;
   bottom: 0;
   width: min(42vw, 420px);
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
 }
 
 .pts-auth-scene__lines--left {
   left: 0;
-  align-items: flex-start;
 }
 
 .pts-auth-scene__lines--right {
   right: 0;
-  align-items: flex-end;
 }
 
 .pts-auth-scene__lines--top {
@@ -96,44 +93,54 @@ body.pts-body.pts-register {
   top: calc(var(--pts-nav-h, 68px) + 8px);
   left: 0;
   right: 0;
-  height: 120px;
-  flex-direction: row;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 10px;
+  height: 140px;
   padding: 0 16px;
 }
 
 .pts-auth-line {
   display: block;
-  flex-shrink: 0;
+  position: absolute;
   opacity: 0;
   animation: pts-auth-line-pulse 5s ease-in-out infinite;
-  border: 2.5px solid var(--auth-line);
+  border: 2.5px solid #FCFAF8;
   box-sizing: border-box;
-  box-shadow: 0 0 18px rgba(217, 119, 142, 0.22);
 }
 
+/* Left: no left border, radius on right — nested from outer edge */
 .pts-auth-line--left {
+  left: 0;
+  top: 50%;
   height: min(58vh, 520px);
+  margin-top: calc(min(58vh, 520px) / -2);
   border-left: none;
   border-radius: 0 80% 80% 0 / 0 50% 50% 0;
+  transform-origin: left center;
 }
 
+/* Right: no right border, radius on left */
 .pts-auth-line--right {
+  right: 0;
+  top: 50%;
   height: min(58vh, 520px);
+  margin-top: calc(min(58vh, 520px) / -2);
   border-right: none;
   border-radius: 80% 0 0 80% / 50% 0 0 50%;
+  transform-origin: right center;
 }
 
+/* Mobile top: horizontal, bottom border-radius */
 .pts-auth-line--top {
+  top: 0;
+  left: 50%;
   width: min(42vw, 280px);
   height: 48px;
+  margin-left: calc(min(42vw, 280px) / -2);
   border-top: none;
   border-left: none;
   border-right: none;
-  border-bottom: 2.5px solid var(--auth-line);
+  border-bottom: 2.5px solid #FCFAF8;
   border-radius: 0 0 80% 80% / 0 0 100% 100%;
+  transform-origin: center top;
 }
 
 .pts-auth-scene__fade {
@@ -150,7 +157,6 @@ body.pts-body.pts-register {
   );
 }
 
-/* Keep auth content above the scene */
 body.pts-login > #app-navbar,
 body.pts-register > #app-navbar,
 body.pts-login > .pts-login__stage,
@@ -182,19 +188,8 @@ body.pts-register > #app-navbar {
     display: flex;
   }
   .pts-auth-scene__bg {
-    background:
-      radial-gradient(
-        ellipse 90% 42% at 50% 0%,
-        rgba(217, 119, 142, 0.48) 0%,
-        rgba(151, 66, 88, 0.18) 40%,
-        transparent 72%
-      ),
-      radial-gradient(
-        ellipse 90% 36% at 50% 100%,
-        rgba(151, 66, 88, 0.16) 0%,
-        transparent 70%
-      ),
-      #ffffff;
+    transform: rotate(90deg) scale(1.35);
+    transform-origin: center center;
   }
 }
 
@@ -206,30 +201,38 @@ body.pts-register > #app-navbar {
 }
 
 html[data-theme="dark"] .pts-auth-scene {
-  --auth-line: rgba(240, 196, 206, 0.28);
   background: #141218;
 }
 
-html[data-theme="dark"] .pts-auth-scene__bg {
+html[data-theme="dark"] .pts-auth-scene__bg::before {
   background:
-    radial-gradient(
-      ellipse 48% 88% at 0% 48%,
-      rgba(217, 119, 142, 0.28) 0%,
-      rgba(151, 66, 88, 0.16) 36%,
-      transparent 72%
-    ),
-    radial-gradient(
-      ellipse 48% 88% at 100% 48%,
-      rgba(217, 119, 142, 0.28) 0%,
-      rgba(151, 66, 88, 0.16) 36%,
-      transparent 72%
-    ),
-    #141218;
+    linear-gradient(
+      90deg,
+      rgba(151, 66, 88, 0.55) 0%,
+      rgba(217, 119, 142, 0.22) 16%,
+      transparent 36%,
+      transparent 64%,
+      rgba(217, 119, 142, 0.22) 84%,
+      rgba(151, 66, 88, 0.55) 100%
+    );
 }
 
 html[data-theme="dark"] .pts-auth-scene__bg::after {
   background:
-    radial-gradient(ellipse 58% 70% at 50% 45%, rgba(20, 18, 24, 0.88) 0%, rgba(20, 18, 24, 0.45) 48%, transparent 72%);
+    radial-gradient(
+      ellipse 62% 68% at 50% 42%,
+      rgba(20, 18, 24, 0.9) 0%,
+      rgba(20, 18, 24, 0.55) 42%,
+      rgba(20, 18, 24, 0.2) 65%,
+      transparent 80%
+    ),
+    linear-gradient(
+      180deg,
+      rgba(20, 18, 24, 0.5) 0%,
+      transparent 24%,
+      transparent 68%,
+      rgba(20, 18, 24, 0.7) 100%
+    );
 }
 
 html[data-theme="dark"] .pts-auth-scene__fade {
@@ -242,17 +245,9 @@ html[data-theme="dark"] .pts-auth-scene__fade {
 }
 
 html[data-theme="dark"] .pts-auth-line {
-  box-shadow: 0 0 16px rgba(217, 119, 142, 0.18);
+  border-color: rgba(252, 250, 248, 0.4);
 }
 
-@media (max-width: 810px) {
-  html[data-theme="dark"] .pts-auth-scene__bg {
-    background:
-      radial-gradient(
-        ellipse 90% 42% at 50% 0%,
-        rgba(217, 119, 142, 0.22) 0%,
-        transparent 70%
-      ),
-      #141218;
-  }
+html[data-theme="dark"] .pts-auth-line--top {
+  border-bottom-color: rgba(252, 250, 248, 0.4);
 }
