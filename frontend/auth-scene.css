@@ -49,11 +49,27 @@ body.pts-body.pts-register {
   opacity: 1;
 }
 
-/* Layer 3: broad rose bloom; lighter white only behind the form */
+/* Layer 3: broad rose bloom + strong bottom-corner glows */
 .pts-auth-scene__veil {
   position: absolute;
   inset: 0;
   background:
+    /* bottom-left corner bloom (circled) */
+    radial-gradient(
+      ellipse 55% 48% at 0% 100%,
+      rgba(151, 66, 88, 0.55) 0%,
+      rgba(196, 99, 123, 0.42) 28%,
+      rgba(217, 119, 142, 0.22) 52%,
+      transparent 78%
+    ),
+    /* bottom-right corner bloom (circled) */
+    radial-gradient(
+      ellipse 55% 48% at 100% 100%,
+      rgba(151, 66, 88, 0.55) 0%,
+      rgba(196, 99, 123, 0.42) 28%,
+      rgba(217, 119, 142, 0.22) 52%,
+      transparent 78%
+    ),
     radial-gradient(
       ellipse 58% 90% at 0% 50%,
       rgba(196, 99, 123, 0.55) 0%,
@@ -69,9 +85,9 @@ body.pts-body.pts-register {
       transparent 78%
     ),
     radial-gradient(
-      ellipse 70% 55% at 50% 100%,
-      rgba(217, 119, 142, 0.22) 0%,
-      transparent 65%
+      ellipse 80% 45% at 50% 100%,
+      rgba(217, 119, 142, 0.28) 0%,
+      transparent 70%
     ),
     radial-gradient(
       ellipse 48% 52% at 50% 42%,
@@ -83,8 +99,8 @@ body.pts-body.pts-register {
       180deg,
       rgba(255, 240, 243, 0.28) 0%,
       transparent 18%,
-      transparent 78%,
-      rgba(255, 240, 243, 0.35) 100%
+      transparent 70%,
+      rgba(252, 230, 235, 0.25) 100%
     );
 }
 
@@ -165,13 +181,24 @@ body.pts-body.pts-register {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 178px;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 248, 247, 0.45) 40%,
-    #fff8f7 100%
-  );
+  height: 220px;
+  background:
+    radial-gradient(
+      ellipse 48% 90% at 8% 100%,
+      rgba(196, 99, 123, 0.35) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 48% 90% at 92% 100%,
+      rgba(196, 99, 123, 0.35) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      180deg,
+      transparent 0%,
+      rgba(252, 230, 235, 0.25) 45%,
+      rgba(252, 238, 241, 0.55) 100%
+    );
 }
 
 body.pts-login > #app-navbar,
