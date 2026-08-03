@@ -30,6 +30,16 @@ if (process.env.TRUST_PROXY === '1' || process.env.TRUST_PROXY === 'true') {
 }
 
 app.use(cors());
+
+// LINE webhook needs raw body for signature (must be before express.json)
+const { createLineRouter, createLineWebhookHandler } = require('./lineRoutes');
+const linePoolRef = { promise: null };
+app.post(
+    '/api/line/webhook',
+    express.raw({ type: '*/*' }),
+    (req, res, next) => createLineWebhookHandler({ poolPromise: linePoolRef.promise })(req, res, next)
+);
+
 app.use(express.json());
 
 // 🌟 2. เปิดใช้งานระบบจำสิทธิ์ (Session) ยึดตามเบราว์เซอร์
@@ -146,12 +156,21 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
         } else {
             console.warn('⚠️ Email OTP ยังไม่พร้อม — ตรวจ mailConfig.smtpPass ใน server.js');
         }
+        try {
+            const lineSt = require('./lineMessaging').publicLineStatus();
+            console.log(
+                `💬 LINE OA → addFriend=${lineSt.addFriendConfigured ? 'yes' : 'no'} ` +
+                `messaging=${lineSt.messagingConfigured ? 'yes' : 'no'} ` +
+                `liff=${lineSt.liffConfigured ? 'yes' : 'no'}`
+            );
+        } catch (_) { /* ignore */ }
         return pool;
     })
     .catch(err => {
         console.error('❌ SQL Server Connection Failed: ', err);
         process.exit(1);
     });
+linePoolRef.promise = poolPromise;
 
 function requireLogin(req, res) {
     if (!req.session || !req.session.user || !req.session.user.user_id) {
@@ -938,6 +957,7 @@ app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
 app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleAuthRouter({ poolPromise }));
+app.use('/api', createLineRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {

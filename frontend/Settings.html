@@ -239,9 +239,14 @@
           <input type="checkbox" id="line-toggle">
           <span class="pts-switch__slider"></span>
         </label>
-        <a id="line-connect" class="hidden" href="#" target="_blank" rel="noopener noreferrer"></a>
+        <a id="line-connect" class="hidden" href="LineApp.html"></a>
       </div>
-      <p id="line-msg" class="pts-msg" style="margin-top:-2px;"></p>
+      <div class="set-actions" id="line-actions" style="margin-top:8px;">
+        <a id="line-open-app" class="pts-btn pts-btn-primary" href="LineApp.html">เปิดแอปใน LINE</a>
+        <a id="line-add-friend" class="pts-btn pts-btn-outline hidden" href="#" target="_blank" rel="noopener">เพิ่มเพื่อน OA</a>
+        <button type="button" id="line-unlink" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อม</button>
+      </div>
+      <p id="line-msg" class="pts-msg" style="margin-top:6px;"></p>
 
       <div class="set-conn scroll-mt-24" id="google-calendar">
         <div class="set-conn__icon"><span class="material-symbols-outlined">calendar_month</span></div>
@@ -312,6 +317,8 @@ let gcalConnected = false;
 let gcalBusy = false;
 let lineUrl = '';
 let lineConfigured = false;
+let lineLinked = false;
+let lineAppUrl = 'LineApp.html';
 
 const LANG_KEY = 'pts_lang_pref';
 
@@ -422,31 +429,60 @@ async function refreshLineOaStatus() {
   const connectBtn = document.getElementById('line-connect');
   const toggle = document.getElementById('line-toggle');
   const msg = document.getElementById('line-msg');
-  if (!statusText || !connectBtn) return;
+  const addFriend = document.getElementById('line-add-friend');
+  const unlinkBtn = document.getElementById('line-unlink');
+  const openApp = document.getElementById('line-open-app');
+  if (!statusText || !toggle) return;
+
   lineConfigured = false;
   lineUrl = '';
+  lineLinked = false;
   toggle.checked = false;
+
   try {
-    const res = await fetch('/api/line/oa', { credentials: 'include', cache: 'no-store' });
-    const data = await res.json();
-    if (!res.ok || data.success === false) throw new Error(data.message || 'โหลดสถานะ LINE ไม่สำเร็จ');
-    if (data.configured && data.url) {
-      lineConfigured = true;
-      lineUrl = data.url;
-      connectBtn.href = data.url;
-      statusText.textContent = 'พร้อมเพิ่มเพื่อน ' + (data.name || 'PTS Learning');
-      statusText.classList.add('is-on');
-      if (msg) { msg.textContent = ''; msg.className = 'pts-msg'; }
-    } else {
-      statusText.textContent = isAdminUser
-        ? 'ยังไม่ได้ตั้งค่า LINE_OA_ADD_FRIEND_URL'
-        : 'ยังไม่เปิดลิงก์ LINE OA';
-      statusText.classList.remove('is-on');
-      if (msg) {
-        msg.textContent = isAdminUser ? 'ตั้งค่าใน .env แล้วรีสตาร์ทเซิร์ฟเวอร์' : '';
-        msg.className = msg.textContent ? 'pts-msg pts-msg--err' : 'pts-msg';
+    const pub = await fetch('/api/line/oa', { credentials: 'include', cache: 'no-store' }).then((r) => r.json());
+    lineConfigured = !!(pub.configured || pub.addFriendConfigured || pub.liffConfigured || pub.messagingConfigured);
+    lineUrl = pub.addFriendUrl || pub.url || '';
+    lineAppUrl = pub.appUrl || 'LineApp.html';
+    if (openApp) openApp.href = lineAppUrl;
+    if (connectBtn) connectBtn.href = lineAppUrl;
+    if (addFriend) {
+      if (lineUrl) {
+        addFriend.href = lineUrl;
+        addFriend.classList.remove('hidden');
+      } else {
+        addFriend.classList.add('hidden');
       }
     }
+
+    let st = null;
+    try {
+      const res = await fetch('/api/line/status', { credentials: 'include', cache: 'no-store' });
+      st = await res.json();
+      if (!res.ok) st = null;
+    } catch (_) { st = null; }
+
+    lineLinked = !!(st && st.linked);
+    toggle.checked = lineLinked;
+
+    if (lineLinked) {
+      const name = (st.profile && st.profile.displayName) ? ` · ${st.profile.displayName}` : '';
+      statusText.textContent = 'เชื่อมบัญชีแล้ว' + name;
+      statusText.classList.add('is-on');
+      unlinkBtn?.classList.remove('hidden');
+    } else if (lineConfigured) {
+      statusText.textContent = 'พร้อมใช้งาน — เปิดแอปเพื่อเชื่อมบัญชี';
+      statusText.classList.add('is-on');
+      unlinkBtn?.classList.add('hidden');
+    } else {
+      statusText.textContent = isAdminUser
+        ? 'ยังไม่ได้ตั้งค่า LINE (ดู LINE_OA.md)'
+        : 'ยังไม่เปิด LINE OA บนเซิร์ฟเวอร์นี้';
+      statusText.classList.remove('is-on');
+      unlinkBtn?.classList.add('hidden');
+    }
+
+    if (msg) { msg.textContent = ''; msg.className = 'pts-msg'; }
   } catch (e) {
     statusText.textContent = 'ตรวจสอบ LINE ไม่สำเร็จ';
     statusText.classList.remove('is-on');
@@ -459,22 +495,44 @@ async function refreshLineOaStatus() {
 
 document.getElementById('line-toggle').onchange = (e) => {
   const msg = document.getElementById('line-msg');
-  if (!lineConfigured || !lineUrl) {
+  if (lineLinked) {
+    e.target.checked = true;
+    if (msg) {
+      msg.textContent = 'ใช้ปุ่ม “ยกเลิกการเชื่อม” หากต้องการยกเลิก';
+      msg.className = 'pts-msg';
+    }
+    return;
+  }
+  if (!lineConfigured) {
     e.target.checked = false;
     if (msg) {
-      msg.textContent = 'ยังไม่มีลิงก์ LINE OA บนเซิร์ฟเวอร์';
+      msg.textContent = 'ยังไม่ได้ตั้งค่า LINE OA บนเซิร์ฟเวอร์';
       msg.className = 'pts-msg pts-msg--err';
     }
     return;
   }
-  if (e.target.checked) {
-    window.open(lineUrl, '_blank', 'noopener');
-    document.getElementById('line-status-text').textContent = 'เปิดหน้าเพิ่มเพื่อนแล้ว';
-    document.getElementById('line-status-text').classList.add('is-on');
-  } else {
-    document.getElementById('line-status-text').textContent = 'พร้อมเพิ่มเพื่อน PTS Learning';
-  }
+  e.target.checked = false;
+  location.href = lineAppUrl || 'LineApp.html';
 };
+
+document.getElementById('line-unlink')?.addEventListener('click', async () => {
+  const msg = document.getElementById('line-msg');
+  try {
+    const res = await fetch('/api/line/unlink', { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok || data.success === false) throw new Error(data.message || 'ยกเลิกไม่สำเร็จ');
+    if (msg) {
+      msg.textContent = data.message || 'ยกเลิกการเชื่อมแล้ว';
+      msg.className = 'pts-msg pts-msg--ok';
+    }
+    await refreshLineOaStatus();
+  } catch (err) {
+    if (msg) {
+      msg.textContent = err.message || 'ยกเลิกไม่สำเร็จ';
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  }
+});
 
 document.getElementById('pick-avatar').onclick = () => {
   document.getElementById('avatar-file').click();

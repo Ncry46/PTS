@@ -140,6 +140,17 @@ async function ensureLearningSchema(pool) {
         `IF COL_LENGTH('dbo.google_calendar_links', 'reminders_enabled') IS NULL
          ALTER TABLE dbo.google_calendar_links ADD reminders_enabled BIT NOT NULL
             CONSTRAINT DF_gcal_reminders_enabled DEFAULT (1)`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'line_account_links')
+         CREATE TABLE dbo.line_account_links (
+            user_id INT NOT NULL PRIMARY KEY,
+            line_user_id NVARCHAR(64) NOT NULL,
+            display_name NVARCHAR(255) NULL,
+            picture_url NVARCHAR(1000) NULL,
+            notify_enabled BIT NOT NULL CONSTRAINT DF_line_links_notify DEFAULT (1),
+            linked_at DATETIME NOT NULL CONSTRAINT DF_line_links_linked DEFAULT (GETDATE()),
+            updated_at DATETIME NOT NULL CONSTRAINT DF_line_links_updated DEFAULT (GETDATE()),
+            CONSTRAINT UQ_line_account_links_line_user UNIQUE (line_user_id)
+         )`,
         `IF COL_LENGTH('dbo.course_enrollments', 'gcal_notify') IS NULL
          ALTER TABLE dbo.course_enrollments ADD gcal_notify BIT NOT NULL
             CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (0)`,
@@ -360,6 +371,26 @@ async function createNotification(pool, userId, title, body, linkUrl) {
             INSERT INTO BD_PTS.dbo.notifications (user_id, title, body, link_url, is_read)
             VALUES (@userId, @title, @body, @link, 0)
         `);
+
+    // Mirror to LINE OA when the user linked their account (best-effort)
+    try {
+        const pref = await pool.request()
+            .input('userId', sql.Int, userId)
+            .query(`
+                SELECT line_user_id, notify_enabled
+                FROM BD_PTS.dbo.line_account_links
+                WHERE user_id = @userId
+            `);
+        const row = pref.recordset[0];
+        if (row && Number(row.notify_enabled) === 1 && row.line_user_id) {
+            const { pushMessage, buildNotifyFlex, isMessagingConfigured } = require('./lineMessaging');
+            if (isMessagingConfigured()) {
+                await pushMessage(row.line_user_id, [buildNotifyFlex(title, body, linkUrl)]);
+            }
+        }
+    } catch (err) {
+        console.warn('[notify→LINE]', err.message);
+    }
 }
 
 module.exports = { ensureLearningSchema, createNotification };

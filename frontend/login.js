@@ -194,7 +194,11 @@
       });
       const result = await response.json();
       if (result.success) {
-        window.location.href = 'Home.html';
+        const next = new URLSearchParams(location.search).get('next') || '';
+        const safe = next && /^[A-Za-z0-9._\-/?#%=]+$/.test(next) && !next.includes('://')
+          ? next
+          : 'Home.html';
+        window.location.href = safe;
       } else if (loginMsg) {
         loginMsg.textContent = result.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง';
         loginMsg.classList.remove('hidden');

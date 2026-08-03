@@ -59,6 +59,13 @@ cp .env.example .env
 # แก้ SMTP_PASS แล้ว npm start
 ```
 
+## LINE Official Account
+
+คู่มือเต็ม: [`LINE_OA.md`](LINE_OA.md)
+
+สรุป: ตั้ง `LINE_CHANNEL_*` + `LINE_LIFF_ID` + `LINE_OA_ADD_FRIEND_URL` ใน `.env`  
+แล้วชี้ Webhook ไป `https://YOUR_DOMAIN/api/line/webhook` และ LIFF ไป `LineApp.html`  
+ผู้เรียนใช้เมนูด่วนในแชท / เปิดแอปธีม PTS ใน LINE ได้
 
 ## โครงสร้างหลัก
 
