@@ -3,254 +3,450 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PTS ใน LINE | PTS Learning</title>
+<title>รายการหลักสูตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<script src="/comp/i18n-dict.js?v=20260725lang"></script>
-<script src="/comp/lang-boot.js?v=20260725lang"></script>
-<link rel="stylesheet" href="site.css?v=20260803lineoa">
+<link rel="stylesheet" href="site.css?v=20260803lineui">
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root {
     --line-safe-bottom: env(safe-area-inset-bottom, 0px);
+    --la-bg: #efe6ef;
+    --la-card: #ffffff;
+    --la-primary: #974258;
+    --la-deep: #7a2f42;
+    --la-soft: #f6e6ea;
+    --la-text: #1c1520;
+    --la-muted: #5c4f55;
+    --la-teal: #0f766e;
+    --la-olive: #6b7c3c;
   }
+  * { box-sizing: border-box; }
   body.pts-line-app {
     margin: 0;
     min-height: 100dvh;
-    background:
-      radial-gradient(120% 80% at 0% 0%, color-mix(in srgb, var(--pts-primary) 16%, transparent), transparent 55%),
-      radial-gradient(90% 60% at 100% 0%, color-mix(in srgb, #d4a85a 14%, transparent), transparent 50%),
-      var(--pts-bg, #f3f0f1);
-    color: var(--pts-text, #1c1520);
-    font-family: var(--pts-font, 'Bai Jamjuree', sans-serif);
-    padding-bottom: calc(72px + var(--line-safe-bottom));
+    background: var(--la-bg);
+    color: var(--la-text);
+    font-family: 'Bai Jamjuree', sans-serif;
+    padding-bottom: calc(76px + var(--line-safe-bottom));
   }
-  .la-shell { max-width: 480px; margin: 0 auto; padding: 16px 16px 8px; }
-  .la-hero {
-    position: relative;
-    overflow: hidden;
-    border-radius: 24px;
-    padding: 22px 20px 20px;
-    color: #fff;
-    background:
-      linear-gradient(145deg, #7a2f42 0%, #974258 48%, #b45d74 100%);
-    box-shadow: 0 16px 36px rgba(122, 47, 66, 0.28);
+  .la-top {
+    position: sticky; top: 0; z-index: 30;
+    background: color-mix(in srgb, var(--la-bg) 88%, #fff);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(151,66,88,.1);
+    padding: 10px 16px 12px;
   }
-  .la-hero::after {
-    content: '';
-    position: absolute;
-    inset: auto -20% -40% 40%;
-    height: 140%;
-    background: radial-gradient(circle, rgba(255,255,255,.18), transparent 60%);
-    pointer-events: none;
+  .la-top__row {
+    max-width: 520px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
-  .la-brand {
-    display: flex; align-items: center; gap: 10px;
-    position: relative; z-index: 1;
+  .la-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .la-brand img {
+    width: 36px; height: 36px; object-fit: contain;
+    border-radius: 10px; background: #fff; padding: 3px;
+    box-shadow: 0 4px 12px rgba(122,47,66,.12);
   }
-  .la-brand img { height: 40px; width: auto; border-radius: 10px; background: #fff; padding: 4px; }
-  .la-brand strong { font-size: 1.15rem; letter-spacing: .02em; }
-  .la-hero p {
-    position: relative; z-index: 1;
-    margin: 12px 0 0;
-    font-size: .92rem;
-    line-height: 1.45;
-    color: rgba(255,255,255,.9);
-    max-width: 28ch;
+  .la-brand__text { min-width: 0; }
+  .la-brand__text strong { display: block; font-size: .95rem; line-height: 1.2; }
+  .la-brand__text span { display: block; font-size: .7rem; color: var(--la-muted); }
+  .la-top__actions { display: flex; gap: 6px; }
+  .la-icon-btn {
+    width: 36px; height: 36px; border-radius: 999px; border: none;
+    background: #fff; color: var(--la-muted); display: grid; place-items: center;
+    box-shadow: 0 4px 12px rgba(28,21,32,.06); cursor: pointer;
   }
-  .la-status {
-    margin-top: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    border-radius: 999px;
-    background: rgba(255,255,255,.16);
-    font-size: .78rem;
-    font-weight: 600;
-    position: relative; z-index: 1;
+  .la-icon-btn .material-symbols-outlined { font-size: 20px; }
+  .la-shell { max-width: 520px; margin: 0 auto; padding: 14px 16px 8px; }
+  .la-hero-copy { margin: 4px 0 14px; }
+  .la-eyebrow {
+    margin: 0 0 4px; font-size: .72rem; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: var(--la-primary);
   }
-  .la-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 18px;
+  .la-hero-copy h1 {
+    margin: 0; font-size: 1.45rem; line-height: 1.25; color: var(--la-deep);
   }
-  .la-tile {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    min-height: 118px;
-    padding: 16px;
-    border-radius: 20px;
-    text-decoration: none;
-    color: var(--pts-text, #1c1520);
-    background: color-mix(in srgb, var(--pts-surface, #fff) 92%, transparent);
-    border: 1px solid color-mix(in srgb, var(--pts-primary) 14%, transparent);
-    box-shadow: 0 8px 20px rgba(28, 21, 32, 0.05);
-    transition: transform .15s ease, border-color .15s ease;
+  .la-hero-copy p { margin: 6px 0 0; font-size: .88rem; color: var(--la-muted); line-height: 1.45; }
+  .la-filters {
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+    margin-bottom: 14px; scrollbar-width: none;
   }
-  .la-tile:active { transform: scale(.98); }
-  .la-tile__ico {
-    width: 42px; height: 42px;
-    border-radius: 14px;
-    display: grid; place-items: center;
-    background: var(--pts-primary-soft, #f6e6ea);
-    color: var(--pts-primary, #974258);
+  .la-filters::-webkit-scrollbar { display: none; }
+  .la-chip {
+    flex: 0 0 auto; border: none; cursor: pointer;
+    padding: 8px 14px; border-radius: 999px; font-weight: 700; font-size: .82rem;
+    background: #fff; color: var(--la-muted);
+    box-shadow: 0 4px 10px rgba(28,21,32,.04);
   }
-  .la-tile__ico .material-symbols-outlined { font-size: 22px; }
-  .la-tile strong { font-size: .98rem; }
-  .la-tile span { font-size: .78rem; color: var(--pts-muted, #5c4f55); line-height: 1.35; }
+  .la-chip.is-on { background: var(--la-primary); color: #fff; }
+  .la-list { display: flex; flex-direction: column; gap: 12px; }
+  .la-course {
+    display: grid; grid-template-columns: 112px 1fr; gap: 12px;
+    background: var(--la-card); border-radius: 20px; overflow: hidden;
+    box-shadow: 0 10px 24px rgba(28,21,32,.06);
+    border: 1px solid rgba(151,66,88,.08);
+    text-decoration: none; color: inherit;
+  }
+  .la-course__media { position: relative; min-height: 112px; background: var(--la-soft); }
+  .la-course__media img { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
+  .la-badge {
+    position: absolute; left: 8px; top: 8px; z-index: 1;
+    padding: 3px 8px; border-radius: 999px; font-size: .62rem; font-weight: 800;
+    letter-spacing: .04em; color: #fff; background: var(--la-primary);
+  }
+  .la-badge--new { background: var(--la-teal); }
+  .la-course__body { padding: 12px 12px 12px 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .la-course__meta {
+    display: flex; flex-wrap: wrap; gap: 8px; font-size: .72rem; color: var(--la-muted);
+  }
+  .la-course__meta span { display: inline-flex; align-items: center; gap: 3px; max-width: 100%; }
+  .la-course__meta .material-symbols-outlined { font-size: 14px; }
+  .la-course__title {
+    margin: 0; font-size: .95rem; line-height: 1.35; font-weight: 700;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .la-course__desc {
+    margin: 0; font-size: .75rem; color: var(--la-muted); line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .la-course__foot {
+    margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  }
+  .la-price { font-size: 1rem; font-weight: 800; color: var(--la-primary); }
+  .la-detail-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 6px 12px; border-radius: 999px; font-size: .75rem; font-weight: 700;
+    border: 1.5px solid rgba(151,66,88,.28); color: var(--la-primary); background: #fff;
+  }
+  .la-empty {
+    text-align: center; padding: 36px 16px; background: #fff; border-radius: 20px;
+    color: var(--la-muted); font-size: .9rem;
+  }
+  .la-panel { display: none; }
+  .la-panel.is-on { display: block; }
   .la-card {
-    margin-top: 16px;
-    padding: 16px;
-    border-radius: 20px;
-    background: var(--pts-surface, #fff);
-    border: 1px solid color-mix(in srgb, var(--pts-primary) 12%, transparent);
+    background: #fff; border-radius: 20px; padding: 16px;
+    border: 1px solid rgba(151,66,88,.1);
+    box-shadow: 0 10px 24px rgba(28,21,32,.05);
   }
-  .la-card h2 { margin: 0 0 6px; font-size: 1rem; }
-  .la-card p { margin: 0 0 12px; font-size: .85rem; color: var(--pts-muted); line-height: 1.45; }
+  .la-card h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--la-deep); }
+  .la-card p { margin: 0 0 12px; font-size: .85rem; color: var(--la-muted); line-height: 1.45; }
   .la-actions { display: flex; flex-wrap: wrap; gap: 8px; }
   .la-msg { margin-top: 10px; font-size: .82rem; min-height: 1.2em; }
   .la-msg.is-ok { color: #166534; }
   .la-msg.is-err { color: #b91c1c; }
+  .la-quick {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+  }
+  .la-quick a {
+    display: flex; flex-direction: column; gap: 8px; padding: 14px;
+    border-radius: 18px; background: #fff; text-decoration: none; color: inherit;
+    border: 1px solid rgba(151,66,88,.1);
+    box-shadow: 0 8px 18px rgba(28,21,32,.04);
+  }
+  .la-quick__ico {
+    width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; color: #fff;
+  }
+  .la-quick__ico .material-symbols-outlined { font-size: 20px; }
+  .la-quick strong { font-size: .9rem; }
+  .la-quick span { font-size: .72rem; color: var(--la-muted); }
+  .la-notif {
+    display: block; padding: 14px; border-radius: 16px; background: #fff;
+    border: 1px solid rgba(151,66,88,.1); text-decoration: none; color: inherit;
+    margin-bottom: 10px;
+  }
+  .la-notif strong { display: block; font-size: .9rem; margin-bottom: 4px; }
+  .la-notif p { margin: 0; font-size: .78rem; color: var(--la-muted); line-height: 1.4; }
   .la-nav {
-    position: fixed;
-    left: 0; right: 0; bottom: 0;
-    z-index: 40;
-    padding: 8px 12px calc(8px + var(--line-safe-bottom));
-    background: color-mix(in srgb, var(--pts-surface, #fff) 92%, transparent);
-    backdrop-filter: blur(10px);
-    border-top: 1px solid color-mix(in srgb, var(--pts-primary) 12%, transparent);
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    padding: 8px 10px calc(8px + var(--line-safe-bottom));
+    background: rgba(255,255,255,.94); backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(151,66,88,.12);
   }
   .la-nav__inner {
-    max-width: 480px;
-    margin: 0 auto;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 4px;
+    max-width: 520px; margin: 0 auto;
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
   }
   .la-nav a {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 6px 4px;
-    text-decoration: none;
-    color: var(--pts-muted);
-    font-size: .68rem;
-    font-weight: 600;
-    border-radius: 12px;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    padding: 6px 4px; text-decoration: none; color: var(--la-muted);
+    font-size: .68rem; font-weight: 700; border-radius: 14px;
   }
-  .la-nav a.is-active,
-  .la-nav a:hover { color: var(--pts-primary); background: var(--pts-primary-soft, #f6e6ea); }
+  .la-nav a.is-active { color: var(--la-primary); background: var(--la-soft); }
   .la-nav .material-symbols-outlined { font-size: 22px; }
-  html[data-theme="dark"] body.pts-line-app {
-    background:
-      radial-gradient(120% 80% at 0% 0%, rgba(232,149,168,.18), transparent 55%),
-      #1a1216;
-  }
-  html[data-theme="dark"] .la-tile,
+  html[data-theme="dark"] body.pts-line-app { --la-bg: #1a1216; --la-card: #241820; --la-text: #f8eef1; --la-muted: #c9b4bc; }
+  html[data-theme="dark"] .la-chip,
+  html[data-theme="dark"] .la-course,
   html[data-theme="dark"] .la-card,
-  html[data-theme="dark"] .la-nav {
-    background: rgba(36, 24, 30, 0.92);
-    border-color: rgba(232, 149, 168, 0.2);
-    color: #f8eef1;
-  }
+  html[data-theme="dark"] .la-quick a,
+  html[data-theme="dark"] .la-notif,
+  html[data-theme="dark"] .la-nav,
+  html[data-theme="dark"] .la-empty { background: #241820; color: var(--la-text); border-color: rgba(232,149,168,.18); }
+  html[data-theme="dark"] .la-top { background: rgba(26,18,22,.9); }
 </style>
 </head>
 <body class="pts-body pts-line-app">
-  <div class="la-shell">
-    <header class="la-hero">
+  <header class="la-top">
+    <div class="la-top__row">
       <div class="la-brand">
-        <img src="/logo.png" alt="PTS Learning">
-        <strong>PTS Learning</strong>
+        <img src="/logo.png" alt="PTS">
+        <div class="la-brand__text">
+          <strong>PTS Learning</strong>
+          <span>Personal Assistant Academy</span>
+        </div>
       </div>
-      <p>ใช้งานง่ายใน LINE — คอร์ส ตาราง และการแจ้งเตือน ในธีม PTS</p>
-      <div class="la-status" id="la-status">กำลังเตรียม...</div>
-    </header>
+      <div class="la-top__actions">
+        <button type="button" class="la-icon-btn" id="la-refresh" title="รีเฟรช" aria-label="รีเฟรช">
+          <span class="material-symbols-outlined">refresh</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-    <section class="la-grid" aria-label="เมนูด่วน">
-      <a class="la-tile" href="MyCourses.html">
-        <div class="la-tile__ico"><span class="material-symbols-outlined">menu_book</span></div>
-        <strong>คอร์สของฉัน</strong>
-        <span>เข้าเรียนต่อได้ทันที</span>
-      </a>
-      <a class="la-tile" href="Schedule.html">
-        <div class="la-tile__ico"><span class="material-symbols-outlined">calendar_month</span></div>
-        <strong>ตารางเรียน</strong>
-        <span>ดูรอบเรียนล่วงหน้า</span>
-      </a>
-      <a class="la-tile" href="Courses.html">
-        <div class="la-tile__ico"><span class="material-symbols-outlined">explore</span></div>
-        <strong>ดูหลักสูตร</strong>
-        <span>Online · Onsite · Hybrid</span>
-      </a>
-      <a class="la-tile" href="Notifications.html">
-        <div class="la-tile__ico"><span class="material-symbols-outlined">notifications</span></div>
-        <strong>การแจ้งเตือน</strong>
-        <span>ข่าวสารและสถานะเรียน</span>
-      </a>
+  <main class="la-shell">
+    <!-- COURSES -->
+    <section class="la-panel is-on" id="panel-courses" data-panel="courses">
+      <div class="la-hero-copy">
+        <p class="la-eyebrow">Academic Aura</p>
+        <h1>คอร์สเรียนแนะนำ</h1>
+        <p>ยกระดับทักษะสู่ความเป็นมืออาชีพ</p>
+      </div>
+      <div class="la-filters" id="la-filters" role="tablist">
+        <button type="button" class="la-chip is-on" data-filter="all">ทั้งหมด</button>
+        <button type="button" class="la-chip" data-filter="featured">ยอดนิยม</button>
+        <button type="button" class="la-chip" data-filter="new">มาใหม่</button>
+        <button type="button" class="la-chip" data-filter="online">Online</button>
+        <button type="button" class="la-chip" data-filter="onsite">Onsite</button>
+      </div>
+      <div class="la-list" id="la-course-list">
+        <div class="la-empty">กำลังโหลดหลักสูตร...</div>
+      </div>
     </section>
 
-    <section class="la-card" id="la-account">
-      <h2>เชื่อมบัญชี PTS</h2>
-      <p id="la-account-hint">เชื่อมครั้งเดียว เพื่อรับแจ้งเตือนใน LINE และเปิดเมนูด้วยบัญชีของคุณ</p>
-      <div class="la-actions">
-        <button type="button" class="pts-btn pts-btn-primary" id="la-link-btn">เชื่อมด้วย LINE</button>
-        <a class="pts-btn pts-btn-outline" id="la-friend-btn" href="#" target="_blank" rel="noopener">เพิ่มเพื่อน OA</a>
-        <a class="pts-btn pts-btn-outline" href="Login.html?next=LineApp.html">เข้าสู่ระบบเว็บ</a>
-        <button type="button" class="pts-btn pts-btn-ghost hidden" id="la-unlink-btn">ยกเลิกการเชื่อม</button>
+    <!-- MINE / HOME shortcuts -->
+    <section class="la-panel" id="panel-mine" data-panel="mine">
+      <div class="la-hero-copy">
+        <p class="la-eyebrow">My Learning</p>
+        <h1>คอร์สและการเรียน</h1>
+        <p>ทางลัดเข้าเรียน ตาราง และการแจ้งเตือน</p>
       </div>
-      <p class="la-msg" id="la-msg"></p>
+      <div class="la-quick">
+        <a href="MyCourses.html">
+          <div class="la-quick__ico" style="background:#974258"><span class="material-symbols-outlined">menu_book</span></div>
+          <strong>คอร์สเรียน</strong>
+          <span>เข้าเรียนต่อได้ทันที</span>
+        </a>
+        <a href="Courses.html">
+          <div class="la-quick__ico" style="background:#0f766e"><span class="material-symbols-outlined">edit_note</span></div>
+          <strong>สมัครเรียน</strong>
+          <span>เลือกหลักสูตรใหม่</span>
+        </a>
+        <a href="#profile" data-nav="profile">
+          <div class="la-quick__ico" style="background:#6b7c3c"><span class="material-symbols-outlined">person</span></div>
+          <strong>โปรไฟล์</strong>
+          <span>เชื่อมบัญชี LINE</span>
+        </a>
+        <a href="Settings.html#line-oa">
+          <div class="la-quick__ico" style="background:#7c6a9a"><span class="material-symbols-outlined">help</span></div>
+          <strong>ช่วยเหลือ</strong>
+          <span>ตั้งค่าและการเชื่อมต่อ</span>
+        </a>
+      </div>
+      <div class="la-card">
+        <h2>กลับไปยังคอร์สเรียน</h2>
+        <p>เปิดรายการหลักสูตรแนะนำในแอป LINE</p>
+        <div class="la-actions">
+          <a class="pts-btn pts-btn-primary" href="#courses" data-nav="courses">ดูหลักสูตร</a>
+          <a class="pts-btn pts-btn-outline" href="Schedule.html">ตารางเรียน</a>
+        </div>
+      </div>
     </section>
-  </div>
 
-  <nav class="la-nav" aria-label="นำทางด่วน">
+    <!-- NOTIFY -->
+    <section class="la-panel" id="panel-notify" data-panel="notify">
+      <div class="la-hero-copy">
+        <p class="la-eyebrow">Alerts</p>
+        <h1>การแจ้งเตือน</h1>
+        <p>ข่าวสาร สถานะเรียน และการชำระเงิน</p>
+      </div>
+      <div id="la-notify-list"><div class="la-empty">กำลังโหลด...</div></div>
+    </section>
+
+    <!-- PROFILE -->
+    <section class="la-panel" id="panel-profile" data-panel="profile">
+      <div class="la-hero-copy">
+        <p class="la-eyebrow">Account</p>
+        <h1>โปรไฟล์</h1>
+        <p>เชื่อม LINE กับบัญชี PTS เพื่อรับแจ้งเตือนในแชท</p>
+      </div>
+      <div class="la-card" id="la-account">
+        <h2>เชื่อมบัญชี PTS</h2>
+        <p id="la-account-hint">เข้าสู่ระบบแล้วกดเชื่อมด้วย LINE</p>
+        <div class="la-actions">
+          <button type="button" class="pts-btn pts-btn-primary" id="la-link-btn">เชื่อมด้วย LINE</button>
+          <a class="pts-btn pts-btn-outline" id="la-friend-btn" href="#" target="_blank" rel="noopener">เพิ่มเพื่อน OA</a>
+          <a class="pts-btn pts-btn-outline" href="Login.html?next=LineApp.html%23profile">เข้าสู่ระบบเว็บ</a>
+          <button type="button" class="pts-btn pts-btn-ghost hidden" id="la-unlink-btn">ยกเลิกการเชื่อม</button>
+        </div>
+        <p class="la-msg" id="la-msg"></p>
+      </div>
+    </section>
+  </main>
+
+  <nav class="la-nav" aria-label="นำทาง">
     <div class="la-nav__inner">
-      <a class="is-active" href="LineApp.html"><span class="material-symbols-outlined">home</span>หน้าหลัก</a>
-      <a href="MyCourses.html"><span class="material-symbols-outlined">school</span>คอร์ส</a>
-      <a href="Schedule.html"><span class="material-symbols-outlined">event</span>ตาราง</a>
-      <a href="Settings.html#line-oa"><span class="material-symbols-outlined">settings</span>ตั้งค่า</a>
+      <a href="#mine" data-nav="mine"><span class="material-symbols-outlined">school</span>คอร์ส</a>
+      <a href="#courses" data-nav="courses" class="is-active"><span class="material-symbols-outlined">menu_book</span>รายการ</a>
+      <a href="#notify" data-nav="notify"><span class="material-symbols-outlined">notifications</span>แจ้งเตือน</a>
+      <a href="#profile" data-nav="profile"><span class="material-symbols-outlined">person</span>โปรไฟล์</a>
     </div>
   </nav>
 
 <script>
 (function () {
-  const statusEl = document.getElementById('la-status');
+  const listEl = document.getElementById('la-course-list');
+  const notifyEl = document.getElementById('la-notify-list');
+  const statusHint = document.getElementById('la-account-hint');
   const msgEl = document.getElementById('la-msg');
-  const hintEl = document.getElementById('la-account-hint');
   const linkBtn = document.getElementById('la-link-btn');
   const unlinkBtn = document.getElementById('la-unlink-btn');
   const friendBtn = document.getElementById('la-friend-btn');
 
+  let allCourses = [];
+  let filter = 'all';
   let liffId = '';
   let liffReady = false;
   let loggedIn = false;
   let linked = false;
+
+  function escapeHtml(t) {
+    return String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 
   function setMsg(text, ok) {
     msgEl.textContent = text || '';
     msgEl.className = 'la-msg' + (text ? (ok ? ' is-ok' : ' is-err') : '');
   }
 
+  function currentPanel() {
+    const h = (location.hash || '#courses').replace('#', '') || 'courses';
+    return ['courses', 'mine', 'notify', 'profile'].includes(h) ? h : 'courses';
+  }
+
+  function showPanel(name) {
+    document.querySelectorAll('.la-panel').forEach((el) => {
+      el.classList.toggle('is-on', el.dataset.panel === name);
+    });
+    document.querySelectorAll('.la-nav a').forEach((a) => {
+      a.classList.toggle('is-active', a.dataset.nav === name);
+    });
+    if (location.hash.replace('#', '') !== name) {
+      history.replaceState(null, '', '#' + name);
+    }
+  }
+
   function paintAccount() {
     if (linked) {
-      hintEl.textContent = 'เชื่อม LINE กับบัญชี PTS แล้ว — พร้อมรับแจ้งเตือนและเปิดเมนูด่วน';
+      statusHint.textContent = 'เชื่อม LINE กับบัญชี PTS แล้ว — พร้อมรับแจ้งเตือนในแชท';
       linkBtn.classList.add('hidden');
       unlinkBtn.classList.remove('hidden');
-      statusEl.textContent = loggedIn ? 'พร้อมใช้งาน · เชื่อมบัญชีแล้ว' : 'เชื่อมบัญชีแล้ว';
     } else if (loggedIn) {
-      hintEl.textContent = 'กด “เชื่อมด้วย LINE” เพื่อผูกบัญชีนี้กับ LINE OA';
+      statusHint.textContent = 'กด “เชื่อมด้วย LINE” เพื่อผูกบัญชีนี้กับ LINE OA';
       linkBtn.classList.remove('hidden');
       unlinkBtn.classList.add('hidden');
-      statusEl.textContent = 'ล็อกอินแล้ว · ยังไม่เชื่อม LINE';
     } else {
-      hintEl.textContent = 'เข้าสู่ระบบเว็บก่อน หรือเปิดผ่าน LIFF ใน LINE แล้วกดเชื่อมบัญชี';
+      statusHint.textContent = 'เข้าสู่ระบบเว็บก่อน หรือเปิดผ่าน LIFF แล้วกดเชื่อมบัญชี';
       linkBtn.classList.remove('hidden');
       unlinkBtn.classList.add('hidden');
-      statusEl.textContent = liffReady ? 'เปิดใน LINE แล้ว · รอเชื่อมบัญชี' : 'โหมดเบราว์เซอร์';
+    }
+  }
+
+  function filteredCourses() {
+    const sorted = allCourses.slice();
+    if (filter === 'featured') return sorted.filter((c) => Number(c.is_featured) === 1);
+    if (filter === 'new') return sorted.slice(0, 8);
+    if (filter === 'online' || filter === 'onsite' || filter === 'hybrid') {
+      return sorted.filter((c) => String(c.delivery_mode || '').toLowerCase() === filter);
+    }
+    return sorted;
+  }
+
+  function renderCourses() {
+    const rows = filteredCourses();
+    if (!rows.length) {
+      listEl.innerHTML = '<div class="la-empty">ยังไม่มีหลักสูตรในหมวดนี้</div>';
+      return;
+    }
+    listEl.innerHTML = rows.map((c, idx) => {
+      const enrolled = Number(c.is_enrolled) === 1;
+      const featured = Number(c.is_featured) === 1;
+      const price = Number(c.price || 0);
+      const hours = Number(c.total_hours || 0);
+      const img = c.cover_image_url || 'https://placehold.co/400x300/f8e8ec/974258?text=PTS';
+      const href = enrolled
+        ? `Learn.html?courseId=${c.course_id}`
+        : `CourseDetail.html?courseId=${c.course_id}`;
+      const badge = featured
+        ? '<span class="la-badge">BEST SELLER</span>'
+        : (idx < 2 ? '<span class="la-badge la-badge--new">NEW ARRIVAL</span>' : '');
+      const desc = c.description || c.delivery_mode || 'หลักสูตร Personal Assistant';
+      return `
+        <a class="la-course" href="${href}">
+          <div class="la-course__media">
+            ${badge}
+            <img src="${escapeHtml(img)}" alt="" loading="lazy">
+          </div>
+          <div class="la-course__body">
+            <div class="la-course__meta">
+              <span><span class="material-symbols-outlined">person</span>${escapeHtml(c.instructor_name || 'PTS')}</span>
+              <span><span class="material-symbols-outlined">schedule</span>${hours || '-'} ชม.</span>
+            </div>
+            <h3 class="la-course__title">${escapeHtml(c.course_name)}</h3>
+            <p class="la-course__desc">${escapeHtml(desc)}</p>
+            <div class="la-course__foot">
+              <span class="la-price">${price ? '฿ ' + price.toLocaleString('th-TH') : 'สอบถามราคา'}</span>
+              <span class="la-detail-btn">${enrolled ? 'เข้าเรียน' : 'รายละเอียด'}</span>
+            </div>
+          </div>
+        </a>`;
+    }).join('');
+  }
+
+  async function loadCourses() {
+    listEl.innerHTML = '<div class="la-empty">กำลังโหลดหลักสูตร...</div>';
+    try {
+      const res = await fetch('/api/courses', { credentials: 'include', cache: 'no-store' });
+      const data = await res.json();
+      allCourses = data.data || data.courses || data || [];
+      if (!Array.isArray(allCourses)) allCourses = [];
+      renderCourses();
+    } catch (err) {
+      listEl.innerHTML = `<div class="la-empty">${escapeHtml(err.message || 'โหลดไม่สำเร็จ')}</div>`;
+    }
+  }
+
+  async function loadNotifications() {
+    if (!loggedIn) {
+      notifyEl.innerHTML = '<div class="la-empty">เข้าสู่ระบบเพื่อดูการแจ้งเตือน<br><a class="pts-btn pts-btn-primary" style="margin-top:12px" href="Login.html?next=LineApp.html%23notify">เข้าสู่ระบบ</a></div>';
+      return;
+    }
+    try {
+      const res = await fetch('/api/notifications', { credentials: 'include', cache: 'no-store' });
+      const data = await res.json();
+      const rows = data.data || data.notifications || [];
+      if (!res.ok || data.success === false) throw new Error(data.message || 'โหลดไม่สำเร็จ');
+      if (!rows.length) {
+        notifyEl.innerHTML = '<div class="la-empty">ยังไม่มีการแจ้งเตือน</div>';
+        return;
+      }
+      notifyEl.innerHTML = rows.slice(0, 20).map((n) => `
+        <a class="la-notif" href="${escapeHtml(n.link_url || 'Notifications.html')}">
+          <strong>${escapeHtml(n.title || 'การแจ้งเตือน')}</strong>
+          <p>${escapeHtml(n.body || '')}</p>
+        </a>`).join('');
+    } catch (err) {
+      notifyEl.innerHTML = `<div class="la-empty">${escapeHtml(err.message || 'โหลดไม่สำเร็จ')}</div>`;
     }
   }
 
@@ -268,11 +464,7 @@
     } else {
       friendBtn.classList.add('hidden');
     }
-
-    if (!loggedIn) {
-      linked = false;
-      return;
-    }
+    if (!loggedIn) { linked = false; return; }
     const st = await fetch('/api/line/status', { credentials: 'include', cache: 'no-store' }).then((r) => r.json()).catch(() => ({}));
     linked = !!st.linked;
   }
@@ -292,7 +484,7 @@
     setMsg('กำลังเชื่อม...', true);
     try {
       if (!loggedIn) {
-        location.href = 'Login.html?next=' + encodeURIComponent('LineApp.html');
+        location.href = 'Login.html?next=' + encodeURIComponent('LineApp.html#profile');
         return;
       }
       if (liffId && typeof liff !== 'undefined') {
@@ -302,7 +494,6 @@
           return;
         }
       }
-
       const body = {};
       if (typeof liff !== 'undefined' && liffReady && liff.isLoggedIn()) {
         try {
@@ -310,17 +501,14 @@
           const accessToken = liff.getAccessToken && liff.getAccessToken();
           if (idToken) body.idToken = idToken;
           if (accessToken) body.accessToken = accessToken;
-        } catch (_) { /* ignore */ }
+        } catch (_) {}
       }
-
       if (!body.idToken && !body.accessToken) {
-        setMsg('เปิดหน้านี้จาก LINE OA (LIFF) เพื่อเชื่อมบัญชี หรือตั้งค่า LINE_LIFF_ID บนเซิร์ฟเวอร์', false);
+        setMsg('เปิดหน้านี้จาก LINE (LIFF) เพื่อเชื่อมบัญชี หรือตั้งค่า LINE_LIFF_ID', false);
         return;
       }
-
       const res = await fetch('/api/line/link', {
-        method: 'POST',
-        credentials: 'include',
+        method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
       });
@@ -348,19 +536,47 @@
     }
   }
 
+  document.getElementById('la-filters').addEventListener('click', (e) => {
+    const btn = e.target.closest('.la-chip');
+    if (!btn) return;
+    filter = btn.dataset.filter || 'all';
+    document.querySelectorAll('.la-chip').forEach((el) => el.classList.toggle('is-on', el === btn));
+    renderCourses();
+  });
+
+  document.body.addEventListener('click', (e) => {
+    const nav = e.target.closest('[data-nav]');
+    if (!nav) return;
+    e.preventDefault();
+    showPanel(nav.dataset.nav);
+    if (nav.dataset.nav === 'notify') loadNotifications();
+  });
+
+  window.addEventListener('hashchange', () => {
+    const p = currentPanel();
+    showPanel(p);
+    if (p === 'notify') loadNotifications();
+  });
+
   linkBtn.addEventListener('click', linkAccount);
   unlinkBtn.addEventListener('click', unlinkAccount);
+  document.getElementById('la-refresh').addEventListener('click', () => {
+    loadCourses();
+    if (currentPanel() === 'notify') loadNotifications();
+  });
+
+  // ensure profile icon class
+  const profileNav = document.querySelector('.la-nav a[data-nav="profile"] .material-symbols-outlined');
+  if (profileNav) profileNav.textContent = 'person';
 
   (async function boot() {
-    try {
-      await loadMe();
-      await loadLineStatus();
-      await initLiff();
-      paintAccount();
-    } catch (err) {
-      statusEl.textContent = 'โหลดไม่สำเร็จ';
-      setMsg(err.message || 'เกิดข้อผิดพลาด', false);
-    }
+    showPanel(currentPanel());
+    await loadMe();
+    await loadLineStatus();
+    await initLiff();
+    paintAccount();
+    await loadCourses();
+    if (currentPanel() === 'notify') await loadNotifications();
   })();
 })();
 </script>

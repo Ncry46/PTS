@@ -245,13 +245,16 @@ function createLineWebhookHandler({ poolPromise }) {
     };
 }
 
-async function handleEvent(_poolPromise, event) {
+async function handleEvent(poolPromise, event) {
     if (!event || !event.type) return;
 
     if (event.type === 'follow' || event.type === 'join') {
         if (event.replyToken) {
             await line.replyMessage(event.replyToken, [
-                line.buildText(`ยินดีต้อนรับสู่ ${line.getOaName()}\nกดเมนูด้านล่างเพื่อเรียน / ดูตาราง / เชื่อมบัญชี`),
+                line.buildSuccessFlex('ยินดีต้อนรับสู่ PTS Learning', [
+                    { label: 'สถานะ', value: 'เพิ่มเพื่อนสำเร็จ' },
+                    { label: 'ถัดไป', value: 'เลือกเมนูหรือเปิดแอปใน LINE' }
+                ]),
                 line.buildMenuFlex()
             ]);
         }
@@ -260,65 +263,80 @@ async function handleEvent(_poolPromise, event) {
 
     if (event.type === 'message' && event.message?.type === 'text') {
         const text = String(event.message.text || '').trim().toLowerCase();
-        const wantCourses = /คอร์ส|หลักสูตร|course/.test(text);
+        const wantCourses = /คอร์ส|หลักสูตร|course|สมัคร/.test(text);
         const wantSchedule = /ตาราง|schedule|calendar|ปฏิทิน/.test(text);
         const wantMine = /ของฉัน|my course|เรียนของฉัน/.test(text);
+        const wantProfile = /โปรไฟล์|profile|เชื่อม|บัญชี/.test(text);
+        const wantHelp = /ช่วย|help|support|ติดต่อ/.test(text);
 
         if (!event.replyToken) return;
 
         if (wantMine) {
             await line.replyMessage(event.replyToken, [
-                line.buildText('เปิดคอร์สของฉันได้จากปุ่มด้านล่าง'),
-                {
-                    type: 'template',
-                    altText: 'คอร์สของฉัน',
-                    template: {
-                        type: 'buttons',
-                        text: 'ไปที่คอร์สที่สมัครไว้',
-                        actions: [
-                            { type: 'uri', label: 'คอร์สของฉัน', uri: line.absoluteUrl('/MyCourses.html') },
-                            { type: 'uri', label: 'เปิดแอปใน LINE', uri: line.lineAppPath() }
-                        ]
-                    }
-                }
+                line.buildNotifyFlex(
+                    'คอร์สของฉัน',
+                    'เปิดดูหลักสูตรที่สมัครไว้ และเข้าเรียนต่อได้ทันที',
+                    'MyCourses.html'
+                )
             ]);
             return;
         }
 
         if (wantSchedule) {
             await line.replyMessage(event.replyToken, [
-                line.buildText('ดูตารางเรียนได้ที่นี่'),
-                {
-                    type: 'template',
-                    altText: 'ตารางเรียน',
-                    template: {
-                        type: 'buttons',
-                        text: 'เปิดตารางเรียน PTS',
-                        actions: [
-                            { type: 'uri', label: 'ตารางเรียน', uri: line.absoluteUrl('/Schedule.html') },
-                            { type: 'uri', label: 'เปิดแอปใน LINE', uri: line.lineAppPath() }
-                        ]
-                    }
-                }
+                line.buildNotifyFlex(
+                    'ตารางเรียน',
+                    'ดูรอบเรียน Online / Onsite / Hybrid ของคุณ',
+                    'Schedule.html'
+                )
             ]);
             return;
         }
 
-        if (wantCourses) {
+        if (wantProfile) {
             await line.replyMessage(event.replyToken, [
-                line.buildText('เลือกดูหลักสูตรทั้งหมดได้เลย'),
-                {
-                    type: 'template',
-                    altText: 'หลักสูตร',
-                    template: {
-                        type: 'buttons',
-                        text: 'เปิดหน้ารายการหลักสูตร',
-                        actions: [
-                            { type: 'uri', label: 'ดูหลักสูตร', uri: line.absoluteUrl('/Courses.html') },
-                            { type: 'uri', label: 'เปิดแอปใน LINE', uri: line.lineAppPath() }
-                        ]
-                    }
+                line.buildNotifyFlex(
+                    'โปรไฟล์และการเชื่อมต่อ',
+                    'เชื่อมบัญชี PTS กับ LINE เพื่อรับแจ้งเตือน',
+                    'LineApp.html#profile'
+                )
+            ]);
+            return;
+        }
+
+        if (wantHelp) {
+            await line.replyMessage(event.replyToken, [line.buildMenuFlex()]);
+            return;
+        }
+
+        if (wantCourses) {
+            try {
+                const pool = await poolPromise;
+                const result = await pool.request().query(`
+                    SELECT TOP 8
+                        course_id, course_name, instructor_name, total_hours, price,
+                        delivery_mode, cover_image_url, is_featured
+                    FROM BD_PTS.dbo.courses_main
+                    WHERE ISNULL(flag_use, 1) = 1
+                    ORDER BY ISNULL(is_featured, 0) DESC, course_id DESC
+                `);
+                const courses = result.recordset || [];
+                if (courses.length) {
+                    await line.replyMessage(event.replyToken, [
+                        line.buildText('คอร์สเรียนแนะนำ — ปัดดูรายละเอียดได้เลย'),
+                        line.buildCourseCarousel(courses)
+                    ]);
+                    return;
                 }
+            } catch (err) {
+                console.warn('[line] courses carousel:', err.message);
+            }
+            await line.replyMessage(event.replyToken, [
+                line.buildNotifyFlex(
+                    'คอร์สเรียนแนะนำ',
+                    'ยกระดับทักษะสู่ความเป็นมืออาชีพ — เปิดรายการหลักสูตรในแอป',
+                    'LineApp.html#courses'
+                )
             ]);
             return;
         }
