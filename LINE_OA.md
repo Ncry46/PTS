@@ -80,6 +80,26 @@ APP_BASE_URL=https://YOUR_DOMAIN
 💬 LINE OA → addFriend=yes messaging=yes liff=yes
 ```
 
+## ทำไมในแชทยังเป็นข้อความโล่งๆ / ไม่สวย
+
+ข้อความแบบ “สวัสดี คุณ :P …” มาจาก **Greeting Message ของ LINE OA Manager** ไม่ใช่จากระบบ PTS
+
+ต้องทำครบนี้:
+
+1. ดึงโค้ดล่าสุด + รีสตาร์ทเซิร์ฟเวอร์  
+2. LINE Developers → Messaging API → **Webhook = On** และ Verify ผ่าน  
+3. LINE Official Account Manager → **การตั้งค่า** → **การตอบกลับ**  
+   - Response mode = **Bot**  
+   - ปิด / ลบ **Greeting message** และ Auto-response ข้อความธรรมดา  
+4. ใน `.env` ต้องมี `APP_BASE_URL=https://...` หรือ `LINE_LIFF_ID`  
+5. รันเมนูล่าง: `node backend/setup-line-rich-menu.js`  
+6. ทดสอบ: พิมพ์ในแชทว่า `สวัสดี` หรือ `เมนู`  
+   หรือที่ Settings → LINE OA → **ส่งเมนูสวยเข้า LINE** (ต้องเชื่อมบัญชีก่อน)
+
+หลังจากนั้นจะได้การ์ดต้อนรับสี PTS + เมนูปัดได้ 4 ใบ (คอร์ส / สมัคร / ตาราง / โปรไฟล์)
+
+ชื่อ OA ด้านบนแชท (เช่น “ไม่ใช่เว็บสล็อต”) เปลี่ยนได้ที่ LINE OA Manager → โปรไฟล์บัญชี เท่านั้น
+
 ## ใช้งานฝั่งผู้เรียน
 
 1. เพิ่มเพื่อน OA

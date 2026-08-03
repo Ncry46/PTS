@@ -208,6 +208,35 @@ function createLineRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    /** Push the polished home Flex to the linked LINE account (for testing UI). */
+    router.post('/line/send-home', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+        try {
+            if (!line.isMessagingConfigured()) {
+                return res.status(503).json({
+                    success: false,
+                    message: 'ยังไม่ได้ตั้งค่า LINE Messaging API'
+                });
+            }
+            const pool = await poolPromise;
+            const lineUserId = await line.getLinkedLineUserId(pool, user.user_id);
+            if (!lineUserId) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'ยังไม่ได้เชื่อมบัญชี LINE — เปิด LineApp แล้วกดเชื่อมก่อน'
+                });
+            }
+            await line.pushMessage(lineUserId, line.buildHomeMessages({
+                displayName: user.name || user.full_name || ''
+            }));
+            return res.json({ success: true, message: 'ส่งเมนูสวยๆ เข้า LINE แล้ว เปิดแชท OA ดูได้เลย' });
+        } catch (error) {
+            console.error('[line/send-home]', error.message);
+            return res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
     return router;
 }
 
@@ -248,21 +277,40 @@ function createLineWebhookHandler({ poolPromise }) {
 async function handleEvent(poolPromise, event) {
     if (!event || !event.type) return;
 
+    const replyHome = async (replyToken, displayName) => {
+        try {
+            await line.replyMessage(replyToken, line.buildHomeMessages({ displayName }));
+        } catch (err) {
+            console.error('[line] home flex failed, fallback menu:', err.message);
+            try {
+                await line.replyMessage(replyToken, [line.buildMenuFlex()]);
+            } catch (err2) {
+                console.error('[line] menu fallback failed:', err2.message);
+                await line.replyMessage(replyToken, [
+                    line.buildText('ยินดีต้อนรับสู่ PTS Learning\nพิมพ์ “เมนู” หรือ “คอร์ส” เพื่อเริ่มใช้งาน')
+                ]);
+            }
+        }
+    };
+
     if (event.type === 'follow' || event.type === 'join') {
         if (event.replyToken) {
-            await line.replyMessage(event.replyToken, [
-                line.buildSuccessFlex('ยินดีต้อนรับสู่ PTS Learning', [
-                    { label: 'สถานะ', value: 'เพิ่มเพื่อนสำเร็จ' },
-                    { label: 'ถัดไป', value: 'เลือกเมนูหรือเปิดแอปใน LINE' }
-                ]),
-                line.buildMenuFlex()
-            ]);
+            let displayName = '';
+            try {
+                if (event.source?.userId && line.getChannelAccessToken()) {
+                    const profile = await line.lineApi(`/v2/bot/profile/${event.source.userId}`, 'GET');
+                    displayName = profile.displayName || '';
+                }
+            } catch (_) { /* ignore */ }
+            await replyHome(event.replyToken, displayName);
         }
         return;
     }
 
     if (event.type === 'message' && event.message?.type === 'text') {
         const text = String(event.message.text || '').trim().toLowerCase();
+        const wantHello = /^(สวัสดี|hello|hi|hey|ดี|ทัก|เริ่ม|start|เมนู|menu|help)$/i.test(text)
+            || /สวัสดี|เมนู|ทักทาย/.test(text);
         const wantCourses = /คอร์ส|หลักสูตร|course|สมัคร/.test(text);
         const wantSchedule = /ตาราง|schedule|calendar|ปฏิทิน/.test(text);
         const wantMine = /ของฉัน|my course|เรียนของฉัน/.test(text);
@@ -270,6 +318,11 @@ async function handleEvent(poolPromise, event) {
         const wantHelp = /ช่วย|help|support|ติดต่อ/.test(text);
 
         if (!event.replyToken) return;
+
+        if (wantHello) {
+            await replyHome(event.replyToken);
+            return;
+        }
 
         if (wantMine) {
             await line.replyMessage(event.replyToken, [
@@ -305,7 +358,7 @@ async function handleEvent(poolPromise, event) {
         }
 
         if (wantHelp) {
-            await line.replyMessage(event.replyToken, [line.buildMenuFlex()]);
+            await line.replyMessage(event.replyToken, [line.buildMenuFlex(), line.buildQuickActionsCarousel()]);
             return;
         }
 
@@ -341,13 +394,13 @@ async function handleEvent(poolPromise, event) {
             return;
         }
 
-        // Default: branded easy menu
-        await line.replyMessage(event.replyToken, [line.buildMenuFlex()]);
+        // Default: full branded home UI (not plain text)
+        await replyHome(event.replyToken);
         return;
     }
 
     if (event.type === 'postback' && event.replyToken) {
-        await line.replyMessage(event.replyToken, [line.buildMenuFlex()]);
+        await replyHome(event.replyToken);
     }
 }
 

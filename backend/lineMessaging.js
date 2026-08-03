@@ -195,6 +195,253 @@ function buildText(text) {
     return { type: 'text', text: String(text || '').slice(0, 4900) };
 }
 
+function heroBanner(url, ratio) {
+    return {
+        type: 'image',
+        url,
+        size: 'full',
+        aspectRatio: ratio || '20:9',
+        aspectMode: 'cover'
+    };
+}
+
+/** Polished welcome card shown on follow / สวัสดี */
+function buildWelcomeFlex(opts = {}) {
+    const name = getOaName();
+    const display = String(opts.displayName || '').trim();
+    const hello = display ? `สวัสดีคุณ ${display}` : 'สวัสดีครับ';
+    const hero = 'https://placehold.co/1200x540/974258/ffffff/png?text=PTS+Learning';
+
+    return {
+        type: 'flex',
+        altText: `ยินดีต้อนรับสู่ ${name}`,
+        contents: {
+            type: 'bubble',
+            size: 'mega',
+            hero: heroBanner(hero, '20:9'),
+            body: {
+                type: 'box',
+                layout: 'vertical',
+                paddingAll: '20px',
+                backgroundColor: BRAND.surface,
+                contents: [
+                    {
+                        type: 'text',
+                        text: hello,
+                        weight: 'bold',
+                        size: 'xl',
+                        color: BRAND.primary,
+                        wrap: true
+                    },
+                    {
+                        type: 'text',
+                        text: name,
+                        weight: 'bold',
+                        size: 'md',
+                        color: BRAND.text,
+                        margin: 'md'
+                    },
+                    {
+                        type: 'text',
+                        text: 'Personal Assistant Academy — เรียน Online · Onsite · Hybrid ในที่เดียว',
+                        size: 'sm',
+                        color: BRAND.muted,
+                        wrap: true,
+                        margin: 'sm'
+                    },
+                    {
+                        type: 'separator',
+                        margin: 'lg',
+                        color: '#f0d9e0'
+                    },
+                    {
+                        type: 'box',
+                        layout: 'vertical',
+                        margin: 'lg',
+                        spacing: 'sm',
+                        contents: [
+                            tipRow('1', 'เปิดเมนูด้านล่างหรือปัดการ์ดเมนู'),
+                            tipRow('2', 'ดูหลักสูตร / สมัครเรียนได้ทันที'),
+                            tipRow('3', 'เชื่อมบัญชีเพื่อรับแจ้งเตือน')
+                        ]
+                    }
+                ]
+            },
+            footer: {
+                type: 'box',
+                layout: 'vertical',
+                spacing: 'sm',
+                paddingAll: '14px',
+                backgroundColor: BRAND.soft,
+                contents: [
+                    btn('เปิดแอป PTS ใน LINE', lineAppPath('courses'), BRAND.primary),
+                    btn('ดูหลักสูตรแนะนำ', lineAppPath('courses'), BRAND.primaryDeep)
+                ]
+            },
+            styles: {
+                hero: { separator: false }
+            }
+        }
+    };
+}
+
+function tipRow(num, text) {
+    return {
+        type: 'box',
+        layout: 'horizontal',
+        spacing: '10px',
+        contents: [
+            {
+                type: 'box',
+                layout: 'vertical',
+                width: '22px',
+                height: '22px',
+                cornerRadius: '11px',
+                backgroundColor: BRAND.primary,
+                justifyContent: 'center',
+                alignItems: 'center',
+                contents: [
+                    {
+                        type: 'text',
+                        text: String(num),
+                        size: 'xs',
+                        color: '#ffffff',
+                        align: 'center',
+                        weight: 'bold'
+                    }
+                ]
+            },
+            {
+                type: 'text',
+                text,
+                size: 'sm',
+                color: BRAND.text,
+                wrap: true,
+                flex: 1
+            }
+        ]
+    };
+}
+
+/** Carousel of 4 action cards — fills the chat like a rich UI */
+function buildQuickActionsCarousel(opts = {}) {
+    const courses = safeActionUri(opts.coursesUrl, 'courses') || lineAppPath('courses');
+    const register = safeActionUri(opts.registerUrl, 'courses') || lineAppPath('courses');
+    const profile = safeActionUri(opts.profileUrl, 'profile') || lineAppPath('profile');
+    const schedule = safeActionUri(opts.scheduleUrl || absoluteUrl('/Schedule.html'), 'mine') || lineAppPath('mine');
+
+    const cards = [
+        actionBubble({
+            title: 'คอร์สเรียน',
+            subtitle: 'COURSES',
+            body: 'ดูรายการหลักสูตรแนะนำ พร้อมราคาและรายละเอียด',
+            color: BRAND.primary,
+            banner: 'https://placehold.co/800x420/974258/ffffff/png?text=Courses',
+            cta: 'เปิดรายการคอร์ส',
+            uri: courses
+        }),
+        actionBubble({
+            title: 'สมัครเรียน',
+            subtitle: 'REGISTER',
+            body: 'เลือกคอร์สแล้วสมัคร / ชำระเงินได้จากใน LINE',
+            color: BRAND.teal,
+            banner: 'https://placehold.co/800x420/0f766e/ffffff/png?text=Register',
+            cta: 'เริ่มสมัครเรียน',
+            uri: register
+        }),
+        actionBubble({
+            title: 'ตารางเรียน',
+            subtitle: 'SCHEDULE',
+            body: 'ดูรอบเรียน Online / Onsite / Hybrid ของคุณ',
+            color: BRAND.accent,
+            banner: 'https://placehold.co/800x420/3d5a4c/ffffff/png?text=Schedule',
+            cta: 'เปิดตาราง',
+            uri: schedule
+        }),
+        actionBubble({
+            title: 'โปรไฟล์',
+            subtitle: 'PROFILE',
+            body: 'เชื่อมบัญชี PTS กับ LINE เพื่อรับแจ้งเตือน',
+            color: BRAND.olive,
+            banner: 'https://placehold.co/800x420/6b7c3c/ffffff/png?text=Profile',
+            cta: 'ไปที่โปรไฟล์',
+            uri: profile
+        })
+    ];
+
+    return {
+        type: 'flex',
+        altText: 'เมนู PTS Learning — ปัดเพื่อเลือก',
+        contents: {
+            type: 'carousel',
+            contents: cards
+        }
+    };
+}
+
+function actionBubble({ title, subtitle, body, color, banner, cta, uri }) {
+    return {
+        type: 'bubble',
+        size: 'mega',
+        hero: heroBanner(banner, '20:11'),
+        body: {
+            type: 'box',
+            layout: 'vertical',
+            paddingAll: '16px',
+            backgroundColor: BRAND.surface,
+            contents: [
+                {
+                    type: 'box',
+                    layout: 'horizontal',
+                    contents: [
+                        {
+                            type: 'box',
+                            layout: 'vertical',
+                            backgroundColor: color,
+                            cornerRadius: '999px',
+                            paddingAll: '4px',
+                            paddingStart: '10px',
+                            paddingEnd: '10px',
+                            contents: [
+                                {
+                                    type: 'text',
+                                    text: subtitle,
+                                    size: 'xxs',
+                                    color: '#ffffff',
+                                    weight: 'bold'
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    type: 'text',
+                    text: title,
+                    weight: 'bold',
+                    size: 'xl',
+                    color: BRAND.text,
+                    margin: '12px'
+                },
+                {
+                    type: 'text',
+                    text: body,
+                    size: 'sm',
+                    color: BRAND.muted,
+                    wrap: true,
+                    margin: '8px'
+                }
+            ]
+        },
+        footer: {
+            type: 'box',
+            layout: 'vertical',
+            paddingAll: '12px',
+            backgroundColor: BRAND.lavender,
+            contents: [btn(cta, uri, color)]
+        }
+    };
+}
+
 /** Main branded menu — 2×2 style like the mock rich menu */
 function buildMenuFlex(opts = {}) {
     const name = getOaName();
@@ -277,6 +524,14 @@ function buildMenuFlex(opts = {}) {
             }
         }
     };
+}
+
+/** Pack used for follow / greeting / default chat replies */
+function buildHomeMessages(opts = {}) {
+    return [
+        buildWelcomeFlex(opts),
+        buildQuickActionsCarousel(opts)
+    ];
 }
 
 function menuTile(title, subtitle, uri, color) {
@@ -667,6 +922,9 @@ module.exports = {
     replyMessage,
     pushMessage,
     buildMenuFlex,
+    buildWelcomeFlex,
+    buildQuickActionsCarousel,
+    buildHomeMessages,
     buildText,
     buildNotifyFlex,
     buildSuccessFlex,
