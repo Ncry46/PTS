@@ -68,6 +68,12 @@ APP_BASE_URL=https://YOUR_DOMAIN
 
 รีสตาร์ทเซิร์ฟเวอร์หลังแก้ `.env`
 
+**สำคัญ: กัน 404 ใน LINE**
+- ต้องตั้ง `APP_BASE_URL=https://โดเมนจริง` (มี `https://`)
+- หรือตั้ง `LINE_LIFF_ID` ให้ปุ่มเปิดผ่าน `https://liff.line.me/...`
+- อย่าใส่ลิงก์แบบ `/Courses.html` ใน Rich Menu / Flex — LINE เปิด relative path ไม่ได้
+- ถ้า Flex มีรูป `logo.png` ที่เซิร์ฟเวอร์ไม่มี ข้อความอาจส่งไม่สำเร็จ (รอบแก้ล่าสุดเอา default นี้ออกแล้ว)
+
 ตอนสตาร์ทจะเห็นประมาณ:
 
 ```text

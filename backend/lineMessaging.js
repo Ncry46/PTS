@@ -53,6 +53,10 @@ function getAppBaseUrl() {
     return raw || '';
 }
 
+function isPublicHttpUrl(url) {
+    return /^https:\/\//i.test(String(url || '').trim());
+}
+
 function isMessagingConfigured() {
     return Boolean(getChannelAccessToken() && getChannelSecret());
 }
@@ -71,25 +75,53 @@ function publicLineStatus() {
         liffConfigured: isLiffConfigured(),
         liffId: getLiffId() || null,
         channelIdConfigured: Boolean(getChannelId()),
+        appBaseUrl: getAppBaseUrl() || null,
         appUrl: lineAppPath()
     };
 }
 
 function lineAppPath(hash) {
     const liffId = getLiffId();
-    const suffix = hash ? `#${hash.replace(/^#/, '')}` : '';
+    const suffix = hash ? `#${String(hash).replace(/^#/, '')}` : '';
     if (liffId) return `https://liff.line.me/${liffId}${suffix}`;
     const base = getAppBaseUrl();
     const path = `/LineApp.html${suffix}`;
+    // LINE requires absolute https URLs in Flex / Rich Menu
     return base ? `${base}${path}` : path;
 }
 
+/**
+ * Build absolute URL for LINE actions/images.
+ * Returns '' when APP_BASE_URL is missing (never return relative paths — they 404 in LINE).
+ */
 function absoluteUrl(pathOrUrl) {
     if (!pathOrUrl) return getAppBaseUrl() || '';
-    if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+    const raw = String(pathOrUrl).trim();
+    if (/^https:\/\//i.test(raw)) return raw;
+    if (/^http:\/\//i.test(raw)) return raw.replace(/^http:\/\//i, 'https://');
     const base = getAppBaseUrl();
-    const path = pathOrUrl.startsWith('/') ? pathOrUrl : `/${pathOrUrl}`;
-    return base ? `${base}${path}` : path;
+    if (!base) return '';
+    const path = raw.startsWith('/') ? raw : `/${raw}`;
+    return `${base}${path}`;
+}
+
+/** Prefer https URL; fall back to LIFF/app when relative or empty. */
+function safeActionUri(uri, hashFallback) {
+    const direct = String(uri || '').trim();
+    if (isPublicHttpUrl(direct)) return direct;
+    if (/^https:\/\/liff\.line\.me\//i.test(direct)) return direct;
+    const abs = absoluteUrl(direct);
+    if (isPublicHttpUrl(abs)) return abs;
+    const viaLiff = lineAppPath(hashFallback || '');
+    if (isPublicHttpUrl(viaLiff)) return viaLiff;
+    return abs || viaLiff || '';
+}
+
+function safeImageUrl(url, placeholder) {
+    const abs = absoluteUrl(url);
+    if (isPublicHttpUrl(abs)) return abs;
+    if (isPublicHttpUrl(url)) return String(url).trim();
+    return placeholder || 'https://placehold.co/800x520/f8e8ec/974258?text=PTS+Course';
 }
 
 function verifySignature(rawBody, signatureHeader) {
@@ -149,12 +181,13 @@ async function pushMessage(lineUserId, messages) {
 }
 
 function btn(label, uri, color) {
+    const safe = safeActionUri(uri);
     return {
         type: 'button',
         style: 'primary',
         height: 'sm',
         color: color || BRAND.primary,
-        action: { type: 'uri', label: String(label).slice(0, 40), uri }
+        action: { type: 'uri', label: String(label).slice(0, 40), uri: safe || lineAppPath() }
     };
 }
 
@@ -165,10 +198,10 @@ function buildText(text) {
 /** Main branded menu — 2×2 style like the mock rich menu */
 function buildMenuFlex(opts = {}) {
     const name = getOaName();
-    const courses = opts.coursesUrl || lineAppPath('courses');
-    const register = opts.registerUrl || lineAppPath('courses');
-    const profile = opts.profileUrl || lineAppPath('profile');
-    const help = opts.helpUrl || absoluteUrl('/Settings.html#line-oa');
+    const courses = safeActionUri(opts.coursesUrl, 'courses') || lineAppPath('courses');
+    const register = safeActionUri(opts.registerUrl, 'courses') || lineAppPath('courses');
+    const profile = safeActionUri(opts.profileUrl, 'profile') || lineAppPath('profile');
+    const help = safeActionUri(opts.helpUrl || absoluteUrl('/Settings.html#line-oa'), 'profile') || lineAppPath('profile');
 
     return {
         type: 'flex',
@@ -254,7 +287,7 @@ function menuTile(title, subtitle, uri, color) {
         backgroundColor: BRAND.surface,
         cornerRadius: '16px',
         paddingAll: '14px',
-        action: { type: 'uri', uri },
+        action: { type: 'uri', uri: safeActionUri(uri) || lineAppPath() },
         contents: [
             {
                 type: 'box',
@@ -314,19 +347,17 @@ function buildNotifyFlex(title, body, linkUrl) {
         });
     }
 
-    const heroUrl = String(process.env.LINE_FLEX_HERO_IMAGE || '').trim()
-        || absoluteUrl('/logo.png');
+    // Do NOT default to /logo.png — missing file makes LINE reject Flex (looks like 404)
+    const heroCandidate = String(process.env.LINE_FLEX_HERO_IMAGE || '').trim();
+    const heroUrl = isPublicHttpUrl(heroCandidate)
+        ? heroCandidate
+        : (absoluteUrl(heroCandidate) && isPublicHttpUrl(absoluteUrl(heroCandidate))
+            ? absoluteUrl(heroCandidate)
+            : '');
 
     const bubble = {
         type: 'bubble',
         size: 'mega',
-        hero: heroUrl ? {
-            type: 'image',
-            url: heroUrl.startsWith('http') ? heroUrl : absoluteUrl(heroUrl),
-            size: 'full',
-            aspectRatio: '20:13',
-            aspectMode: 'cover'
-        } : undefined,
         body: {
             type: 'box',
             layout: 'vertical',
@@ -342,20 +373,28 @@ function buildNotifyFlex(title, body, linkUrl) {
             backgroundColor: BRAND.soft,
             contents: [
                 linkUrl
-                    ? btn('ชำระเงินตอนนี้', absoluteUrl(linkUrl), BRAND.primary)
+                    ? btn('ชำระเงินตอนนี้', safeActionUri(linkUrl, 'courses'), BRAND.primary)
                     : btn('เปิดดูรายละเอียด', lineAppPath('courses'), BRAND.primary),
                 btn('เปิดแอป PTS', lineAppPath('courses'), BRAND.primaryDeep)
             ]
         }
     };
-    if (!bubble.hero) delete bubble.hero;
+    if (heroUrl) {
+        bubble.hero = {
+            type: 'image',
+            url: heroUrl,
+            size: 'full',
+            aspectRatio: '20:13',
+            aspectMode: 'cover'
+        };
+    }
 
     // Soften CTA label when not payment-related
     const t = String(title || '');
     if (!/ชำระ|จ่าย|payment|pay/i.test(t) && bubble.footer.contents[0]) {
         bubble.footer.contents[0] = btn(
             linkUrl ? 'เปิดดูรายละเอียด' : 'ดูหลักสูตร',
-            linkUrl ? absoluteUrl(linkUrl) : lineAppPath('courses'),
+            linkUrl ? safeActionUri(linkUrl, 'courses') : lineAppPath('courses'),
             BRAND.primary
         );
     }
@@ -449,10 +488,14 @@ function buildCourseBubble(course) {
     const hours = Number(course.total_hours || 0);
     const price = Number(course.price || 0);
     const mode = String(course.delivery_mode || 'course');
-    const img = course.cover_image_url
-        ? absoluteUrl(course.cover_image_url)
-        : 'https://placehold.co/800x520/f8e8ec/974258?text=PTS+Course';
-    const detailUrl = absoluteUrl(`CourseDetail.html?courseId=${id}`);
+    const img = safeImageUrl(
+        course.cover_image_url,
+        'https://placehold.co/800x520/f8e8ec/974258?text=PTS+Course'
+    );
+    const detailUrl = safeActionUri(
+        absoluteUrl(`CourseDetail.html?courseId=${id}`) || `CourseDetail.html?courseId=${id}`,
+        'courses'
+    );
     const badge = Number(course.is_featured) === 1 ? 'BEST SELLER' : mode.toUpperCase();
 
     return {
@@ -464,7 +507,7 @@ function buildCourseBubble(course) {
             size: 'full',
             aspectRatio: '20:13',
             aspectMode: 'cover',
-            action: { type: 'uri', uri: detailUrl }
+            action: { type: 'uri', uri: detailUrl || lineAppPath('courses') }
         },
         body: {
             type: 'box',
@@ -528,7 +571,11 @@ function buildCourseBubble(course) {
                     style: 'secondary',
                     height: 'sm',
                     color: BRAND.soft,
-                    action: { type: 'uri', label: 'รายละเอียด', uri: detailUrl }
+                    action: {
+                        type: 'uri',
+                        label: 'รายละเอียด',
+                        uri: detailUrl || lineAppPath('courses')
+                    }
                 }
             ]
         }
@@ -609,9 +656,12 @@ module.exports = {
     getAppBaseUrl,
     isMessagingConfigured,
     isLiffConfigured,
+    isPublicHttpUrl,
     publicLineStatus,
     lineAppPath,
     absoluteUrl,
+    safeActionUri,
+    safeImageUrl,
     verifySignature,
     lineApi,
     replyMessage,

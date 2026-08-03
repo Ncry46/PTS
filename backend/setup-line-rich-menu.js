@@ -133,10 +133,18 @@ async function main() {
         process.exit(1);
     }
 
-    const appCourses = line.lineAppPath('courses');
-    const appMine = line.lineAppPath('mine');
-    const appProfile = line.lineAppPath('profile');
-    const help = line.absoluteUrl('/Settings.html#line-oa') || appProfile;
+    const appCourses = line.safeActionUri(null, 'courses') || line.lineAppPath('courses');
+    const appMine = line.safeActionUri(null, 'mine') || line.lineAppPath('mine');
+    const appProfile = line.safeActionUri(null, 'profile') || line.lineAppPath('profile');
+    const coursesPage = line.absoluteUrl('/Courses.html');
+    const helpCandidate = line.absoluteUrl('/Settings.html#line-oa');
+    const help = (line.isPublicHttpUrl(helpCandidate) ? helpCandidate : '') || appProfile;
+    const registerUri = (line.isPublicHttpUrl(coursesPage) ? coursesPage : '') || appCourses;
+
+    if (!line.isPublicHttpUrl(appCourses)) {
+        console.error('ต้องตั้ง APP_BASE_URL หรือ LINE_LIFF_ID เป็น https ก่อนสร้าง Rich Menu');
+        process.exit(1);
+    }
 
     console.log('Creating rich menu...');
     const created = await line.lineApi('/v2/bot/richmenu', 'POST', {
@@ -146,7 +154,7 @@ async function main() {
         chatBarText: 'เมนู PTS',
         areas: [
             { bounds: { x: 0, y: 0, width: 1250, height: 843 }, action: { type: 'uri', uri: appCourses } },
-            { bounds: { x: 1250, y: 0, width: 1250, height: 843 }, action: { type: 'uri', uri: line.absoluteUrl('/Courses.html') || appCourses } },
+            { bounds: { x: 1250, y: 0, width: 1250, height: 843 }, action: { type: 'uri', uri: registerUri } },
             { bounds: { x: 0, y: 843, width: 1250, height: 843 }, action: { type: 'uri', uri: appProfile } },
             { bounds: { x: 1250, y: 843, width: 1250, height: 843 }, action: { type: 'uri', uri: help } }
         ]
@@ -179,7 +187,7 @@ async function main() {
     console.log('Setting as default...');
     await line.lineApi(`/v2/bot/user/all/richmenu/${richMenuId}`, 'POST', null);
     console.log('Done. Rich menu is live for all users.');
-    console.log('Tiles →', { appCourses, appMine, appProfile, help });
+    console.log('Tiles →', { appCourses, appMine, registerUri, appProfile, help });
 }
 
 main().catch((err) => {

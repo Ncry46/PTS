@@ -83,6 +83,11 @@ app.use('/comp', express.static(frontendDir)); // กันพาธเก่า
 // รูปโปรไฟล์ / แบนเนอร์ที่อัปโหลด
 app.use('/uploads', express.static(uploadsDir));
 
+// LINE LIFF entry (explicit — avoids 404 if static miss / case issues)
+app.get(['/LineApp.html', '/lineapp.html', '/line', '/line-app'], (req, res) => {
+    res.sendFile(path.join(frontendDir, 'LineApp.html'));
+});
+
 // Health check สำหรับ Docker / Render / โหลดบาลานเซอร์
 app.get('/api/health', async (req, res) => {
     try {
@@ -161,8 +166,12 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
             console.log(
                 `💬 LINE OA → addFriend=${lineSt.addFriendConfigured ? 'yes' : 'no'} ` +
                 `messaging=${lineSt.messagingConfigured ? 'yes' : 'no'} ` +
-                `liff=${lineSt.liffConfigured ? 'yes' : 'no'}`
+                `liff=${lineSt.liffConfigured ? 'yes' : 'no'} ` +
+                `base=${lineSt.appBaseUrl || '(missing APP_BASE_URL)'}`
             );
+            if (lineSt.messagingConfigured && !lineSt.liffConfigured && !lineSt.appBaseUrl) {
+                console.warn('⚠️ LINE: ตั้ง APP_BASE_URL หรือ LINE_LIFF_ID ด้วย — ไม่งั้นลิงก์ในแชทจะพาไป 404');
+            }
         } catch (_) { /* ignore */ }
         return pool;
     })
