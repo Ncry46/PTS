@@ -435,6 +435,7 @@ async function refreshLineOaStatus() {
   const msg = document.getElementById('line-msg');
   const addFriend = document.getElementById('line-add-friend');
   const unlinkBtn = document.getElementById('line-unlink');
+  const sendHomeBtn = document.getElementById('line-send-home');
   const openApp = document.getElementById('line-open-app');
   if (!statusText || !toggle) return;
 
@@ -474,16 +475,19 @@ async function refreshLineOaStatus() {
       statusText.textContent = 'เชื่อมบัญชีแล้ว' + name;
       statusText.classList.add('is-on');
       unlinkBtn?.classList.remove('hidden');
+      sendHomeBtn?.classList.remove('hidden');
     } else if (lineConfigured) {
       statusText.textContent = 'พร้อมใช้งาน — เปิดแอปเพื่อเชื่อมบัญชี';
       statusText.classList.add('is-on');
       unlinkBtn?.classList.add('hidden');
+      sendHomeBtn?.classList.add('hidden');
     } else {
       statusText.textContent = isAdminUser
         ? 'ยังไม่ได้ตั้งค่า LINE (ดู LINE_OA.md)'
         : 'ยังไม่เปิด LINE OA บนเซิร์ฟเวอร์นี้';
       statusText.classList.remove('is-on');
       unlinkBtn?.classList.add('hidden');
+      sendHomeBtn?.classList.add('hidden');
     }
 
     if (msg) { msg.textContent = ''; msg.className = 'pts-msg'; }
@@ -518,6 +522,28 @@ document.getElementById('line-toggle').onchange = (e) => {
   e.target.checked = false;
   location.href = lineAppUrl || 'LineApp.html';
 };
+
+document.getElementById('line-send-home')?.addEventListener('click', async () => {
+  const msg = document.getElementById('line-msg');
+  const btn = document.getElementById('line-send-home');
+  if (btn) btn.disabled = true;
+  try {
+    const res = await fetch('/api/line/send-home', { method: 'POST', credentials: 'include' });
+    const data = await res.json();
+    if (!res.ok || data.success === false) throw new Error(data.message || 'ส่งไม่สำเร็จ');
+    if (msg) {
+      msg.textContent = data.message || 'ส่งเมนูเข้า LINE แล้ว';
+      msg.className = 'pts-msg pts-msg--ok';
+    }
+  } catch (err) {
+    if (msg) {
+      msg.textContent = err.message || 'ส่งไม่สำเร็จ';
+      msg.className = 'pts-msg pts-msg--err';
+    }
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+});
 
 document.getElementById('line-unlink')?.addEventListener('click', async () => {
   const msg = document.getElementById('line-msg');
