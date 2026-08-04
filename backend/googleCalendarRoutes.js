@@ -42,9 +42,14 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         res.json({ ...diagnoseGoogleSetup(), drive });
     });
 
-    router.get('/google/drive-status', (_req, res) => {
+    router.get('/google/drive-status', async (_req, res) => {
         try {
-            return res.json({ success: true, ...require('./googleDrive').publicDriveStatus() });
+            const drive = require('./googleDrive');
+            const status = drive.publicDriveStatus();
+            const probe = String(_req.query.probe || '') === '1'
+                ? await drive.probeDriveUpload()
+                : null;
+            return res.json({ success: true, ...status, probe });
         } catch (error) {
             return res.status(500).json({ success: false, message: error.message });
         }

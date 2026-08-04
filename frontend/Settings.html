@@ -632,6 +632,34 @@ document.getElementById('save-profile').onclick = async () => {
       document.getElementById('avatar-file-name').textContent = '';
       document.getElementById('clear-avatar-pick').classList.add('hidden');
       setAvatarPreview(currentAvatarUrl, document.getElementById('full_name').value);
+      let avatarMsg = '';
+      let avatarOk = true;
+      if (upData.storage === 'google_drive') {
+        avatarMsg = upData.message || 'อัปเดตรูปโปรไฟล์แล้ว (เก็บบน Google Drive)';
+      } else if (upData.driveError) {
+        avatarMsg = upData.message || ('อัปรูปแล้วแต่ยังไม่ขึ้น Drive: ' + upData.driveError);
+        avatarOk = false;
+      }
+
+      const res = await fetch('/api/profile', {
+        method: 'PUT', credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          full_name: document.getElementById('full_name').value,
+          phone: document.getElementById('phone').value
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'บันทึกไม่สำเร็จ');
+      syncProfileMeta();
+      if (avatarMsg) {
+        msg.textContent = avatarMsg;
+        msg.className = avatarOk ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
+      } else {
+        msg.textContent = data.message || 'บันทึกโปรไฟล์แล้ว';
+        msg.className = 'pts-msg pts-msg--ok';
+      }
+      return;
     }
 
     const res = await fetch('/api/profile', {

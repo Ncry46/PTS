@@ -118,15 +118,17 @@ function createProfileRouter({ poolPromise, requireLogin }) {
 
                 let publicUrl = localUrl;
                 let storedOn = 'local';
+                let driveError = null;
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
                     mimeType: req.file.mimetype
                 });
-                if (drive?.url) {
+                if (drive && drive.ok && drive.url) {
                     publicUrl = drive.url;
                     storedOn = 'google_drive';
-                    // local copy no longer needed
                     fs.promises.unlink(req.file.path).catch(() => {});
+                } else if (drive && drive.error) {
+                    driveError = drive.error;
                 }
 
                 await pool.request()
@@ -146,10 +148,13 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     success: true,
                     message: storedOn === 'google_drive'
                         ? 'อัปเดตรูปโปรไฟล์แล้ว (เก็บบน Google Drive)'
-                        : 'อัปเดตรูปโปรไฟล์แล้ว',
+                        : (driveError
+                            ? `อัปเดตรูปโปรไฟล์แล้ว (เก็บในเครื่อง — Drive: ${driveError})`
+                            : 'อัปเดตรูปโปรไฟล์แล้ว'),
                     url: publicUrl,
                     storage: storedOn,
                     driveConfigured: isDriveConfigured(),
+                    driveError,
                     user: req.session.user
                 });
             } catch (error) {

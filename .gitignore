@@ -4,6 +4,7 @@ backend/mail.secrets.json
 backend/mail.local.js
 backend/google.local.js
 backend/google-service-account.json
+backend/google.drive.token.json
 .env
 .env.local
 *.log

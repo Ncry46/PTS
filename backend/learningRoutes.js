@@ -574,9 +574,11 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     filename: req.file.filename,
                     mimeType: req.file.mimetype
                 });
-                if (drive?.url) {
+                if (drive && drive.ok && drive.url) {
                     slipUrl = drive.url;
                     try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
+                } else if (drive && drive.error) {
+                    console.warn('[slip→drive]', drive.error);
                 }
 
                 // Remove previous slip file if re-submitting after reject
