@@ -1056,6 +1056,13 @@ app.listen(PORT, HOST, () => {
             : {};
         console.log(`📅 Google Calendar: ${configured ? 'configured ✓' : 'NOT configured — สร้าง backend/google.local.js'}`);
         if (status.redirectUri) console.log(`   redirectUri = ${status.redirectUri}`);
+        try {
+            const drive = require('./googleDrive').publicDriveStatus();
+            console.log(`☁ Google Drive: ${drive.configured ? 'configured ✓' : 'NOT configured — ดู GOOGLE_DRIVE.md'}`);
+            if (!drive.configured && drive.serviceAccountEmail) {
+                console.log(`   service account: ${drive.serviceAccountEmail} (ยังขาด folder id)`);
+            }
+        } catch (_) { /* ignore */ }
         const localG = path.join(__dirname, 'google.local.js');
         console.log(`   google.local.js = ${localG} ${fs.existsSync(localG) ? '(มีไฟล์)' : '(ไม่พบ)'}`);
         if (!configured) {

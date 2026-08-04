@@ -67,6 +67,14 @@ cp .env.example .env
 แล้วชี้ Webhook ไป `https://YOUR_DOMAIN/api/line/webhook` และ LIFF ไป `LineApp.html`  
 ผู้เรียนใช้เมนูด่วนในแชท / เปิดแอปธีม PTS ใน LINE ได้
 
+## เก็บรูปบน Google Drive
+
+คู่มือเต็ม: [`GOOGLE_DRIVE.md`](GOOGLE_DRIVE.md)
+
+สรุป: สร้าง Service Account + โฟลเดอร์ Drive แล้วใส่  
+`GOOGLE_DRIVE_FOLDER_ID` และไฟล์ `backend/google-service-account.json`  
+รูปโปรไฟล์ / สลิปโอนจะอัปขึ้น Drive อัตโนมัติ (ใช้บน localhost ได้)
+
 ## โครงสร้างหลัก
 
 - `backend/` — Express API + SQL Server

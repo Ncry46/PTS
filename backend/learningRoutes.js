@@ -6,6 +6,7 @@ const multer = require('multer');
 const { buildPromptPayPayload, getPromptPayId } = require('./promptpay');
 const { mapHeroSlidesImages } = require('./heroImages');
 const { markPaidAndEnroll } = require('./paymentActions');
+const { tryUploadLocalFile } = require('./googleDrive');
 
 const SLIP_DIR = path.join(__dirname, '..', 'uploads', 'slips');
 const SLIP_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -561,12 +562,21 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     });
                 }
 
-                const slipUrl = `/uploads/slips/${req.file.filename}`;
+                let slipUrl = `/uploads/slips/${req.file.filename}`;
                 const transferRaw = String(req.body.transfer_at || '').trim();
                 let transferAt = null;
                 if (transferRaw) {
                     const d = new Date(transferRaw);
                     if (!Number.isNaN(d.getTime())) transferAt = d;
+                }
+
+                const drive = await tryUploadLocalFile(req.file.path, {
+                    filename: req.file.filename,
+                    mimeType: req.file.mimetype
+                });
+                if (drive?.url) {
+                    slipUrl = drive.url;
+                    try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
                 }
 
                 // Remove previous slip file if re-submitting after reject

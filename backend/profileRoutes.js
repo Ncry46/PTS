@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
+const { tryUploadLocalFile, isDriveConfigured } = require('./googleDrive');
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars');
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -107,13 +108,26 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูปภาพ' });
             }
 
-            const publicUrl = `/uploads/avatars/${req.file.filename}`;
+            const localUrl = `/uploads/avatars/${req.file.filename}`;
             try {
                 const pool = await poolPromise;
                 const prev = await pool.request()
                     .input('userId', sql.Int, user.user_id)
                     .query(`SELECT Url FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
                 const oldUrl = prev.recordset[0]?.Url || '';
+
+                let publicUrl = localUrl;
+                let storedOn = 'local';
+                const drive = await tryUploadLocalFile(req.file.path, {
+                    filename: req.file.filename,
+                    mimeType: req.file.mimetype
+                });
+                if (drive?.url) {
+                    publicUrl = drive.url;
+                    storedOn = 'google_drive';
+                    // local copy no longer needed
+                    fs.promises.unlink(req.file.path).catch(() => {});
+                }
 
                 await pool.request()
                     .input('userId', sql.Int, user.user_id)
@@ -122,7 +136,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
 
                 req.session.user.Url = publicUrl;
 
-                // ลบไฟล์เก่าของเราเอง (ถ้าเคยอัปโหลดไว้)
+                // ลบไฟล์เก่าของเราเอง (ถ้าเคยอัปโหลดไว้ในเครื่อง)
                 if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/')) {
                     const oldPath = path.join(__dirname, '..', String(oldUrl).replace(/^\//, ''));
                     fs.promises.unlink(oldPath).catch(() => {});
@@ -130,8 +144,12 @@ function createProfileRouter({ poolPromise, requireLogin }) {
 
                 res.json({
                     success: true,
-                    message: 'อัปเดตรูปโปรไฟล์แล้ว',
+                    message: storedOn === 'google_drive'
+                        ? 'อัปเดตรูปโปรไฟล์แล้ว (เก็บบน Google Drive)'
+                        : 'อัปเดตรูปโปรไฟล์แล้ว',
                     url: publicUrl,
+                    storage: storedOn,
+                    driveConfigured: isDriveConfigured(),
                     user: req.session.user
                 });
             } catch (error) {

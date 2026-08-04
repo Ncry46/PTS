@@ -37,7 +37,17 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
 
     router.get('/google/diagnose', (req, res) => {
-        res.json(diagnoseGoogleSetup());
+        let drive = {};
+        try { drive = require('./googleDrive').publicDriveStatus(); } catch (_) { drive = {}; }
+        res.json({ ...diagnoseGoogleSetup(), drive });
+    });
+
+    router.get('/google/drive-status', (_req, res) => {
+        try {
+            return res.json({ success: true, ...require('./googleDrive').publicDriveStatus() });
+        } catch (error) {
+            return res.status(500).json({ success: false, message: error.message });
+        }
     });
 
     router.get('/google/status', async (req, res) => {

@@ -3,6 +3,7 @@ node_modules/.cache/
 backend/mail.secrets.json
 backend/mail.local.js
 backend/google.local.js
+backend/google-service-account.json
 .env
 .env.local
 *.log
