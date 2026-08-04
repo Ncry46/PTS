@@ -1,66 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" fill="none" preserveAspectRatio="xMidYMid slice">
-  <rect width="1600" height="900" fill="#141218"/>
-
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
   <defs>
-    <pattern id="d-stripes-h" patternUnits="userSpaceOnUse" width="14" height="14">
-      <line x1="0" y1="7" x2="14" y2="7" stroke="#e895a8" stroke-width="4.5" opacity="0.55"/>
-    </pattern>
-    <pattern id="d-stripes-d" patternUnits="userSpaceOnUse" width="12" height="12" patternTransform="rotate(40)">
-      <line x1="0" y1="6" x2="12" y2="6" stroke="#d9778e" stroke-width="3.2" opacity="0.6"/>
-    </pattern>
-    <pattern id="d-stripes-bright" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(-35)">
-      <line x1="0" y1="5" x2="10" y2="5" stroke="#ffb1c1" stroke-width="2.6" opacity="0.7"/>
-    </pattern>
-    <pattern id="d-grid" patternUnits="userSpaceOnUse" width="12" height="12">
-      <path d="M12 0H0V12" fill="none" stroke="#e895a8" stroke-width="1.3" opacity="0.55"/>
-    </pattern>
-    <pattern id="d-grid-soft" patternUnits="userSpaceOnUse" width="14" height="14">
-      <path d="M14 0H0V14" fill="none" stroke="#c4637b" stroke-width="1.5" opacity="0.5"/>
-    </pattern>
-    <radialGradient id="d-glow-a" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#c4637b" stop-opacity="0.45"/>
-      <stop offset="100%" stop-color="#c4637b" stop-opacity="0"/>
-    </radialGradient>
-    <radialGradient id="d-glow-b" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stop-color="#974258" stop-opacity="0.4"/>
-      <stop offset="100%" stop-color="#974258" stop-opacity="0"/>
-    </radialGradient>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5a0810"/>
+      <stop offset="50%" stop-color="#a01228"/>
+      <stop offset="100%" stop-color="#2a0408"/>
+    </linearGradient>
   </defs>
-
-  <!-- soft ambient blooms -->
-  <circle cx="120" cy="80" r="280" fill="url(#d-glow-a)"/>
-  <circle cx="1480" cy="820" r="260" fill="url(#d-glow-b)"/>
-  <circle cx="470" cy="580" r="220" fill="url(#d-glow-b)"/>
-
-  <circle cx="120" cy="70" r="210" fill="url(#d-stripes-h)"/>
-  <circle cx="70" cy="420" r="48" fill="url(#d-stripes-bright)"/>
-
-  <g stroke="#e895a8" stroke-width="2.5" fill="none" opacity="0.75">
-    <circle cx="210" cy="360" r="10"/>
-    <circle cx="245" cy="395" r="10"/>
-    <circle cx="280" cy="430" r="10"/>
-    <circle cx="315" cy="465" r="10"/>
-  </g>
-
-  <circle cx="40" cy="860" r="160" fill="#9a3f55" opacity="0.85"/>
-  <circle cx="520" cy="620" r="150" fill="url(#d-grid)"/>
-  <circle cx="470" cy="580" r="105" fill="#b84f6a" opacity="0.88"/>
-
-  <circle cx="980" cy="430" r="150" fill="url(#d-stripes-d)"/>
-  <circle cx="1280" cy="160" r="175" stroke="#e895a8" stroke-width="5" fill="none" opacity="0.7"/>
-
-  <g fill="#ffb1c1" opacity="0.8">
-    <circle cx="1180" cy="250" r="7"/>
-    <circle cx="1220" cy="235" r="7"/>
-    <circle cx="1265" cy="228" r="7"/>
-    <circle cx="1310" cy="235" r="7"/>
-    <circle cx="1350" cy="255" r="7"/>
-    <circle cx="1385" cy="285" r="7"/>
-    <circle cx="1410" cy="320" r="7"/>
-  </g>
-
-  <circle cx="1520" cy="480" r="55" fill="url(#d-stripes-bright)"/>
-  <circle cx="1380" cy="780" r="130" fill="url(#d-grid-soft)"/>
-
-  <path d="M1480 820 L1510 800 L1540 820 L1570 800" stroke="#e895a8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none" opacity="0.75"/>
+  <rect width="1920" height="1080" fill="url(#g)"/>
 </svg>

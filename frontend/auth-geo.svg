@@ -1,70 +1,11 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" fill="none" preserveAspectRatio="xMidYMid slice">
-  <rect width="1600" height="900" fill="#ffffff"/>
-
-  <!-- top-left large horizontal stripes -->
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <!-- Legacy geo asset retired — solid fallback so old CSS cannot resurrect circle pattern -->
   <defs>
-    <pattern id="stripes-h" patternUnits="userSpaceOnUse" width="14" height="14" patternTransform="rotate(0)">
-      <line x1="0" y1="7" x2="14" y2="7" stroke="#f3c4d0" stroke-width="5"/>
-    </pattern>
-    <pattern id="stripes-d" patternUnits="userSpaceOnUse" width="12" height="12" patternTransform="rotate(40)">
-      <line x1="0" y1="6" x2="12" y2="6" stroke="#e8a0b2" stroke-width="3.5"/>
-    </pattern>
-    <pattern id="stripes-d-dark" patternUnits="userSpaceOnUse" width="10" height="10" patternTransform="rotate(-35)">
-      <line x1="0" y1="5" x2="10" y2="5" stroke="#974258" stroke-width="2.8"/>
-    </pattern>
-    <pattern id="grid" patternUnits="userSpaceOnUse" width="12" height="12">
-      <path d="M12 0H0V12" fill="none" stroke="#d9778e" stroke-width="1.4"/>
-    </pattern>
-    <pattern id="grid-soft" patternUnits="userSpaceOnUse" width="14" height="14">
-      <path d="M14 0H0V14" fill="none" stroke="#f0c4ce" stroke-width="1.6"/>
-    </pattern>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff2a2a"/>
+      <stop offset="45%" stop-color="#c41040"/>
+      <stop offset="100%" stop-color="#7a1028"/>
+    </linearGradient>
   </defs>
-
-  <!-- large striped circle top-left -->
-  <circle cx="120" cy="70" r="210" fill="url(#stripes-h)" opacity="0.95"/>
-
-  <!-- small dark striped circle left -->
-  <circle cx="70" cy="420" r="48" fill="url(#stripes-d-dark)" opacity="0.9"/>
-
-  <!-- row of hollow dots left -->
-  <g stroke="#c4637b" stroke-width="3" fill="none">
-    <circle cx="210" cy="360" r="10"/>
-    <circle cx="245" cy="395" r="10"/>
-    <circle cx="280" cy="430" r="10"/>
-    <circle cx="315" cy="465" r="10"/>
-  </g>
-
-  <!-- solid magenta bottom-left (partial) -->
-  <circle cx="40" cy="860" r="160" fill="#974258"/>
-
-  <!-- hatched circle behind center-left solid -->
-  <circle cx="520" cy="620" r="150" fill="url(#grid)" opacity="0.85"/>
-  <!-- solid deep magenta center-left -->
-  <circle cx="470" cy="580" r="105" fill="#9a3f55"/>
-
-  <!-- diagonal striped mid-right -->
-  <circle cx="980" cy="430" r="150" fill="url(#stripes-d)" opacity="0.95"/>
-
-  <!-- outline ring top-right -->
-  <circle cx="1280" cy="160" r="175" stroke="#c4637b" stroke-width="6" fill="none" opacity="0.85"/>
-
-  <!-- dotted wave upper-right -->
-  <g fill="#b84f6a">
-    <circle cx="1180" cy="250" r="7"/>
-    <circle cx="1220" cy="235" r="7"/>
-    <circle cx="1265" cy="228" r="7"/>
-    <circle cx="1310" cy="235" r="7"/>
-    <circle cx="1350" cy="255" r="7"/>
-    <circle cx="1385" cy="285" r="7"/>
-    <circle cx="1410" cy="320" r="7"/>
-  </g>
-
-  <!-- small dark striped far right -->
-  <circle cx="1520" cy="480" r="55" fill="url(#stripes-d-dark)" opacity="0.88"/>
-
-  <!-- soft grid circle bottom-right -->
-  <circle cx="1380" cy="780" r="130" fill="url(#grid-soft)" opacity="0.95"/>
-
-  <!-- zigzag accent bottom-right -->
-  <path d="M1480 820 L1510 800 L1540 820 L1570 800" stroke="#e8a0b2" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect width="1920" height="1080" fill="url(#g)"/>
 </svg>

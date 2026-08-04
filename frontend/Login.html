@@ -8,17 +8,42 @@
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
-<link rel="stylesheet" href="auth-scene.css?v=20260804iri2">
+<link rel="stylesheet" href="auth-scene.css?v=20260804iri3">
 <link rel="stylesheet" href="login.css?v=20260727authgeodark">
-<link rel="stylesheet" href="Iridescence.css?v=20260804iri2">
+<link rel="stylesheet" href="Iridescence.css?v=20260804iri3">
+<style id="pts-auth-force-bg">
+  /* Inline critical BG — survives stale cached auth-scene.css */
+  body.pts-login, body.pts-register {
+    background: #ff1f2e !important;
+    background-image: none !important;
+  }
+  .pts-auth-scene__geo { display: none !important; }
+  .pts-auth-scene {
+    background: #ff1f2e !important;
+  }
+  .pts-auth-scene::before {
+    content: "";
+    position: absolute; inset: -15%;
+    background:
+      radial-gradient(circle at 20% 30%, #ffb1c1, transparent 45%),
+      radial-gradient(circle at 80% 20%, #ff503c, transparent 40%),
+      radial-gradient(circle at 60% 80%, #9b1230, transparent 45%),
+      linear-gradient(135deg, #ff1f2e, #7a1028);
+    animation: ptsForceIri 9s ease-in-out infinite alternate;
+  }
+  @keyframes ptsForceIri {
+    from { transform: scale(1) translate(0,0); }
+    to { transform: scale(1.08) translate(2%,1%); }
+  }
+</style>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
-<body class="pts-body pts-login">
+<body class="pts-body pts-login" data-pts-auth-build="iri3-20260804">
 <div class="pts-auth-scene" aria-hidden="true">
   <div class="pts-auth-scene__fx" id="auth-iridescence"></div>
-  <div class="pts-auth-scene__veil"></div>
 </div>
+<div class="pts-auth-build" aria-hidden="true">auth-bg iri3</div>
 <div id="app-navbar"></div>
 
 <main class="pts-login__stage">
@@ -132,6 +157,6 @@
 <script src="login.js?v=20260723g"></script>
 <script src="password-toggle.js?v=20260720e"></script>
 <script src="/comp/navbar.js?v=20260727baijam"></script>
-<script type="module" src="auth-iridescence-boot.js?v=20260804iri2"></script>
+<script type="module" src="auth-iridescence-boot.js?v=20260804iri3"></script>
 </body>
 </html>
