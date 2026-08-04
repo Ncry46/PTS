@@ -581,6 +581,17 @@ function menuTile(title, subtitle, uri, color) {
 
 /** Payment / general notification card like the mock */
 function buildNotifyFlex(title, body, linkUrl) {
+    const isPay = /ชำระ|จ่าย|payment|pay|ค้างชำระ/i.test(String(title || '') + String(body || ''));
+    const isSuccess = /สำเร็จ|เปิดสิทธิ์|ลงทะเบียน|สมัคร.*แล้ว|enroll/i.test(String(title || '') + String(body || ''));
+
+    if (isSuccess && !isPay) {
+        return buildRegistrationSuccessFlex({
+            title: title || 'ลงทะเบียนสำเร็จแล้ว',
+            body,
+            linkUrl
+        });
+    }
+
     const contents = [
         {
             type: 'text',
@@ -602,13 +613,19 @@ function buildNotifyFlex(title, body, linkUrl) {
         });
     }
 
-    // Do NOT default to /logo.png — missing file makes LINE reject Flex (looks like 404)
     const heroCandidate = String(process.env.LINE_FLEX_HERO_IMAGE || '').trim();
     const heroUrl = isPublicHttpUrl(heroCandidate)
         ? heroCandidate
         : (absoluteUrl(heroCandidate) && isPublicHttpUrl(absoluteUrl(heroCandidate))
             ? absoluteUrl(heroCandidate)
-            : '');
+            : (isPay
+                ? 'https://placehold.co/1200x780/8e324f/ffffff/png?text=Payment'
+                : ''));
+
+    const primaryLabel = isPay ? 'ชำระเงินตอนนี้' : (linkUrl ? 'เปิดดูรายละเอียด' : 'ดูหลักสูตร');
+    const primaryUri = linkUrl
+        ? safeActionUri(linkUrl, isPay ? 'courses' : 'notify')
+        : lineAppPath('courses');
 
     const bubble = {
         type: 'bubble',
@@ -627,9 +644,7 @@ function buildNotifyFlex(title, body, linkUrl) {
             paddingAll: '14px',
             backgroundColor: BRAND.soft,
             contents: [
-                linkUrl
-                    ? btn('ชำระเงินตอนนี้', safeActionUri(linkUrl, 'courses'), BRAND.primary)
-                    : btn('เปิดดูรายละเอียด', lineAppPath('courses'), BRAND.primary),
+                btn(primaryLabel, primaryUri, BRAND.primary),
                 btn('เปิดแอป PTS', lineAppPath('courses'), BRAND.primaryDeep)
             ]
         }
@@ -644,16 +659,6 @@ function buildNotifyFlex(title, body, linkUrl) {
         };
     }
 
-    // Soften CTA label when not payment-related
-    const t = String(title || '');
-    if (!/ชำระ|จ่าย|payment|pay/i.test(t) && bubble.footer.contents[0]) {
-        bubble.footer.contents[0] = btn(
-            linkUrl ? 'เปิดดูรายละเอียด' : 'ดูหลักสูตร',
-            linkUrl ? safeActionUri(linkUrl, 'courses') : lineAppPath('courses'),
-            BRAND.primary
-        );
-    }
-
     return {
         type: 'flex',
         altText: String(title || 'PTS Learning').slice(0, 100),
@@ -661,63 +666,161 @@ function buildNotifyFlex(title, body, linkUrl) {
     };
 }
 
-function buildSuccessFlex(title, rows) {
-    const bodyContents = [
-        {
-            type: 'box',
-            layout: 'horizontal',
-            spacing: '12px',
-            contents: [
-                {
-                    type: 'box',
-                    layout: 'vertical',
-                    width: '40px',
-                    height: '40px',
-                    cornerRadius: '20px',
-                    backgroundColor: '#dcfce7',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    contents: [
-                        { type: 'text', text: 'OK', weight: 'bold', size: 'sm', color: BRAND.success, align: 'center' }
-                    ]
-                },
-                {
-                    type: 'box',
-                    layout: 'vertical',
-                    flex: 1,
-                    contents: [
-                        {
-                            type: 'text',
-                            text: String(title || 'สำเร็จ').slice(0, 60),
-                            weight: 'bold',
-                            size: 'md',
-                            color: BRAND.text,
-                            wrap: true
-                        }
-                    ]
-                }
-            ]
-        }
-    ];
+/** Registration success card (green check) matching OA mock */
+function buildRegistrationSuccessFlex(opts = {}) {
+    const title = String(opts.title || 'ลงทะเบียนสำเร็จแล้ว').slice(0, 60);
+    const code = String(opts.code || opts.ref || '').trim();
+    const courseName = String(opts.courseName || opts.body || '').slice(0, 80);
+    const linkUrl = opts.linkUrl || 'MyCourses.html';
 
-    (rows || []).forEach((row) => {
-        bodyContents.push({
+    const rows = [];
+    if (code) {
+        rows.push({
             type: 'box',
             layout: 'baseline',
             spacing: '8px',
-            margin: '12px',
+            margin: '14px',
             contents: [
-                { type: 'text', text: String(row.label || ''), size: 'xs', color: BRAND.muted, flex: 2, wrap: true },
-                { type: 'text', text: String(row.value || ''), size: 'xs', color: BRAND.text, flex: 3, wrap: true, weight: 'bold' }
+                { type: 'text', text: 'รหัสอ้างอิง', size: 'xs', color: BRAND.muted, flex: 2 },
+                { type: 'text', text: code, size: 'xs', color: BRAND.text, flex: 3, weight: 'bold', wrap: true }
             ]
         });
-    });
+    }
+    if (courseName) {
+        rows.push({
+            type: 'box',
+            layout: 'baseline',
+            spacing: '8px',
+            margin: '8px',
+            contents: [
+                { type: 'text', text: 'หลักสูตร', size: 'xs', color: BRAND.muted, flex: 2 },
+                { type: 'text', text: courseName, size: 'xs', color: BRAND.text, flex: 3, weight: 'bold', wrap: true }
+            ]
+        });
+    }
 
     return {
         type: 'flex',
-        altText: String(title || 'สำเร็จ').slice(0, 100),
+        altText: title,
         contents: {
             type: 'bubble',
+            size: 'mega',
+            body: {
+                type: 'box',
+                layout: 'vertical',
+                paddingAll: '20px',
+                backgroundColor: BRAND.surface,
+                contents: [
+                    {
+                        type: 'box',
+                        layout: 'horizontal',
+                        spacing: '12px',
+                        contents: [
+                            {
+                                type: 'box',
+                                layout: 'vertical',
+                                width: '44px',
+                                height: '44px',
+                                cornerRadius: '22px',
+                                backgroundColor: '#dcfce7',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                contents: [
+                                    { type: 'text', text: '✓', weight: 'bold', size: 'lg', color: BRAND.success, align: 'center' }
+                                ]
+                            },
+                            {
+                                type: 'box',
+                                layout: 'vertical',
+                                flex: 1,
+                                justifyContent: 'center',
+                                contents: [
+                                    {
+                                        type: 'text',
+                                        text: title,
+                                        weight: 'bold',
+                                        size: 'md',
+                                        color: BRAND.text,
+                                        wrap: true
+                                    },
+                                    {
+                                        type: 'text',
+                                        text: getOaName(),
+                                        size: 'xs',
+                                        color: BRAND.muted,
+                                        margin: '4px'
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    ...rows
+                ]
+            },
+            footer: {
+                type: 'box',
+                layout: 'vertical',
+                paddingAll: '14px',
+                backgroundColor: BRAND.lavender,
+                contents: [
+                    btn('เข้าเรียนเลย', safeActionUri(linkUrl, 'mine') || lineAppPath('mine'), BRAND.primary)
+                ]
+            }
+        }
+    };
+}
+
+/** Payment reminder card matching OA mock */
+function buildPaymentFlex(opts = {}) {
+    const courseName = String(opts.courseName || 'หลักสูตร').slice(0, 80);
+    const amount = opts.amount != null ? Number(opts.amount) : null;
+    const payUrl = safeActionUri(opts.payUrl || opts.linkUrl || 'Payments.html', 'courses') || lineAppPath('courses');
+    const img = safeImageUrl(
+        opts.imageUrl,
+        'https://placehold.co/1200x780/8e324f/ffffff/png?text=PTS+Payment'
+    );
+
+    const bodyContents = [
+        {
+            type: 'text',
+            text: 'รอชำระเงิน',
+            weight: 'bold',
+            size: 'lg',
+            color: BRAND.primary
+        },
+        {
+            type: 'text',
+            text: `กรุณาชำระเงินเพื่อเปิดสิทธิ์เรียน\n${courseName}`,
+            size: 'sm',
+            color: BRAND.muted,
+            wrap: true,
+            margin: 'md'
+        }
+    ];
+    if (amount != null && !Number.isNaN(amount)) {
+        bodyContents.push({
+            type: 'text',
+            text: `ยอดชำระ ฿${amount.toLocaleString('th-TH')}`,
+            weight: 'bold',
+            size: 'md',
+            color: BRAND.text,
+            margin: '12px'
+        });
+    }
+
+    return {
+        type: 'flex',
+        altText: `รอชำระเงิน — ${courseName}`,
+        contents: {
+            type: 'bubble',
+            size: 'mega',
+            hero: {
+                type: 'image',
+                url: img,
+                size: 'full',
+                aspectRatio: '20:13',
+                aspectMode: 'cover'
+            },
             body: {
                 type: 'box',
                 layout: 'vertical',
@@ -728,12 +831,23 @@ function buildSuccessFlex(title, rows) {
             footer: {
                 type: 'box',
                 layout: 'vertical',
-                paddingAll: '12px',
-                backgroundColor: BRAND.lavender,
-                contents: [btn('กลับไปยังคอร์สเรียน', lineAppPath('courses'), BRAND.primary)]
+                paddingAll: '14px',
+                backgroundColor: BRAND.soft,
+                contents: [
+                    btn('ชำระเงินตอนนี้', payUrl, BRAND.primary)
+                ]
             }
         }
     };
+}
+
+function buildSuccessFlex(title, rows) {
+    return buildRegistrationSuccessFlex({
+        title,
+        code: (rows || []).find((r) => /รหัส|code|ref/i.test(String(r.label || '')))?.value,
+        courseName: (rows || []).find((r) => /หลักสูตร|course/i.test(String(r.label || '')))?.value
+            || (rows || []).map((r) => r.value).filter(Boolean).join(' · ')
+    });
 }
 
 function buildCourseBubble(course) {
@@ -927,6 +1041,8 @@ module.exports = {
     buildHomeMessages,
     buildText,
     buildNotifyFlex,
+    buildRegistrationSuccessFlex,
+    buildPaymentFlex,
     buildSuccessFlex,
     buildCourseBubble,
     buildCourseCarousel,

@@ -3,136 +3,169 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>รายการหลักสูตร | PTS Learning</title>
+<title>PTS ใน LINE | Personal Assistant Academy</title>
 <script src="/comp/theme-boot.js"></script>
-<link rel="stylesheet" href="site.css?v=20260803lineui">
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 <style>
   :root {
     --line-safe-bottom: env(safe-area-inset-bottom, 0px);
-    --la-bg: #efe6ef;
+    --la-bg: #e8e2f7;
+    --la-bg-2: #f3eef8;
     --la-card: #ffffff;
-    --la-primary: #974258;
+    --la-primary: #8e324f;
     --la-deep: #7a2f42;
-    --la-soft: #f6e6ea;
-    --la-text: #1c1520;
-    --la-muted: #5c4f55;
+    --la-soft: #f4e4ea;
+    --la-text: #2a1f2c;
+    --la-muted: #6b5c66;
     --la-teal: #0f766e;
-    --la-olive: #6b7c3c;
+    --la-green: #3d8b6e;
   }
   * { box-sizing: border-box; }
+  html, body { margin: 0; }
   body.pts-line-app {
-    margin: 0;
     min-height: 100dvh;
-    background: var(--la-bg);
+    background:
+      radial-gradient(120% 70% at 100% -10%, rgba(151,66,88,.12), transparent 50%),
+      linear-gradient(180deg, var(--la-bg) 0%, var(--la-bg-2) 55%, #efeaf6 100%);
     color: var(--la-text);
     font-family: 'Bai Jamjuree', sans-serif;
-    padding-bottom: calc(76px + var(--line-safe-bottom));
+    padding-bottom: calc(78px + var(--line-safe-bottom));
   }
   .la-top {
     position: sticky; top: 0; z-index: 30;
-    background: color-mix(in srgb, var(--la-bg) 88%, #fff);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid rgba(151,66,88,.1);
-    padding: 10px 16px 12px;
+    background: color-mix(in srgb, var(--la-bg) 82%, #fff);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(142,50,79,.1);
+    padding: 12px 16px 10px;
   }
   .la-top__row {
-    max-width: 520px; margin: 0 auto;
+    max-width: 480px; margin: 0 auto;
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
   .la-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .la-brand img {
-    width: 36px; height: 36px; object-fit: contain;
-    border-radius: 10px; background: #fff; padding: 3px;
-    box-shadow: 0 4px 12px rgba(122,47,66,.12);
+    width: 40px; height: 40px; object-fit: contain;
+    border-radius: 12px; background: #fff; padding: 4px;
+    box-shadow: 0 6px 16px rgba(122,47,66,.14);
   }
-  .la-brand__text { min-width: 0; }
-  .la-brand__text strong { display: block; font-size: .95rem; line-height: 1.2; }
-  .la-brand__text span { display: block; font-size: .7rem; color: var(--la-muted); }
-  .la-top__actions { display: flex; gap: 6px; }
+  .la-brand strong { display: block; font-size: .98rem; line-height: 1.15; color: var(--la-deep); }
+  .la-brand span { display: block; font-size: .68rem; color: var(--la-muted); margin-top: 2px; }
   .la-icon-btn {
-    width: 36px; height: 36px; border-radius: 999px; border: none;
+    width: 38px; height: 38px; border-radius: 999px; border: none;
     background: #fff; color: var(--la-muted); display: grid; place-items: center;
-    box-shadow: 0 4px 12px rgba(28,21,32,.06); cursor: pointer;
+    box-shadow: 0 4px 12px rgba(42,31,44,.08); cursor: pointer;
   }
-  .la-icon-btn .material-symbols-outlined { font-size: 20px; }
-  .la-shell { max-width: 520px; margin: 0 auto; padding: 14px 16px 8px; }
-  .la-hero-copy { margin: 4px 0 14px; }
+  .la-shell { max-width: 480px; margin: 0 auto; padding: 16px 16px 10px; }
+  .la-hero-copy { margin: 2px 0 14px; }
   .la-eyebrow {
-    margin: 0 0 4px; font-size: .72rem; font-weight: 700;
-    letter-spacing: .12em; text-transform: uppercase; color: var(--la-primary);
+    margin: 0 0 6px; font-size: .72rem; font-weight: 700;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--la-primary);
   }
   .la-hero-copy h1 {
-    margin: 0; font-size: 1.45rem; line-height: 1.25; color: var(--la-deep);
+    margin: 0; font-size: 1.55rem; line-height: 1.22; color: var(--la-deep); font-weight: 700;
   }
-  .la-hero-copy p { margin: 6px 0 0; font-size: .88rem; color: var(--la-muted); line-height: 1.45; }
+  .la-hero-copy p { margin: 8px 0 0; font-size: .9rem; color: var(--la-muted); line-height: 1.5; }
   .la-filters {
-    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px;
+    display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
     margin-bottom: 14px; scrollbar-width: none;
   }
   .la-filters::-webkit-scrollbar { display: none; }
   .la-chip {
     flex: 0 0 auto; border: none; cursor: pointer;
-    padding: 8px 14px; border-radius: 999px; font-weight: 700; font-size: .82rem;
+    padding: 9px 16px; border-radius: 999px; font-weight: 700; font-size: .84rem;
     background: #fff; color: var(--la-muted);
-    box-shadow: 0 4px 10px rgba(28,21,32,.04);
+    box-shadow: 0 4px 12px rgba(42,31,44,.05);
   }
-  .la-chip.is-on { background: var(--la-primary); color: #fff; }
-  .la-list { display: flex; flex-direction: column; gap: 12px; }
+  .la-chip.is-on {
+    background: var(--la-primary); color: #fff;
+    box-shadow: 0 8px 18px rgba(142,50,79,.28);
+  }
+  .la-list { display: flex; flex-direction: column; gap: 14px; }
   .la-course {
-    display: grid; grid-template-columns: 112px 1fr; gap: 12px;
-    background: var(--la-card); border-radius: 20px; overflow: hidden;
-    box-shadow: 0 10px 24px rgba(28,21,32,.06);
-    border: 1px solid rgba(151,66,88,.08);
-    text-decoration: none; color: inherit;
+    display: block;
+    background: var(--la-card);
+    border-radius: 22px;
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    box-shadow: 0 12px 28px rgba(42,31,44,.08);
+    border: 1px solid rgba(142,50,79,.06);
   }
-  .la-course__media { position: relative; min-height: 112px; background: var(--la-soft); }
-  .la-course__media img { width: 100%; height: 100%; object-fit: cover; display: block; position: absolute; inset: 0; }
+  .la-course__media {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: linear-gradient(135deg, #f4e4ea, #e8e2f7);
+  }
+  .la-course__media img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
   .la-badge {
-    position: absolute; left: 8px; top: 8px; z-index: 1;
-    padding: 3px 8px; border-radius: 999px; font-size: .62rem; font-weight: 800;
-    letter-spacing: .04em; color: #fff; background: var(--la-primary);
+    position: absolute; left: 12px; top: 12px; z-index: 1;
+    padding: 5px 10px; border-radius: 999px;
+    font-size: .65rem; font-weight: 800; letter-spacing: .04em;
+    color: #fff; background: #c62828;
+    box-shadow: 0 4px 10px rgba(0,0,0,.15);
   }
-  .la-badge--new { background: var(--la-teal); }
-  .la-course__body { padding: 12px 12px 12px 0; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .la-badge--new { background: var(--la-green); }
+  .la-course__body { padding: 14px 14px 15px; }
   .la-course__meta {
-    display: flex; flex-wrap: wrap; gap: 8px; font-size: .72rem; color: var(--la-muted);
+    display: flex; flex-wrap: wrap; gap: 10px;
+    font-size: .75rem; color: var(--la-muted); margin-bottom: 8px;
   }
-  .la-course__meta span { display: inline-flex; align-items: center; gap: 3px; max-width: 100%; }
-  .la-course__meta .material-symbols-outlined { font-size: 14px; }
+  .la-course__meta span { display: inline-flex; align-items: center; gap: 4px; }
+  .la-course__meta .material-symbols-outlined { font-size: 15px; }
   .la-course__title {
-    margin: 0; font-size: .95rem; line-height: 1.35; font-weight: 700;
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
-  }
-  .la-course__desc {
-    margin: 0; font-size: .75rem; color: var(--la-muted); line-height: 1.4;
+    margin: 0 0 10px; font-size: 1.05rem; line-height: 1.35; font-weight: 700;
+    color: var(--la-text);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
   }
   .la-course__foot {
-    margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
   }
-  .la-price { font-size: 1rem; font-weight: 800; color: var(--la-primary); }
+  .la-price { font-size: 1.15rem; font-weight: 800; color: var(--la-primary); }
+  .la-price s {
+    display: block; font-size: .72rem; font-weight: 600; color: #9a8a92;
+    margin-bottom: 2px;
+  }
   .la-detail-btn {
     display: inline-flex; align-items: center; justify-content: center;
-    padding: 6px 12px; border-radius: 999px; font-size: .75rem; font-weight: 700;
-    border: 1.5px solid rgba(151,66,88,.28); color: var(--la-primary); background: #fff;
+    min-height: 36px; padding: 0 14px; border-radius: 999px;
+    font-size: .8rem; font-weight: 700;
+    color: var(--la-primary);
+    background: #fff;
+    border: 1.5px solid rgba(142,50,79,.28);
   }
   .la-empty {
-    text-align: center; padding: 36px 16px; background: #fff; border-radius: 20px;
+    text-align: center; padding: 40px 18px; background: #fff; border-radius: 22px;
     color: var(--la-muted); font-size: .9rem;
+    box-shadow: 0 10px 24px rgba(42,31,44,.05);
   }
   .la-panel { display: none; }
-  .la-panel.is-on { display: block; }
+  .la-panel.is-on { display: block; animation: la-in .28s ease; }
+  @keyframes la-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+  }
   .la-card {
-    background: #fff; border-radius: 20px; padding: 16px;
-    border: 1px solid rgba(151,66,88,.1);
-    box-shadow: 0 10px 24px rgba(28,21,32,.05);
+    background: #fff; border-radius: 22px; padding: 16px;
+    border: 1px solid rgba(142,50,79,.08);
+    box-shadow: 0 12px 28px rgba(42,31,44,.06);
   }
   .la-card h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--la-deep); }
-  .la-card p { margin: 0 0 12px; font-size: .85rem; color: var(--la-muted); line-height: 1.45; }
+  .la-card p { margin: 0 0 12px; font-size: .86rem; color: var(--la-muted); line-height: 1.5; }
   .la-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+  .pts-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 42px; padding: 0 16px; border-radius: 999px; border: none;
+    font-weight: 700; font-size: .88rem; text-decoration: none; cursor: pointer;
+    font-family: inherit;
+  }
+  .pts-btn-primary { background: var(--la-primary); color: #fff; box-shadow: 0 10px 20px rgba(142,50,79,.25); }
+  .pts-btn-outline { background: #fff; color: var(--la-primary); border: 1.5px solid rgba(142,50,79,.28); }
+  .pts-btn-ghost { background: transparent; color: var(--la-muted); }
+  .hidden { display: none !important; }
   .la-msg { margin-top: 10px; font-size: .82rem; min-height: 1.2em; }
   .la-msg.is-ok { color: #166534; }
   .la-msg.is-err { color: #b91c1c; }
@@ -141,106 +174,92 @@
   }
   .la-quick a {
     display: flex; flex-direction: column; gap: 8px; padding: 14px;
-    border-radius: 18px; background: #fff; text-decoration: none; color: inherit;
-    border: 1px solid rgba(151,66,88,.1);
-    box-shadow: 0 8px 18px rgba(28,21,32,.04);
+    border-radius: 20px; background: #fff; text-decoration: none; color: inherit;
+    border: 1px solid rgba(142,50,79,.08);
+    box-shadow: 0 10px 22px rgba(42,31,44,.05);
   }
   .la-quick__ico {
-    width: 40px; height: 40px; border-radius: 999px; display: grid; place-items: center; color: #fff;
+    width: 44px; height: 44px; border-radius: 999px; display: grid; place-items: center; color: #fff;
   }
-  .la-quick__ico .material-symbols-outlined { font-size: 20px; }
-  .la-quick strong { font-size: .9rem; }
-  .la-quick span { font-size: .72rem; color: var(--la-muted); }
+  .la-quick__ico .material-symbols-outlined { font-size: 22px; }
+  .la-quick strong { font-size: .92rem; }
+  .la-quick span { font-size: .74rem; color: var(--la-muted); line-height: 1.35; }
   .la-notif {
-    display: block; padding: 14px; border-radius: 16px; background: #fff;
-    border: 1px solid rgba(151,66,88,.1); text-decoration: none; color: inherit;
-    margin-bottom: 10px;
+    display: block; padding: 14px; border-radius: 18px; background: #fff;
+    border: 1px solid rgba(142,50,79,.08); text-decoration: none; color: inherit;
+    margin-bottom: 10px; box-shadow: 0 8px 18px rgba(42,31,44,.04);
   }
-  .la-notif strong { display: block; font-size: .9rem; margin-bottom: 4px; }
-  .la-notif p { margin: 0; font-size: .78rem; color: var(--la-muted); line-height: 1.4; }
+  .la-notif strong { display: block; font-size: .92rem; margin-bottom: 4px; color: var(--la-deep); }
+  .la-notif p { margin: 0; font-size: .8rem; color: var(--la-muted); line-height: 1.4; }
   .la-nav {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
     padding: 8px 10px calc(8px + var(--line-safe-bottom));
-    background: rgba(255,255,255,.94); backdrop-filter: blur(12px);
-    border-top: 1px solid rgba(151,66,88,.12);
+    background: rgba(255,255,255,.95); backdrop-filter: blur(14px);
+    border-top: 1px solid rgba(142,50,79,.1);
+    box-shadow: 0 -8px 24px rgba(42,31,44,.06);
   }
   .la-nav__inner {
-    max-width: 520px; margin: 0 auto;
+    max-width: 480px; margin: 0 auto;
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
   }
   .la-nav a {
     display: flex; flex-direction: column; align-items: center; gap: 2px;
-    padding: 6px 4px; text-decoration: none; color: var(--la-muted);
+    padding: 7px 4px; text-decoration: none; color: var(--la-muted);
     font-size: .68rem; font-weight: 700; border-radius: 14px;
   }
   .la-nav a.is-active { color: var(--la-primary); background: var(--la-soft); }
   .la-nav .material-symbols-outlined { font-size: 22px; }
-  html[data-theme="dark"] body.pts-line-app { --la-bg: #1a1216; --la-card: #241820; --la-text: #f8eef1; --la-muted: #c9b4bc; }
-  html[data-theme="dark"] .la-chip,
-  html[data-theme="dark"] .la-course,
-  html[data-theme="dark"] .la-card,
-  html[data-theme="dark"] .la-quick a,
-  html[data-theme="dark"] .la-notif,
-  html[data-theme="dark"] .la-nav,
-  html[data-theme="dark"] .la-empty { background: #241820; color: var(--la-text); border-color: rgba(232,149,168,.18); }
-  html[data-theme="dark"] .la-top { background: rgba(26,18,22,.9); }
 </style>
 </head>
-<body class="pts-body pts-line-app">
+<body class="pts-line-app">
   <header class="la-top">
     <div class="la-top__row">
       <div class="la-brand">
         <img src="/logo.png" alt="PTS">
-        <div class="la-brand__text">
+        <div>
           <strong>PTS Learning</strong>
           <span>Personal Assistant Academy</span>
         </div>
       </div>
-      <div class="la-top__actions">
-        <button type="button" class="la-icon-btn" id="la-refresh" title="รีเฟรช" aria-label="รีเฟรช">
-          <span class="material-symbols-outlined">refresh</span>
-        </button>
-      </div>
+      <button type="button" class="la-icon-btn" id="la-refresh" title="รีเฟรช" aria-label="รีเฟรช">
+        <span class="material-symbols-outlined">refresh</span>
+      </button>
     </div>
   </header>
 
   <main class="la-shell">
-    <!-- COURSES -->
     <section class="la-panel is-on" id="panel-courses" data-panel="courses">
       <div class="la-hero-copy">
-        <p class="la-eyebrow">Academic Aura</p>
-        <h1>คอร์สเรียนแนะนำ</h1>
-        <p>ยกระดับทักษะสู่ความเป็นมืออาชีพ</p>
+        <p class="la-eyebrow">Academic Path</p>
+        <h1>ยกระดับทักษะสู่ความเป็นมืออาชีพ</h1>
+        <p>เลือกหลักสูตร Online · Onsite · Hybrid ที่เหมาะกับคุณ</p>
       </div>
       <div class="la-filters" id="la-filters" role="tablist">
         <button type="button" class="la-chip is-on" data-filter="all">ทั้งหมด</button>
         <button type="button" class="la-chip" data-filter="featured">ยอดนิยม</button>
         <button type="button" class="la-chip" data-filter="new">มาใหม่</button>
-        <button type="button" class="la-chip" data-filter="online">Online</button>
-        <button type="button" class="la-chip" data-filter="onsite">Onsite</button>
       </div>
       <div class="la-list" id="la-course-list">
         <div class="la-empty">กำลังโหลดหลักสูตร...</div>
       </div>
     </section>
 
-    <!-- MINE / HOME shortcuts -->
     <section class="la-panel" id="panel-mine" data-panel="mine">
       <div class="la-hero-copy">
-        <p class="la-eyebrow">My Learning</p>
-        <h1>คอร์สและการเรียน</h1>
-        <p>ทางลัดเข้าเรียน ตาราง และการแจ้งเตือน</p>
+        <p class="la-eyebrow">Quick Menu</p>
+        <h1>เมนูด่วน</h1>
+        <p>ทางลัดเหมือน Rich Menu ในแชท LINE</p>
       </div>
       <div class="la-quick">
-        <a href="MyCourses.html">
-          <div class="la-quick__ico" style="background:#974258"><span class="material-symbols-outlined">menu_book</span></div>
+        <a href="#courses" data-nav="courses">
+          <div class="la-quick__ico" style="background:#8e324f"><span class="material-symbols-outlined">menu_book</span></div>
           <strong>คอร์สเรียน</strong>
-          <span>เข้าเรียนต่อได้ทันที</span>
+          <span>ดูรายการหลักสูตร</span>
         </a>
         <a href="Courses.html">
           <div class="la-quick__ico" style="background:#0f766e"><span class="material-symbols-outlined">edit_note</span></div>
           <strong>สมัครเรียน</strong>
-          <span>เลือกหลักสูตรใหม่</span>
+          <span>เลือกคอร์สใหม่</span>
         </a>
         <a href="#profile" data-nav="profile">
           <div class="la-quick__ico" style="background:#6b7c3c"><span class="material-symbols-outlined">person</span></div>
@@ -254,31 +273,29 @@
         </a>
       </div>
       <div class="la-card">
-        <h2>กลับไปยังคอร์สเรียน</h2>
-        <p>เปิดรายการหลักสูตรแนะนำในแอป LINE</p>
+        <h2>คอร์สของฉัน</h2>
+        <p>เปิดรายการที่สมัครไว้แล้วเพื่อเข้าเรียนต่อ</p>
         <div class="la-actions">
-          <a class="pts-btn pts-btn-primary" href="#courses" data-nav="courses">ดูหลักสูตร</a>
+          <a class="pts-btn pts-btn-primary" href="MyCourses.html">เข้าเรียน</a>
           <a class="pts-btn pts-btn-outline" href="Schedule.html">ตารางเรียน</a>
         </div>
       </div>
     </section>
 
-    <!-- NOTIFY -->
     <section class="la-panel" id="panel-notify" data-panel="notify">
       <div class="la-hero-copy">
         <p class="la-eyebrow">Alerts</p>
         <h1>การแจ้งเตือน</h1>
-        <p>ข่าวสาร สถานะเรียน และการชำระเงิน</p>
+        <p>สถานะเรียน การชำระเงิน และข่าวสาร</p>
       </div>
       <div id="la-notify-list"><div class="la-empty">กำลังโหลด...</div></div>
     </section>
 
-    <!-- PROFILE -->
     <section class="la-panel" id="panel-profile" data-panel="profile">
       <div class="la-hero-copy">
         <p class="la-eyebrow">Account</p>
         <h1>โปรไฟล์</h1>
-        <p>เชื่อม LINE กับบัญชี PTS เพื่อรับแจ้งเตือนในแชท</p>
+        <p>เชื่อม LINE กับบัญชี PTS เพื่อรับการ์ดแจ้งเตือนในแชท</p>
       </div>
       <div class="la-card" id="la-account">
         <h2>เชื่อมบัญชี PTS</h2>
@@ -296,8 +313,8 @@
 
   <nav class="la-nav" aria-label="นำทาง">
     <div class="la-nav__inner">
-      <a href="#mine" data-nav="mine"><span class="material-symbols-outlined">school</span>คอร์ส</a>
-      <a href="#courses" data-nav="courses" class="is-active"><span class="material-symbols-outlined">menu_book</span>รายการ</a>
+      <a href="#courses" data-nav="courses" class="is-active"><span class="material-symbols-outlined">school</span>หน้าแรก</a>
+      <a href="#mine" data-nav="mine"><span class="material-symbols-outlined">menu_book</span>คอร์ส</a>
       <a href="#notify" data-nav="notify"><span class="material-symbols-outlined">notifications</span>แจ้งเตือน</a>
       <a href="#profile" data-nav="profile"><span class="material-symbols-outlined">person</span>โปรไฟล์</a>
     </div>
@@ -348,7 +365,7 @@
 
   function paintAccount() {
     if (linked) {
-      statusHint.textContent = 'เชื่อม LINE กับบัญชี PTS แล้ว — พร้อมรับแจ้งเตือนในแชท';
+      statusHint.textContent = 'เชื่อม LINE กับบัญชี PTS แล้ว — พร้อมรับการ์ดแจ้งเตือนในแชท';
       linkBtn.classList.add('hidden');
       unlinkBtn.classList.remove('hidden');
     } else if (loggedIn) {
@@ -366,9 +383,6 @@
     const sorted = allCourses.slice();
     if (filter === 'featured') return sorted.filter((c) => Number(c.is_featured) === 1);
     if (filter === 'new') return sorted.slice(0, 8);
-    if (filter === 'online' || filter === 'onsite' || filter === 'hybrid') {
-      return sorted.filter((c) => String(c.delivery_mode || '').toLowerCase() === filter);
-    }
     return sorted;
   }
 
@@ -383,29 +397,32 @@
       const featured = Number(c.is_featured) === 1;
       const price = Number(c.price || 0);
       const hours = Number(c.total_hours || 0);
-      const img = c.cover_image_url || 'https://placehold.co/400x300/f8e8ec/974258?text=PTS';
+      const img = c.cover_image_url || 'https://placehold.co/800x500/f4e4ea/8e324f?text=PTS+Course';
       const href = enrolled
         ? `Learn.html?courseId=${c.course_id}`
         : `CourseDetail.html?courseId=${c.course_id}`;
       const badge = featured
         ? '<span class="la-badge">BEST SELLER</span>'
         : (idx < 2 ? '<span class="la-badge la-badge--new">NEW ARRIVAL</span>' : '');
-      const desc = c.description || c.delivery_mode || 'หลักสูตร Personal Assistant';
+      const compare = price ? Math.round(price * 1.18) : 0;
       return `
         <a class="la-course" href="${href}">
           <div class="la-course__media">
             ${badge}
-            <img src="${escapeHtml(img)}" alt="" loading="lazy">
+            <img src="${escapeHtml(img)}" alt="" loading="lazy"
+              onerror="this.onerror=null;this.src='https://placehold.co/800x500/f4e4ea/8e324f?text=PTS+Course'">
           </div>
           <div class="la-course__body">
             <div class="la-course__meta">
-              <span><span class="material-symbols-outlined">person</span>${escapeHtml(c.instructor_name || 'PTS')}</span>
+              <span><span class="material-symbols-outlined">person</span>${escapeHtml(c.instructor_name || 'PTS Instructor')}</span>
               <span><span class="material-symbols-outlined">schedule</span>${hours || '-'} ชม.</span>
             </div>
             <h3 class="la-course__title">${escapeHtml(c.course_name)}</h3>
-            <p class="la-course__desc">${escapeHtml(desc)}</p>
             <div class="la-course__foot">
-              <span class="la-price">${price ? '฿ ' + price.toLocaleString('th-TH') : 'สอบถามราคา'}</span>
+              <div class="la-price">
+                ${price && compare ? `<s>฿${compare.toLocaleString('th-TH')}</s>` : ''}
+                ${price ? '฿' + price.toLocaleString('th-TH') : 'สอบถามราคา'}
+              </div>
               <span class="la-detail-btn">${enrolled ? 'เข้าเรียน' : 'รายละเอียด'}</span>
             </div>
           </div>
@@ -420,6 +437,10 @@
       const data = await res.json();
       allCourses = data.data || data.courses || data || [];
       if (!Array.isArray(allCourses)) allCourses = [];
+      if (!allCourses.length) {
+        listEl.innerHTML = '<div class="la-empty">ยังไม่มีหลักสูตรในระบบ<br>ให้แอดมินเพิ่มคอร์สที่หน้า Admin</div>';
+        return;
+      }
       renderCourses();
     } catch (err) {
       listEl.innerHTML = `<div class="la-empty">${escapeHtml(err.message || 'โหลดไม่สำเร็จ')}</div>`;
@@ -504,7 +525,7 @@
         } catch (_) {}
       }
       if (!body.idToken && !body.accessToken) {
-        setMsg('เปิดหน้านี้จาก LINE (LIFF) เพื่อเชื่อมบัญชี หรือตั้งค่า LINE_LIFF_ID', false);
+        setMsg('เปิดหน้านี้จาก LINE (LIFF) เพื่อเชื่อมบัญชี', false);
         return;
       }
       const res = await fetch('/api/line/link', {
@@ -564,10 +585,6 @@
     loadCourses();
     if (currentPanel() === 'notify') loadNotifications();
   });
-
-  // ensure profile icon class
-  const profileNav = document.querySelector('.la-nav a[data-nav="profile"] .material-symbols-outlined');
-  if (profileNav) profileNav.textContent = 'person';
 
   (async function boot() {
     showPanel(currentPanel());

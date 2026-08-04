@@ -383,9 +383,35 @@ async function createNotification(pool, userId, title, body, linkUrl) {
             `);
         const row = pref.recordset[0];
         if (row && Number(row.notify_enabled) === 1 && row.line_user_id) {
-            const { pushMessage, buildNotifyFlex, isMessagingConfigured } = require('./lineMessaging');
+            const {
+                pushMessage,
+                buildNotifyFlex,
+                buildRegistrationSuccessFlex,
+                buildPaymentFlex,
+                isMessagingConfigured
+            } = require('./lineMessaging');
             if (isMessagingConfigured()) {
-                await pushMessage(row.line_user_id, [buildNotifyFlex(title, body, linkUrl)]);
+                const titleStr = String(title || '');
+                const bodyStr = String(body || '');
+                let flex;
+                if (/ชำระ|จ่าย|payment|pay|ค้างชำระ/i.test(titleStr + bodyStr)) {
+                    flex = buildPaymentFlex({
+                        courseName: bodyStr,
+                        payUrl: linkUrl,
+                        linkUrl
+                    });
+                } else if (/สำเร็จ|เปิดสิทธิ์|ลงทะเบียน|สมัคร/i.test(titleStr)) {
+                    const codeMatch = bodyStr.match(/#PTS-\d+/i);
+                    flex = buildRegistrationSuccessFlex({
+                        title: titleStr,
+                        code: codeMatch ? codeMatch[0] : '',
+                        courseName: bodyStr.replace(/·\s*รหัส.*$/i, '').replace(/^หลักสูตร\s*/i, '').trim(),
+                        linkUrl
+                    });
+                } else {
+                    flex = buildNotifyFlex(title, body, linkUrl);
+                }
+                await pushMessage(row.line_user_id, [flex]);
             }
         }
     } catch (err) {
