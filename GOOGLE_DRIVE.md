@@ -9,6 +9,34 @@
 
 ---
 
+## สำคัญ: รูปขึ้นเว็บแต่ไม่โผล่ Drive
+
+สาเหตุพบบ่อยบน **Gmail ส่วนตัว**: Service Account **ไม่มีโควต้าอัปเข้า My Drive**  
+ระบบจึงถอยไปเก็บที่ `uploads\avatars\` บนเครื่อง (เว็บยังโชว์รูปได้)
+
+### แก้ด้วย OAuth บัญชีคุณเอง (แนะนำ)
+ต้องมี `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` และ `GOOGLE_DRIVE_FOLDER_ID` แล้ว
+
+```powershell
+cd C:\Users\Admin_Support\Desktop\PA\PTS
+# ดึงโค้ดล่าสุดก่อน
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Ncry46/PTS/main/backend/googleDrive.js" -OutFile "backend\googleDrive.js" -UseBasicParsing
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Ncry46/PTS/main/backend/setup-google-drive-oauth.js" -OutFile "backend\setup-google-drive-oauth.js" -UseBasicParsing
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Ncry46/PTS/main/backend/profileRoutes.js" -OutFile "backend\profileRoutes.js" -UseBasicParsing
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/Ncry46/PTS/main/frontend/Settings.html" -OutFile "frontend\Settings.html" -UseBasicParsing
+
+node backend/setup-google-drive-oauth.js
+```
+
+ทำตามที่สคริปต์บอก → จะได้ไฟล์ `backend\google.drive.token.json`  
+แล้ว `npm start` และอัปรูปโปรไฟล์ใหม่
+
+ทดสอบ:
+`http://localhost:3000/api/google/drive-status?probe=1`  
+ควรได้ `"probe":{"ok":true,...}`
+
+---
+
 ## สิ่งที่ต้องเตรียม
 - บัญชี Google (Gmail / Workspace)
 - โปรเจกต์ PTS บนเครื่อง เช่น `C:\Users\Admin_Support\Desktop\PA\PTS`
