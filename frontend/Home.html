@@ -5,7 +5,7 @@
         <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260727ctawhite2">
+        <link rel="stylesheet" href="site.css?v=20260804bannerfx">
 <style>
   /* Match Courses.html: pts-main pts-main--wide (1480 / 16·28·32) */
   .pts-home-wide {
@@ -155,15 +155,22 @@
 </div>
 
 <main>
-<!-- Hero: playful multi-banner carousel (viewport-fit) -->
+<!-- Hero: full-image premium carousel (no crop) -->
 <section class="pts-home-banner is-single" id="home-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+  <div class="pts-home-banner__ambient" aria-hidden="true">
+    <span class="pts-home-banner__orb pts-home-banner__orb--a"></span>
+    <span class="pts-home-banner__orb pts-home-banner__orb--b"></span>
+    <span class="pts-home-banner__orb pts-home-banner__orb--c"></span>
+  </div>
   <div class="pts-home-banner__track" id="home-banner-track">
     <article class="pts-home-banner__slide is-active" data-index="0">
+      <img class="pts-home-banner__bg" src="/uploads/hero/home-banner.png" alt="" aria-hidden="true" decoding="async">
       <img
+        class="pts-home-banner__fg"
         src="/uploads/hero/home-banner.png"
         alt="RIGHT-HAND PARTNER PROGRAM — Personal Assistant Academy"
-        width="1536"
-        height="1024"
+        width="1920"
+        height="1000"
         decoding="async"
         fetchpriority="high"
         onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'"
@@ -171,6 +178,8 @@
       <span class="pts-home-banner__veil" aria-hidden="true"></span>
     </article>
   </div>
+  <div class="pts-home-banner__grain" aria-hidden="true"></div>
+  <div class="pts-home-banner__sheen" aria-hidden="true"></div>
   <div class="pts-home-banner__nav" aria-hidden="false">
     <button type="button" class="pts-home-banner__btn" id="home-banner-prev" aria-label="แบนเนอร์ก่อนหน้า">
       <span class="material-symbols-outlined">chevron_left</span>
@@ -485,7 +494,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allCourses = [];
   let activeMode = '';
 
-  // —— Playful multi-banner carousel (viewport-fit) ——
+  // —— Premium full-image banner carousel (no crop) ——
   (function initHomeBannerCarousel() {
     const root = document.getElementById('home-banner');
     const track = document.getElementById('home-banner-track');
@@ -495,7 +504,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressEl = document.getElementById('home-banner-progress');
     if (!root || !track) return;
 
-    const INTERVAL = 5200;
+    const INTERVAL = 5600;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     root.style.setProperty('--hb-interval', INTERVAL + 'ms');
 
@@ -505,20 +514,56 @@ document.addEventListener('DOMContentLoaded', async () => {
     let dragging = false;
     let startX = 0;
     let deltaX = 0;
+    let sheenTimer = null;
 
     const escapeAttr = (t) => String(t || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
     function sparkle() {
       if (reduceMotion) return;
-      for (let i = 0; i < 5; i += 1) {
+      for (let i = 0; i < 8; i += 1) {
         const s = document.createElement('span');
         s.className = 'pts-home-banner__sparkle';
-        s.style.left = (12 + Math.random() * 76) + '%';
-        s.style.top = (18 + Math.random() * 50) + '%';
-        s.style.animationDelay = (Math.random() * 180) + 'ms';
+        s.style.left = (8 + Math.random() * 84) + '%';
+        s.style.top = (12 + Math.random() * 58) + '%';
+        s.style.animationDelay = (Math.random() * 220) + 'ms';
         root.appendChild(s);
-        window.setTimeout(() => s.remove(), 800);
+        window.setTimeout(() => s.remove(), 900);
       }
+    }
+
+    function sheen() {
+      if (reduceMotion) return;
+      root.classList.remove('is-sheening');
+      void root.offsetWidth;
+      root.classList.add('is-sheening');
+      if (sheenTimer) window.clearTimeout(sheenTimer);
+      sheenTimer = window.setTimeout(() => root.classList.remove('is-sheening'), 1000);
+    }
+
+    function ensureFloats() {
+      if (reduceMotion || root.querySelector('.pts-home-banner__float')) return;
+      for (let i = 0; i < 5; i += 1) {
+        const f = document.createElement('span');
+        f.className = 'pts-home-banner__float';
+        f.style.left = (10 + i * 18 + Math.random() * 8) + '%';
+        f.style.top = (20 + Math.random() * 50) + '%';
+        f.style.setProperty('--hb-f-dur', (6 + Math.random() * 5) + 's');
+        f.style.animationDelay = (-Math.random() * 5) + 's';
+        root.appendChild(f);
+      }
+    }
+
+    function slideHtml(s, i) {
+      const url = escapeAttr(s.url);
+      const alt = escapeAttr(s.alt || 'Banner');
+      return `
+        <article class="pts-home-banner__slide${i === 0 ? ' is-active' : ''}" data-index="${i}">
+          <img class="pts-home-banner__bg" src="${url}" alt="" aria-hidden="true" decoding="async" ${i === 0 ? '' : 'loading="lazy"'}>
+          <img class="pts-home-banner__fg" src="${url}" alt="${alt}"
+            decoding="async" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
+            onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png';var b=this.previousElementSibling;if(b)b.src=this.src;">
+          <span class="pts-home-banner__veil" aria-hidden="true"></span>
+        </article>`;
     }
 
     function render(list) {
@@ -527,17 +572,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         alt: 'PTS Learning'
       }];
       root.classList.toggle('is-single', slides.length < 2);
-      track.innerHTML = slides.map((s, i) => `
-        <article class="pts-home-banner__slide${i === 0 ? ' is-active' : ''}" data-index="${i}">
-          <img src="${escapeAttr(s.url)}" alt="${escapeAttr(s.alt || 'Banner')}"
-            decoding="${i === 0 ? 'async' : 'async'}" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
-            onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
-          <span class="pts-home-banner__veil" aria-hidden="true"></span>
-        </article>`).join('');
+      track.innerHTML = slides.map((s, i) => slideHtml(s, i)).join('');
       dotsBox.innerHTML = slides.map((_, i) => `
         <button type="button" class="pts-home-banner__dot${i === 0 ? ' is-active' : ''}"
           role="tab" aria-label="แบนเนอร์ ${i + 1}" data-index="${i}"></button>`).join('');
       index = 0;
+      ensureFloats();
       goTo(0, false);
       if (slides.length > 1) start();
     }
@@ -554,7 +594,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     function goTo(next, animate) {
       if (!slides.length) return;
       index = ((next % slides.length) + slides.length) % slides.length;
-      if (animate !== false) sparkle();
+      if (animate !== false) {
+        sparkle();
+        sheen();
+      }
       track.style.transform = `translate3d(${-index * 100}%, 0, 0)`;
       updateDots();
       restartProgress();
@@ -591,11 +634,27 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     root.addEventListener('mouseenter', stop);
-    root.addEventListener('mouseleave', start);
+    root.addEventListener('mouseleave', () => {
+      root.style.setProperty('--hb-px', '0px');
+      root.style.setProperty('--hb-py', '0px');
+      start();
+    });
     root.addEventListener('focusin', stop);
     root.addEventListener('focusout', (e) => {
       if (!root.contains(e.relatedTarget)) start();
     });
+
+    // Subtle parallax on pointer move
+    if (!reduceMotion) {
+      root.addEventListener('pointermove', (e) => {
+        if (dragging) return;
+        const rect = root.getBoundingClientRect();
+        const nx = ((e.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 14;
+        const ny = ((e.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 10;
+        root.style.setProperty('--hb-px', nx.toFixed(2) + 'px');
+        root.style.setProperty('--hb-py', ny.toFixed(2) + 'px');
+      });
+    }
 
     // Swipe / drag
     const onDown = (x) => {

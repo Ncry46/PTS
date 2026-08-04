@@ -163,13 +163,84 @@
   }
   .ban-drop {
     border:2px dashed rgba(151,66,88,.35);
-    border-radius:16px; padding:18px; text-align:center;
-    background:rgba(151,66,88,.04); cursor:pointer;
-    transition: border-color .15s ease, background .15s ease;
+    border-radius:16px; padding:22px 18px; text-align:center;
+    background:
+      radial-gradient(120% 80% at 50% 0%, rgba(255,177,193,.16), transparent 55%),
+      rgba(151,66,88,.04);
+    cursor:pointer;
+    transition: border-color .18s ease, background .18s ease, transform .18s ease, box-shadow .18s ease;
   }
-  .ban-drop.is-drag { border-color:#974258; background:rgba(151,66,88,.1); }
+  .ban-drop:hover {
+    border-color:rgba(151,66,88,.55);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(151,66,88,.08);
+  }
+  .ban-drop.is-drag {
+    border-color:#974258;
+    background:rgba(151,66,88,.12);
+    box-shadow: inset 0 0 0 2px rgba(151,66,88,.18);
+  }
   .ban-drop__hint { margin:0; font-size:13px; color:var(--pts-muted,#5c4f55); }
   .ban-drop__hint strong { color:var(--pts-primary,#974258); }
+
+  .ban-stage {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    background: #120a12;
+    aspect-ratio: 1920 / 1000;
+    max-height: 280px;
+    box-shadow: 0 16px 40px rgba(18,10,18,.18), inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .ban-stage__bg {
+    position: absolute; inset: -6%;
+    width: 112%; height: 112%;
+    object-fit: cover; object-position: center;
+    filter: blur(22px) saturate(1.1) brightness(.7);
+    transform: scale(1.06);
+    pointer-events: none;
+  }
+  .ban-stage__fg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain; object-position: center;
+    display: block;
+  }
+  .ban-stage__label {
+    position: absolute; left: 12px; bottom: 10px; z-index: 2;
+    margin: 0; padding: 4px 10px; border-radius: 999px;
+    font-size: 11px; font-weight: 700; color: #fff;
+    background: rgba(18,10,18,.45); backdrop-filter: blur(8px);
+  }
+  .ban-stage.is-empty {
+    display: grid; place-items: center;
+    color: rgba(255,255,255,.55); font-size: 13px; font-weight: 600;
+  }
+  .ban-stage.is-empty .ban-stage__bg,
+  .ban-stage.is-empty .ban-stage__fg,
+  .ban-stage.is-empty .ban-stage__label { display: none; }
+
+  .ban-thumb {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #120a12;
+    aspect-ratio: 16 / 9;
+    min-height: 88px;
+  }
+  .ban-thumb__bg {
+    position: absolute; inset: -8%;
+    width: 116%; height: 116%;
+    object-fit: cover;
+    filter: blur(16px) brightness(.65);
+    pointer-events: none;
+  }
+  .ban-thumb__fg {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    object-fit: contain; object-position: center;
+    display: block;
+  }
   .ban-preview {
     border-radius:18px; padding:18px; min-height:160px; color:#fff;
     display:grid; gap:14px; align-items:center;
@@ -1284,10 +1355,24 @@ async function renderBanners() {
   document.getElementById('panel').innerHTML = `
     <div class="space-y-4">
       <div class="pts-card p-5">
-        <h2 class="font-bold text-lg mb-1">เพิ่มแบนเนอร์หน้าแรก</h2>
+        <h2 class="font-bold text-lg mb-1">แบนเนอร์หน้าแรก</h2>
+        <p class="text-sm text-on-surface-variant mb-3">
+          รูปจะแสดง<strong>ครบทั้งใบ ไม่ถูกตัด</strong> บนหน้าแรก · แนะนำ <strong>1920 × 1000 px</strong>
+        </p>
+        <div class="ban-stage ${list.length ? '' : 'is-empty'}" id="banner-stage">
+          ${list.length ? `
+            <img class="ban-stage__bg" src="${escapeHtml(list[0].url)}" alt="" aria-hidden="true">
+            <img class="ban-stage__fg" src="${escapeHtml(list[0].url)}" alt="พรีวิวแบนเนอร์"
+              onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
+            <p class="ban-stage__label">พรีวิวแบบหน้าแรก · ลำดับ 1</p>
+          ` : 'ยังไม่มีแบนเนอร์ — อัปโหลดด้านล่าง'}
+        </div>
+      </div>
+
+      <div class="pts-card p-5">
+        <h2 class="font-bold text-lg mb-1">เพิ่มแบนเนอร์</h2>
         <p class="text-sm text-on-surface-variant mb-4">
-          อัปโหลดรูปแล้วจะโชว์บนหน้าแรกทันที · แนะนำ <strong>1920 × 1000 px</strong>
-          · ลากไฟล์มาวางด้านล่างได้เลย
+          อัปโหลดแล้วโชว์บนหน้าแรกทันที · ลากไฟล์มาวางได้เลย
         </p>
         <div class="ban-drop" id="banner-drop" tabindex="0" role="button" aria-label="ลากไฟล์รูปมาวางหรือคลิกเพื่อเลือกไฟล์">
           <p class="ban-drop__hint"><strong>ลากไฟล์รูปมาวางที่นี่</strong> หรือคลิกเพื่อเลือกไฟล์</p>
@@ -1314,10 +1399,28 @@ async function renderBanners() {
   const countEl = document.getElementById('banner-count');
   const drop = document.getElementById('banner-drop');
   const fileInput = document.getElementById('banner-file');
+  const stage = document.getElementById('banner-stage');
   let dragFrom = -1;
+
+  const updateStage = (item, orderLabel) => {
+    if (!stage) return;
+    if (!item?.url) {
+      stage.classList.add('is-empty');
+      stage.innerHTML = 'ยังไม่มีแบนเนอร์ — อัปโหลดด้านล่าง';
+      return;
+    }
+    stage.classList.remove('is-empty');
+    const url = escapeHtml(item.url);
+    stage.innerHTML = `
+      <img class="ban-stage__bg" src="${url}" alt="" aria-hidden="true">
+      <img class="ban-stage__fg" src="${url}" alt="พรีวิวแบนเนอร์"
+        onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
+      <p class="ban-stage__label">พรีวิวแบบหน้าแรก · ลำดับ ${orderLabel || 1}</p>`;
+  };
 
   const renderList = () => {
     countEl.textContent = String(list.length);
+    updateStage(list[0], 1);
     if (!list.length) {
       listEl.innerHTML = '<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปด้านบนได้เลย</div>';
       return;
@@ -1325,12 +1428,13 @@ async function renderBanners() {
     listEl.innerHTML = list.map((b, i) => `
       <article class="ban-list-item" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
         <div class="ban-list-handle" title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
-        <div class="rounded-xl overflow-hidden bg-[#0b1020]">
-          <img src="${escapeHtml(b.url)}" alt="" class="w-full h-24 object-cover"
+        <div class="ban-thumb" title="คลิกเพื่อพรีวิว">
+          <img class="ban-thumb__bg" src="${escapeHtml(b.url)}" alt="" aria-hidden="true">
+          <img class="ban-thumb__fg" src="${escapeHtml(b.url)}" alt=""
             onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
         </div>
         <div class="min-w-0">
-          <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}</p>
+          <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}${i === 0 ? ' · ขึ้นก่อน' : ''}</p>
           <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
         </div>
         <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
@@ -1353,6 +1457,11 @@ async function renderBanners() {
     });
 
     listEl.querySelectorAll('.ban-list-item').forEach((item) => {
+      item.querySelector('.ban-thumb')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const i = Number(item.dataset.index);
+        if (list[i]) updateStage(list[i], i + 1);
+      });
       item.addEventListener('dragstart', (e) => {
         dragFrom = Number(item.dataset.index);
         item.classList.add('is-dragging');
