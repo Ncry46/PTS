@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
-const { tryUploadLocalFile, isDriveConfigured } = require('./googleDrive');
+const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl } = require('./googleDrive');
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars');
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);

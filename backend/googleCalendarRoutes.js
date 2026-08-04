@@ -55,6 +55,21 @@ function createGoogleCalendarRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    // Proxy Drive images so <img src> works reliably on the site
+    router.get('/google/drive/file/:fileId', async (req, res) => {
+        try {
+            const drive = require('./googleDrive');
+            const file = await drive.fetchDriveFile(req.params.fileId);
+            res.setHeader('Content-Type', file.mimeType || 'application/octet-stream');
+            res.setHeader('Cache-Control', 'public, max-age=86400');
+            res.setHeader('Content-Disposition', `inline; filename="${String(file.name || 'file').replace(/"/g, '')}"`);
+            return res.send(file.buffer);
+        } catch (error) {
+            const status = error.status && Number(error.status) >= 400 ? Number(error.status) : 502;
+            return res.status(status).json({ success: false, message: error.message || 'โหลดไฟล์ไม่สำเร็จ' });
+        }
+    });
+
     router.get('/google/status', async (req, res) => {
         const base = publicGoogleStatus();
         const user = req.session && req.session.user;

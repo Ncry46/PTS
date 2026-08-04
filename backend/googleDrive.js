@@ -235,7 +235,31 @@ async function getAccessToken() {
 }
 
 function publicViewUrl(fileId) {
-    return `https://lh3.googleusercontent.com/d/${fileId}`;
+    // Serve through our API — direct Drive/lh3 links often break in <img>
+    const id = String(fileId || '').trim();
+    return id ? `/api/google/drive/file/${encodeURIComponent(id)}` : '';
+}
+
+function extractDriveFileId(url) {
+    const s = String(url || '');
+    let m = s.match(/\/api\/google\/drive\/file\/([^/?#]+)/i);
+    if (m) return decodeURIComponent(m[1]);
+    m = s.match(/lh3\.googleusercontent\.com\/d\/([^/?#]+)/i);
+    if (m) return decodeURIComponent(m[1]);
+    m = s.match(/drive\.google\.com\/file\/d\/([^/?#]+)/i);
+    if (m) return decodeURIComponent(m[1]);
+    m = s.match(/[?&]id=([^&]+)/i);
+    if (m) return decodeURIComponent(m[1]);
+    return '';
+}
+
+/** Rewrite broken public Drive URLs to the local proxy path. */
+function normalizeDriveUrl(url) {
+    const id = extractDriveFileId(url);
+    if (!id) return url;
+    // already proxy
+    if (String(url || '').startsWith('/api/google/drive/file/')) return url;
+    return publicViewUrl(id);
 }
 
 async function makeAnyoneReadable(fileId, accessToken) {
@@ -251,6 +275,41 @@ async function makeAnyoneReadable(fileId, accessToken) {
         const data = await res.json().catch(() => ({}));
         console.warn('[drive] permission:', data.error?.message || res.status);
     }
+}
+
+async function fetchDriveFile(fileId) {
+    const id = String(fileId || '').trim();
+    if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
+        const err = new Error('รหัสไฟล์ Drive ไม่ถูกต้อง');
+        err.status = 400;
+        throw err;
+    }
+    const { token: accessToken } = await getAccessToken();
+    const metaRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?fields=id,name,mimeType&supportsAllDrives=true`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    const meta = await metaRes.json().catch(() => ({}));
+    if (!metaRes.ok) {
+        const err = new Error(meta.error?.message || 'ไม่พบไฟล์บน Drive');
+        err.status = metaRes.status;
+        throw err;
+    }
+    const mediaRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+    );
+    if (!mediaRes.ok) {
+        const err = new Error('ดาวน์โหลดไฟล์จาก Drive ไม่สำเร็จ');
+        err.status = mediaRes.status;
+        throw err;
+    }
+    const buf = Buffer.from(await mediaRes.arrayBuffer());
+    return {
+        buffer: buf,
+        mimeType: meta.mimeType || mediaRes.headers.get('content-type') || 'application/octet-stream',
+        name: meta.name || id
+    };
 }
 
 async function uploadImageToDrive({ filePath, buffer, filename, mimeType, folderId }) {
@@ -437,6 +496,9 @@ module.exports = {
     uploadImageToDrive,
     tryUploadLocalFile,
     publicViewUrl,
+    extractDriveFileId,
+    normalizeDriveUrl,
+    fetchDriveFile,
     probeDriveUpload,
     buildDriveAuthUrl,
     exchangeDriveCode,

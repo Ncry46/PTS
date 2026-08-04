@@ -197,6 +197,12 @@ app.get('/', (req, res) => {
 // 🌟 3. [เพิ่มใหม่] API สำหรับส่งข้อมูลคนล็อกอินไปให้ navbar.js หน้าบ้านเอาไปวาด
 app.get('/api/users/me', (req, res) => {
     if (req.session && req.session.user) {
+        try {
+            const { normalizeDriveUrl } = require('./googleDrive');
+            if (req.session.user.Url) {
+                req.session.user.Url = normalizeDriveUrl(req.session.user.Url) || req.session.user.Url;
+            }
+        } catch (_) { /* ignore */ }
         res.json({ loggedIn: true, user: req.session.user });
     } else {
         res.json({ loggedIn: false, user: null });
