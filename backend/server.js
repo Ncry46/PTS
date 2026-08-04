@@ -82,6 +82,8 @@ app.use('/comp', express.static(componentsDir));
 app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
 // รูปโปรไฟล์ / แบนเนอร์ที่อัปโหลด
 app.use('/uploads', express.static(uploadsDir));
+// ogl (WebGL) for Iridescence auth background
+app.use('/vendor/ogl', express.static(path.join(__dirname, '..', 'node_modules', 'ogl', 'src')));
 
 // LINE LIFF entry (explicit — avoids 404 if static miss / case issues)
 app.get(['/LineApp.html', '/lineapp.html', '/line', '/line-app'], (req, res) => {

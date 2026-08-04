@@ -1,4 +1,4 @@
-/* Auth scene — geometric pink circle pattern (Login / Register) */
+/* Auth scene — Iridescence WebGL background (Login / Register) */
 
 body.pts-body.pts-login,
 body.pts-body.pts-register {
@@ -14,30 +14,27 @@ body.pts-body.pts-register {
   z-index: 0;
   pointer-events: none;
   overflow: hidden;
-  background: #ffffff;
+  background: #1a0505;
 }
 
-.pts-auth-scene__geo {
+.pts-auth-scene__fx {
   position: absolute;
   inset: 0;
-  background-color: #ffffff;
-  background-image: url("auth-geo.svg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 1;
+  z-index: 0;
 }
 
-/* Soft veil so the form stays readable over denser shapes */
+/* Soft veil so the form stays readable over the shader */
 .pts-auth-scene__veil {
   position: absolute;
   inset: 0;
+  z-index: 1;
   background:
     radial-gradient(
-      ellipse 52% 58% at 50% 42%,
-      rgba(255, 255, 255, 0.88) 0%,
-      rgba(255, 255, 255, 0.55) 48%,
-      transparent 75%
+      ellipse 54% 60% at 50% 42%,
+      rgba(255, 255, 255, 0.82) 0%,
+      rgba(255, 255, 255, 0.48) 46%,
+      rgba(255, 255, 255, 0.12) 72%,
+      transparent 88%
     );
 }
 
@@ -46,12 +43,13 @@ body.pts-body.pts-register {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 120px;
+  height: 140px;
+  z-index: 1;
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.35) 50%,
-    #ffffff 100%
+    rgba(255, 255, 255, 0.28) 45%,
+    rgba(255, 255, 255, 0.72) 100%
   );
 }
 
@@ -72,59 +70,43 @@ body.pts-register > #app-navbar {
 }
 
 @media (max-width: 810px) {
-  .pts-auth-scene__geo {
-    background-size: cover;
-    background-position: 30% center;
-  }
   .pts-auth-scene__veil {
     background:
       radial-gradient(
-        ellipse 70% 55% at 50% 38%,
-        rgba(255, 255, 255, 0.92) 0%,
-        rgba(255, 255, 255, 0.6) 50%,
-        transparent 78%
+        ellipse 78% 70% at 50% 40%,
+        rgba(255, 255, 255, 0.88) 0%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0.18) 78%,
+        transparent 100%
       );
   }
 }
 
-html[data-theme="dark"] .pts-auth-scene {
-  background: #141218;
+@media (prefers-reduced-motion: reduce) {
+  .pts-auth-scene {
+    background: #ff1c1c;
+  }
 }
 
-html[data-theme="dark"] .pts-auth-scene__geo {
-  background-color: #141218;
-  background-image: url("auth-geo-dark.svg");
-  opacity: 1;
-  filter: none;
+/* Dark theme: deeper veil so glass form stays crisp */
+html.dark .pts-auth-scene {
+  background: #120404;
 }
-
-html[data-theme="dark"] .pts-auth-scene__veil {
+html.dark .pts-auth-scene__veil {
   background:
     radial-gradient(
-      ellipse 48% 54% at 50% 42%,
-      rgba(20, 18, 24, 0.82) 0%,
-      rgba(20, 18, 24, 0.4) 50%,
-      transparent 76%
+      ellipse 54% 60% at 50% 42%,
+      rgba(18, 10, 12, 0.72) 0%,
+      rgba(18, 10, 12, 0.42) 48%,
+      rgba(18, 10, 12, 0.12) 75%,
+      transparent 90%
     );
 }
-
-html[data-theme="dark"] .pts-auth-scene__fade {
+html.dark .pts-auth-scene__fade {
   background: linear-gradient(
     180deg,
     transparent 0%,
-    rgba(20, 18, 24, 0.25) 55%,
-    #141218 100%
+    rgba(18, 10, 12, 0.35) 50%,
+    rgba(18, 10, 12, 0.85) 100%
   );
-}
-
-@media (max-width: 810px) {
-  html[data-theme="dark"] .pts-auth-scene__veil {
-    background:
-      radial-gradient(
-        ellipse 68% 52% at 50% 38%,
-        rgba(20, 18, 24, 0.88) 0%,
-        rgba(20, 18, 24, 0.45) 52%,
-        transparent 78%
-      );
-  }
 }
