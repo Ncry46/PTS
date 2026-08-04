@@ -1594,14 +1594,27 @@ input.pts-pw-input::-ms-clear {
   object-fit: cover;
   object-position: center center;
   pointer-events: none;
-  transform: scale(1.04);
+  transform: scale(1.02);
   opacity: .88;
   filter: saturate(1.04) contrast(1.02);
   transition: opacity .7s ease, transform 1.1s cubic-bezier(.16,1,.3,1), filter .7s ease;
 }
 .pts-home-banner__slide.is-active .pts-home-banner__media {
   opacity: 1;
+}
+.pts-home-banner__slide.is-active:not(.is-motion) .pts-home-banner__media {
   animation: pts-hb-kenburns 9s ease-out forwards;
+}
+.pts-home-banner__slide.is-motion .pts-home-banner__media {
+  transform: none;
+  filter: none;
+  opacity: 1;
+}
+.pts-home-banner__slide.is-motion.is-active .pts-home-banner__media {
+  animation: none;
+}
+video.pts-home-banner__media {
+  background: #140c12;
 }
 @keyframes pts-hb-kenburns {
   0% { transform: scale(1.02); }

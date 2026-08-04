@@ -48,13 +48,30 @@ function getHomeBannerInfo() {
     };
 }
 
-/** ไฟล์แบนเนอร์หน้าแรกที่แอดมินอัปโหลด (ไม่รวมรูป hero แนวตั้งเก่า) */
+/** ไฟล์แบนเนอร์หน้าแรกที่แอดมินอัปโหลด (รูปนิ่ง / รูปเคลื่อนไหว / วิดีโอ) */
 function isGalleryBannerFilename(name) {
     const n = String(name || '');
-    if (!/\.(jpe?g|png|webp|gif)$/i.test(n)) return false;
+    if (!/\.(jpe?g|png|webp|gif|mp4|webm)$/i.test(n)) return false;
     if (/^home-banner\./i.test(n)) return true;
     if (/^banner[-_]/i.test(n)) return true;
     return false;
+}
+
+function bannerMediaMeta(filename) {
+    const ext = String(path.extname(filename || '') || '').toLowerCase();
+    if (ext === '.mp4' || ext === '.webm') {
+        return { kind: 'video', animated: true, mime: ext === '.webm' ? 'video/webm' : 'video/mp4' };
+    }
+    if (ext === '.gif') {
+        return { kind: 'image', animated: true, mime: 'image/gif' };
+    }
+    if (ext === '.webp') {
+        // may be static or animated — treat as motion-capable
+        return { kind: 'image', animated: true, mime: 'image/webp' };
+    }
+    if (ext === '.png') return { kind: 'image', animated: false, mime: 'image/png' };
+    if (ext === '.jpg' || ext === '.jpeg') return { kind: 'image', animated: false, mime: 'image/jpeg' };
+    return { kind: 'image', animated: false, mime: 'application/octet-stream' };
 }
 
 const BANNER_ORDER_FILE = 'banner-order.json';
@@ -108,12 +125,16 @@ function listGalleryBanners() {
         try { stat = fs.statSync(abs); } catch (_) { return null; }
         if (!stat.isFile()) return null;
         const ver = Math.floor(stat.mtimeMs);
+        const meta = bannerMediaMeta(filename);
         return {
             id: filename,
             filename,
             url: `/uploads/hero/${filename}?v=${ver}`,
             bytes: stat.size,
-            updated_at: stat.mtime.toISOString()
+            updated_at: stat.mtime.toISOString(),
+            kind: meta.kind,
+            animated: meta.animated,
+            mime: meta.mime
         };
     }).filter(Boolean);
 
@@ -329,6 +350,7 @@ module.exports = {
     appendBannerToOrder,
     deleteGalleryBanner,
     isGalleryBannerFilename,
+    bannerMediaMeta,
     listLocalHeroFiles,
     localUploadExists,
     normalizeHeroImageUrl,

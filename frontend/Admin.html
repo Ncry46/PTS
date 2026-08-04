@@ -206,6 +206,10 @@
     object-fit: contain; object-position: center;
     display: block;
   }
+  .ban-stage video.ban-stage__fg {
+    object-fit: cover;
+    background: #120a12;
+  }
   .ban-stage__label {
     position: absolute; left: 12px; bottom: 10px; z-index: 2;
     margin: 0; padding: 4px 10px; border-radius: 999px;
@@ -240,6 +244,10 @@
     width: 100%; height: 100%;
     object-fit: contain; object-position: center;
     display: block;
+  }
+  .ban-thumb video.ban-thumb__fg {
+    object-fit: cover;
+    background: #120a12;
   }
   .ban-preview {
     border-radius:18px; padding:18px; min-height:160px; color:#fff;
@@ -1352,32 +1360,47 @@ async function renderBanners() {
   const { data } = await api('/api/admin/home-banners');
   let list = Array.isArray(data) ? data.slice() : [];
 
+  const isVideoItem = (item) => item?.kind === 'video' || /\.(mp4|webm)(\?|$)/i.test(String(item?.filename || item?.url || ''));
+  const isMotionItem = (item) => Boolean(item?.animated) || isVideoItem(item) || /\.(gif|webp|mp4|webm)(\?|$)/i.test(String(item?.filename || item?.url || ''));
+
+  const bannerStageHtml = (item, orderLabel) => {
+    const url = escapeHtml(item.url);
+    const label = isVideoItem(item) ? 'วิดีโอ' : (isMotionItem(item) ? 'เคลื่อนไหว' : 'รูปนิ่ง');
+    if (isVideoItem(item)) {
+      return `
+        <video class="ban-stage__fg" src="${url}" muted loop playsinline autoplay></video>
+        <p class="ban-stage__label">พรีวิว · ลำดับ ${orderLabel || 1} · ${label}</p>`;
+    }
+    return `
+      <img class="ban-stage__bg" src="${url}" alt="" aria-hidden="true">
+      <img class="ban-stage__fg" src="${url}" alt="พรีวิวแบนเนอร์"
+        onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
+      <p class="ban-stage__label">พรีวิว · ลำดับ ${orderLabel || 1} · ${label}</p>`;
+  };
+
   document.getElementById('panel').innerHTML = `
     <div class="space-y-4">
       <div class="pts-card p-5">
         <h2 class="font-bold text-lg mb-1">แบนเนอร์หน้าแรก</h2>
         <p class="text-sm text-on-surface-variant mb-3">
-          รูปจะแสดง<strong>ครบทั้งใบ ไม่ถูกตัด</strong> เมื่ออัป <strong>1920 × 1000 px</strong> (สัดส่วนเดียวกับหน้าแรก)
+          รองรับ<strong>รูปนิ่ง</strong> · <strong>GIF / WebP เคลื่อนไหว</strong> · <strong>วิดีโอ MP4 / WebM</strong>
+          · สัดส่วนแนะนำ <strong>1920 × 1000</strong>
         </p>
         <div class="ban-stage ${list.length ? '' : 'is-empty'}" id="banner-stage">
-          ${list.length ? `
-            <img class="ban-stage__bg" src="${escapeHtml(list[0].url)}" alt="" aria-hidden="true">
-            <img class="ban-stage__fg" src="${escapeHtml(list[0].url)}" alt="พรีวิวแบนเนอร์"
-              onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
-            <p class="ban-stage__label">พรีวิวแบบหน้าแรก · ลำดับ 1</p>
-          ` : 'ยังไม่มีแบนเนอร์ — อัปโหลดด้านล่าง'}
+          ${list.length ? bannerStageHtml(list[0], 1) : 'ยังไม่มีแบนเนอร์ — อัปโหลดด้านล่าง'}
         </div>
       </div>
 
       <div class="pts-card p-5">
         <h2 class="font-bold text-lg mb-1">เพิ่มแบนเนอร์</h2>
         <p class="text-sm text-on-surface-variant mb-4">
-          อัปโหลดแล้วโชว์บนหน้าแรกทันที · ลากไฟล์มาวางได้เลย
+          อัปโหลดแล้วโชว์บนหน้าแรกทันที · ไฟล์เคลื่อนไหวจะเล่นอัตโนมัติบนหน้าแรก
+          · วิดีโอแนะนำไม่เกิน 20–30 วินาที / สูงสุด 48MB
         </p>
-        <div class="ban-drop" id="banner-drop" tabindex="0" role="button" aria-label="ลากไฟล์รูปมาวางหรือคลิกเพื่อเลือกไฟล์">
-          <p class="ban-drop__hint"><strong>ลากไฟล์รูปมาวางที่นี่</strong> หรือคลิกเพื่อเลือกไฟล์</p>
-          <p class="ban-drop__hint" style="margin-top:6px;">รองรับ JPG / PNG / WEBP / GIF</p>
-          <input type="file" id="banner-file" accept="image/png,image/jpeg,image/webp,image/gif" class="hidden" multiple>
+        <div class="ban-drop" id="banner-drop" tabindex="0" role="button" aria-label="ลากไฟล์มาวางหรือคลิกเพื่อเลือกไฟล์">
+          <p class="ban-drop__hint"><strong>ลากไฟล์มาวางที่นี่</strong> หรือคลิกเพื่อเลือกไฟล์</p>
+          <p class="ban-drop__hint" style="margin-top:6px;">JPG / PNG / WEBP / GIF / MP4 / WEBM</p>
+          <input type="file" id="banner-file" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm,.mp4,.webm,.gif,.webp" class="hidden" multiple>
         </div>
         <p id="banner-msg" class="text-xs mt-2 text-on-surface-variant"></p>
       </div>
@@ -1410,36 +1433,36 @@ async function renderBanners() {
       return;
     }
     stage.classList.remove('is-empty');
-    const url = escapeHtml(item.url);
-    stage.innerHTML = `
-      <img class="ban-stage__bg" src="${url}" alt="" aria-hidden="true">
-      <img class="ban-stage__fg" src="${url}" alt="พรีวิวแบนเนอร์"
-        onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
-      <p class="ban-stage__label">พรีวิวแบบหน้าแรก · ลำดับ ${orderLabel || 1}</p>`;
+    stage.innerHTML = bannerStageHtml(item, orderLabel);
   };
 
   const renderList = () => {
     countEl.textContent = String(list.length);
     updateStage(list[0], 1);
     if (!list.length) {
-      listEl.innerHTML = '<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปด้านบนได้เลย</div>';
+      listEl.innerHTML = '<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปหรือวิดีโอด้านบนได้เลย</div>';
       return;
     }
-    listEl.innerHTML = list.map((b, i) => `
+    listEl.innerHTML = list.map((b, i) => {
+      const motion = isMotionItem(b);
+      const video = isVideoItem(b);
+      const kindLabel = video ? 'วิดีโอ' : (motion ? 'เคลื่อนไหว' : 'รูปนิ่ง');
+      const thumb = video
+        ? `<video class="ban-thumb__fg" src="${escapeHtml(b.url)}" muted loop playsinline autoplay></video>`
+        : `<img class="ban-thumb__bg" src="${escapeHtml(b.url)}" alt="" aria-hidden="true">
+           <img class="ban-thumb__fg" src="${escapeHtml(b.url)}" alt=""
+             onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">`;
+      return `
       <article class="ban-list-item" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
         <div class="ban-list-handle" title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
-        <div class="ban-thumb" title="คลิกเพื่อพรีวิว">
-          <img class="ban-thumb__bg" src="${escapeHtml(b.url)}" alt="" aria-hidden="true">
-          <img class="ban-thumb__fg" src="${escapeHtml(b.url)}" alt=""
-            onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
-        </div>
+        <div class="ban-thumb" title="คลิกเพื่อพรีวิว">${thumb}</div>
         <div class="min-w-0">
-          <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}${i === 0 ? ' · ขึ้นก่อน' : ''}</p>
+          <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}${i === 0 ? ' · ขึ้นก่อน' : ''} · ${kindLabel}</p>
           <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
         </div>
         <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
-      </article>
-    `).join('');
+      </article>`;
+    }).join('');
 
     listEl.querySelectorAll('.banner-del').forEach((btn) => {
       btn.onclick = async (e) => {
@@ -1507,9 +1530,12 @@ async function renderBanners() {
   };
 
   const uploadFiles = async (files) => {
-    const arr = Array.from(files || []).filter((f) => String(f.type || '').startsWith('image/'));
+    const arr = Array.from(files || []).filter((f) => {
+      const t = String(f.type || '');
+      return t.startsWith('image/') || t.startsWith('video/') || /\.(gif|webp|mp4|webm)$/i.test(f.name || '');
+    });
     if (!arr.length) {
-      msg.textContent = 'กรุณาเลือกไฟล์รูปภาพ';
+      msg.textContent = 'กรุณาเลือกไฟล์รูป (รวม GIF/WebP) หรือวิดีโอ MP4/WebM';
       return;
     }
     msg.textContent = `กำลังอัปโหลด ${arr.length} ไฟล์...`;

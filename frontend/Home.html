@@ -5,7 +5,7 @@
         <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260804national">
+        <link rel="stylesheet" href="site.css?v=20260804motion">
 <style>
   /* Match Courses.html: pts-main pts-main--wide (1480 / 16·28·32) */
   .pts-home-wide {
@@ -155,7 +155,7 @@
 </div>
 
 <main>
-<!-- Hero: national-grade cinematic banner (true aspect, full artwork) -->
+<!-- Hero: national-grade cinematic banner (image / GIF / video) -->
 <section class="pts-home-banner is-single is-entering" id="home-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
   <div class="pts-home-banner__wash" aria-hidden="true"></div>
   <div class="pts-home-banner__track" id="home-banner-track">
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allCourses = [];
   let activeMode = '';
 
-  // —— National-grade banner carousel (true aspect, full artwork) ——
+  // —— National-grade banner carousel (image / GIF / video motion) ——
   (function initHomeBannerCarousel() {
     const root = document.getElementById('home-banner');
     const track = document.getElementById('home-banner-track');
@@ -501,8 +501,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const progressEl = document.getElementById('home-banner-progress');
     if (!root || !track) return;
 
-    const INTERVAL = 6200;
-    const STAGE_RATIO = 1920 / 1000; // matches CSS aspect-ratio
+    const INTERVAL = 7200;
+    const STAGE_RATIO = 1920 / 1000;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     root.style.setProperty('--hb-interval', INTERVAL + 'ms');
     window.setTimeout(() => root.classList.remove('is-entering'), 1200);
@@ -516,6 +516,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     let sheenTimer = null;
 
     const escapeAttr = (t) => String(t || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    const fileHint = (s) => String(s?.filename || s?.url || '');
+    const isVideo = (s) => s?.kind === 'video' || /\.(mp4|webm)(\?|$)/i.test(fileHint(s));
+    const isMotion = (s) => Boolean(s?.animated) || isVideo(s) || /\.(gif|webp|mp4|webm)(\?|$)/i.test(fileHint(s));
 
     function sheen() {
       if (reduceMotion) return;
@@ -526,26 +529,42 @@ document.addEventListener('DOMContentLoaded', async () => {
       sheenTimer = window.setTimeout(() => root.classList.remove('is-sheening'), 1100);
     }
 
-    function markFitMode(slideEl, imgEl) {
-      if (!slideEl || !imgEl) return;
-      const apply = () => {
-        const w = imgEl.naturalWidth || 0;
-        const h = imgEl.naturalHeight || 0;
+    function markFitMode(slideEl, mediaEl) {
+      if (!slideEl || !mediaEl) return;
+      const apply = (w, h) => {
         if (!w || !h) return;
-        const ratio = w / h;
-        // If artwork is meaningfully taller/wider than the stage, use contain so nothing is clipped
-        const drift = Math.abs(ratio - STAGE_RATIO) / STAGE_RATIO;
+        const drift = Math.abs((w / h) - STAGE_RATIO) / STAGE_RATIO;
         slideEl.classList.toggle('is-fit-contain', drift > 0.06);
       };
-      if (imgEl.complete && imgEl.naturalWidth) apply();
-      else imgEl.addEventListener('load', apply, { once: true });
+      if (mediaEl.tagName === 'VIDEO') {
+        const onMeta = () => apply(mediaEl.videoWidth, mediaEl.videoHeight);
+        if (mediaEl.readyState >= 1) onMeta();
+        else mediaEl.addEventListener('loadedmetadata', onMeta, { once: true });
+        return;
+      }
+      const onImg = () => apply(mediaEl.naturalWidth, mediaEl.naturalHeight);
+      if (mediaEl.complete && mediaEl.naturalWidth) onImg();
+      else mediaEl.addEventListener('load', onImg, { once: true });
     }
 
     function slideHtml(s, i) {
       const url = escapeAttr(s.url);
       const alt = escapeAttr(s.alt || 'Banner');
+      const motion = isMotion(s);
+      const video = isVideo(s);
+      const cls = `pts-home-banner__slide${i === 0 ? ' is-active' : ''}${motion ? ' is-motion' : ''}${video ? ' is-video' : ''}`;
+      if (video) {
+        return `
+          <article class="${cls}" data-index="${i}" data-kind="video">
+            <video class="pts-home-banner__media" src="${url}"
+              muted loop playsinline autoplay
+              preload="${i === 0 ? 'auto' : 'metadata'}"
+              aria-label="${alt}"></video>
+            <span class="pts-home-banner__veil" aria-hidden="true"></span>
+          </article>`;
+      }
       return `
-        <article class="pts-home-banner__slide${i === 0 ? ' is-active' : ''}" data-index="${i}">
+        <article class="${cls}" data-index="${i}" data-kind="image">
           <img class="pts-home-banner__blur" src="${url}" alt="" aria-hidden="true" decoding="async" ${i === 0 ? '' : 'loading="lazy"'}>
           <img class="pts-home-banner__media" src="${url}" alt="${alt}"
             decoding="async" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
@@ -554,10 +573,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         </article>`;
     }
 
+    function syncMediaPlayback() {
+      track.querySelectorAll('.pts-home-banner__slide').forEach((slide, i) => {
+        const video = slide.querySelector('video.pts-home-banner__media');
+        if (!video) return;
+        if (i === index) {
+          try { video.muted = true; } catch (_) {}
+          const play = () => video.play().catch(() => {});
+          if (video.readyState >= 2) play();
+          else video.addEventListener('canplay', play, { once: true });
+        } else {
+          video.pause();
+        }
+      });
+    }
+
     function render(list) {
       slides = list.length ? list : [{
         url: '/uploads/hero/home-banner.png',
-        alt: 'PTS Learning'
+        alt: 'PTS Learning',
+        kind: 'image',
+        animated: false
       }];
       root.classList.toggle('is-single', slides.length < 2);
       track.innerHTML = slides.map((s, i) => slideHtml(s, i)).join('');
@@ -580,6 +616,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       track.querySelectorAll('.pts-home-banner__slide').forEach((el, i) => {
         el.classList.toggle('is-active', i === index);
       });
+      syncMediaPlayback();
     }
 
     function goTo(next, animate) {
@@ -667,6 +704,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!root.matches(':hover') && document.activeElement !== root) return;
       if (e.key === 'ArrowLeft') { prev(); start(); }
       if (e.key === 'ArrowRight') { next(); start(); }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        track.querySelectorAll('video').forEach((v) => v.pause());
+      } else {
+        syncMediaPlayback();
+      }
     });
 
     fetch('/api/home-banners')

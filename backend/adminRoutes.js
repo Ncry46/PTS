@@ -16,6 +16,10 @@ const {
 const { markPaidAndEnroll } = require('./paymentActions');
 
 const HERO_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
+const BANNER_MIME = new Set([
+    'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+    'video/mp4', 'video/webm'
+]);
 const HERO_ICONS = new Set([
     'check_circle', 'schedule', 'workspace_premium', 'school', 'star', 'verified',
     'auto_awesome', 'groups', 'event', 'menu_book', 'psychology', 'handshake'
@@ -980,7 +984,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         });
     });
 
-    /** แบนเนอร์หน้าแรก — อัปโหลดหลายรูป (banner-*.png) เก็บใน uploads/hero */
+    /** แบนเนอร์หน้าแรก — รองรับรูปนิ่ง / GIF·WebP เคลื่อนไหว / วิดีโอ MP4·WebM */
     const galleryBannerUpload = multer({
         storage: multer.diskStorage({
             destination: (_req, _file, cb) => {
@@ -989,16 +993,16 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             },
             filename: (_req, file, cb) => {
                 const ext = path.extname(file.originalname || '').toLowerCase();
-                const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)
+                const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif', '.mp4', '.webm'].includes(ext)
                     ? (ext === '.jpeg' ? '.jpg' : ext)
                     : '.png';
                 cb(null, `banner-${Date.now()}${safeExt}`);
             }
         }),
-        limits: { fileSize: 12 * 1024 * 1024 },
+        limits: { fileSize: 48 * 1024 * 1024 },
         fileFilter: (_req, file, cb) => {
-            if (HERO_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
-            else cb(new Error('รองรับเฉพาะไฟล์รูป JPG, PNG, WEBP หรือ GIF'));
+            if (BANNER_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+            else cb(new Error('รองรับ JPG, PNG, WEBP, GIF, MP4 หรือ WEBM'));
         }
     });
 
@@ -1014,7 +1018,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
             }
             if (!req.file) {
-                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
+                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูปหรือวิดีโอ' });
             }
             try { appendBannerToOrder(req.file.filename); } catch (_) { /* ignore */ }
             const items = listGalleryBanners();
