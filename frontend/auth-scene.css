@@ -1,59 +1,55 @@
-/* Auth scene — Iridescence WebGL background (Login / Register) */
+/* Auth scene — Iridescence is the full-page background (Login / Register) */
 
 body.pts-body.pts-login,
 body.pts-body.pts-register {
-  background: transparent !important;
+  background: #fe1c1c !important;
   background-image: none !important;
   position: relative;
   isolation: isolate;
+  min-height: 100dvh;
 }
 
 .pts-auth-scene {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  z-index: 0 !important;
   pointer-events: none;
   overflow: hidden;
-  background: #1a0505;
+  background: #fe1c1c;
 }
 
-.pts-auth-scene__fx {
-  position: absolute;
-  inset: 0;
+/* Full-bleed Iridescence host */
+.pts-auth-scene__fx,
+#auth-iridescence {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   z-index: 0;
 }
 
-/* Soft veil so the form stays readable over the shader */
+/* Very light edge vignette only — do NOT hide the shader */
 .pts-auth-scene__veil {
   position: absolute;
   inset: 0;
   z-index: 1;
+  pointer-events: none;
   background:
     radial-gradient(
-      ellipse 54% 60% at 50% 42%,
-      rgba(255, 255, 255, 0.82) 0%,
-      rgba(255, 255, 255, 0.48) 46%,
-      rgba(255, 255, 255, 0.12) 72%,
-      transparent 88%
+      ellipse 70% 65% at 50% 45%,
+      transparent 0%,
+      transparent 55%,
+      rgba(0, 0, 0, 0.18) 100%
     );
 }
 
 .pts-auth-scene__fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 140px;
-  z-index: 1;
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.28) 45%,
-    rgba(255, 255, 255, 0.72) 100%
-  );
+  display: none;
 }
 
-/* Keep auth content above the scene */
+/* Auth content above the WebGL scene */
 body.pts-login > #app-navbar,
 body.pts-register > #app-navbar,
 body.pts-login > .pts-login__stage,
@@ -69,44 +65,24 @@ body.pts-register > #app-navbar {
   z-index: 100;
 }
 
-@media (max-width: 810px) {
-  .pts-auth-scene__veil {
-    background:
-      radial-gradient(
-        ellipse 78% 70% at 50% 40%,
-        rgba(255, 255, 255, 0.88) 0%,
-        rgba(255, 255, 255, 0.55) 50%,
-        rgba(255, 255, 255, 0.18) 78%,
-        transparent 100%
-      );
-  }
+html.dark body.pts-body.pts-login,
+html.dark body.pts-body.pts-register,
+html.dark .pts-auth-scene {
+  background: #6a0a0a !important;
+}
+
+html.dark .pts-auth-scene__veil {
+  background:
+    radial-gradient(
+      ellipse 70% 65% at 50% 45%,
+      transparent 0%,
+      transparent 50%,
+      rgba(0, 0, 0, 0.35) 100%
+    );
 }
 
 @media (prefers-reduced-motion: reduce) {
   .pts-auth-scene {
-    background: #ff1c1c;
+    background: #fe1c1c;
   }
-}
-
-/* Dark theme: deeper veil so glass form stays crisp */
-html.dark .pts-auth-scene {
-  background: #120404;
-}
-html.dark .pts-auth-scene__veil {
-  background:
-    radial-gradient(
-      ellipse 54% 60% at 50% 42%,
-      rgba(18, 10, 12, 0.72) 0%,
-      rgba(18, 10, 12, 0.42) 48%,
-      rgba(18, 10, 12, 0.12) 75%,
-      transparent 90%
-    );
-}
-html.dark .pts-auth-scene__fade {
-  background: linear-gradient(
-    180deg,
-    transparent 0%,
-    rgba(18, 10, 12, 0.35) 50%,
-    rgba(18, 10, 12, 0.85) 100%
-  );
 }

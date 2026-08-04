@@ -1,5 +1,5 @@
 /**
- * Boot Iridescence on auth pages (Login / Register)
+ * Boot Iridescence on auth pages — replaces previous geometric background.
  */
 import { mountIridescence } from './Iridescence.js';
 
@@ -12,17 +12,20 @@ const DEFAULTS = {
 
 function boot() {
   const el = document.getElementById('auth-iridescence');
-  if (!el) return;
-  mountIridescence(el, {
-    color: DEFAULTS.color,
-    mouseReact: DEFAULTS.mouseReact,
-    amplitude: DEFAULTS.amplitude,
-    speed: DEFAULTS.speed
-  });
+  if (!el) {
+    console.warn('[Iridescence] #auth-iridescence not found');
+    return;
+  }
+  try {
+    mountIridescence(el, DEFAULTS);
+  } catch (err) {
+    console.error('[Iridescence] boot failed:', err);
+    el.style.background = 'rgb(254, 28, 28)';
+  }
 }
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', boot);
+  document.addEventListener('DOMContentLoaded', boot, { once: true });
 } else {
   boot();
 }
