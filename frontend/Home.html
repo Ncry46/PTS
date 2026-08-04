@@ -5,7 +5,7 @@
         <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260804bannerfx">
+        <link rel="stylesheet" href="site.css?v=20260804bannerwow">
 <style>
   /* Match Courses.html: pts-main pts-main--wide (1480 / 16·28·32) */
   .pts-home-wide {
@@ -155,31 +155,46 @@
 </div>
 
 <main>
-<!-- Hero: full-image premium carousel (no crop) -->
-<section class="pts-home-banner is-single" id="home-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+<!-- Hero: cinematic full-image banner (no crop) -->
+<section class="pts-home-banner is-single is-entering" id="home-banner" aria-label="แบนเนอร์หน้าแรก" aria-roledescription="carousel">
+  <div class="pts-home-banner__rim" aria-hidden="true"></div>
   <div class="pts-home-banner__ambient" aria-hidden="true">
     <span class="pts-home-banner__orb pts-home-banner__orb--a"></span>
     <span class="pts-home-banner__orb pts-home-banner__orb--b"></span>
     <span class="pts-home-banner__orb pts-home-banner__orb--c"></span>
+    <span class="pts-home-banner__orb pts-home-banner__orb--d"></span>
   </div>
   <div class="pts-home-banner__track" id="home-banner-track">
     <article class="pts-home-banner__slide is-active" data-index="0">
       <img class="pts-home-banner__bg" src="/uploads/hero/home-banner.png" alt="" aria-hidden="true" decoding="async">
-      <img
-        class="pts-home-banner__fg"
-        src="/uploads/hero/home-banner.png"
-        alt="RIGHT-HAND PARTNER PROGRAM — Personal Assistant Academy"
-        width="1920"
-        height="1000"
-        decoding="async"
-        fetchpriority="high"
-        onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'"
-      >
+      <div class="pts-home-banner__fg-wrap">
+        <img
+          class="pts-home-banner__fg"
+          src="/uploads/hero/home-banner.png"
+          alt="RIGHT-HAND PARTNER PROGRAM — Personal Assistant Academy"
+          width="1920"
+          height="1000"
+          decoding="async"
+          fetchpriority="high"
+          onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'"
+        >
+      </div>
       <span class="pts-home-banner__veil" aria-hidden="true"></span>
     </article>
   </div>
+  <div class="pts-home-banner__beams" aria-hidden="true">
+    <span class="pts-home-banner__beam pts-home-banner__beam--1"></span>
+    <span class="pts-home-banner__beam pts-home-banner__beam--2"></span>
+    <span class="pts-home-banner__beam pts-home-banner__beam--3"></span>
+  </div>
+  <div class="pts-home-banner__aurora" aria-hidden="true"></div>
+  <div class="pts-home-banner__spot" id="home-banner-spot" aria-hidden="true"></div>
   <div class="pts-home-banner__grain" aria-hidden="true"></div>
   <div class="pts-home-banner__sheen" aria-hidden="true"></div>
+  <div class="pts-home-banner__frame" aria-hidden="true">
+    <span class="pts-home-banner__corner pts-home-banner__corner--tr"></span>
+    <span class="pts-home-banner__corner pts-home-banner__corner--bl"></span>
+  </div>
   <div class="pts-home-banner__nav" aria-hidden="false">
     <button type="button" class="pts-home-banner__btn" id="home-banner-prev" aria-label="แบนเนอร์ก่อนหน้า">
       <span class="material-symbols-outlined">chevron_left</span>
@@ -494,7 +509,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   let allCourses = [];
   let activeMode = '';
 
-  // —— Premium full-image banner carousel (no crop) ——
+  // —— Cinematic full-image banner (no crop, bold presence) ——
   (function initHomeBannerCarousel() {
     const root = document.getElementById('home-banner');
     const track = document.getElementById('home-banner-track');
@@ -507,27 +522,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     const INTERVAL = 5600;
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     root.style.setProperty('--hb-interval', INTERVAL + 'ms');
+    window.setTimeout(() => root.classList.remove('is-entering'), 1200);
 
     let slides = [];
     let index = 0;
     let timer = null;
+    let idleBurst = null;
     let dragging = false;
     let startX = 0;
     let deltaX = 0;
     let sheenTimer = null;
 
     const escapeAttr = (t) => String(t || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-
-    function sparkle() {
+    function sparkle(burst) {
       if (reduceMotion) return;
-      for (let i = 0; i < 8; i += 1) {
+      const n = burst || 14;
+      for (let i = 0; i < n; i += 1) {
         const s = document.createElement('span');
-        s.className = 'pts-home-banner__sparkle';
-        s.style.left = (8 + Math.random() * 84) + '%';
-        s.style.top = (12 + Math.random() * 58) + '%';
-        s.style.animationDelay = (Math.random() * 220) + 'ms';
+        s.className = 'pts-home-banner__sparkle' + (i % 3 === 0 ? ' is-star' : '');
+        s.style.left = (6 + Math.random() * 88) + '%';
+        s.style.top = (10 + Math.random() * 65) + '%';
+        s.style.animationDelay = (Math.random() * 280) + 'ms';
         root.appendChild(s);
-        window.setTimeout(() => s.remove(), 900);
+        window.setTimeout(() => s.remove(), 1000);
       }
     }
 
@@ -537,20 +554,46 @@ document.addEventListener('DOMContentLoaded', async () => {
       void root.offsetWidth;
       root.classList.add('is-sheening');
       if (sheenTimer) window.clearTimeout(sheenTimer);
-      sheenTimer = window.setTimeout(() => root.classList.remove('is-sheening'), 1000);
+      sheenTimer = window.setTimeout(() => root.classList.remove('is-sheening'), 1100);
+    }
+
+    function ripple(clientX, clientY) {
+      if (reduceMotion) return;
+      const rect = root.getBoundingClientRect();
+      const r = document.createElement('span');
+      r.className = 'pts-home-banner__ripple';
+      r.style.left = (clientX - rect.left) + 'px';
+      r.style.top = (clientY - rect.top) + 'px';
+      root.appendChild(r);
+      window.setTimeout(() => r.remove(), 900);
     }
 
     function ensureFloats() {
-      if (reduceMotion || root.querySelector('.pts-home-banner__float')) return;
-      for (let i = 0; i < 5; i += 1) {
+      if (reduceMotion) return;
+      root.querySelectorAll('.pts-home-banner__float').forEach((el) => el.remove());
+      for (let i = 0; i < 12; i += 1) {
         const f = document.createElement('span');
-        f.className = 'pts-home-banner__float';
-        f.style.left = (10 + i * 18 + Math.random() * 8) + '%';
-        f.style.top = (20 + Math.random() * 50) + '%';
-        f.style.setProperty('--hb-f-dur', (6 + Math.random() * 5) + 's');
-        f.style.animationDelay = (-Math.random() * 5) + 's';
+        const size = 6 + Math.random() * 14;
+        f.className = 'pts-home-banner__float'
+          + (i % 4 === 0 ? ' is-ring' : '')
+          + (i % 5 === 0 ? ' is-gold' : '');
+        f.style.width = size + 'px';
+        f.style.height = size + 'px';
+        f.style.left = (4 + Math.random() * 92) + '%';
+        f.style.top = (8 + Math.random() * 75) + '%';
+        f.style.setProperty('--hb-f-dur', (4.5 + Math.random() * 6) + 's');
+        f.style.animationDelay = (-Math.random() * 6) + 's';
         root.appendChild(f);
       }
+    }
+
+    function startIdleBursts() {
+      if (reduceMotion) return;
+      if (idleBurst) window.clearInterval(idleBurst);
+      idleBurst = window.setInterval(() => {
+        sparkle(5);
+        if (Math.random() > 0.45) sheen();
+      }, 3200);
     }
 
     function slideHtml(s, i) {
@@ -559,9 +602,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       return `
         <article class="pts-home-banner__slide${i === 0 ? ' is-active' : ''}" data-index="${i}">
           <img class="pts-home-banner__bg" src="${url}" alt="" aria-hidden="true" decoding="async" ${i === 0 ? '' : 'loading="lazy"'}>
-          <img class="pts-home-banner__fg" src="${url}" alt="${alt}"
-            decoding="async" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
-            onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png';var b=this.previousElementSibling;if(b)b.src=this.src;">
+          <div class="pts-home-banner__fg-wrap">
+            <img class="pts-home-banner__fg" src="${url}" alt="${alt}"
+              decoding="async" ${i === 0 ? 'fetchpriority="high"' : 'loading="lazy"'}
+              onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png';var w=this.closest('.pts-home-banner__slide');var b=w&&w.querySelector('.pts-home-banner__bg');if(b)b.src=this.src;">
+          </div>
           <span class="pts-home-banner__veil" aria-hidden="true"></span>
         </article>`;
     }
@@ -579,7 +624,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       index = 0;
       ensureFloats();
       goTo(0, false);
-      if (slides.length > 1) start();
+      start();
+      startIdleBursts();
+      sparkle(10);
+      sheen();
     }
 
     function updateDots() {
@@ -595,7 +643,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!slides.length) return;
       index = ((next % slides.length) + slides.length) % slides.length;
       if (animate !== false) {
-        sparkle();
+        sparkle(16);
         sheen();
       }
       track.style.transform = `translate3d(${-index * 100}%, 0, 0)`;
@@ -607,7 +655,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     function prev() { goTo(index - 1, true); }
 
     function restartProgress() {
-      if (!progressEl || slides.length < 2 || reduceMotion) return;
+      if (!progressEl || reduceMotion) return;
       progressEl.classList.remove('is-running', 'is-paused');
       void progressEl.offsetWidth;
       progressEl.classList.add('is-running');
@@ -615,20 +663,29 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function start() {
       stop();
-      if (slides.length < 2 || reduceMotion) return;
+      if (reduceMotion) return;
       restartProgress();
-      timer = window.setInterval(next, INTERVAL);
+      if (slides.length > 1) timer = window.setInterval(next, INTERVAL);
     }
     function stop() {
       if (timer) { window.clearInterval(timer); timer = null; }
       if (progressEl) progressEl.classList.add('is-paused');
     }
 
-    prevBtn?.addEventListener('click', () => { prev(); start(); });
-    nextBtn?.addEventListener('click', () => { next(); start(); });
+    prevBtn?.addEventListener('click', (e) => {
+      ripple(e.clientX, e.clientY);
+      prev();
+      start();
+    });
+    nextBtn?.addEventListener('click', (e) => {
+      ripple(e.clientX, e.clientY);
+      next();
+      start();
+    });
     dotsBox?.addEventListener('click', (e) => {
       const btn = e.target.closest('.pts-home-banner__dot');
       if (!btn) return;
+      ripple(e.clientX, e.clientY);
       goTo(Number(btn.dataset.index), true);
       start();
     });
@@ -637,6 +694,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.addEventListener('mouseleave', () => {
       root.style.setProperty('--hb-px', '0px');
       root.style.setProperty('--hb-py', '0px');
+      root.style.setProperty('--hb-rx', '0deg');
+      root.style.setProperty('--hb-ry', '0deg');
       start();
     });
     root.addEventListener('focusin', stop);
@@ -644,19 +703,21 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (!root.contains(e.relatedTarget)) start();
     });
 
-    // Subtle parallax on pointer move
     if (!reduceMotion) {
       root.addEventListener('pointermove', (e) => {
         if (dragging) return;
         const rect = root.getBoundingClientRect();
-        const nx = ((e.clientX - rect.left) / Math.max(rect.width, 1) - 0.5) * 14;
-        const ny = ((e.clientY - rect.top) / Math.max(rect.height, 1) - 0.5) * 10;
-        root.style.setProperty('--hb-px', nx.toFixed(2) + 'px');
-        root.style.setProperty('--hb-py', ny.toFixed(2) + 'px');
+        const nx = (e.clientX - rect.left) / Math.max(rect.width, 1);
+        const ny = (e.clientY - rect.top) / Math.max(rect.height, 1);
+        root.style.setProperty('--hb-px', ((nx - 0.5) * 28).toFixed(2) + 'px');
+        root.style.setProperty('--hb-py', ((ny - 0.5) * 18).toFixed(2) + 'px');
+        root.style.setProperty('--hb-ry', ((nx - 0.5) * 6).toFixed(2) + 'deg');
+        root.style.setProperty('--hb-rx', ((0.5 - ny) * 4).toFixed(2) + 'deg');
+        root.style.setProperty('--hb-spot-x', (nx * 100).toFixed(2) + '%');
+        root.style.setProperty('--hb-spot-y', (ny * 100).toFixed(2) + '%');
       });
     }
 
-    // Swipe / drag
     const onDown = (x) => {
       if (slides.length < 2) return;
       dragging = true;
@@ -671,11 +732,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       const pct = (deltaX / Math.max(root.clientWidth, 1)) * 100;
       track.style.transform = `translate3d(${(-index * 100) + pct}%, 0, 0)`;
     };
-    const onUp = () => {
+    const onUp = (e) => {
       if (!dragging) return;
       dragging = false;
       root.classList.remove('is-dragging');
       if (Math.abs(deltaX) > root.clientWidth * 0.18) {
+        if (e) ripple(e.clientX, e.clientY);
         if (deltaX < 0) next(); else prev();
       } else {
         goTo(index, false);
@@ -691,6 +753,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     root.addEventListener('pointermove', (e) => onMove(e.clientX));
     root.addEventListener('pointerup', onUp);
     root.addEventListener('pointercancel', onUp);
+    root.addEventListener('click', (e) => {
+      if (e.target.closest('.pts-home-banner__btn, .pts-home-banner__dot')) return;
+      if (Math.abs(deltaX) < 8) {
+        ripple(e.clientX, e.clientY);
+        sparkle(8);
+      }
+    });
 
     document.addEventListener('keydown', (e) => {
       if (!root.matches(':hover') && document.activeElement !== root) return;
