@@ -570,13 +570,13 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     if (!Number.isNaN(d.getTime())) transferAt = d;
                 }
 
+                // Keep local slip for reliable admin preview; Drive holds a backup copy.
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
                     mimeType: req.file.mimetype
                 });
-                if (drive && drive.ok && drive.url) {
-                    slipUrl = drive.url;
-                    try { fs.unlinkSync(req.file.path); } catch (_) { /* ignore */ }
+                if (drive && drive.ok && drive.fileId) {
+                    // slipUrl stays local — do not delete the file after Drive backup
                 } else if (drive && drive.error) {
                     console.warn('[slip→drive]', drive.error);
                 }

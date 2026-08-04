@@ -277,6 +277,32 @@ async function makeAnyoneReadable(fileId, accessToken) {
     }
 }
 
+async function fetchDriveFilePublic(fileId) {
+    const id = String(fileId || '').trim();
+    const candidates = [
+        `https://drive.google.com/uc?export=download&id=${encodeURIComponent(id)}`,
+        `https://lh3.googleusercontent.com/d/${encodeURIComponent(id)}=s1024`
+    ];
+    for (const url of candidates) {
+        try {
+            const res = await fetch(url, { redirect: 'follow' });
+            if (!res.ok) continue;
+            const ct = String(res.headers.get('content-type') || '').toLowerCase();
+            if (ct.includes('text/html')) continue;
+            const buf = Buffer.from(await res.arrayBuffer());
+            if (!buf.length || buf.length < 32) continue;
+            return {
+                buffer: buf,
+                mimeType: ct.startsWith('image/') ? ct : 'image/jpeg',
+                name: id
+            };
+        } catch (_) { /* try next */ }
+    }
+    const err = new Error('ดาวน์โหลดไฟล์จาก Drive (สาธารณะ) ไม่สำเร็จ');
+    err.status = 502;
+    throw err;
+}
+
 async function fetchDriveFile(fileId) {
     const id = String(fileId || '').trim();
     if (!id || !/^[a-zA-Z0-9_-]+$/.test(id)) {
@@ -284,32 +310,41 @@ async function fetchDriveFile(fileId) {
         err.status = 400;
         throw err;
     }
-    const { token: accessToken } = await getAccessToken();
-    const metaRes = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?fields=id,name,mimeType&supportsAllDrives=true`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    const meta = await metaRes.json().catch(() => ({}));
-    if (!metaRes.ok) {
-        const err = new Error(meta.error?.message || 'ไม่พบไฟล์บน Drive');
-        err.status = metaRes.status;
-        throw err;
+    try {
+        const { token: accessToken } = await getAccessToken();
+        const metaRes = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?fields=id,name,mimeType&supportsAllDrives=true`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const meta = await metaRes.json().catch(() => ({}));
+        if (!metaRes.ok) {
+            const err = new Error(meta.error?.message || 'ไม่พบไฟล์บน Drive');
+            err.status = metaRes.status;
+            throw err;
+        }
+        const mediaRes = await fetch(
+            `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        if (!mediaRes.ok) {
+            const err = new Error('ดาวน์โหลดไฟล์จาก Drive ไม่สำเร็จ');
+            err.status = mediaRes.status;
+            throw err;
+        }
+        const buf = Buffer.from(await mediaRes.arrayBuffer());
+        return {
+            buffer: buf,
+            mimeType: meta.mimeType || mediaRes.headers.get('content-type') || 'application/octet-stream',
+            name: meta.name || id
+        };
+    } catch (err) {
+        // Anyone-with-link files can still be fetched without a token
+        try {
+            return await fetchDriveFilePublic(id);
+        } catch (_) {
+            throw err;
+        }
     }
-    const mediaRes = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${encodeURIComponent(id)}?alt=media&supportsAllDrives=true`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-    );
-    if (!mediaRes.ok) {
-        const err = new Error('ดาวน์โหลดไฟล์จาก Drive ไม่สำเร็จ');
-        err.status = mediaRes.status;
-        throw err;
-    }
-    const buf = Buffer.from(await mediaRes.arrayBuffer());
-    return {
-        buffer: buf,
-        mimeType: meta.mimeType || mediaRes.headers.get('content-type') || 'application/octet-stream',
-        name: meta.name || id
-    };
 }
 
 async function uploadImageToDrive({ filePath, buffer, filename, mimeType, folderId }) {

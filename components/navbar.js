@@ -417,11 +417,11 @@
             <span style="display:block;font-size:13px;font-weight:700">${name}</span>
             <span style="display:block;font-size:10px;font-weight:700;color:var(--pts-primary,#974258);text-transform:uppercase">${roleLabel}</span>
           </span>
-          <img src="${avatar}" alt="">
+          <img src="${avatar}" alt="" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=P&background=F8BBD0&color=880E4F&size=128'">
         </button>
         <div class="pts-topnav__drop" id="pts-user-menu" data-pts-user-drop role="menu" hidden>
           <div class="pts-topnav__drop-head">
-            <img src="${avatar}" alt="">
+            <img src="${avatar}" alt="" onerror="this.onerror=null;this.src='https://ui-avatars.com/api/?name=P&background=F8BBD0&color=880E4F&size=128'">
             <div>
               <div class="pts-topnav__drop-name">${name}</div>
               <div class="pts-topnav__drop-role">${roleLabel}</div>

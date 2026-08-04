@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
-const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl } = require('./googleDrive');
+const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId, fetchDriveFile } = require('./googleDrive');
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars');
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -38,6 +38,56 @@ const avatarUpload = multer({
     }
 });
 
+function extFromMime(mime, name) {
+    const m = String(mime || '').toLowerCase();
+    if (m.includes('png')) return '.png';
+    if (m.includes('webp')) return '.webp';
+    if (m.includes('gif')) return '.gif';
+    if (m.includes('jpeg') || m.includes('jpg')) return '.jpg';
+    const ext = path.extname(String(name || '')).toLowerCase();
+    if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
+        return ext === '.jpeg' ? '.jpg' : ext;
+    }
+    return '.jpg';
+}
+
+/** If profile Url points at Drive only, pull a local copy so <img> works again. */
+async function restoreAvatarFromDriveIfNeeded(row, { pool, userId, sessionUser }) {
+    const current = String(row.Url || '');
+    if (!current || current.startsWith('/uploads/avatars/')) return row;
+    const fileId = extractDriveFileId(current);
+    if (!fileId) return row;
+
+    try {
+        const file = await fetchDriveFile(fileId);
+        ensureAvatarDir();
+        const filename = `user-${userId}-restored-${Date.now()}${extFromMime(file.mimeType, file.name)}`;
+        const dest = path.join(AVATAR_DIR, filename);
+        fs.writeFileSync(dest, file.buffer);
+        const localUrl = `/uploads/avatars/${filename}`;
+        await pool.request()
+            .input('userId', sql.Int, userId)
+            .input('url', sql.NVarChar, localUrl)
+            .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+        row.Url = localUrl;
+        if (sessionUser) sessionUser.Url = localUrl;
+    } catch (err) {
+        console.warn('[avatar] restore from Drive failed:', err.message);
+        const fixed = normalizeDriveUrl(current);
+        if (fixed && fixed !== current) {
+            row.Url = fixed;
+            try {
+                await pool.request()
+                    .input('userId', sql.Int, userId)
+                    .input('url', sql.NVarChar, fixed)
+                    .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                if (sessionUser) sessionUser.Url = fixed;
+            } catch (_) { /* ignore */ }
+        }
+    }
+    return row;
+}
+
 function createProfileRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
 
@@ -55,7 +105,15 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
-            res.json({ success: true, data: result.recordset[0] });
+            let row = result.recordset[0];
+            if (row.Url) {
+                row = await restoreAvatarFromDriveIfNeeded(row, {
+                    pool,
+                    userId: user.user_id,
+                    sessionUser: req.session?.user
+                });
+            }
+            res.json({ success: true, data: row });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -116,17 +174,21 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     .query(`SELECT Url FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
                 const oldUrl = prev.recordset[0]?.Url || '';
 
+                // Always keep a local file for <img> display. Drive is a backup copy.
+                // (Direct Drive/lh3 URLs and even the API proxy can fail in browsers.)
                 let publicUrl = localUrl;
                 let storedOn = 'local';
                 let driveError = null;
+                let driveUrl = null;
+                let driveFileId = null;
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
                     mimeType: req.file.mimetype
                 });
-                if (drive && drive.ok && drive.url) {
-                    publicUrl = drive.url;
+                if (drive && drive.ok && drive.fileId) {
                     storedOn = 'google_drive';
-                    fs.promises.unlink(req.file.path).catch(() => {});
+                    driveUrl = drive.url || null;
+                    driveFileId = drive.fileId;
                 } else if (drive && drive.error) {
                     driveError = drive.error;
                 }
@@ -139,7 +201,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 req.session.user.Url = publicUrl;
 
                 // ลบไฟล์เก่าของเราเอง (ถ้าเคยอัปโหลดไว้ในเครื่อง)
-                if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/')) {
+                if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/') && oldUrl !== publicUrl) {
                     const oldPath = path.join(__dirname, '..', String(oldUrl).replace(/^\//, ''));
                     fs.promises.unlink(oldPath).catch(() => {});
                 }
@@ -147,7 +209,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 res.json({
                     success: true,
                     message: storedOn === 'google_drive'
-                        ? 'อัปเดตรูปโปรไฟล์แล้ว (เก็บบน Google Drive)'
+                        ? 'อัปเดตรูปโปรไฟล์แล้ว (สำรองบน Google Drive แล้ว)'
                         : (driveError
                             ? `อัปเดตรูปโปรไฟล์แล้ว (เก็บในเครื่อง — Drive: ${driveError})`
                             : 'อัปเดตรูปโปรไฟล์แล้ว'),
@@ -155,6 +217,8 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     storage: storedOn,
                     driveConfigured: isDriveConfigured(),
                     driveError,
+                    driveUrl,
+                    driveFileId,
                     user: req.session.user
                 });
             } catch (error) {

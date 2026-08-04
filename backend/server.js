@@ -195,12 +195,40 @@ app.get('/', (req, res) => {
 });
 
 // 🌟 3. [เพิ่มใหม่] API สำหรับส่งข้อมูลคนล็อกอินไปให้ navbar.js หน้าบ้านเอาไปวาด
-app.get('/api/users/me', (req, res) => {
+app.get('/api/users/me', async (req, res) => {
     if (req.session && req.session.user) {
         try {
-            const { normalizeDriveUrl } = require('./googleDrive');
-            if (req.session.user.Url) {
-                req.session.user.Url = normalizeDriveUrl(req.session.user.Url) || req.session.user.Url;
+            const drive = require('./googleDrive');
+            const url = String(req.session.user.Url || '');
+            const fileId = drive.extractDriveFileId(url);
+            if (fileId && !url.startsWith('/uploads/avatars/') && !req.session._avatarRestoreTried) {
+                req.session._avatarRestoreTried = true;
+                try {
+                    const file = await drive.fetchDriveFile(fileId);
+                    const avatarsDir = path.join(uploadsDir, 'avatars');
+                    fs.mkdirSync(avatarsDir, { recursive: true });
+                    const mime = String(file.mimeType || '').toLowerCase();
+                    let ext = '.jpg';
+                    if (mime.includes('png')) ext = '.png';
+                    else if (mime.includes('webp')) ext = '.webp';
+                    else if (mime.includes('gif')) ext = '.gif';
+                    const filename = `user-${req.session.user.user_id}-restored-${Date.now()}${ext}`;
+                    fs.writeFileSync(path.join(avatarsDir, filename), file.buffer);
+                    const localUrl = `/uploads/avatars/${filename}`;
+                    req.session.user.Url = localUrl;
+                    try {
+                        const pool = await poolPromise;
+                        await pool.request()
+                            .input('userId', sql.Int, req.session.user.user_id)
+                            .input('url', sql.NVarChar, localUrl)
+                            .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                    } catch (_) { /* session still updated for navbar */ }
+                } catch (err) {
+                    console.warn('[avatar] users/me restore:', err.message);
+                    req.session.user.Url = drive.normalizeDriveUrl(url) || url;
+                }
+            } else if (url) {
+                req.session.user.Url = drive.normalizeDriveUrl(url) || url;
             }
         } catch (_) { /* ignore */ }
         res.json({ loggedIn: true, user: req.session.user });

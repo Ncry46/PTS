@@ -332,7 +332,12 @@ function defaultAvatar(name) {
 
 function setAvatarPreview(url, name) {
   const img = document.getElementById('avatar-preview');
-  img.src = url || defaultAvatar(name);
+  const fallback = defaultAvatar(name);
+  img.onerror = () => {
+    img.onerror = null;
+    img.src = fallback;
+  };
+  img.src = url || fallback;
 }
 
 function syncProfileMeta() {
@@ -632,10 +637,13 @@ document.getElementById('save-profile').onclick = async () => {
       document.getElementById('avatar-file-name').textContent = '';
       document.getElementById('clear-avatar-pick').classList.add('hidden');
       setAvatarPreview(currentAvatarUrl, document.getElementById('full_name').value);
+      if (typeof window.checkUserAndRenderNavbar === 'function') {
+        window.checkUserAndRenderNavbar();
+      }
       let avatarMsg = '';
       let avatarOk = true;
       if (upData.storage === 'google_drive') {
-        avatarMsg = upData.message || 'อัปเดตรูปโปรไฟล์แล้ว (เก็บบน Google Drive)';
+        avatarMsg = upData.message || 'อัปเดตรูปโปรไฟล์แล้ว (สำรองบน Google Drive แล้ว)';
       } else if (upData.driveError) {
         avatarMsg = upData.message || ('อัปรูปแล้วแต่ยังไม่ขึ้น Drive: ' + upData.driveError);
         avatarOk = false;
