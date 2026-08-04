@@ -90,21 +90,23 @@ body.pts-register .pts-auth-scene__geo {
   display: none !important;
 }
 
-/* Tiny build stamp so we can confirm the new file is loaded */
+/* Giant build stamp — if you do NOT see this, you are on OLD files */
 .pts-auth-build {
-  position: fixed;
-  right: 10px;
-  bottom: 8px;
-  z-index: 9999;
-  font: 600 11px/1.2 Bai Jamjuree, SN Pro, sans-serif;
-  letter-spacing: 0.04em;
-  color: rgba(255, 255, 255, 0.85);
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  border-radius: 999px;
-  padding: 5px 10px;
-  pointer-events: none;
-  backdrop-filter: blur(6px);
+  position: fixed !important;
+  left: 12px !important;
+  bottom: 12px !important;
+  right: auto !important;
+  z-index: 2147483647 !important;
+  font: 800 14px/1.2 Bai Jamjuree, SN Pro, sans-serif !important;
+  letter-spacing: 0.06em !important;
+  color: #fff !important;
+  background: #111 !important;
+  border: 2px solid #fff !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  pointer-events: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
+  text-transform: uppercase !important;
 }
 
 body.pts-login > #app-navbar,
