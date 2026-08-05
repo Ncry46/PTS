@@ -11,7 +11,7 @@
 <link rel="stylesheet" href="auth-scene.css?v=20260805white2">
 <link rel="stylesheet" href="login.css?v=20260805white2">
 <link rel="stylesheet" href="register.css?v=20260805white2">
-<link rel="stylesheet" href="auth-split.css?v=20260805white2">
+<link rel="stylesheet" href="auth-split.css?v=20260805slide1">
 <style id="pts-auth-force-bg">
   /* White auth page backdrop */
   body.pts-login, body.pts-register {
@@ -38,26 +38,55 @@
 <main class="pts-login__stage">
   <div class="pts-login__shell pts-login__shell--plain pts-login__shell--split" id="login-shell">
     <div class="pts-auth-split" id="auth-split" data-mode="login">
-      <div class="pts-auth-split__glow" aria-hidden="true"></div>
-      <div class="pts-auth-split__divider" aria-hidden="true"></div>
-
       <div class="pts-auth-split__tabs" role="tablist" aria-label="สลับเข้าสู่ระบบหรือสมัครสมาชิก">
         <button type="button" class="pts-auth-split__tab is-on" role="tab" aria-selected="true" data-auth-tab="login">เข้าสู่ระบบ</button>
         <button type="button" class="pts-auth-split__tab" role="tab" aria-selected="false" data-auth-tab="register">สมัครสมาชิก</button>
       </div>
 
+      <button type="button" class="pts-auth-split__cover" id="auth-cover" aria-label="สลับไปสมัครสมาชิก" data-auth-keep-enabled>
+        <span class="pts-auth-split__cover-fx" aria-hidden="true">
+          <span class="pts-auth-split__orb pts-auth-split__orb--a"></span>
+          <span class="pts-auth-split__orb pts-auth-split__orb--b"></span>
+          <span class="pts-auth-split__orb pts-auth-split__orb--c"></span>
+          <span class="pts-auth-split__ribbon pts-auth-split__ribbon--a"></span>
+          <span class="pts-auth-split__ribbon pts-auth-split__ribbon--b"></span>
+          <span class="pts-auth-split__ring pts-auth-split__ring--a"></span>
+          <span class="pts-auth-split__ring pts-auth-split__ring--b"></span>
+          <span class="pts-auth-split__spark pts-auth-split__spark--1"></span>
+          <span class="pts-auth-split__spark pts-auth-split__spark--2"></span>
+          <span class="pts-auth-split__spark pts-auth-split__spark--3"></span>
+          <span class="pts-auth-split__spark pts-auth-split__spark--4"></span>
+          <span class="pts-auth-split__spark pts-auth-split__spark--5"></span>
+          <span class="pts-auth-split__spark pts-auth-split__spark--6"></span>
+          <span class="pts-auth-split__float pts-auth-split__float--1"></span>
+          <span class="pts-auth-split__float pts-auth-split__float--2"></span>
+          <span class="pts-auth-split__float pts-auth-split__float--3"></span>
+          <span class="pts-auth-split__sheen"></span>
+          <span class="pts-auth-split__grain"></span>
+        </span>
+
+        <span class="pts-auth-split__cover-face" data-cover-face="register">
+          <span class="pts-auth-split__veil-kicker">Create account</span>
+          <span class="pts-auth-split__veil-title">สมัครสมาชิก</span>
+          <span class="pts-auth-split__veil-hint">เลื่อนมาเปิดบัญชีใหม่ได้ที่นี่</span>
+          <span class="pts-auth-split__veil-cta">
+            ไปสมัครสมาชิก
+            <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">arrow_forward</span>
+          </span>
+        </span>
+
+        <span class="pts-auth-split__cover-face" data-cover-face="login">
+          <span class="pts-auth-split__veil-kicker">Welcome back</span>
+          <span class="pts-auth-split__veil-title">เข้าสู่ระบบ</span>
+          <span class="pts-auth-split__veil-hint">เลื่อนกลับมาลงชื่อเข้าใช้</span>
+          <span class="pts-auth-split__veil-cta">
+            ไปเข้าสู่ระบบ
+            <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">arrow_back</span>
+          </span>
+        </span>
+      </button>
+
       <section class="pts-auth-split__pane pts-auth-split__pane--login is-active" data-pane="login" aria-label="เข้าสู่ระบบ">
-        <div class="pts-auth-split__veil" role="button" tabindex="-1" aria-label="สลับไปเข้าสู่ระบบ" data-auth-keep-enabled>
-          <div class="pts-auth-split__veil-copy">
-            <p class="pts-auth-split__veil-kicker">Welcome back</p>
-            <p class="pts-auth-split__veil-title">เข้าสู่ระบบ</p>
-            <p class="pts-auth-split__veil-hint">แตะเพื่อกลับมาลงชื่อเข้าใช้</p>
-            <span class="pts-auth-split__veil-cta">
-              เปิดฝั่งนี้
-              <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">arrow_forward</span>
-            </span>
-          </div>
-        </div>
         <div class="pts-login__panel-inner">
           <header class="pts-login__header">
             <p class="pts-login__eyebrow">Welcome back</p>
@@ -115,17 +144,6 @@
       </section>
 
       <section class="pts-auth-split__pane pts-auth-split__pane--register is-dimmed" data-pane="register" aria-label="สมัครสมาชิก" aria-hidden="true">
-        <div class="pts-auth-split__veil" role="button" tabindex="0" aria-label="สลับไปสมัครสมาชิก" data-auth-keep-enabled>
-          <div class="pts-auth-split__veil-copy">
-            <p class="pts-auth-split__veil-kicker">Create account</p>
-            <p class="pts-auth-split__veil-title">สมัครสมาชิก</p>
-            <p class="pts-auth-split__veil-hint">แตะเพื่อเปิดฟอร์มสมัคร</p>
-            <span class="pts-auth-split__veil-cta">
-              เปิดฝั่งนี้
-              <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">arrow_forward</span>
-            </span>
-          </div>
-        </div>
         <div class="pts-login__panel-inner">
           <header class="pts-login__header">
             <p class="pts-login__eyebrow">Create account</p>
@@ -257,7 +275,7 @@
   </div>
 </div>
 
-<script src="auth-split.js?v=20260805white2"></script>
+<script src="auth-split.js?v=20260805slide1"></script>
 <script src="login.js?v=20260805split1"></script>
 <script src="register.js?v=20260805split1"></script>
 <script src="password-toggle.js?v=20260720e"></script>
