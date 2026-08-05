@@ -63,6 +63,11 @@ async function loadCourseLessons() {
     document.getElementById('lesson-view').innerHTML = `<div class="pts-empty" style="border:none;padding:24px 0"><p class="mb-4">คุณยังไม่ได้สมัครหลักสูตรนี้</p><a class="pts-btn pts-btn-primary" href="Courses.html">ไปสมัครเรียน</a></div>`;
     return;
   }
+  if (data.required_form && data.required_form.form_id) {
+    const next = encodeURIComponent(`Learn.html?courseId=${courseId}`);
+    location.href = `FormFill.html?id=${data.required_form.form_id}&next=${next}`;
+    return;
+  }
   document.getElementById('course-title').textContent = data.course.course_name;
   const list = document.getElementById('lesson-list');
   if (!data.data.length) {

@@ -239,7 +239,24 @@ async function ensureLearningSchema(pool) {
             response_id INT NOT NULL,
             question_id INT NOT NULL,
             answer_text NVARCHAR(MAX) NULL
-         )`
+         )`,
+        `IF COL_LENGTH('dbo.custom_forms', 'form_type') IS NULL
+         ALTER TABLE dbo.custom_forms ADD form_type VARCHAR(20) NOT NULL
+            CONSTRAINT DF_custom_forms_type DEFAULT ('general')`,
+        `IF COL_LENGTH('dbo.custom_forms', 'course_id') IS NULL
+         ALTER TABLE dbo.custom_forms ADD course_id INT NULL`,
+        `IF COL_LENGTH('dbo.custom_form_responses', 'result_code') IS NULL
+         ALTER TABLE dbo.custom_form_responses ADD result_code VARCHAR(8) NULL`,
+        `IF COL_LENGTH('dbo.custom_form_responses', 'result_label') IS NULL
+         ALTER TABLE dbo.custom_form_responses ADD result_label NVARCHAR(100) NULL`,
+        `IF COL_LENGTH('dbo.custom_form_responses', 'result_json') IS NULL
+         ALTER TABLE dbo.custom_form_responses ADD result_json NVARCHAR(MAX) NULL`,
+        `IF COL_LENGTH('dbo.users_main', 'disc_code') IS NULL
+         ALTER TABLE dbo.users_main ADD disc_code VARCHAR(8) NULL`,
+        `IF COL_LENGTH('dbo.users_main', 'disc_label') IS NULL
+         ALTER TABLE dbo.users_main ADD disc_label NVARCHAR(100) NULL`,
+        `IF COL_LENGTH('dbo.users_main', 'disc_updated_at') IS NULL
+         ALTER TABLE dbo.users_main ADD disc_updated_at DATETIME NULL`
     ];
 
     for (const statement of statements) {
@@ -467,41 +484,36 @@ async function seedSampleFormIfEmpty(pool) {
         if (Number(count.recordset[0].c || 0) > 0) return;
 
         const form = await pool.request()
-            .input('title', sql.NVarChar, 'แบบสอบถามความสนใจหลักสูตร')
-            .input('description', sql.NVarChar, 'กรอกข้อมูลเพื่อให้ทีมงานแนะนำหลักสูตรที่เหมาะกับคุณ')
+            .input('title', sql.NVarChar, 'แบบประเมินสไตล์ DISC')
+            .input('description', sql.NVarChar, 'ตอบคำถามเพื่อดูว่าคุณใกล้เคียงสไตล์ใด: D กระทิง · I อินทรี · S หนู · C หมี')
             .query(`
-                INSERT INTO BD_PTS.dbo.custom_forms (title, description, is_published, allow_resubmit, flag_use)
+                INSERT INTO BD_PTS.dbo.custom_forms
+                    (title, description, is_published, allow_resubmit, flag_use, form_type)
                 OUTPUT INSERTED.form_id
-                VALUES (@title, @description, 1, 0, 1)
+                VALUES (@title, @description, 1, 1, 1, 'disc')
             `);
         const formId = form.recordset[0].form_id;
+        const discOpts = JSON.stringify([
+            'D : กระทิง',
+            'I : อินทรี',
+            'S : หนู',
+            'C : หมี',
+            'U : ยังไม่ทราบ'
+        ]);
         const questions = [
-            { label: 'ชื่อ-นามสกุล', type: 'text', required: 1, sort: 1, options: null },
-            { label: 'อีเมลติดต่อ', type: 'email', required: 1, sort: 2, options: null },
-            { label: 'เบอร์โทรศัพท์', type: 'phone', required: 0, sort: 3, options: null },
-            {
-                label: 'รูปแบบการเรียนที่สนใจ',
-                type: 'radio',
-                required: 1,
-                sort: 4,
-                options: JSON.stringify(['Online', 'Onsite', 'Hybrid'])
-            },
-            {
-                label: 'หัวข้อที่สนใจ (เลือกได้หลายข้อ)',
-                type: 'checkbox',
-                required: 0,
-                sort: 5,
-                options: JSON.stringify(['การจัดตาราง', 'การสื่อสาร', 'เอกสารภาษาอังกฤษ', 'เทคโนโลยีสำนักงาน'])
-            },
-            { label: 'ข้อความเพิ่มเติม', type: 'textarea', required: 0, sort: 6, options: null }
+            { label: 'เมื่อต้องทำงานเป็นทีม คุณมักเป็นคนแบบไหน?', sort: 1 },
+            { label: 'เวลาเจอปัญหาฉุกเฉิน คุณมักตอบสนองอย่างไร?', sort: 2 },
+            { label: 'สไตล์การสื่อสารที่คุณถนัดที่สุดคือข้อใด?', sort: 3 },
+            { label: 'เมื่อต้องตัดสินใจสำคัญ คุณโน้มเอียงไปทางใด?', sort: 4 },
+            { label: 'โดยรวมแล้ว คุณรู้สึกว่าตัวเองใกล้เคียงสัตว์ใดที่สุด?', sort: 5 }
         ];
         for (const q of questions) {
             await pool.request()
                 .input('formId', sql.Int, formId)
                 .input('label', sql.NVarChar, q.label)
-                .input('qType', sql.VarChar, q.type)
-                .input('opts', sql.NVarChar, q.options)
-                .input('req', sql.Bit, q.required)
+                .input('qType', sql.VarChar, 'radio')
+                .input('opts', sql.NVarChar, discOpts)
+                .input('req', sql.Bit, 1)
                 .input('sort', sql.Int, q.sort)
                 .query(`
                     INSERT INTO BD_PTS.dbo.custom_form_questions

@@ -270,7 +270,7 @@ async function mountCourseNotifyControls(hostEl) {
             ${!loggedIn
               ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>`
               : enrolled
-                ? `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
+                ? `<a class="pts-btn pts-btn-primary" id="go-learn" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
                 : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
             ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline"><span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;line-height:1">calendar_month</span>เพิ่มปฏิทิน</button>` : ''}
           </div>
@@ -283,6 +283,21 @@ async function mountCourseNotifyControls(hostEl) {
         </div>
       </div>
     </article>`;
+
+  document.getElementById('go-learn')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const href = e.currentTarget.getAttribute('href') || `Learn.html?courseId=${c.course_id}`;
+    try {
+      const r = await fetch(`/api/forms/course/${c.course_id}/required`, { credentials: 'include' });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && j.success !== false && j.required && j.form?.form_id) {
+        const next = encodeURIComponent(href);
+        location.href = `FormFill.html?id=${j.form.form_id}&next=${next}`;
+        return;
+      }
+    } catch (_) { /* fall through to Learn */ }
+    location.href = href;
+  });
 
   document.getElementById('pay-course')?.addEventListener('click', () => {
     if (!window.PTSPayModal) return;

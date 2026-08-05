@@ -53,6 +53,7 @@
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const formId = Number(new URLSearchParams(location.search).get('id'));
+const nextUrl = new URLSearchParams(location.search).get('next') || '';
 
 function fieldHtml(q) {
   const req = q.is_required ? ' <span style="color:#ba1a1a">*</span>' : '';
@@ -147,8 +148,16 @@ async function boot() {
   if (already) {
     const mine = await fetch('/api/forms/' + formId + '/my-response', { credentials: 'include' }).then((r) => r.json());
     const answers = (mine.data && mine.data.answers) || [];
+    const disc = mine.data?.result_code
+      ? `<div class="mb-3 p-3 rounded-xl bg-[rgba(151,66,88,.08)]">
+          <p class="text-xs text-on-surface-variant mb-1">ผลประเมิน DISC</p>
+          <p class="text-xl font-bold text-primary">${escapeHtml(mine.data.result_code)} · ${escapeHtml(mine.data.result_label || '')}</p>
+          <p class="text-xs text-on-surface-variant mt-1">D กระทิง · I อินทรี · S หนู · C หมี · U ยังไม่ทราบ</p>
+        </div>`
+      : '';
     priorHtml = `
       <div class="mb-6 p-4 rounded-2xl border border-[rgba(151,66,88,.14)] bg-[rgba(151,66,88,.04)]">
+        ${disc}
         <p class="font-bold text-primary mb-2">คำตอบล่าสุดของคุณ</p>
         <p class="text-xs text-on-surface-variant mb-3">ส่งเมื่อ ${escapeHtml(new Date(form.my_response.submitted_at).toLocaleString('th-TH'))}</p>
         <ul class="space-y-2 text-sm">
@@ -157,10 +166,18 @@ async function boot() {
       </div>`;
   }
 
+  const typeChip = form.form_type === 'disc'
+    ? '<span class="pts-chip mb-3">DISC</span>'
+    : form.form_type === 'course'
+      ? `<span class="pts-chip mb-3">ก่อนเริ่มคอร์ส</span>${form.course_name ? `<p class="text-sm text-primary font-bold mb-2">${escapeHtml(form.course_name)}</p>` : ''}`
+      : '';
+
   document.getElementById('root').innerHTML = `
     <div class="ff-shell">
+      ${typeChip}
       <h1 class="text-2xl font-bold text-primary mb-2 pts-display">${escapeHtml(form.title)}</h1>
       <p class="text-sm text-on-surface-variant mb-6">${escapeHtml(form.description || '')}</p>
+      ${form.form_type === 'disc' ? '<p class="text-xs text-on-surface-variant mb-4">ตัวเลือก: D กระทิง · I อินทรี · S หนู · C หมี · U ยังไม่ทราบ</p>' : ''}
       ${priorHtml}
       ${canSubmit ? `
         <form id="fill-form">
@@ -169,7 +186,8 @@ async function boot() {
           <button type="submit" class="pts-btn pts-btn-primary" id="submit-btn">${already ? 'ส่งอีกครั้ง' : 'ส่งแบบฟอร์ม'}</button>
         </form>
       ` : `
-        <p class="text-sm text-on-surface-variant">คุณส่งแบบฟอร์มนี้แล้ว และไม่อนุญาตให้ส่งซ้ำ</p>
+        <p class="text-sm text-on-surface-variant mb-4">คุณส่งแบบฟอร์มนี้แล้ว และไม่อนุญาตให้ส่งซ้ำ</p>
+        ${nextUrl && form.form_type === 'course' ? `<a class="pts-btn pts-btn-primary" href="${escapeHtml(nextUrl)}">ไปเรียนต่อ</a>` : ''}
       `}
     </div>`;
 
@@ -196,7 +214,14 @@ async function boot() {
       msg.textContent = out.message || 'ส่งสำเร็จ';
       msg.style.color = '#974258';
       msg.classList.remove('hidden');
-      setTimeout(() => location.reload(), 700);
+      const safeNext = nextUrl && /^[A-Za-z0-9._\-/?#%=]+$/.test(nextUrl) && !nextUrl.includes('://')
+        ? nextUrl
+        : '';
+      if (safeNext && form.form_type === 'course') {
+        setTimeout(() => { location.href = safeNext; }, 700);
+      } else {
+        setTimeout(() => location.reload(), 700);
+      }
     } catch (err) {
       msg.textContent = err.message || 'ส่งไม่สำเร็จ';
       msg.style.color = '#ba1a1a';

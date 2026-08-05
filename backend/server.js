@@ -234,6 +234,20 @@ app.get('/api/users/me', async (req, res) => {
                 req.session.user.Url = drive.normalizeDriveUrl(url) || url;
             }
         } catch (_) { /* ignore */ }
+        try {
+            const pool = await poolPromise;
+            const disc = await pool.request()
+                .input('userId', sql.Int, req.session.user.user_id)
+                .query(`
+                    SELECT disc_code, disc_label, disc_updated_at
+                    FROM BD_PTS.dbo.users_main
+                    WHERE user_id = @userId
+                `);
+            const d = disc.recordset[0] || {};
+            req.session.user.disc_code = d.disc_code || req.session.user.disc_code || null;
+            req.session.user.disc_label = d.disc_label || req.session.user.disc_label || null;
+            req.session.user.disc_updated_at = d.disc_updated_at || null;
+        } catch (_) { /* column may not exist yet */ }
         res.json({ loggedIn: true, user: req.session.user });
     } else {
         res.json({ loggedIn: false, user: null });
