@@ -1,27 +1,5 @@
--- courses_main — ตารางหลักสูตร (อ้างอิง schema จริง)
--- backend/ensureSchema.js จะ ADD คอลัมน์ที่ยังไม่มีเมื่อสตาร์ทเซิร์ฟเวอร์
-
-/*
-  Fields:
-    course_id
-    course_name
-    instructor_name
-    delivery_mode
-    total_hours
-    average_rating
-    total_reviews
-    cover_image_url
-    is_featured
-    coursesFlag
-    created_at
-    price
-    description
-    flag_use
-    coursescat_id
-    total_enrolled
-    start_date
-    is_open_soon
-*/
+-- courses_main — ตารางหลักสูตร
+-- ensureSchema.js จะ CREATE อัตโนมัติตอน npm start ถ้ายังไม่มี
 
 IF OBJECT_ID('dbo.courses_main', 'U') IS NULL
 BEGIN

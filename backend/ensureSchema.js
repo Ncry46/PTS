@@ -154,25 +154,68 @@ async function ensureLearningSchema(pool) {
         `IF COL_LENGTH('dbo.course_enrollments', 'gcal_notify') IS NULL
          ALTER TABLE dbo.course_enrollments ADD gcal_notify BIT NOT NULL
             CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (0)`,
-        `IF COL_LENGTH('dbo.courses_main', 'price') IS NULL
+
+        /* —— courses_main (สร้างก่อน แล้วค่อยเติมคอลัมน์ถ้าตารางเก่ายังขาด) —— */
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NULL
+         CREATE TABLE dbo.courses_main (
+            course_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            course_name NVARCHAR(255) NOT NULL,
+            instructor_name NVARCHAR(255) NULL,
+            delivery_mode VARCHAR(20) NULL,
+            total_hours DECIMAL(10,2) NULL,
+            average_rating DECIMAL(4,2) NULL,
+            total_reviews INT NULL,
+            cover_image_url NVARCHAR(1000) NULL,
+            is_featured BIT NOT NULL CONSTRAINT DF_courses_main_featured DEFAULT (0),
+            coursesFlag NVARCHAR(10) NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_courses_main_created DEFAULT (GETDATE()),
+            price DECIMAL(10,2) NULL,
+            description NVARCHAR(MAX) NULL,
+            flag_use BIT NOT NULL CONSTRAINT DF_courses_main_flag_use DEFAULT (1),
+            coursescat_id INT NULL,
+            total_enrolled INT NOT NULL CONSTRAINT DF_courses_main_enrolled DEFAULT (0),
+            start_date DATE NULL,
+            is_open_soon BIT NOT NULL CONSTRAINT DF_courses_main_open_soon DEFAULT (0)
+         )`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'price') IS NULL
          ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
-        `IF COL_LENGTH('dbo.courses_main', 'description') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'description') IS NULL
          ALTER TABLE dbo.courses_main ADD description NVARCHAR(MAX) NULL`,
-        `IF COL_LENGTH('dbo.courses_main', 'flag_use') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'flag_use') IS NULL
          ALTER TABLE dbo.courses_main ADD flag_use BIT NOT NULL
             CONSTRAINT DF_courses_main_flag_use DEFAULT (1)`,
-        `IF COL_LENGTH('dbo.courses_main', 'coursesFlag') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'coursesFlag') IS NULL
          ALTER TABLE dbo.courses_main ADD coursesFlag NVARCHAR(10) NULL`,
-        `IF COL_LENGTH('dbo.courses_main', 'coursescat_id') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'coursescat_id') IS NULL
          ALTER TABLE dbo.courses_main ADD coursescat_id INT NULL`,
-        `IF COL_LENGTH('dbo.courses_main', 'total_enrolled') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'total_enrolled') IS NULL
          ALTER TABLE dbo.courses_main ADD total_enrolled INT NOT NULL
             CONSTRAINT DF_courses_main_enrolled DEFAULT (0)`,
-        `IF COL_LENGTH('dbo.courses_main', 'start_date') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'start_date') IS NULL
          ALTER TABLE dbo.courses_main ADD start_date DATE NULL`,
-        `IF COL_LENGTH('dbo.courses_main', 'is_open_soon') IS NULL
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'is_open_soon') IS NULL
          ALTER TABLE dbo.courses_main ADD is_open_soon BIT NOT NULL
             CONSTRAINT DF_courses_main_open_soon DEFAULT (0)`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'instructor_name') IS NULL
+         ALTER TABLE dbo.courses_main ADD instructor_name NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'delivery_mode') IS NULL
+         ALTER TABLE dbo.courses_main ADD delivery_mode VARCHAR(20) NULL`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'total_hours') IS NULL
+         ALTER TABLE dbo.courses_main ADD total_hours DECIMAL(10,2) NULL`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'average_rating') IS NULL
+         ALTER TABLE dbo.courses_main ADD average_rating DECIMAL(4,2) NULL`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'total_reviews') IS NULL
+         ALTER TABLE dbo.courses_main ADD total_reviews INT NULL`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'cover_image_url') IS NULL
+         ALTER TABLE dbo.courses_main ADD cover_image_url NVARCHAR(1000) NULL`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'is_featured') IS NULL
+         ALTER TABLE dbo.courses_main ADD is_featured BIT NOT NULL
+            CONSTRAINT DF_courses_main_featured DEFAULT (0)`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'created_at') IS NULL
+         ALTER TABLE dbo.courses_main ADD created_at DATETIME NOT NULL
+            CONSTRAINT DF_courses_main_created DEFAULT (GETDATE())`,
+        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'course_name') IS NULL
+         ALTER TABLE dbo.courses_main ADD course_name NVARCHAR(255) NULL`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
          CREATE TABLE dbo.attendance_logs (
             log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -213,13 +256,24 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.hero_slides ADD theme_color NVARCHAR(32) NULL`
     ];
 
+    let failed = 0;
     for (const statement of statements) {
-        await pool.request().query(statement);
+        try {
+            await pool.request().query(statement);
+        } catch (err) {
+            failed += 1;
+            const preview = String(statement).replace(/\s+/g, ' ').trim().slice(0, 120);
+            console.warn(`[schema] skip (${failed}): ${err.message} :: ${preview}`);
+        }
+    }
+    if (failed) {
+        console.warn(`[schema] completed with ${failed} skipped statement(s)`);
     }
 
     await migrateGcalNotifyOptIn(pool);
     await seedHeroSlidesIfEmpty(pool);
     await ensureHeroSlideThemes(pool);
+    await seedSampleCourseIfEmpty(pool);
     try {
         const { repairHeroSlideImages } = require('./heroImages');
         await repairHeroSlideImages(pool);
@@ -370,6 +424,43 @@ async function seedHeroSlidesIfEmpty(pool) {
                     @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, 1
                 )
             `);
+    }
+}
+
+async function seedSampleCourseIfEmpty(pool) {
+    try {
+        const exists = await pool.request().query(`
+            SELECT OBJECT_ID('dbo.courses_main', 'U') AS oid
+        `);
+        if (!exists.recordset[0] || !exists.recordset[0].oid) return;
+
+        const count = await pool.request().query(`
+            SELECT COUNT(*) AS c FROM dbo.courses_main WHERE ISNULL(flag_use, 1) = 1
+        `);
+        if (Number(count.recordset[0].c || 0) > 0) return;
+
+        await pool.request()
+            .input('name', sql.NVarChar, 'หลักสูตรตัวอย่าง PTS')
+            .input('instructor', sql.NVarChar, 'PTS Instructor')
+            .input('mode', sql.VarChar, 'online')
+            .input('hours', sql.Decimal(10, 2), 4)
+            .input('price', sql.Decimal(10, 2), 990)
+            .input('desc', sql.NVarChar, 'หลักสูตรตัวอย่างสำหรับทดสอบระบบ — แก้ไขหรือลบได้จากหน้า Admin')
+            .query(`
+                INSERT INTO dbo.courses_main
+                (course_name, instructor_name, delivery_mode, total_hours,
+                 average_rating, total_reviews, cover_image_url, is_featured,
+                 coursesFlag, created_at, price, description, flag_use,
+                 coursescat_id, total_enrolled, start_date, is_open_soon)
+                VALUES
+                (@name, @instructor, @mode, @hours,
+                 0, 0, NULL, 1,
+                 N'Y', GETDATE(), @price, @desc, 1,
+                 NULL, 0, CAST(GETDATE() AS DATE), 0)
+            `);
+        console.log('📚 Seeded sample course into courses_main');
+    } catch (err) {
+        console.warn('[schema] seedSampleCourseIfEmpty:', err.message);
     }
 }
 
