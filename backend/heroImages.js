@@ -307,7 +307,7 @@ async function repairHeroSlideImages(pool) {
     try {
         const result = await pool.request().query(`
             SELECT slide_id, image_url, sort_order
-            FROM BD_PTS.dbo.hero_slides
+            FROM dbo.hero_slides
             ORDER BY sort_order ASC, slide_id ASC
         `);
         const rows = result.recordset || [];
@@ -321,7 +321,7 @@ async function repairHeroSlideImages(pool) {
                     .input('slideId', sql.Int, row.slide_id)
                     .input('imageUrl', sql.NVarChar, resolved)
                     .query(`
-                        UPDATE BD_PTS.dbo.hero_slides
+                        UPDATE dbo.hero_slides
                         SET image_url = @imageUrl, updated_at = GETDATE()
                         WHERE slide_id = @slideId
                     `);

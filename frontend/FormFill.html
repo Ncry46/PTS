@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>กรอกแบบฟอร์ม | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
+<link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260727homecream">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
+<style>
+  .ff-field { margin-bottom: 18px; }
+  .ff-field label { display:block; font-size:14px; font-weight:700; margin-bottom:6px; color:#3d2f34; }
+  html[data-theme="dark"] .ff-field label { color:#f3e9ec; }
+  .ff-field .help { font-size:12px; color:#5c4f55; margin:-2px 0 8px; }
+  .ff-field input[type="text"],
+  .ff-field input[type="email"],
+  .ff-field input[type="tel"],
+  .ff-field input[type="number"],
+  .ff-field input[type="date"],
+  .ff-field select,
+  .ff-field textarea {
+    width:100%; border:1.5px solid rgba(151,66,88,.18); border-radius:14px;
+    padding:12px 14px; font:inherit; background:#faf7f8; outline:none;
+  }
+  .ff-field textarea { min-height:110px; resize:vertical; }
+  .ff-field input:focus, .ff-field select:focus, .ff-field textarea:focus {
+    border-color:#974258; box-shadow:0 0 0 4px rgba(151,66,88,.14); background:#fff;
+  }
+  .ff-choice { display:flex; flex-direction:column; gap:8px; }
+  .ff-choice label { font-weight:500; display:flex; align-items:center; gap:10px; margin:0; cursor:pointer; }
+  .ff-shell {
+    max-width:720px; margin:0 auto; border:1px solid rgba(151,66,88,.12);
+    border-radius:24px; background:#fff; padding:28px 24px;
+    box-shadow:0 16px 40px rgba(28,21,32,.06);
+  }
+  html[data-theme="dark"] .ff-shell { background:#1c161a; border-color:rgba(255,255,255,.08); }
+  html[data-theme="dark"] .ff-field input,
+  html[data-theme="dark"] .ff-field select,
+  html[data-theme="dark"] .ff-field textarea { background:#242028; color:#f3e9ec; border-color:rgba(255,255,255,.12); }
+</style>
+</head>
+<body class="pts-body">
+<div id="app-navbar"></div>
+<main class="pts-main" data-user-shell>
+  <p class="mb-4"><a class="text-primary font-bold text-sm" href="Forms.html">← กลับรายการแบบฟอร์ม</a></p>
+  <div id="root"><p class="text-sm text-on-surface-variant">กำลังโหลด...</p></div>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const formId = Number(new URLSearchParams(location.search).get('id'));
+const nextUrl = new URLSearchParams(location.search).get('next') || '';
+
+function fieldHtml(q) {
+  const req = q.is_required ? ' <span style="color:#ba1a1a">*</span>' : '';
+  const help = q.help_text ? `<p class="help">${escapeHtml(q.help_text)}</p>` : '';
+  const name = `q_${q.question_id}`;
+  const opts = q.options || [];
+  let control = '';
+
+  switch (q.question_type) {
+    case 'textarea':
+      control = `<textarea id="${name}" name="${name}" ${q.is_required ? 'required' : ''}></textarea>`;
+      break;
+    case 'number':
+      control = `<input type="number" id="${name}" name="${name}" ${q.is_required ? 'required' : ''}>`;
+      break;
+    case 'email':
+      control = `<input type="email" id="${name}" name="${name}" ${q.is_required ? 'required' : ''}>`;
+      break;
+    case 'phone':
+      control = `<input type="tel" id="${name}" name="${name}" ${q.is_required ? 'required' : ''}>`;
+      break;
+    case 'date':
+      control = `<input type="date" id="${name}" name="${name}" ${q.is_required ? 'required' : ''}>`;
+      break;
+    case 'select':
+      control = `<select id="${name}" name="${name}" ${q.is_required ? 'required' : ''}>
+        <option value="">— เลือก —</option>
+        ${opts.map((o) => `<option value="${escapeHtml(o)}">${escapeHtml(o)}</option>`).join('')}
+      </select>`;
+      break;
+    case 'radio':
+    case 'yesno': {
+      const list = q.question_type === 'yesno' ? ['ใช่', 'ไม่'] : opts;
+      control = `<div class="ff-choice">${list.map((o, i) => `
+        <label><input type="radio" name="${name}" value="${escapeHtml(o)}" ${q.is_required && i===0 ? '' : ''} ${q.is_required ? 'required' : ''}> ${escapeHtml(o)}</label>
+      `).join('')}</div>`;
+      break;
+    }
+    case 'checkbox':
+      control = `<div class="ff-choice">${opts.map((o) => `
+        <label><input type="checkbox" name="${name}" value="${escapeHtml(o)}"> ${escapeHtml(o)}</label>
+      `).join('')}</div>`;
+      break;
+    default:
+      control = `<input type="text" id="${name}" name="${name}" ${q.is_required ? 'required' : ''}>`;
+  }
+
+  return `<div class="ff-field" data-qid="${q.question_id}" data-type="${escapeHtml(q.question_type)}">
+    <label for="${q.question_type === 'radio' || q.question_type === 'checkbox' || q.question_type === 'yesno' ? '' : name}">${escapeHtml(q.label)}${req}</label>
+    ${help}${control}
+  </div>`;
+}
+
+function collectAnswers(questions) {
+  return questions.map((q) => {
+    const name = `q_${q.question_id}`;
+    let value = '';
+    if (q.question_type === 'checkbox') {
+      value = Array.from(document.querySelectorAll(`input[name="${name}"]:checked`)).map((el) => el.value);
+    } else if (q.question_type === 'radio' || q.question_type === 'yesno') {
+      const el = document.querySelector(`input[name="${name}"]:checked`);
+      value = el ? el.value : '';
+    } else {
+      const el = document.querySelector(`[name="${name}"]`);
+      value = el ? el.value : '';
+    }
+    return { question_id: q.question_id, value };
+  });
+}
+
+async function boot() {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html?next=' + encodeURIComponent(location.pathname + location.search);
+  if (!formId) {
+    document.getElementById('root').innerHTML = '<p class="text-error text-sm">ไม่พบรหัสแบบฟอร์ม</p>';
+    return;
+  }
+
+  const res = await fetch('/api/forms/' + formId, { credentials: 'include' });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json.success === false) {
+    document.getElementById('root').innerHTML = `<p class="text-error text-sm">${escapeHtml(json.message || 'โหลดไม่สำเร็จ')}</p>`;
+    return;
+  }
+
+  const form = json.data;
+  const questions = form.questions || [];
+  const already = !!form.my_response;
+  const canSubmit = !already || !!form.allow_resubmit;
+
+  let priorHtml = '';
+  if (already) {
+    const mine = await fetch('/api/forms/' + formId + '/my-response', { credentials: 'include' }).then((r) => r.json());
+    const answers = (mine.data && mine.data.answers) || [];
+    const disc = mine.data?.result_code
+      ? `<div class="mb-3 p-3 rounded-xl bg-[rgba(151,66,88,.08)]">
+          <p class="text-xs text-on-surface-variant mb-1">ผลประเมิน DISC</p>
+          <p class="text-xl font-bold text-primary">${escapeHtml(mine.data.result_code)} · ${escapeHtml(mine.data.result_label || '')}</p>
+          <p class="text-xs text-on-surface-variant mt-1">D กระทิง · I อินทรี · S หนู · C หมี · U ยังไม่ทราบ</p>
+        </div>`
+      : '';
+    priorHtml = `
+      <div class="mb-6 p-4 rounded-2xl border border-[rgba(151,66,88,.14)] bg-[rgba(151,66,88,.04)]">
+        ${disc}
+        <p class="font-bold text-primary mb-2">คำตอบล่าสุดของคุณ</p>
+        <p class="text-xs text-on-surface-variant mb-3">ส่งเมื่อ ${escapeHtml(new Date(form.my_response.submitted_at).toLocaleString('th-TH'))}</p>
+        <ul class="space-y-2 text-sm">
+          ${answers.map((a) => `<li><strong>${escapeHtml(a.label || ('#' + a.question_id))}:</strong> ${escapeHtml(a.answer_text || '—')}</li>`).join('')}
+        </ul>
+      </div>`;
+  }
+
+  const typeChip = form.form_type === 'disc'
+    ? '<span class="pts-chip mb-3">DISC</span>'
+    : form.form_type === 'course'
+      ? `<span class="pts-chip mb-3">ก่อนเริ่มคอร์ส</span>${form.course_name ? `<p class="text-sm text-primary font-bold mb-2">${escapeHtml(form.course_name)}</p>` : ''}`
+      : '';
+
+  document.getElementById('root').innerHTML = `
+    <div class="ff-shell">
+      ${typeChip}
+      <h1 class="text-2xl font-bold text-primary mb-2 pts-display">${escapeHtml(form.title)}</h1>
+      <p class="text-sm text-on-surface-variant mb-6">${escapeHtml(form.description || '')}</p>
+      ${form.form_type === 'disc' ? '<p class="text-xs text-on-surface-variant mb-4">ตัวเลือก: D กระทิง · I อินทรี · S หนู · C หมี · U ยังไม่ทราบ</p>' : ''}
+      ${priorHtml}
+      ${canSubmit ? `
+        <form id="fill-form">
+          ${questions.map(fieldHtml).join('') || '<p class="text-sm text-on-surface-variant">ยังไม่มีคำถาม</p>'}
+          <p id="msg" class="text-sm mb-3 hidden"></p>
+          <button type="submit" class="pts-btn pts-btn-primary" id="submit-btn">${already ? 'ส่งอีกครั้ง' : 'ส่งแบบฟอร์ม'}</button>
+        </form>
+      ` : `
+        <p class="text-sm text-on-surface-variant mb-4">คุณส่งแบบฟอร์มนี้แล้ว และไม่อนุญาตให้ส่งซ้ำ</p>
+        ${nextUrl && form.form_type === 'course' ? `<a class="pts-btn pts-btn-primary" href="${escapeHtml(nextUrl)}">ไปเรียนต่อ</a>` : ''}
+      `}
+    </div>`;
+
+  const formEl = document.getElementById('fill-form');
+  if (!formEl) return;
+
+  formEl.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('submit-btn');
+    msg.classList.add('hidden');
+    btn.disabled = true;
+    btn.textContent = 'กำลังส่ง...';
+    try {
+      const payload = { answers: collectAnswers(questions) };
+      const r = await fetch('/api/forms/' + formId + '/submit', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const out = await r.json().catch(() => ({}));
+      if (!r.ok || out.success === false) throw new Error(out.message || 'ส่งไม่สำเร็จ');
+      msg.textContent = out.message || 'ส่งสำเร็จ';
+      msg.style.color = '#974258';
+      msg.classList.remove('hidden');
+      const safeNext = nextUrl && /^[A-Za-z0-9._\-/?#%=]+$/.test(nextUrl) && !nextUrl.includes('://')
+        ? nextUrl
+        : '';
+      if (safeNext && form.form_type === 'course') {
+        setTimeout(() => { location.href = safeNext; }, 700);
+      } else {
+        setTimeout(() => location.reload(), 700);
+      }
+    } catch (err) {
+      msg.textContent = err.message || 'ส่งไม่สำเร็จ';
+      msg.style.color = '#ba1a1a';
+      msg.classList.remove('hidden');
+      btn.disabled = false;
+      btn.textContent = already ? 'ส่งอีกครั้ง' : 'ส่งแบบฟอร์ม';
+    }
+  });
+}
+
+boot().catch((err) => {
+  console.error(err);
+  document.getElementById('root').innerHTML = `<p class="text-error text-sm">${escapeHtml(err.message || 'เกิดข้อผิดพลาด')}</p>`;
+});
+</script>
+<script src="/comp/navbar.js?v=20260805forms"></script>
+<script src="/comp/user-sidebar.js?v=20260805forms"></script>
+</body>
+</html>

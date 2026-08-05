@@ -50,7 +50,7 @@ app.get(['/Login.html', '/login.html'], (req, res) => {
 });
 
 app.get(['/Register.html', '/register.html'], (req, res) => {
-    res.sendFile(path.join(__dirname, 'Register.html'));
+    res.sendFile(path.join(frontendDir, 'Register.html'));
 });
 
 app.get(['/kiosk', '/kiosk.html'], (req, res) => {
@@ -110,7 +110,7 @@ app.post('/api/users/register', async (req, res) => {
         }
 
         const insertUserQuery = `
-            INSERT INTO BD_PTS.dbo.users_main (email, full_name, phone, password_hash)
+            INSERT INTO dbo.users_main (email, full_name, phone, password_hash)
             VALUES (@email, @fullName, @phone, @pass)
         `;
 
@@ -153,7 +153,7 @@ app.post('/api/attendance/scan', async (req, res) => {
         const localISOTime = new Date(now.getTime() - tzoffset).toISOString().slice(0, 19).replace('T', ' ');
         const currentDateOnly = localISOTime.split(' ')[0];
 
-        const userQuery = `SELECT full_name FROM BD_PTS.dbo.users_main WHERE email = @email`;
+        const userQuery = `SELECT full_name FROM dbo.users_main WHERE email = @email`;
         const userResult = await pool.request().input('email', sql.VarChar, employee_id).query(userQuery);
 
         if (userResult.recordset.length === 0) {
@@ -163,7 +163,7 @@ app.post('/api/attendance/scan', async (req, res) => {
         const empInfo = userResult.recordset[0];
 
         const checkQuery = `
-            SELECT TOP 1 scan_type FROM BD_PTS.dbo.attendance_logs
+            SELECT TOP 1 scan_type FROM dbo.attendance_logs
             WHERE employee_id = @email AND CAST(scan_timestamp AS DATE) = CAST(@localDate AS DATE)
             ORDER BY log_id DESC
         `;
@@ -183,7 +183,7 @@ app.post('/api/attendance/scan', async (req, res) => {
         }
 
         const insertQuery = `
-            INSERT INTO BD_PTS.dbo.attendance_logs (employee_id, scan_timestamp, scan_type, kiosk_device_id, status)
+            INSERT INTO dbo.attendance_logs (employee_id, scan_timestamp, scan_type, kiosk_device_id, status)
             VALUES (@email, @scanTime, @scanType, @kioskId, @status)
         `;
         await pool.request()
@@ -223,8 +223,8 @@ app.get('/api/attendance/report', async (req, res) => {
 
         const reportQuery = `
             SELECT a.log_id, u.email, u.full_name, u.phone, a.scan_timestamp, a.scan_type, a.status
-            FROM BD_PTS.dbo.attendance_logs a
-            LEFT JOIN BD_PTS.dbo.users_main u ON a.employee_id = u.email
+            FROM dbo.attendance_logs a
+            LEFT JOIN dbo.users_main u ON a.employee_id = u.email
             ORDER BY a.log_id DESC
         `;
         const result = await pool.request().query(reportQuery);

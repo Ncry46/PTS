@@ -68,7 +68,7 @@ async function restoreAvatarFromDriveIfNeeded(row, { pool, userId, sessionUser }
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('url', sql.NVarChar, localUrl)
-            .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+            .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
         row.Url = localUrl;
         if (sessionUser) sessionUser.Url = localUrl;
     } catch (err) {
@@ -80,7 +80,7 @@ async function restoreAvatarFromDriveIfNeeded(row, { pool, userId, sessionUser }
                 await pool.request()
                     .input('userId', sql.Int, userId)
                     .input('url', sql.NVarChar, fixed)
-                    .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                    .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
                 if (sessionUser) sessionUser.Url = fixed;
             } catch (_) { /* ignore */ }
         }
@@ -100,7 +100,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT user_id, email, full_name, phone, Role, FlagUse, Url
-                    FROM BD_PTS.dbo.users_main WHERE user_id = @userId
+                    FROM dbo.users_main WHERE user_id = @userId
                 `);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
@@ -134,7 +134,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 .input('phone', sql.VarChar, phone || '-')
                 .input('url', sql.NVarChar, url || null)
                 .query(`
-                    UPDATE BD_PTS.dbo.users_main
+                    UPDATE dbo.users_main
                     SET full_name = @name,
                         phone = @phone,
                         Url = COALESCE(@url, Url)
@@ -171,7 +171,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 const pool = await poolPromise;
                 const prev = await pool.request()
                     .input('userId', sql.Int, user.user_id)
-                    .query(`SELECT Url FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
+                    .query(`SELECT Url FROM dbo.users_main WHERE user_id = @userId`);
                 const oldUrl = prev.recordset[0]?.Url || '';
 
                 // Always keep a local file for <img> display. Drive is a backup copy.
@@ -196,7 +196,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 await pool.request()
                     .input('userId', sql.Int, user.user_id)
                     .input('url', sql.NVarChar, publicUrl)
-                    .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                    .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
 
                 req.session.user.Url = publicUrl;
 
@@ -236,7 +236,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(`SELECT email FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
+                .query(`SELECT email FROM dbo.users_main WHERE user_id = @userId`);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
@@ -273,7 +273,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const profile = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(`SELECT email, password_hash FROM BD_PTS.dbo.users_main WHERE user_id = @userId`);
+                .query(`SELECT email, password_hash FROM dbo.users_main WHERE user_id = @userId`);
             if (!profile.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
@@ -291,7 +291,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('pass', sql.VarChar, new_password)
-                .query(`UPDATE BD_PTS.dbo.users_main SET password_hash = @pass WHERE user_id = @userId`);
+                .query(`UPDATE dbo.users_main SET password_hash = @pass WHERE user_id = @userId`);
             res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ (ยืนยันด้วย OTP จากอีเมลแล้ว)' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -307,7 +307,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT TOP 50 notification_id, title, body, link_url, is_read, created_at
-                    FROM BD_PTS.dbo.notifications
+                    FROM dbo.notifications
                     WHERE user_id = @userId
                     ORDER BY created_at DESC
                 `);
@@ -325,7 +325,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(`UPDATE BD_PTS.dbo.notifications SET is_read = 1 WHERE user_id = @userId AND is_read = 0`);
+                .query(`UPDATE dbo.notifications SET is_read = 1 WHERE user_id = @userId AND is_read = 0`);
             res.json({ success: true, message: 'อ่านทั้งหมดแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -341,7 +341,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('id', sql.Int, id)
-                .query(`UPDATE BD_PTS.dbo.notifications SET is_read = 1 WHERE notification_id = @id AND user_id = @userId`);
+                .query(`UPDATE dbo.notifications SET is_read = 1 WHERE notification_id = @id AND user_id = @userId`);
             res.json({ success: true });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -361,13 +361,14 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     SELECT
                         c.*,
                         CASE WHEN @userId IS NULL THEN 0
-                             WHEN EXISTS (SELECT 1 FROM BD_PTS.dbo.course_favorites f WHERE f.user_id=@userId AND f.course_id=c.course_id) THEN 1 ELSE 0 END AS is_favorited,
+                             WHEN EXISTS (SELECT 1 FROM dbo.course_favorites f WHERE f.user_id=@userId AND f.course_id=c.course_id) THEN 1 ELSE 0 END AS is_favorited,
                         CASE WHEN @userId IS NULL THEN 0
-                             WHEN EXISTS (SELECT 1 FROM BD_PTS.dbo.course_enrollments e WHERE e.user_id=@userId AND e.course_id=c.course_id) THEN 1 ELSE 0 END AS is_enrolled,
+                             WHEN EXISTS (SELECT 1 FROM dbo.course_enrollments e WHERE e.user_id=@userId AND e.course_id=c.course_id) THEN 1 ELSE 0 END AS is_enrolled,
                         CASE WHEN @userId IS NULL THEN 0
-                             WHEN EXISTS (SELECT 1 FROM BD_PTS.dbo.payments p WHERE p.user_id=@userId AND p.course_id=c.course_id AND p.status='paid') THEN 1 ELSE 0 END AS is_paid
-                    FROM BD_PTS.dbo.courses_main c
+                             WHEN EXISTS (SELECT 1 FROM dbo.payments p WHERE p.user_id=@userId AND p.course_id=c.course_id AND p.status='paid') THEN 1 ELSE 0 END AS is_paid
+                    FROM dbo.courses_main c
                     WHERE c.course_id = @courseId
+                      AND ISNULL(c.flag_use, 1) = 1
                 `);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
@@ -376,7 +377,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT lesson_id, title, sort_order, duration_minutes
-                    FROM BD_PTS.dbo.course_lessons
+                    FROM dbo.course_lessons
                     WHERE course_id = @courseId AND flag_use = 1
                     ORDER BY sort_order ASC, lesson_id ASC
                 `);

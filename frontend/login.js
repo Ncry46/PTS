@@ -1,6 +1,10 @@
 (function () {
   const shell = document.getElementById('login-shell');
-  if (shell && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  if (
+    shell &&
+    !shell.classList.contains('pts-login__shell--split') &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
     const onMove = (e) => {
       if (window.innerWidth < 900) return;
       const rect = shell.getBoundingClientRect();
@@ -173,15 +177,17 @@
 
   document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const submitBtn = document.getElementById('submit-btn');
+    const submitBtn = document.getElementById('login-submit-btn') || document.getElementById('submit-btn');
     const loginMsg = document.getElementById('login-msg');
     if (loginMsg) {
       loginMsg.textContent = '';
       loginMsg.classList.add('hidden');
       loginMsg.classList.remove('is-info');
     }
-    submitBtn.textContent = 'กำลังตรวจสอบข้อมูล...';
-    submitBtn.disabled = true;
+    if (submitBtn) {
+      submitBtn.textContent = 'กำลังตรวจสอบข้อมูล...';
+      submitBtn.disabled = true;
+    }
     try {
       const response = await fetch('/api/users/login', {
         method: 'POST',
@@ -210,8 +216,10 @@
         loginMsg.classList.remove('hidden');
       }
     } finally {
-      submitBtn.innerHTML = 'เข้าสู่ระบบ <span class="material-symbols-outlined pts-login__submit-ico">login</span>';
-      submitBtn.disabled = false;
+      if (submitBtn) {
+        submitBtn.innerHTML = 'เข้าสู่ระบบ <span class="material-symbols-outlined pts-login__submit-ico">login</span>';
+        submitBtn.disabled = false;
+      }
     }
   });
 })();

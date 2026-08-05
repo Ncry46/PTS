@@ -395,6 +395,7 @@
   function profileMenuHtml(name, roleLabel, avatar, isAdmin) {
     const studentLinks = `
           <a href="DashbordU.html" role="menuitem">${t('nav.dashboard', 'แดชบอร์ด')}</a>
+          <a href="Forms.html" role="menuitem">${t('nav.forms', 'แบบฟอร์ม')}</a>
           <a href="Certificates.html" role="menuitem">${t('nav.certificates', 'ใบประกาศ')}</a>
           <a href="Favorites.html" role="menuitem">${t('nav.favorites', 'รายการโปรด')}</a>
           <a href="Schedule.html" role="menuitem">${t('nav.schedule', 'ตารางเรียน / QR Onsite')}</a>
@@ -403,6 +404,7 @@
     const adminLinks = `
           <a href="Admin.html#lessons" role="menuitem">${t('nav.admin.lessons', 'บทเรียน')}</a>
           <a href="Admin.html#schedules" role="menuitem">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
+          <a href="Admin.html#forms" role="menuitem">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
           <a href="Admin.html#banners" role="menuitem">${t('nav.admin.banners', 'แบนเนอร์')}</a>
           <a href="Admin.html#users" role="menuitem">${t('nav.admin.users', 'ผู้ใช้')}</a>
           <a href="Admin.html#posts" role="menuitem">${t('nav.admin.posts', 'โพสต์')}</a>
@@ -507,7 +509,7 @@
           </div>
           <div class="pts-topnav__actions">
             <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
-            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Register.html">${t('nav.register', 'สมัครสมาชิก')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Login.html?tab=register">${t('nav.register', 'สมัครสมาชิก')}</a>
             ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>
@@ -517,7 +519,7 @@
           ${coursesMobileHtml()}
           <a href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
           <a href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
-          <a href="Register.html" style="color:#974258;font-weight:700">${t('nav.register', 'สมัครสมาชิก')}</a>
+          <a href="Login.html?tab=register" style="color:#974258;font-weight:700">${t('nav.register', 'สมัครสมาชิก')}</a>
         </div>
       </nav>`;
     bindToggles(container);
