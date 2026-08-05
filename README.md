@@ -100,7 +100,7 @@ cp .env.example .env
 
 - Guest: ดูหลักสูตร/อ่านคอมมูนิตี้
 - Student: สมัครเรียน เรียนบทเรียน โพสต์/ไลก์ ชำระเงิน ใบประกาศ
-- Admin: จัดการที่ `Admin.html` (ต้องตั้ง `Role = admin` ในตาราง `users_main`)
+- Admin: จัดการที่ `Admin.html` (ต้องตั้ง `Role = admin` ในตาราง `users`)
 
 ## หน้าสำคัญ
 

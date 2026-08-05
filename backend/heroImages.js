@@ -154,7 +154,7 @@ function listGalleryBanners() {
         try { writeBannerOrder(ordered.map((x) => x.filename)); } catch (_) { /* ignore */ }
     }
 
-    return ordered.map((item, index) => ({ ...item, sort_order: index + 1 }));
+    return ordered.map((item, index) => ({ ...item, flag_use: index + 1 }));
 }
 
 function reorderGalleryBanners(order) {
@@ -306,9 +306,9 @@ async function repairHeroSlideImages(pool) {
     const sql = require('mssql');
     try {
         const result = await pool.request().query(`
-            SELECT slide_id, image_url, sort_order
+            SELECT slide_id, image_url, flag_use
             FROM dbo.hero_slides
-            ORDER BY sort_order ASC, slide_id ASC
+            ORDER BY flag_use ASC, slide_id ASC
         `);
         const rows = result.recordset || [];
         let fixed = 0;

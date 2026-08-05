@@ -702,7 +702,7 @@ async function renderCourses() {
     <div class="adm-c-head">
       <div>
         <h3>รายการหลักสูตร</h3>
-        <p>เชื่อมตาราง courses_main · แสดงประมาณ 10 รายการต่อหน้าจอ</p>
+        <p>เชื่อมตาราง courses · แสดงประมาณ 10 รายการต่อหน้าจอ</p>
       </div>
     </div>
     <div class="adm-c-tools">
@@ -934,7 +934,7 @@ async function renderLessons() {
     document.getElementById('l-title').value = l?.title || '';
     document.getElementById('l-video').value = l?.video_url || '';
     document.getElementById('l-content').value = l?.content_html || '';
-    document.getElementById('l-sort').value = l?.sort_order != null ? Number(l.sort_order) : 1;
+    document.getElementById('l-sort').value = l?.flag_use != null ? Number(l.flag_use) : 1;
     document.getElementById('l-duration').value = l?.duration_minutes != null ? Number(l.duration_minutes) : 15;
   };
 
@@ -976,7 +976,7 @@ async function renderLessons() {
           <div class="adm-c-name">${escapeHtml(l.title)}</div>
         </div>
       </td>
-      <td>${Number(l.sort_order || 0)}</td>
+      <td>${Number(l.flag_use || 0)}</td>
       <td>${Number(l.duration_minutes || 0)} นาที</td>
       <td class="text-xs text-on-surface-variant">${l.video_url ? 'มีวิดีโอ' : '—'}</td>
       <td>${actionBtns(l)}</td>
@@ -989,7 +989,7 @@ async function renderLessons() {
           <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
           <div class="adm-c-name">${escapeHtml(l.title)}</div>
         </div>
-        <span class="adm-c-badge">ลำดับ ${Number(l.sort_order || 0)}</span>
+        <span class="adm-c-badge">ลำดับ ${Number(l.flag_use || 0)}</span>
       </div>
       <div class="adm-c-card__meta">
         <span>${Number(l.duration_minutes || 0)} นาที</span>
@@ -1014,7 +1014,7 @@ async function renderLessons() {
       `id ${idStr}`,
       `#${idStr}`,
       l.title,
-      l.sort_order,
+      l.flag_use,
       l.duration_minutes,
       l.video_url,
       l.content_html
@@ -1109,7 +1109,7 @@ async function renderLessons() {
       title: document.getElementById('l-title').value,
       content_html: document.getElementById('l-content').value,
       video_url: document.getElementById('l-video').value,
-      sort_order: Number(document.getElementById('l-sort').value || 1),
+      flag_use: Number(document.getElementById('l-sort').value || 1),
       duration_minutes: Number(document.getElementById('l-duration').value || 15)
     };
     saveBtn.disabled = true;
@@ -1848,8 +1848,8 @@ async function renderForms() {
           if (i <= 0) return;
           const a = questions[i - 1];
           const b = questions[i];
-          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: b.sort_order }) });
-          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: a.sort_order }) });
+          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: b.flag_use }) });
+          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: a.flag_use }) });
           openEditor(formId);
         };
       });
@@ -1860,8 +1860,8 @@ async function renderForms() {
           if (i < 0 || i >= questions.length - 1) return;
           const a = questions[i];
           const b = questions[i + 1];
-          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: b.sort_order }) });
-          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: a.sort_order }) });
+          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: b.flag_use }) });
+          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: a.flag_use }) });
           openEditor(formId);
         };
       });

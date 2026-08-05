@@ -4,7 +4,7 @@
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'hero_slides')
 CREATE TABLE dbo.hero_slides (
     slide_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-    sort_order INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
+    flag_use INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
     eyebrow NVARCHAR(100) NULL,
     title NVARCHAR(255) NOT NULL,
     title_highlight NVARCHAR(255) NULL,

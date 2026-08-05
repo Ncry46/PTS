@@ -63,7 +63,7 @@ function normalizeHeroBody(body = {}) {
         theme = 'rose';
     }
     return {
-        sort_order: Math.max(1, parseInt(body.sort_order, 10) || 1),
+        flag_use: Math.max(1, parseInt(body.flag_use, 10) || 1),
         eyebrow: String(body.eyebrow || '').trim() || null,
         title: String(body.title || '').trim(),
         title_highlight: String(body.title_highlight || '').trim() || null,
@@ -85,7 +85,7 @@ function normalizeHeroBody(body = {}) {
 
 function bindHeroInputs(request, data) {
     return request
-        .input('sort_order', sql.Int, data.sort_order)
+        .input('flag_use', sql.Int, data.flag_use)
         .input('eyebrow', sql.NVarChar, data.eyebrow)
         .input('title', sql.NVarChar, data.title)
         .input('title_highlight', sql.NVarChar, data.title_highlight)
@@ -201,7 +201,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     start_date,
                     is_open_soon
                 FROM dbo.courses
-                WHERE ISNULL(flag_use, 1) = 1
+                WHERE ISNULL(flag_use, 'Y') = 'Y'
                 ORDER BY created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -327,7 +327,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .query(`
                     UPDATE dbo.courses
                     SET flag_use = 0
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
+                    WHERE course_id = @courseId AND ISNULL(flag_use, Y) = Y
                 `);
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร หรือถูกลบไปแล้ว' });
@@ -341,7 +341,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
     router.post('/courses/:courseId/lessons', async (req, res) => {
         if (!requireAdmin(req, res)) return;
         const courseId = parseInt(req.params.courseId, 10);
-        const { title, content_html, video_url, sort_order, duration_minutes } = req.body;
+        const { title, content_html, video_url, flag_use, duration_minutes } = req.body;
         if (!courseId || !title) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุหลักสูตรและชื่อบทเรียน' });
         }
@@ -353,11 +353,11 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('title', sql.NVarChar, title)
                 .input('content', sql.NVarChar, content_html || '')
                 .input('video', sql.NVarChar, video_url || null)
-                .input('sort', sql.Int, Number(sort_order || 1))
+                .input('sort', sql.Int, Number(flag_use || 1))
                 .input('duration', sql.Int, Number(duration_minutes || 15))
                 .query(`
                     INSERT INTO dbo.course_lessons
-                    (course_id, title, content_html, video_url, sort_order, duration_minutes, flag_use)
+                    (course_id, title, content_html, video_url, flag_use, duration_minutes, flag_use)
                     OUTPUT INSERTED.lesson_id, INSERTED.title
                     VALUES (@courseId, @title, @content, @video, @sort, @duration, 1)
                 `);
@@ -375,10 +375,10 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT lesson_id, course_id, title, content_html, video_url, sort_order, duration_minutes, flag_use
+                    SELECT lesson_id, course_id, title, content_html, video_url, flag_use, duration_minutes, flag_use
                     FROM dbo.course_lessons
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
-                    ORDER BY sort_order ASC, lesson_id ASC
+                    WHERE course_id = @courseId AND ISNULL(flag_use, Y) = Y
+                    ORDER BY flag_use ASC, lesson_id ASC
                 `);
             res.json({ success: true, data: result.recordset });
         } catch (error) {
@@ -391,7 +391,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const lessonId = parseInt(req.params.lessonId, 10);
         if (!lessonId) return res.status(400).json({ success: false, message: 'รหัสบทเรียนไม่ถูกต้อง' });
 
-        const { title, content_html, video_url, sort_order, duration_minutes } = req.body;
+        const { title, content_html, video_url, flag_use, duration_minutes } = req.body;
         try {
             const pool = await poolPromise;
             const result = await pool.request()
@@ -399,7 +399,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('title', sql.NVarChar, title || null)
                 .input('content', sql.NVarChar, content_html != null ? content_html : null)
                 .input('video', sql.NVarChar, video_url != null ? video_url : null)
-                .input('sort', sql.Int, sort_order != null ? Number(sort_order) : null)
+                .input('sort', sql.Int, flag_use != null ? Number(flag_use) : null)
                 .input('duration', sql.Int, duration_minutes != null ? Number(duration_minutes) : null)
                 .query(`
                     UPDATE dbo.course_lessons
@@ -407,9 +407,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         title = COALESCE(@title, title),
                         content_html = COALESCE(@content, content_html),
                         video_url = COALESCE(@video, video_url),
-                        sort_order = COALESCE(@sort, sort_order),
+                        flag_use = COALESCE(@sort, flag_use),
                         duration_minutes = COALESCE(@duration, duration_minutes)
-                    WHERE lesson_id = @lessonId AND ISNULL(flag_use, 1) = 1
+                    WHERE lesson_id = @lessonId AND ISNULL(flag_use, Y) = Y
                 `);
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบบทเรียน หรือถูกลบไปแล้ว' });
@@ -844,12 +844,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    slide_id, sort_order, eyebrow, title, title_highlight, lead,
+                    slide_id, flag_use, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color,
                     flag_use, created_at, updated_at
                 FROM dbo.hero_slides
-                ORDER BY sort_order ASC, slide_id ASC
+                ORDER BY flag_use ASC, slide_id ASC
             `);
             res.json({ success: true, data: mapHeroSlidesImages(result.recordset) });
         } catch (error) {
@@ -867,13 +867,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await bindHeroInputs(pool.request(), data).query(`
                 INSERT INTO dbo.hero_slides (
-                    sort_order, eyebrow, title, title_highlight, lead,
+                    flag_use, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color, flag_use
                 )
                 OUTPUT INSERTED.slide_id
                 VALUES (
-                    @sort_order, @eyebrow, @title, @title_highlight, @lead,
+                    @flag_use, @eyebrow, @title, @title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
                     @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, @theme_color, @flag_use
                 )
@@ -898,7 +898,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('slideId', sql.Int, slideId)
                 .query(`
                     UPDATE dbo.hero_slides
-                    SET sort_order = @sort_order,
+                    SET flag_use = @flag_use,
                         eyebrow = @eyebrow,
                         title = @title,
                         title_highlight = @title_highlight,
@@ -986,10 +986,10 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             sets.push('flag_use = @flag_use');
             inputs.push(['flag_use', sql.Bit, flag]);
         }
-        if (req.body.sort_order != null) {
-            const sort = Math.max(1, parseInt(req.body.sort_order, 10) || 1);
-            sets.push('sort_order = @sort_order');
-            inputs.push(['sort_order', sql.Int, sort]);
+        if (req.body.flag_use != null) {
+            const sort = Math.max(1, parseInt(req.body.flag_use, 10) || 1);
+            sets.push('flag_use = @flag_use');
+            inputs.push(['flag_use', sql.Int, sort]);
         }
         if (!sets.length) {
             return res.status(400).json({ success: false, message: 'ไม่มีข้อมูลที่จะอัปเดต' });

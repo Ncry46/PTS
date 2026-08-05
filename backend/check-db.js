@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ทดสอบการเชื่อมต่อ SQL Server + ตาราง users_main / courses_main
+ * ทดสอบการเชื่อมต่อ SQL Server + ตาราง users / courses
  * ใช้: node backend/check-db.js
  */
 const { connectPool, verifyCoreTables, DB_NAME, dbConfig } = require('./db');

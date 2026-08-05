@@ -52,7 +52,7 @@ function mapQuestion(row) {
         options: parseOptions(row.options_json),
         options_json: row.options_json || null,
         is_required: !!row.is_required,
-        sort_order: row.sort_order,
+        flag_use: row.flag_use,
         flag_use: row.flag_use == null ? 1 : Number(row.flag_use)
     };
 }
@@ -233,10 +233,10 @@ function createFormRouter({ poolPromise, requireLogin }) {
                 .input('formId', sql.Int, formId)
                 .query(`
                     SELECT question_id, form_id, label, help_text, question_type, options_json,
-                           is_required, sort_order, flag_use
+                           is_required, flag_use, flag_use
                     FROM dbo.custom_form_questions
                     WHERE form_id = @formId AND ISNULL(flag_use,1)=1
-                    ORDER BY sort_order ASC, question_id ASC
+                    ORDER BY flag_use ASC, question_id ASC
                 `);
 
             const mine = await pool.request()
@@ -301,7 +301,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                     FROM dbo.custom_form_answers a
                     LEFT JOIN dbo.custom_form_questions q ON q.question_id = a.question_id
                     WHERE a.response_id = @responseId
-                    ORDER BY ISNULL(q.sort_order, 999), a.question_id
+                    ORDER BY ISNULL(q.flag_use, 999), a.question_id
                 `);
             let resultJson = null;
             try { resultJson = row.result_json ? JSON.parse(row.result_json) : null; } catch (_) { /* ignore */ }
@@ -568,7 +568,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT * FROM dbo.custom_form_questions
                     WHERE form_id = @formId AND ISNULL(flag_use,1)=1
-                    ORDER BY sort_order ASC, question_id ASC
+                    ORDER BY flag_use ASC, question_id ASC
                 `);
             res.json({
                 success: true,
@@ -693,12 +693,12 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 }
             }
 
-            let sortOrder = Number(req.body?.sort_order);
+            let sortOrder = Number(req.body?.flag_use);
             if (!sortOrder) {
                 const max = await pool.request()
                     .input('formId', sql.Int, formId)
                     .query(`
-                        SELECT ISNULL(MAX(sort_order),0)+1 AS next_sort
+                        SELECT ISNULL(MAX(flag_use),0)+1 AS next_sort
                         FROM dbo.custom_form_questions
                         WHERE form_id=@formId AND ISNULL(flag_use,1)=1
                     `);
@@ -715,7 +715,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('sort', sql.Int, sortOrder)
                 .query(`
                     INSERT INTO dbo.custom_form_questions
-                        (form_id, label, help_text, question_type, options_json, is_required, sort_order, flag_use)
+                        (form_id, label, help_text, question_type, options_json, is_required, flag_use, flag_use)
                     OUTPUT INSERTED.*
                     VALUES (@formId, @label, @help, @qType, @opts, @req, @sort, 1)
                 `);
@@ -778,11 +778,11 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('qType', sql.VarChar, questionType)
                 .input('opts', sql.NVarChar, optionsJson)
                 .input('req', sql.Bit, body.is_required == null ? (row.is_required ? 1 : 0) : (body.is_required ? 1 : 0))
-                .input('sort', sql.Int, body.sort_order != null ? Number(body.sort_order) || row.sort_order : row.sort_order)
+                .input('sort', sql.Int, body.flag_use != null ? Number(body.flag_use) || row.flag_use : row.flag_use)
                 .query(`
                     UPDATE dbo.custom_form_questions
                     SET label=@label, help_text=@help, question_type=@qType,
-                        options_json=@opts, is_required=@req, sort_order=@sort
+                        options_json=@opts, is_required=@req, flag_use=@sort
                     OUTPUT INSERTED.*
                     WHERE question_id=@questionId AND ISNULL(flag_use,1)=1
                 `);
@@ -871,11 +871,11 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             const answers = await pool.request()
                 .input('responseId', sql.Int, responseId)
                 .query(`
-                    SELECT a.answer_id, a.question_id, a.answer_text, q.label, q.question_type, q.sort_order
+                    SELECT a.answer_id, a.question_id, a.answer_text, q.label, q.question_type, q.flag_use
                     FROM dbo.custom_form_answers a
                     LEFT JOIN dbo.custom_form_questions q ON q.question_id = a.question_id
                     WHERE a.response_id = @responseId
-                    ORDER BY ISNULL(q.sort_order,999), a.question_id
+                    ORDER BY ISNULL(q.flag_use,999), a.question_id
                 `);
             res.json({ success: true, data: { ...row, answers: answers.recordset || [] } });
         } catch (error) {

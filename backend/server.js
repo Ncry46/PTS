@@ -123,7 +123,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // 🔗 การเชื่อมต่อ SQL Server — ตั้งค่าใน .env (ดู .env.example)
-// DB_NAME = ชื่อ database ที่มี users_main / courses_main อยู่แล้ว
+// DB_NAME = ชื่อ database ที่มี users / courses อยู่แล้ว
 
 // 📧 ตั้งค่าส่ง Email OTP — แนะนำตั้งผ่าน .env (SMTP_*) เมื่อรัน Docker
 const mailConfig = {
@@ -159,7 +159,7 @@ const poolPromise = connectPool()
                 console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
             }
         } else {
-            console.log('📚 DB connect-only — ใช้ตาราง users_main / courses_main ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
+            console.log('📚 DB connect-only — ใช้ตาราง users / courses ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
         }
         const mail = getMailStatus();
         const localPath = path.join(__dirname, 'mail.local.js');
@@ -455,7 +455,7 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
     }
 });
 // -------------------------------------------------------------------------
-// 📚 [API ดึงข้อมูลหลักสูตร] ดึงข้อมูลจากตาราง courses_main
+// 📚 [API ดึงข้อมูลหลักสูตร] ดึงข้อมูลจากตาราง courses
 // -------------------------------------------------------------------------
 app.get('/api/courses', async (req, res) => {
     try {
@@ -499,7 +499,7 @@ app.get('/api/courses', async (req, res) => {
                         ) THEN 1 ELSE 0
                     END AS is_enrolled
                 FROM dbo.courses c
-                WHERE ISNULL(c.flag_use, 1) = 1
+                WHERE ISNULL(c.flag_use, 'Y') = 'Y'
                 ORDER BY c.created_at DESC
             `);
 
@@ -548,7 +548,7 @@ app.get('/api/community', async (req, res) => {
             FROM 
                 community_posts p
             INNER JOIN 
-                users_main u ON p.user_id = u.user_id
+                users u ON p.user_id = u.user_id
             WHERE 
                 p.flag_use = 1
             ORDER BY 

@@ -376,10 +376,10 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const lessons = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT lesson_id, title, sort_order, duration_minutes
+                    SELECT lesson_id, title, flag_use, duration_minutes
                     FROM dbo.course_lessons
                     WHERE course_id = @courseId AND flag_use = 1
-                    ORDER BY sort_order ASC, lesson_id ASC
+                    ORDER BY flag_use ASC, lesson_id ASC
                 `);
             res.json({ success: true, loggedIn: !!userId, data: result.recordset[0], lessons: lessons.recordset });
         } catch (error) {

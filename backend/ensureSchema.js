@@ -24,7 +24,7 @@ async function ensureLearningSchema(pool) {
             title NVARCHAR(255) NOT NULL,
             content_html NVARCHAR(MAX) NULL,
             video_url NVARCHAR(500) NULL,
-            sort_order INT NOT NULL CONSTRAINT DF_course_lessons_sort DEFAULT (1),
+            flag_use INT NOT NULL CONSTRAINT DF_course_lessons_sort DEFAULT (1),
             duration_minutes INT NOT NULL CONSTRAINT DF_course_lessons_duration DEFAULT (15),
             flag_use BIT NOT NULL CONSTRAINT DF_course_lessons_flag DEFAULT (1),
             created_at DATETIME NOT NULL CONSTRAINT DF_course_lessons_created DEFAULT (GETDATE())
@@ -159,7 +159,7 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.course_enrollments ADD gcal_notify BIT NOT NULL
             CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (0)`,
 
-        /* —— courses_main (สร้างก่อน แล้วค่อยเติมคอลัมน์ถ้าตารางเก่ายังขาด) —— */
+        /* —— courses (สร้างก่อน แล้วค่อยเติมคอลัมน์ถ้าตารางเก่ายังขาด) —— */
         `IF OBJECT_ID('dbo.courses', 'U') IS NULL
          CREATE TABLE dbo.courses (
             course_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -170,16 +170,16 @@ async function ensureLearningSchema(pool) {
             average_rating DECIMAL(4,2) NULL,
             total_reviews INT NULL,
             cover_image_url NVARCHAR(1000) NULL,
-            is_featured BIT NOT NULL CONSTRAINT DF_courses_main_featured DEFAULT (0),
+            is_featured BIT NOT NULL CONSTRAINT DF_courses_featured DEFAULT (0),
             coursesFlag NVARCHAR(10) NULL,
-            created_at DATETIME NOT NULL CONSTRAINT DF_courses_main_created DEFAULT (GETDATE()),
+            created_at DATETIME NOT NULL CONSTRAINT DF_courses_created DEFAULT (GETDATE()),
             price DECIMAL(10,2) NULL,
             description NVARCHAR(MAX) NULL,
-            flag_use BIT NOT NULL CONSTRAINT DF_courses_main_flag_use DEFAULT (1),
+            flag_use BIT NOT NULL CONSTRAINT DF_courses_flag_use DEFAULT (1),
             coursescat_id INT NULL,
-            total_enrolled INT NOT NULL CONSTRAINT DF_courses_main_enrolled DEFAULT (0),
+            total_enrolled INT NOT NULL CONSTRAINT DF_courses_enrolled DEFAULT (0),
             start_date DATE NULL,
-            is_open_soon BIT NOT NULL CONSTRAINT DF_courses_main_open_soon DEFAULT (0)
+            is_open_soon BIT NOT NULL CONSTRAINT DF_courses_open_soon DEFAULT (0)
          )`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'price') IS NULL
          ALTER TABLE dbo.courses ADD price DECIMAL(10,2) NULL`,
@@ -187,19 +187,19 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.courses ADD description NVARCHAR(MAX) NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'flag_use') IS NULL
          ALTER TABLE dbo.courses ADD flag_use BIT NOT NULL
-            CONSTRAINT DF_courses_main_flag_use DEFAULT (1)`,
+            CONSTRAINT DF_courses_flag_use DEFAULT (1)`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'coursesFlag') IS NULL
          ALTER TABLE dbo.courses ADD coursesFlag NVARCHAR(10) NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'coursescat_id') IS NULL
          ALTER TABLE dbo.courses ADD coursescat_id INT NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'total_enrolled') IS NULL
          ALTER TABLE dbo.courses ADD total_enrolled INT NOT NULL
-            CONSTRAINT DF_courses_main_enrolled DEFAULT (0)`,
+            CONSTRAINT DF_courses_enrolled DEFAULT (0)`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'start_date') IS NULL
          ALTER TABLE dbo.courses ADD start_date DATE NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'is_open_soon') IS NULL
          ALTER TABLE dbo.courses ADD is_open_soon BIT NOT NULL
-            CONSTRAINT DF_courses_main_open_soon DEFAULT (0)`,
+            CONSTRAINT DF_courses_open_soon DEFAULT (0)`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name') IS NULL
          ALTER TABLE dbo.courses ADD instructor_name NVARCHAR(255) NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'delivery_mode') IS NULL
@@ -214,10 +214,10 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.courses ADD cover_image_url NVARCHAR(1000) NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'is_featured') IS NULL
          ALTER TABLE dbo.courses ADD is_featured BIT NOT NULL
-            CONSTRAINT DF_courses_main_featured DEFAULT (0)`,
+            CONSTRAINT DF_courses_featured DEFAULT (0)`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'created_at') IS NULL
          ALTER TABLE dbo.courses ADD created_at DATETIME NOT NULL
-            CONSTRAINT DF_courses_main_created DEFAULT (GETDATE())`,
+            CONSTRAINT DF_courses_created DEFAULT (GETDATE())`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name') IS NULL
          ALTER TABLE dbo.courses ADD course_name NVARCHAR(255) NULL`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
@@ -233,7 +233,7 @@ async function ensureLearningSchema(pool) {
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'hero_slides')
          CREATE TABLE dbo.hero_slides (
             slide_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-            sort_order INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
+            flag_use INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
             eyebrow NVARCHAR(100) NULL,
             title NVARCHAR(255) NOT NULL,
             title_highlight NVARCHAR(255) NULL,
@@ -281,7 +281,7 @@ async function ensureLearningSchema(pool) {
             question_type VARCHAR(32) NOT NULL CONSTRAINT DF_custom_fq_type DEFAULT ('text'),
             options_json NVARCHAR(MAX) NULL,
             is_required BIT NOT NULL CONSTRAINT DF_custom_fq_req DEFAULT (1),
-            sort_order INT NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT (1),
+            flag_use INT NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT (1),
             flag_use BIT NOT NULL CONSTRAINT DF_custom_fq_flag DEFAULT (1),
             created_at DATETIME NOT NULL CONSTRAINT DF_custom_fq_created DEFAULT (GETDATE())
          )`,
@@ -382,10 +382,10 @@ async function ensureHeroSlideThemes(pool) {
     // Diversify existing slides that still use the default theme only when all are 'rose'
     try {
         const rows = await pool.request().query(`
-            SELECT slide_id, sort_order, theme
+            SELECT slide_id, flag_use, theme
             FROM dbo.hero_slides
             WHERE flag_use = 1
-            ORDER BY sort_order ASC, slide_id ASC
+            ORDER BY flag_use ASC, slide_id ASC
         `);
         const list = rows.recordset || [];
         if (list.length < 2) return;
@@ -407,7 +407,7 @@ async function seedHeroSlidesIfEmpty(pool) {
 
     const seeds = [
         {
-            sort_order: 1,
+            flag_use: 1,
             theme: 'rose',
             eyebrow: 'PTS Learning',
             title: 'ยกระดับทักษะ Personal Assistant สู่มาตรฐานมืออาชีพ',
@@ -424,7 +424,7 @@ async function seedHeroSlidesIfEmpty(pool) {
             badge_subtitle: 'หลักสูตรรับรองวิชาชีพ'
         },
         {
-            sort_order: 2,
+            flag_use: 2,
             theme: 'sage',
             eyebrow: 'เรียนได้ทุกที่',
             title: 'เลือกสไตล์การเรียน Online · Onsite · Hybrid ได้ตามชีวิตคุณ',
@@ -441,7 +441,7 @@ async function seedHeroSlidesIfEmpty(pool) {
             badge_subtitle: 'เรียนได้ตามตารางงานจริง'
         },
         {
-            sort_order: 3,
+            flag_use: 3,
             theme: 'gold',
             eyebrow: 'พร้อมใบประกาศ',
             title: 'จบหลักสูตรได้ ใบประกาศนียบัตร ที่นำไปใช้ต่อได้จริง',
@@ -461,7 +461,7 @@ async function seedHeroSlidesIfEmpty(pool) {
 
     for (const s of seeds) {
         await pool.request()
-            .input('sort_order', sql.Int, s.sort_order)
+            .input('flag_use', sql.Int, s.flag_use)
             .input('eyebrow', sql.NVarChar, s.eyebrow)
             .input('title', sql.NVarChar, s.title)
             .input('title_highlight', sql.NVarChar, s.title_highlight)
@@ -478,11 +478,11 @@ async function seedHeroSlidesIfEmpty(pool) {
             .input('theme', sql.NVarChar, s.theme || 'rose')
             .query(`
                 INSERT INTO dbo.hero_slides (
-                    sort_order, eyebrow, title, title_highlight, lead,
+                    flag_use, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, flag_use
                 ) VALUES (
-                    @sort_order, @eyebrow, @title, @title_highlight, @lead,
+                    @flag_use, @eyebrow, @title, @title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
                     @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, 1
                 )
@@ -498,7 +498,7 @@ async function seedSampleCourseIfEmpty(pool) {
         if (!exists.recordset[0] || !exists.recordset[0].oid) return;
 
         const count = await pool.request().query(`
-            SELECT COUNT(*) AS c FROM dbo.courses WHERE ISNULL(flag_use, 1) = 1
+            SELECT COUNT(*) AS c FROM dbo.courses WHERE ISNULL(flag_use, 'Y') = 'Y'
         `);
         if (Number(count.recordset[0].c || 0) > 0) return;
 
@@ -521,7 +521,7 @@ async function seedSampleCourseIfEmpty(pool) {
                  N'Y', GETDATE(), @price, @desc, 1,
                  NULL, 0, CAST(GETDATE() AS DATE), 0)
             `);
-        console.log('📚 Seeded sample course into courses_main');
+        console.log('📚 Seeded sample course into courses');
     } catch (err) {
         console.warn('[schema] seedSampleCourseIfEmpty:', err.message);
     }
@@ -624,7 +624,7 @@ async function seedSampleFormIfEmpty(pool) {
                 .input('sort', sql.Int, q.sort)
                 .query(`
                     INSERT INTO dbo.custom_form_questions
-                        (form_id, label, question_type, options_json, is_required, sort_order, flag_use)
+                        (form_id, label, question_type, options_json, is_required, flag_use, flag_use)
                     VALUES (@formId, @label, @qType, @opts, @req, @sort, 1)
                 `);
         }

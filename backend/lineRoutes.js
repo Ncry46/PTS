@@ -370,7 +370,7 @@ async function handleEvent(poolPromise, event) {
                         course_id, course_name, instructor_name, total_hours, price,
                         delivery_mode, cover_image_url, is_featured
                     FROM dbo.courses
-                    WHERE ISNULL(flag_use, 1) = 1
+                    WHERE ISNULL(flag_use, Y) = Y
                     ORDER BY ISNULL(is_featured, 0) DESC, course_id DESC
                 `);
                 const courses = result.recordset || [];

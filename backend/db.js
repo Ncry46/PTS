@@ -41,8 +41,8 @@ async function verifyCoreTables(pool) {
         database: DB_NAME,
         schema: DB_SCHEMA,
         server: dbConfig.server,
-        users_table: `${DB_SCHEMA}.users_main`,
-        courses_table: `${DB_SCHEMA}.courses_main`,
+        users_table: `${DB_SCHEMA}.users`,
+        courses_table: `${DB_SCHEMA}.courses`,
         users_ok: false,
         courses_ok: false,
         users_count: null,
@@ -52,24 +52,24 @@ async function verifyCoreTables(pool) {
 
     try {
         const users = await pool.request().query(`
-            SELECT COUNT(*) AS c FROM ${qualify('users_main')}
+            SELECT COUNT(*) AS c FROM ${qualify('users')}
         `);
         out.users_ok = true;
         out.users_count = Number(users.recordset[0]?.c ?? 0);
     } catch (err) {
-        out.errors.push(`users_main: ${err.message}`);
+        out.errors.push(`users: ${err.message}`);
     }
 
     try {
         const courses = await pool.request().query(`
             SELECT COUNT(*) AS c
-            FROM ${qualify('courses_main')}
-            WHERE ISNULL(flag_use, 1) = 1
+            FROM ${qualify('courses')}
+            WHERE ISNULL(flag_use, 'Y') = 'Y'
         `);
         out.courses_ok = true;
         out.courses_count = Number(courses.recordset[0]?.c ?? 0);
     } catch (err) {
-        out.errors.push(`courses_main: ${err.message}`);
+        out.errors.push(`courses: ${err.message}`);
     }
 
     return out;
@@ -86,14 +86,14 @@ function connectPool() {
             console.log(`🔌 Connected to SQL Server → ${dbConfig.server}:${dbConfig.port} / ${DB_NAME}`);
             const check = await verifyCoreTables(pool);
             if (check.users_ok) {
-                console.log(`👤 users_main: ${check.users_count} รายการ`);
+                console.log(`👤 users: ${check.users_count} รายการ`);
             } else {
-                console.warn('⚠️ users_main:', check.errors.find((e) => e.startsWith('users_main')) || 'ไม่พบตาราง');
+                console.warn('⚠️ users:', check.errors.find((e) => e.startsWith('users')) || 'ไม่พบตาราง');
             }
             if (check.courses_ok) {
-                console.log(`📚 courses_main: ${check.courses_count} รายการ`);
+                console.log(`📚 courses: ${check.courses_count} รายการ`);
             } else {
-                console.warn('⚠️ courses_main:', check.errors.find((e) => e.startsWith('courses_main')) || 'ไม่พบตาราง');
+                console.warn('⚠️ courses:', check.errors.find((e) => e.startsWith('courses')) || 'ไม่พบตาราง');
             }
             pool._ptsDbCheck = check;
             return pool;

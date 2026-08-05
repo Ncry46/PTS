@@ -125,13 +125,13 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        l.lesson_id, l.course_id, l.title, l.video_url, l.sort_order, l.duration_minutes,
+                        l.lesson_id, l.course_id, l.title, l.video_url, l.flag_use, l.duration_minutes,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
                     LEFT JOIN dbo.lesson_progress lp
                         ON lp.lesson_id = l.lesson_id AND lp.user_id = @userId
                     WHERE l.course_id = @courseId AND l.flag_use = 1
-                    ORDER BY l.sort_order ASC, l.lesson_id ASC
+                    ORDER BY l.flag_use ASC, l.lesson_id ASC
                 `);
 
             res.json({
@@ -162,7 +162,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT
                         l.lesson_id, l.course_id, l.title, l.content_html, l.video_url,
-                        l.sort_order, l.duration_minutes, c.course_name,
+                        l.flag_use, l.duration_minutes, c.course_name,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
                     INNER JOIN dbo.courses c ON c.course_id = l.course_id
@@ -194,10 +194,10 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const siblings = await pool.request()
                 .input('courseId', sql.Int, lesson.course_id)
                 .query(`
-                    SELECT lesson_id, title, sort_order
+                    SELECT lesson_id, title, flag_use
                     FROM dbo.course_lessons
                     WHERE course_id = @courseId AND flag_use = 1
-                    ORDER BY sort_order ASC, lesson_id ASC
+                    ORDER BY flag_use ASC, lesson_id ASC
                 `);
 
             res.json({ success: true, data: lesson, lessons: siblings.recordset });
@@ -818,12 +818,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    slide_id, sort_order, eyebrow, title, title_highlight, lead,
+                    slide_id, flag_use, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color
                 FROM dbo.hero_slides
                 WHERE flag_use = 1
-                ORDER BY sort_order ASC, slide_id ASC
+                ORDER BY flag_use ASC, slide_id ASC
             `);
             res.json({ success: true, data: mapHeroSlidesImages(result.recordset) });
         } catch (error) {
