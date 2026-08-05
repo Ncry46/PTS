@@ -2,7 +2,8 @@
 
 body.pts-body.pts-register {
   --reg-deep: #974258;
-  background-color: #ffffff !important;
+  /* Hero scene (.pts-auth-scene) provides the red Iridescence background */
+  background-color: transparent !important;
   background-image: none !important;
 }
 
@@ -35,6 +36,6 @@ body.pts-register .pts-login__remember a.pts-login__link {
 }
 
 html[data-theme="dark"] body.pts-body.pts-register {
-  background-color: #121014 !important;
+  background-color: transparent !important;
   background-image: none !important;
 }

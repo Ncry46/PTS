@@ -1,15 +1,20 @@
-/* Auth page background — clean white */
+/* Auth background — CSS motion first (always visible), WebGL Iridescence on top when available */
 
 html.pts-auth-iri,
 body.pts-body.pts-login,
 body.pts-body.pts-register {
-  background: #ffffff !important;
+  --iri-a: #ff1f2e;
+  --iri-b: #ff6b4a;
+  --iri-c: #9b1230;
+  --iri-d: #ffb1c1;
+  background: var(--iri-a) !important;
   background-image: none !important;
   min-height: 100dvh;
   position: relative;
   isolation: isolate;
 }
 
+/* Kill any leftover geo/campus layers if old markup/CSS still around */
 .pts-auth-scene__geo,
 body.pts-login .pts-auth-scene__geo,
 body.pts-register .pts-auth-scene__geo {
@@ -27,25 +32,81 @@ body.pts-register .pts-auth-scene__geo {
   z-index: 0 !important;
   pointer-events: none !important;
   overflow: hidden !important;
-  background: #ffffff !important;
+  background: var(--iri-a) !important;
 }
 
-.pts-auth-scene::before,
+/* Always-on animated CSS background — visible even if JS/WebGL fails */
+.pts-auth-scene::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  background:
+    radial-gradient(closest-side at 18% 28%, rgba(255, 177, 193, 0.95), transparent 70%),
+    radial-gradient(closest-side at 82% 22%, rgba(255, 80, 60, 0.85), transparent 68%),
+    radial-gradient(closest-side at 70% 78%, rgba(155, 18, 48, 0.9), transparent 72%),
+    radial-gradient(closest-side at 30% 85%, rgba(255, 40, 70, 0.7), transparent 70%),
+    linear-gradient(135deg, #ff1f2e 0%, #c41040 42%, #7a1028 100%);
+  background-size: 100% 100%;
+  animation: pts-auth-iri-flow 10s ease-in-out infinite alternate;
+  filter: saturate(1.15) contrast(1.05);
+}
+
 .pts-auth-scene::after {
-  content: none !important;
-  display: none !important;
-  animation: none !important;
-  background: none !important;
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.22) 48%, transparent 66%);
+  mix-blend-mode: soft-light;
+  animation: pts-auth-iri-sheen 7s ease-in-out infinite;
+  pointer-events: none;
 }
 
+@keyframes pts-auth-iri-flow {
+  0% { transform: translate3d(-2%, -1%, 0) scale(1); }
+  100% { transform: translate3d(3%, 2%, 0) scale(1.08); }
+}
+
+@keyframes pts-auth-iri-sheen {
+  0% { transform: translateX(-40%); opacity: 0.25; }
+  40% { opacity: 0.55; }
+  100% { transform: translateX(40%); opacity: 0.2; }
+}
+
+/* WebGL host sits above CSS wash */
 .pts-auth-scene__fx,
 #auth-iridescence {
-  display: none !important;
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 2 !important;
 }
 
 .pts-auth-scene__veil,
 .pts-auth-scene__fade {
   display: none !important;
+}
+
+/* Giant build stamp — if you do NOT see this, you are on OLD files */
+.pts-auth-build {
+  position: fixed !important;
+  left: 12px !important;
+  bottom: 12px !important;
+  right: auto !important;
+  z-index: 2147483647 !important;
+  font: 800 14px/1.2 Bai Jamjuree, SN Pro, sans-serif !important;
+  letter-spacing: 0.06em !important;
+  color: #fff !important;
+  background: #111 !important;
+  border: 2px solid #fff !important;
+  border-radius: 12px !important;
+  padding: 10px 14px !important;
+  pointer-events: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35) !important;
+  text-transform: uppercase !important;
 }
 
 body.pts-login > #app-navbar,
@@ -63,11 +124,16 @@ body.pts-register > #app-navbar {
   z-index: 100;
 }
 
-html[data-theme="dark"] body.pts-body.pts-login,
-html[data-theme="dark"] body.pts-body.pts-register,
 html.dark body.pts-body.pts-login,
 html.dark body.pts-body.pts-register,
-html[data-theme="dark"] .pts-auth-scene,
 html.dark .pts-auth-scene {
-  background: #121014 !important;
+  --iri-a: #5a0810;
+  background: #5a0810 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pts-auth-scene::before,
+  .pts-auth-scene::after {
+    animation: none !important;
+  }
 }

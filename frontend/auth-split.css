@@ -13,12 +13,14 @@ body.pts-body.pts-login.pts-auth-duo {
   grid-template-columns: 1fr !important;
   padding: 0 !important;
   overflow: hidden;
-  background: #ffffff !important;
-  border: 1px solid rgba(151, 66, 88, 0.12) !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.35) !important;
   box-shadow:
-    0 28px 80px rgba(28, 21, 32, 0.14),
-    0 0 0 1px rgba(255, 255, 255, 0.65) inset !important;
+    0 28px 80px rgba(80, 10, 24, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.2) inset !important;
   position: relative;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .pts-auth-split {
@@ -159,7 +161,7 @@ body.pts-body.pts-login.pts-auth-duo {
   }
 }
 
-/* Dim veil + premium play */
+/* Dim veil — same red Iridescence language as page backdrop */
 .pts-auth-split__veil {
   position: absolute;
   inset: 0;
@@ -167,25 +169,31 @@ body.pts-body.pts-login.pts-auth-duo {
   pointer-events: none;
   opacity: 0;
   background:
-    linear-gradient(160deg, rgba(28, 21, 32, 0.55), rgba(58, 28, 39, 0.72) 55%, rgba(28, 21, 32, 0.62)),
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(151, 66, 88, 0.18), transparent 60%);
-  backdrop-filter: blur(1.5px) saturate(0.75);
-  -webkit-backdrop-filter: blur(1.5px) saturate(0.75);
+    radial-gradient(closest-side at 22% 28%, rgba(255, 177, 193, 0.95), transparent 70%),
+    radial-gradient(closest-side at 82% 24%, rgba(255, 80, 60, 0.88), transparent 68%),
+    radial-gradient(closest-side at 68% 78%, rgba(155, 18, 48, 0.92), transparent 72%),
+    radial-gradient(closest-side at 28% 86%, rgba(255, 40, 70, 0.72), transparent 70%),
+    linear-gradient(145deg, #ff1f2e 0%, #c41040 45%, #7a1028 100%);
+  background-size: 140% 140%;
+  animation: pts-auth-dim-iri 10s ease-in-out infinite alternate;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
   transition:
-    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    backdrop-filter 0.55s ease;
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1);
   overflow: hidden;
 }
 
 .pts-auth-split__veil::before {
   content: "";
   position: absolute;
-  inset: -20%;
+  inset: -25%;
   background:
-    radial-gradient(circle at 30% 20%, rgba(255, 177, 193, 0.22), transparent 40%),
-    radial-gradient(circle at 70% 80%, rgba(212, 168, 90, 0.14), transparent 42%);
-  opacity: 0.7;
+    radial-gradient(circle at 30% 20%, rgba(255, 177, 193, 0.55), transparent 42%),
+    radial-gradient(circle at 75% 75%, rgba(255, 80, 60, 0.4), transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(155, 18, 48, 0.35), transparent 55%);
+  opacity: 0.9;
   transform: scale(1);
+  animation: pts-auth-dim-bloom 8s ease-in-out infinite alternate;
   transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.55s ease;
 }
 
@@ -199,11 +207,22 @@ body.pts-body.pts-login.pts-auth-duo {
   background: linear-gradient(
     105deg,
     transparent 30%,
-    rgba(255, 255, 255, 0.14) 48%,
+    rgba(255, 255, 255, 0.28) 48%,
     transparent 66%
   );
   transform: translateX(-20%) rotate(8deg);
   opacity: 0;
+  mix-blend-mode: soft-light;
+}
+
+@keyframes pts-auth-dim-iri {
+  0% { background-position: 0% 20%; filter: saturate(1.05) brightness(0.92); }
+  100% { background-position: 100% 80%; filter: saturate(1.2) brightness(1.05); }
+}
+
+@keyframes pts-auth-dim-bloom {
+  0% { transform: scale(1) translate(0, 0); }
+  100% { transform: scale(1.12) translate(2%, -1%); }
 }
 
 .pts-auth-split__pane.is-dimmed .pts-auth-split__veil {
@@ -298,26 +317,33 @@ body.pts-body.pts-login.pts-auth-duo {
   filter: none;
   opacity: 1;
   transform: scale(1);
+  background:
+    radial-gradient(ellipse 90% 60% at 100% 0%, rgba(255, 232, 238, 0.45), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 0% 100%, rgba(244, 230, 212, 0.35), transparent 50%),
+    linear-gradient(180deg, #fffefd, #fff5f6);
 }
 
 .pts-auth-split__pane.is-dimmed {
   z-index: 2;
-  filter: saturate(0.55) brightness(0.92);
+  filter: none;
   transform: scale(0.985);
+  background: transparent;
 }
 
 .pts-auth-split__pane.is-active .pts-login__panel-inner {
   animation: pts-auth-panel-awake 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-@keyframes pts-auth-panel-awake {
-  from { opacity: 0.55; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  opacity: 1;
 }
 
 .pts-auth-split__pane.is-dimmed .pts-login__panel-inner {
   pointer-events: none;
   user-select: none;
+  opacity: 0;
+}
+
+@keyframes pts-auth-panel-awake {
+  from { opacity: 0.55; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .pts-login__panel-inner {
@@ -370,6 +396,8 @@ body.pts-body.pts-login.pts-auth-duo {
 @media (max-width: 899px) {
   .pts-auth-split {
     padding: 18px 16px 16px;
+    background: #fffefd;
+    border-radius: 28px;
   }
 
   .pts-auth-split__pane {
@@ -406,7 +434,8 @@ body.pts-body.pts-login.pts-auth-duo {
   font-size: 12px;
   position: relative;
   z-index: 2;
-  background: linear-gradient(180deg, rgba(255, 250, 252, 0.65), #fff);
+  background: linear-gradient(180deg, #fffefd, #ffffff);
+  border-radius: 0 0 32px 32px;
 }
 
 .pts-auth-split__legal a {
@@ -430,18 +459,21 @@ body.pts-body.pts-login.pts-auth-duo {
 .pts-auth-split .pts-login__foot { display: none; }
 
 html[data-theme="dark"] .pts-login__shell--split {
-  background: #1c161a !important;
-  border-color: rgba(255, 255, 255, 0.08) !important;
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+html[data-theme="dark"] .pts-auth-split__pane.is-active {
+  background: linear-gradient(180deg, #1c161a, #241820);
 }
 
 html[data-theme="dark"] .pts-auth-split__veil {
-  background:
-    linear-gradient(160deg, rgba(8, 6, 10, 0.72), rgba(28, 16, 22, 0.86)),
-    radial-gradient(ellipse 80% 60% at 50% 30%, rgba(151, 66, 88, 0.22), transparent 60%);
+  /* keep red Iridescence dim in dark mode too */
+  filter: brightness(0.88);
 }
 
 html[data-theme="dark"] .pts-auth-split__legal {
-  background: transparent;
+  background: #1c161a;
   border-top-color: rgba(255, 255, 255, 0.08);
 }
 
