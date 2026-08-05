@@ -198,7 +198,48 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.hero_slides ADD theme NVARCHAR(32) NOT NULL
             CONSTRAINT DF_hero_slides_theme_col DEFAULT ('rose')`,
         `IF COL_LENGTH('dbo.hero_slides', 'theme_color') IS NULL
-         ALTER TABLE dbo.hero_slides ADD theme_color NVARCHAR(32) NULL`
+         ALTER TABLE dbo.hero_slides ADD theme_color NVARCHAR(32) NULL`,
+
+        /* —— Custom web forms (admin builds questions; users submit) —— */
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_forms')
+         CREATE TABLE dbo.custom_forms (
+            form_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            title NVARCHAR(255) NOT NULL,
+            description NVARCHAR(MAX) NULL,
+            is_published BIT NOT NULL CONSTRAINT DF_custom_forms_pub DEFAULT (0),
+            allow_resubmit BIT NOT NULL CONSTRAINT DF_custom_forms_resub DEFAULT (0),
+            flag_use BIT NOT NULL CONSTRAINT DF_custom_forms_flag DEFAULT (1),
+            created_by INT NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_custom_forms_created DEFAULT (GETDATE()),
+            updated_at DATETIME NOT NULL CONSTRAINT DF_custom_forms_updated DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_form_questions')
+         CREATE TABLE dbo.custom_form_questions (
+            question_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            form_id INT NOT NULL,
+            label NVARCHAR(500) NOT NULL,
+            help_text NVARCHAR(1000) NULL,
+            question_type VARCHAR(32) NOT NULL CONSTRAINT DF_custom_fq_type DEFAULT ('text'),
+            options_json NVARCHAR(MAX) NULL,
+            is_required BIT NOT NULL CONSTRAINT DF_custom_fq_req DEFAULT (1),
+            sort_order INT NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT (1),
+            flag_use BIT NOT NULL CONSTRAINT DF_custom_fq_flag DEFAULT (1),
+            created_at DATETIME NOT NULL CONSTRAINT DF_custom_fq_created DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_form_responses')
+         CREATE TABLE dbo.custom_form_responses (
+            response_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            form_id INT NOT NULL,
+            user_id INT NOT NULL,
+            submitted_at DATETIME NOT NULL CONSTRAINT DF_custom_fr_sub DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_form_answers')
+         CREATE TABLE dbo.custom_form_answers (
+            answer_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            response_id INT NOT NULL,
+            question_id INT NOT NULL,
+            answer_text NVARCHAR(MAX) NULL
+         )`
     ];
 
     for (const statement of statements) {
@@ -208,6 +249,7 @@ async function ensureLearningSchema(pool) {
     await migrateGcalNotifyOptIn(pool);
     await seedHeroSlidesIfEmpty(pool);
     await ensureHeroSlideThemes(pool);
+    await seedSampleFormIfEmpty(pool);
     try {
         const { repairHeroSlideImages } = require('./heroImages');
         await repairHeroSlideImages(pool);
@@ -416,6 +458,59 @@ async function createNotification(pool, userId, title, body, linkUrl) {
         }
     } catch (err) {
         console.warn('[notify→LINE]', err.message);
+    }
+}
+
+async function seedSampleFormIfEmpty(pool) {
+    try {
+        const count = await pool.request().query(`SELECT COUNT(*) AS c FROM BD_PTS.dbo.custom_forms`);
+        if (Number(count.recordset[0].c || 0) > 0) return;
+
+        const form = await pool.request()
+            .input('title', sql.NVarChar, 'แบบสอบถามความสนใจหลักสูตร')
+            .input('description', sql.NVarChar, 'กรอกข้อมูลเพื่อให้ทีมงานแนะนำหลักสูตรที่เหมาะกับคุณ')
+            .query(`
+                INSERT INTO BD_PTS.dbo.custom_forms (title, description, is_published, allow_resubmit, flag_use)
+                OUTPUT INSERTED.form_id
+                VALUES (@title, @description, 1, 0, 1)
+            `);
+        const formId = form.recordset[0].form_id;
+        const questions = [
+            { label: 'ชื่อ-นามสกุล', type: 'text', required: 1, sort: 1, options: null },
+            { label: 'อีเมลติดต่อ', type: 'email', required: 1, sort: 2, options: null },
+            { label: 'เบอร์โทรศัพท์', type: 'phone', required: 0, sort: 3, options: null },
+            {
+                label: 'รูปแบบการเรียนที่สนใจ',
+                type: 'radio',
+                required: 1,
+                sort: 4,
+                options: JSON.stringify(['Online', 'Onsite', 'Hybrid'])
+            },
+            {
+                label: 'หัวข้อที่สนใจ (เลือกได้หลายข้อ)',
+                type: 'checkbox',
+                required: 0,
+                sort: 5,
+                options: JSON.stringify(['การจัดตาราง', 'การสื่อสาร', 'เอกสารภาษาอังกฤษ', 'เทคโนโลยีสำนักงาน'])
+            },
+            { label: 'ข้อความเพิ่มเติม', type: 'textarea', required: 0, sort: 6, options: null }
+        ];
+        for (const q of questions) {
+            await pool.request()
+                .input('formId', sql.Int, formId)
+                .input('label', sql.NVarChar, q.label)
+                .input('qType', sql.VarChar, q.type)
+                .input('opts', sql.NVarChar, q.options)
+                .input('req', sql.Bit, q.required)
+                .input('sort', sql.Int, q.sort)
+                .query(`
+                    INSERT INTO BD_PTS.dbo.custom_form_questions
+                        (form_id, label, question_type, options_json, is_required, sort_order, flag_use)
+                    VALUES (@formId, @label, @qType, @opts, @req, @sort, 1)
+                `);
+        }
+    } catch (err) {
+        console.warn('[schema] seedSampleFormIfEmpty:', err.message);
     }
 }
 

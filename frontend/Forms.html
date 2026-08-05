@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แบบฟอร์ม | PTS Learning</title>
+<script src="/comp/theme-boot.js"></script>
+<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/lang-boot.js?v=20260725lang"></script>
+<link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260727homecream">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
+<style>
+  .form-card {
+    border: 1px solid rgba(151,66,88,.14);
+    border-radius: 20px;
+    background: #fff;
+    padding: 20px 22px;
+    transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+  }
+  .form-card:hover {
+    border-color: rgba(151,66,88,.28);
+    box-shadow: 0 14px 36px rgba(28,21,32,.08);
+    transform: translateY(-2px);
+  }
+  html[data-theme="dark"] .form-card { background: #1c161a; border-color: rgba(255,255,255,.08); }
+</style>
+</head>
+<body class="pts-body">
+<div id="app-navbar"></div>
+<main class="pts-main" data-user-shell>
+  <section class="pts-page-hero">
+    <span class="pts-chip mb-3">Forms</span>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display">แบบฟอร์ม</h1>
+    <p class="text-on-surface-variant max-w-xl">กรอกแบบฟอร์มที่ทีมงานเปิดให้ใช้งาน — ต้องเข้าสู่ระบบก่อน</p>
+  </section>
+
+  <div id="list" class="grid gap-4"></div>
+</main>
+<script>
+const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+async function load() {
+  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
+  if (!me.loggedIn) return location.href = 'Login.html?next=Forms.html';
+
+  const box = document.getElementById('list');
+  box.innerHTML = '<p class="text-sm text-on-surface-variant">กำลังโหลด...</p>';
+
+  const res = await fetch('/api/forms', { credentials: 'include' });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json.success === false) {
+    box.innerHTML = `<p class="text-error text-sm">${escapeHtml(json.message || 'โหลดแบบฟอร์มไม่สำเร็จ')}</p>`;
+    return;
+  }
+
+  const rows = json.data || [];
+  if (!rows.length) {
+    box.innerHTML = '<p class="text-sm text-on-surface-variant">ยังไม่มีแบบฟอร์มที่เปิดให้กรอก</p>';
+    return;
+  }
+
+  box.innerHTML = rows.map((f) => {
+    const done = !!f.my_response_id;
+    const when = f.my_submitted_at ? new Date(f.my_submitted_at).toLocaleString('th-TH') : '';
+    return `
+      <article class="form-card">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-bold text-primary mb-1">${escapeHtml(f.title)}</h2>
+            <p class="text-sm text-on-surface-variant">${escapeHtml(f.description || '—')}</p>
+            <p class="text-xs text-on-surface-variant mt-2">${Number(f.question_count || 0)} คำถาม
+              ${done ? ` · ส่งแล้ว ${escapeHtml(when)}` : ''}</p>
+          </div>
+          <a class="pts-btn ${done && !f.allow_resubmit ? 'pts-btn-outline' : 'pts-btn-primary'}"
+             href="FormFill.html?id=${encodeURIComponent(f.form_id)}">
+            ${done ? (f.allow_resubmit ? 'ส่งอีกครั้ง' : 'ดูคำตอบ') : 'เริ่มกรอก'}
+          </a>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+load().catch((err) => {
+  console.error(err);
+  document.getElementById('list').innerHTML = `<p class="text-error text-sm">${escapeHtml(err.message || 'เกิดข้อผิดพลาด')}</p>`;
+});
+</script>
+<script src="/comp/navbar.js?v=20260805forms"></script>
+<script src="/comp/user-sidebar.js?v=20260805forms"></script>
+</body>
+</html>

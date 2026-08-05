@@ -8,6 +8,7 @@ try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } 
 const { ensureLearningSchema, createNotification } = require('./ensureSchema');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
+const { createFormRouter, createAdminFormRouter } = require('./formRoutes');
 const { createProfileRouter } = require('./profileRoutes');
 const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
 const { createGoogleAuthRouter } = require('./googleAuthRoutes');
@@ -1003,7 +1004,9 @@ app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleAuthRouter({ poolPromise }));
 app.use('/api', createLineRouter({ poolPromise, requireLogin }));
+app.use('/api', createFormRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
+app.use('/api/admin', createAdminFormRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {
     const { employee_id, kiosk_device_id } = req.body;
