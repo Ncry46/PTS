@@ -161,6 +161,18 @@ async function ensureLearningSchema(pool) {
         `IF COL_LENGTH('dbo.courses_main', 'flag_use') IS NULL
          ALTER TABLE dbo.courses_main ADD flag_use BIT NOT NULL
             CONSTRAINT DF_courses_main_flag_use DEFAULT (1)`,
+        `IF COL_LENGTH('dbo.courses_main', 'coursesFlag') IS NULL
+         ALTER TABLE dbo.courses_main ADD coursesFlag NVARCHAR(10) NULL`,
+        `IF COL_LENGTH('dbo.courses_main', 'coursescat_id') IS NULL
+         ALTER TABLE dbo.courses_main ADD coursescat_id INT NULL`,
+        `IF COL_LENGTH('dbo.courses_main', 'total_enrolled') IS NULL
+         ALTER TABLE dbo.courses_main ADD total_enrolled INT NOT NULL
+            CONSTRAINT DF_courses_main_enrolled DEFAULT (0)`,
+        `IF COL_LENGTH('dbo.courses_main', 'start_date') IS NULL
+         ALTER TABLE dbo.courses_main ADD start_date DATE NULL`,
+        `IF COL_LENGTH('dbo.courses_main', 'is_open_soon') IS NULL
+         ALTER TABLE dbo.courses_main ADD is_open_soon BIT NOT NULL
+            CONSTRAINT DF_courses_main_open_soon DEFAULT (0)`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
          CREATE TABLE dbo.attendance_logs (
             log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

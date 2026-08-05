@@ -577,6 +577,23 @@ async function renderCourses() {
     catch (_) { return '—'; }
   };
 
+  const toDateInput = (v) => {
+    if (!v) return '';
+    try {
+      const d = new Date(v);
+      if (Number.isNaN(d.getTime())) {
+        const m = String(v).match(/^(\d{4}-\d{2}-\d{2})/);
+        return m ? m[1] : '';
+      }
+      return d.toISOString().slice(0, 10);
+    } catch (_) { return ''; }
+  };
+
+  const fmtPrice = (v) => {
+    if (v == null || v === '') return '—';
+    return Number(v).toLocaleString('th-TH') + ' ฿';
+  };
+
   const actionBtns = (c) => `
     <div class="adm-c-actions">
       <button type="button" class="pts-btn pts-btn-outline edit-course" data-id="${c.course_id}">แก้ไข</button>
@@ -592,14 +609,16 @@ async function renderCourses() {
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
+          ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
         </div>
       </td>
       <td>${escapeHtml(c.instructor_name || '—')}</td>
       <td><span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span></td>
       <td>${Number(c.total_hours || 0)} ชม.</td>
-      <td>${escapeHtml(c.difficulty_level || '—')}</td>
+      <td>${fmtPrice(c.price)}</td>
+      <td>${Number(c.total_enrolled || 0)}</td>
       <td><span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span></td>
-      <td>${fmtDate(c.created_at)}</td>
+      <td>${fmtDate(c.start_date) !== '—' ? fmtDate(c.start_date) : fmtDate(c.created_at)}</td>
       <td>${actionBtns(c)}</td>
     </tr>`;
 
@@ -615,9 +634,11 @@ async function renderCourses() {
       <div class="adm-c-card__meta">
         <span>${escapeHtml(c.instructor_name || '—')}</span>
         <span>${Number(c.total_hours || 0)} ชม.</span>
-        <span>${escapeHtml(c.difficulty_level || '—')}</span>
+        <span>${fmtPrice(c.price)}</span>
+        <span>ลงทะเบียน ${Number(c.total_enrolled || 0)}</span>
         <span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span>
-        <span>${fmtDate(c.created_at)}</span>
+        ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
+        <span>${fmtDate(c.start_date)}</span>
       </div>
       ${actionBtns(c)}
     </article>`;
@@ -641,10 +662,15 @@ async function renderCourses() {
       c.course_name,
       c.instructor_name,
       c.delivery_mode,
-      c.difficulty_level,
       c.total_hours,
+      c.price,
+      c.coursescat_id,
+      c.coursesFlag,
+      c.description,
       c.is_featured ? 'แนะนำ featured' : 'ปกติ',
-      fmtDate(c.created_at)
+      c.is_open_soon ? 'เปิดเร็วๆ นี้ open soon' : '',
+      fmtDate(c.created_at),
+      fmtDate(c.start_date)
     ].join(' ').toLowerCase();
     return hay.includes(q);
   };
@@ -652,11 +678,19 @@ async function renderCourses() {
   document.getElementById('panel').innerHTML = `
     <h2 id="course-form-title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร">
+      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร *">
       <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
       <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
-      <input id="c-hours" type="number" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง" value="4">
-      <input id="c-cover" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="URL รูปปก">
+      <input id="c-hours" type="number" step="0.1" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง (total_hours)" value="4">
+      <input id="c-price" type="number" step="0.01" class="border rounded-xl px-3 py-2" placeholder="ราคา (price)">
+      <input id="c-cat" type="number" class="border rounded-xl px-3 py-2" placeholder="หมวดหมู่ (coursescat_id)">
+      <input id="c-start" type="date" class="border rounded-xl px-3 py-2" title="start_date">
+      <input id="c-enrolled" type="number" class="border rounded-xl px-3 py-2" placeholder="จำนวนลงทะเบียน (total_enrolled)" value="0">
+      <input id="c-flag" class="border rounded-xl px-3 py-2" placeholder="coursesFlag (เช่น Y)" value="Y">
+      <input id="c-cover" class="border rounded-xl px-3 py-2" placeholder="URL รูปปก (cover_image_url)">
+      <textarea id="c-desc" class="border rounded-xl px-3 py-2 md:col-span-2" rows="3" placeholder="คำอธิบายหลักสูตร (description)"></textarea>
+      <label class="text-sm flex items-center gap-2"><input type="checkbox" id="c-featured"> แนะนำ (is_featured)</label>
+      <label class="text-sm flex items-center gap-2"><input type="checkbox" id="c-open-soon"> เปิดเร็วๆ นี้ (is_open_soon)</label>
     </div>
     <div class="flex flex-wrap gap-2 mb-6">
       <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold">สร้างหลักสูตร</button>
@@ -667,7 +701,7 @@ async function renderCourses() {
     <div class="adm-c-head">
       <div>
         <h3>รายการหลักสูตร</h3>
-        <p>แสดงประมาณ 10 รายการต่อหน้าจอ · เลื่อนด้านข้างถ้ามีมากกว่านั้น</p>
+        <p>เชื่อมตาราง courses_main · แสดงประมาณ 10 รายการต่อหน้าจอ</p>
       </div>
     </div>
     <div class="adm-c-tools">
@@ -690,7 +724,15 @@ async function renderCourses() {
     document.getElementById('c-instructor').value = c?.instructor_name || '';
     document.getElementById('c-mode').value = c?.delivery_mode || 'online';
     document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : 4;
+    document.getElementById('c-price').value = c?.price != null ? Number(c.price) : '';
+    document.getElementById('c-cat').value = c?.coursescat_id != null ? Number(c.coursescat_id) : '';
+    document.getElementById('c-start').value = toDateInput(c?.start_date);
+    document.getElementById('c-enrolled').value = c?.total_enrolled != null ? Number(c.total_enrolled) : 0;
+    document.getElementById('c-flag').value = c?.coursesFlag != null ? String(c.coursesFlag) : 'Y';
     document.getElementById('c-cover').value = c?.cover_image_url || '';
+    document.getElementById('c-desc').value = c?.description || '';
+    document.getElementById('c-featured').checked = !!c?.is_featured;
+    document.getElementById('c-open-soon').checked = !!c?.is_open_soon;
   };
 
   const setEditMode = (course) => {
@@ -774,9 +816,10 @@ async function renderCourses() {
               <th>วิทยากร</th>
               <th>รูปแบบ</th>
               <th>ชั่วโมง</th>
-              <th>ระดับ</th>
+              <th>ราคา</th>
+              <th>ลงทะเบียน</th>
               <th>สถานะ</th>
-              <th>สร้างเมื่อ</th>
+              <th>วันเริ่ม/สร้าง</th>
               <th>จัดการ</th>
             </tr>
           </thead>
@@ -801,9 +844,16 @@ async function renderCourses() {
       instructor_name: document.getElementById('c-instructor').value,
       delivery_mode: document.getElementById('c-mode').value,
       total_hours: Number(document.getElementById('c-hours').value || 1),
-      cover_image_url: document.getElementById('c-cover').value
+      price: document.getElementById('c-price').value === '' ? null : Number(document.getElementById('c-price').value),
+      coursescat_id: document.getElementById('c-cat').value === '' ? null : Number(document.getElementById('c-cat').value),
+      start_date: document.getElementById('c-start').value || null,
+      total_enrolled: Number(document.getElementById('c-enrolled').value || 0),
+      coursesFlag: document.getElementById('c-flag').value || 'Y',
+      cover_image_url: document.getElementById('c-cover').value,
+      description: document.getElementById('c-desc').value,
+      is_featured: document.getElementById('c-featured').checked,
+      is_open_soon: document.getElementById('c-open-soon').checked
     };
-    if (!editingId) payload.is_featured = false;
     createBtn.disabled = true;
     try {
       if (editingId) {

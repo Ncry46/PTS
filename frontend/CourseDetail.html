@@ -263,7 +263,7 @@ async function mountCourseNotifyControls(hostEl) {
           <span class="pts-chip mb-3 w-fit">${escapeHtml(c.delivery_mode || 'course')}</span>
           <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
           <h1 class="text-3xl font-bold text-primary mb-2 pts-display">${escapeHtml(c.course_name)}</h1>
-          <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.difficulty_level||'-')}</p>
+          <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
           <p class="text-on-surface-variant mb-5 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
           <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
           <div class="pts-course-cta-row">

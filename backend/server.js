@@ -450,14 +450,20 @@ app.get('/api/courses', async (req, res) => {
                     c.course_name, 
                     c.instructor_name, 
                     c.delivery_mode, 
-                    c.difficulty_level, 
                     c.total_hours, 
                     c.average_rating, 
                     c.total_reviews, 
                     c.cover_image_url,
                     c.is_featured,
+                    c.coursesFlag,
+                    c.created_at,
                     c.price,
                     c.description,
+                    c.flag_use,
+                    c.coursescat_id,
+                    c.total_enrolled,
+                    c.start_date,
+                    c.is_open_soon,
                     CASE
                         WHEN @userId IS NULL THEN 0
                         WHEN EXISTS (
@@ -587,14 +593,18 @@ app.get('/api/my/favorite-courses', async (req, res) => {
             .query(`
                 SELECT
                     c.course_id, c.course_name, c.instructor_name, c.delivery_mode,
-                    c.difficulty_level, c.total_hours, c.average_rating, c.total_reviews,
-                    c.cover_image_url, c.is_featured, 1 AS is_favorited,
+                    c.total_hours, c.average_rating, c.total_reviews,
+                    c.cover_image_url, c.is_featured, c.coursesFlag, c.created_at,
+                    c.price, c.description, c.flag_use, c.coursescat_id,
+                    c.total_enrolled, c.start_date, c.is_open_soon,
+                    1 AS is_favorited,
                     CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
                 FROM BD_PTS.dbo.course_favorites f
                 INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = f.course_id
                 LEFT JOIN BD_PTS.dbo.course_enrollments e
                     ON e.course_id = c.course_id AND e.user_id = @userId
                 WHERE f.user_id = @userId
+                  AND ISNULL(c.flag_use, 1) = 1
                 ORDER BY f.created_at DESC
             `);
         res.json({ success: true, data: result.recordset });
@@ -919,13 +929,24 @@ app.get('/api/my/courses', async (req, res) => {
                     c.course_name,
                     c.instructor_name,
                     c.delivery_mode,
-                    c.difficulty_level,
                     c.total_hours,
+                    c.average_rating,
+                    c.total_reviews,
                     c.cover_image_url,
-                    c.average_rating
+                    c.is_featured,
+                    c.coursesFlag,
+                    c.created_at,
+                    c.price,
+                    c.description,
+                    c.flag_use,
+                    c.coursescat_id,
+                    c.total_enrolled,
+                    c.start_date,
+                    c.is_open_soon
                 FROM BD_PTS.dbo.course_enrollments e
                 INNER JOIN BD_PTS.dbo.courses_main c ON e.course_id = c.course_id
                 WHERE e.user_id = @userId
+                  AND ISNULL(c.flag_use, 1) = 1
                 ORDER BY e.updated_at DESC
             `);
 

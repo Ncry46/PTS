@@ -136,8 +136,9 @@ function makeCourseCard(course) {
           </div>
           <div class="pts-course-card__meta-row">
             <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
-            <span>${hours} ชม. · ${sentenceCase(course.difficulty_level)}</span>
+            <span>${hours} ชม. · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}${course.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}</span>
           </div>
+          ${course.price != null ? `<p class="pts-course-card__meta" style="margin-top:4px">${Number(course.price).toLocaleString('th-TH')} บาท · ลงทะเบียน ${Number(course.total_enrolled || 0)}</p>` : ''}
         </div>
         <div class="pts-course-card__actions">
           <a href="${enrolled ? `Learn.html?courseId=${course.course_id}` : `CourseDetail.html?courseId=${course.course_id}`}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}">
@@ -162,7 +163,8 @@ function openCourseModal(course) {
       <span class="inline-block px-3 py-1 rounded-full text-[12px] font-bold mb-2 ${badge.classes}">${badge.label}</span>
       <h3 class="text-xl font-bold mb-1">${escapeHtml(formatText(course.course_name))}</h3>
       <p class="text-sm text-on-surface-variant mb-2">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
-      <p class="text-sm text-on-surface-variant mb-4">${Number(course.total_hours || 0).toFixed(1).replace('.0','')} ชั่วโมง · ระดับ ${sentenceCase(course.difficulty_level)}</p>
+      <p class="text-sm text-on-surface-variant mb-4">${Number(course.total_hours || 0).toFixed(1).replace('.0','')} ชั่วโมง · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}${course.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${course.price != null ? ' · ' + Number(course.price).toLocaleString('th-TH') + ' บาท' : ''}</p>
+      ${course.description ? `<p class="text-sm text-on-surface-variant mb-4">${escapeHtml(String(course.description).slice(0, 280))}</p>` : ''}
       ${currentUser ? `
         <div class="space-y-2">
           <div class="flex items-center gap-2">

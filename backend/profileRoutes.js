@@ -368,6 +368,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                              WHEN EXISTS (SELECT 1 FROM BD_PTS.dbo.payments p WHERE p.user_id=@userId AND p.course_id=c.course_id AND p.status='paid') THEN 1 ELSE 0 END AS is_paid
                     FROM BD_PTS.dbo.courses_main c
                     WHERE c.course_id = @courseId
+                      AND ISNULL(c.flag_use, 1) = 1
                 `);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
