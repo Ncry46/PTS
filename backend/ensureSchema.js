@@ -1,6 +1,10 @@
 const sql = require('mssql');
+const { isAutoSchemaEnabled } = require('./db');
 
 async function ensureLearningSchema(pool) {
+    if (!isAutoSchemaEnabled()) {
+        return;
+    }
     const statements = [
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'course_enrollments')
          CREATE TABLE dbo.course_enrollments (
@@ -253,7 +257,65 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.hero_slides ADD theme NVARCHAR(32) NOT NULL
             CONSTRAINT DF_hero_slides_theme_col DEFAULT ('rose')`,
         `IF COL_LENGTH('dbo.hero_slides', 'theme_color') IS NULL
-         ALTER TABLE dbo.hero_slides ADD theme_color NVARCHAR(32) NULL`
+         ALTER TABLE dbo.hero_slides ADD theme_color NVARCHAR(32) NULL`,
+
+        /* —— Custom web forms (admin builds questions; users submit) —— */
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_forms')
+         CREATE TABLE dbo.custom_forms (
+            form_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            title NVARCHAR(255) NOT NULL,
+            description NVARCHAR(MAX) NULL,
+            is_published BIT NOT NULL CONSTRAINT DF_custom_forms_pub DEFAULT (0),
+            allow_resubmit BIT NOT NULL CONSTRAINT DF_custom_forms_resub DEFAULT (0),
+            flag_use BIT NOT NULL CONSTRAINT DF_custom_forms_flag DEFAULT (1),
+            created_by INT NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_custom_forms_created DEFAULT (GETDATE()),
+            updated_at DATETIME NOT NULL CONSTRAINT DF_custom_forms_updated DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_form_questions')
+         CREATE TABLE dbo.custom_form_questions (
+            question_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            form_id INT NOT NULL,
+            label NVARCHAR(500) NOT NULL,
+            help_text NVARCHAR(1000) NULL,
+            question_type VARCHAR(32) NOT NULL CONSTRAINT DF_custom_fq_type DEFAULT ('text'),
+            options_json NVARCHAR(MAX) NULL,
+            is_required BIT NOT NULL CONSTRAINT DF_custom_fq_req DEFAULT (1),
+            sort_order INT NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT (1),
+            flag_use BIT NOT NULL CONSTRAINT DF_custom_fq_flag DEFAULT (1),
+            created_at DATETIME NOT NULL CONSTRAINT DF_custom_fq_created DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_form_responses')
+         CREATE TABLE dbo.custom_form_responses (
+            response_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            form_id INT NOT NULL,
+            user_id INT NOT NULL,
+            submitted_at DATETIME NOT NULL CONSTRAINT DF_custom_fr_sub DEFAULT (GETDATE())
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_form_answers')
+         CREATE TABLE dbo.custom_form_answers (
+            answer_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            response_id INT NOT NULL,
+            question_id INT NOT NULL,
+            answer_text NVARCHAR(MAX) NULL
+         )`,
+        `IF COL_LENGTH('dbo.custom_forms', 'form_type') IS NULL
+         ALTER TABLE dbo.custom_forms ADD form_type VARCHAR(20) NOT NULL
+            CONSTRAINT DF_custom_forms_type DEFAULT ('general')`,
+        `IF COL_LENGTH('dbo.custom_forms', 'course_id') IS NULL
+         ALTER TABLE dbo.custom_forms ADD course_id INT NULL`,
+        `IF COL_LENGTH('dbo.custom_form_responses', 'result_code') IS NULL
+         ALTER TABLE dbo.custom_form_responses ADD result_code VARCHAR(8) NULL`,
+        `IF COL_LENGTH('dbo.custom_form_responses', 'result_label') IS NULL
+         ALTER TABLE dbo.custom_form_responses ADD result_label NVARCHAR(100) NULL`,
+        `IF COL_LENGTH('dbo.custom_form_responses', 'result_json') IS NULL
+         ALTER TABLE dbo.custom_form_responses ADD result_json NVARCHAR(MAX) NULL`,
+        `IF COL_LENGTH('dbo.users_main', 'disc_code') IS NULL
+         ALTER TABLE dbo.users_main ADD disc_code VARCHAR(8) NULL`,
+        `IF COL_LENGTH('dbo.users_main', 'disc_label') IS NULL
+         ALTER TABLE dbo.users_main ADD disc_label NVARCHAR(100) NULL`,
+        `IF COL_LENGTH('dbo.users_main', 'disc_updated_at') IS NULL
+         ALTER TABLE dbo.users_main ADD disc_updated_at DATETIME NULL`
     ];
 
     let failed = 0;
@@ -274,6 +336,7 @@ async function ensureLearningSchema(pool) {
     await seedHeroSlidesIfEmpty(pool);
     await ensureHeroSlideThemes(pool);
     await seedSampleCourseIfEmpty(pool);
+    await seedSampleFormIfEmpty(pool);
     try {
         const { repairHeroSlideImages } = require('./heroImages');
         await repairHeroSlideImages(pool);
@@ -519,6 +582,54 @@ async function createNotification(pool, userId, title, body, linkUrl) {
         }
     } catch (err) {
         console.warn('[notify→LINE]', err.message);
+    }
+}
+
+async function seedSampleFormIfEmpty(pool) {
+    try {
+        const count = await pool.request().query(`SELECT COUNT(*) AS c FROM dbo.custom_forms`);
+        if (Number(count.recordset[0].c || 0) > 0) return;
+
+        const form = await pool.request()
+            .input('title', sql.NVarChar, 'แบบประเมินสไตล์ DISC')
+            .input('description', sql.NVarChar, 'ตอบคำถามเพื่อดูว่าคุณใกล้เคียงสไตล์ใด: D กระทิง · I อินทรี · S หนู · C หมี')
+            .query(`
+                INSERT INTO dbo.custom_forms
+                    (title, description, is_published, allow_resubmit, flag_use, form_type)
+                OUTPUT INSERTED.form_id
+                VALUES (@title, @description, 1, 1, 1, 'disc')
+            `);
+        const formId = form.recordset[0].form_id;
+        const discOpts = JSON.stringify([
+            'D : กระทิง',
+            'I : อินทรี',
+            'S : หนู',
+            'C : หมี',
+            'U : ยังไม่ทราบ'
+        ]);
+        const questions = [
+            { label: 'เมื่อต้องทำงานเป็นทีม คุณมักเป็นคนแบบไหน?', sort: 1 },
+            { label: 'เวลาเจอปัญหาฉุกเฉิน คุณมักตอบสนองอย่างไร?', sort: 2 },
+            { label: 'สไตล์การสื่อสารที่คุณถนัดที่สุดคือข้อใด?', sort: 3 },
+            { label: 'เมื่อต้องตัดสินใจสำคัญ คุณโน้มเอียงไปทางใด?', sort: 4 },
+            { label: 'โดยรวมแล้ว คุณรู้สึกว่าตัวเองใกล้เคียงสัตว์ใดที่สุด?', sort: 5 }
+        ];
+        for (const q of questions) {
+            await pool.request()
+                .input('formId', sql.Int, formId)
+                .input('label', sql.NVarChar, q.label)
+                .input('qType', sql.VarChar, 'radio')
+                .input('opts', sql.NVarChar, discOpts)
+                .input('req', sql.Bit, 1)
+                .input('sort', sql.Int, q.sort)
+                .query(`
+                    INSERT INTO dbo.custom_form_questions
+                        (form_id, label, question_type, options_json, is_required, sort_order, flag_use)
+                    VALUES (@formId, @label, @qType, @opts, @req, @sort, 1)
+                `);
+        }
+    } catch (err) {
+        console.warn('[schema] seedSampleFormIfEmpty:', err.message);
     }
 }
 

@@ -24,6 +24,7 @@
     return [
       { href: 'DashbordU.html', labelKey: 'side.dashboard', label: 'แดชบอร์ด', match: /DashbordU\.html/i },
       { href: 'MyCourses.html', labelKey: 'side.mycourses', label: 'หลักสูตรของฉัน', match: /MyCourses\.html/i },
+      { href: 'Forms.html', labelKey: 'side.forms', label: 'แบบฟอร์ม', match: /Forms\.html|FormFill\.html/i },
       { href: 'Certificates.html', labelKey: 'side.certificates', label: 'ใบประกาศ', match: /Certificates\.html/i },
       { href: 'Favorites.html', labelKey: 'side.favorites', label: 'รายการโปรด', match: /Favorites\.html/i },
       { href: 'Schedule.html', labelKey: 'side.schedule', label: 'ตารางเรียน', match: /Schedule\.html/i },

@@ -14,6 +14,7 @@ const {
 } = require('./db');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
+const { createFormRouter, createAdminFormRouter } = require('./formRoutes');
 const { createProfileRouter } = require('./profileRoutes');
 const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
 const { createGoogleAuthRouter } = require('./googleAuthRoutes');
@@ -238,6 +239,20 @@ app.get('/api/users/me', async (req, res) => {
                 req.session.user.Url = drive.normalizeDriveUrl(url) || url;
             }
         } catch (_) { /* ignore */ }
+        try {
+            const pool = await poolPromise;
+            const disc = await pool.request()
+                .input('userId', sql.Int, req.session.user.user_id)
+                .query(`
+                    SELECT disc_code, disc_label, disc_updated_at
+                    FROM dbo.users_main
+                    WHERE user_id = @userId
+                `);
+            const d = disc.recordset[0] || {};
+            req.session.user.disc_code = d.disc_code || req.session.user.disc_code || null;
+            req.session.user.disc_label = d.disc_label || req.session.user.disc_label || null;
+            req.session.user.disc_updated_at = d.disc_updated_at || null;
+        } catch (_) { /* column may not exist yet */ }
         res.json({ loggedIn: true, user: req.session.user });
     } else {
         res.json({ loggedIn: false, user: null });
@@ -1029,7 +1044,9 @@ app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleAuthRouter({ poolPromise }));
 app.use('/api', createLineRouter({ poolPromise, requireLogin }));
+app.use('/api', createFormRouter({ poolPromise, requireLogin }));
 app.use('/api/admin', createAdminRouter({ poolPromise, requireLogin }));
+app.use('/api/admin', createAdminFormRouter({ poolPromise, requireLogin }));
 
 app.post('/api/attendance/scan', async (req, res) => {
     const { employee_id, kiosk_device_id } = req.body;

@@ -504,6 +504,7 @@
       <button type="button" class="tab-btn active" data-tab="courses">หลักสูตร</button>
       <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
       <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
+      <button type="button" class="tab-btn" data-tab="forms">แบบฟอร์ม</button>
       <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
       <button type="button" class="tab-btn" data-tab="cert">ใบประกาศ</button>
       <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
@@ -1636,6 +1637,403 @@ async function renderBanners() {
   renderList();
 }
 
+async function renderForms() {
+  const Q_TYPES = [
+    { v: 'text', l: 'ข้อความสั้น' },
+    { v: 'textarea', l: 'ข้อความยาว' },
+    { v: 'number', l: 'ตัวเลข' },
+    { v: 'email', l: 'อีเมล' },
+    { v: 'phone', l: 'เบอร์โทร' },
+    { v: 'date', l: 'วันที่' },
+    { v: 'select', l: 'เลือกหนึ่ง (dropdown)' },
+    { v: 'radio', l: 'เลือกหนึ่ง (radio)' },
+    { v: 'checkbox', l: 'เลือกได้หลายข้อ' },
+    { v: 'yesno', l: 'ใช่ / ไม่' }
+  ];
+  const needsOpts = (t) => ['select', 'radio', 'checkbox'].includes(t);
+
+  const panel = document.getElementById('panel');
+  panel.innerHTML = `
+    <div class="adm-c-head">
+      <div>
+        <h3>แบบฟอร์มในเว็บ</h3>
+        <p>2 ประเภท: <b>DISC</b> (ดูสไตล์ D/I/S/C) และ <b>ก่อนเริ่มคอร์ส</b> (ผูกหลักสูตรได้) · ผู้ใช้กรอกที่ Forms</p>
+      </div>
+      <button type="button" class="pts-btn pts-btn-primary" id="form-create-btn">+ สร้างแบบฟอร์ม</button>
+    </div>
+    <div id="form-create-box" class="hidden p-4 mb-4 rounded-2xl border border-[rgba(151,66,88,.18)] bg-[rgba(151,66,88,.03)]"></div>
+    <div id="forms-list" class="mb-6"><p class="text-sm text-on-surface-variant">กำลังโหลด...</p></div>
+    <div id="forms-editor" class="hidden"></div>
+    <div id="forms-responses" class="hidden"></div>
+  `;
+
+  const listEl = document.getElementById('forms-list');
+  const editorEl = document.getElementById('forms-editor');
+  const responsesEl = document.getElementById('forms-responses');
+
+  async function loadList() {
+    const { data } = await api('/api/admin/forms');
+    const rows = data || [];
+    if (!rows.length) {
+      listEl.innerHTML = '<p class="text-sm text-on-surface-variant">ยังไม่มีแบบฟอร์ม — กดสร้างแบบฟอร์มเพื่อเริ่ม</p>';
+      return;
+    }
+    listEl.innerHTML = `
+      <div class="overflow-x-auto">
+        <table class="adm-c-table">
+          <thead><tr>
+            <th>ชื่อ</th><th>ประเภท</th><th>หลักสูตร</th><th>สถานะ</th><th>คำถาม</th><th>คำตอบ</th><th></th>
+          </tr></thead>
+          <tbody>
+            ${rows.map((f) => `
+              <tr>
+                <td>
+                  <div class="adm-c-name">${escapeHtml(f.title)}</div>
+                  <div class="text-xs text-on-surface-variant">${escapeHtml(f.description || '')}</div>
+                </td>
+                <td><span class="adm-c-badge">${escapeHtml(f.form_type === 'disc' ? 'DISC' : f.form_type === 'course' ? 'ก่อนคอร์ส' : 'ทั่วไป')}</span></td>
+                <td class="text-sm">${f.form_type === 'course' ? escapeHtml(f.course_name || ('#' + f.course_id)) : '—'}</td>
+                <td><span class="adm-c-badge${f.is_published ? ' is-on' : ''}">${f.is_published ? 'เปิดกรอก' : 'ปิด'}</span></td>
+                <td>${Number(f.question_count || 0)}</td>
+                <td>${Number(f.response_count || 0)}</td>
+                <td>
+                  <div class="adm-c-actions">
+                    <button type="button" class="pts-btn pts-btn-outline form-edit" data-id="${f.form_id}">แก้ไข</button>
+                    <button type="button" class="pts-btn pts-btn-ghost form-responses" data-id="${f.form_id}">คำตอบ</button>
+                    <button type="button" class="pts-btn pts-btn-ghost form-del" data-id="${f.form_id}" style="color:#ba1a1a">ลบ</button>
+                  </div>
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>`;
+
+    listEl.querySelectorAll('.form-edit').forEach((btn) => {
+      btn.onclick = () => openEditor(Number(btn.dataset.id));
+    });
+    listEl.querySelectorAll('.form-responses').forEach((btn) => {
+      btn.onclick = () => openResponses(Number(btn.dataset.id));
+    });
+    listEl.querySelectorAll('.form-del').forEach((btn) => {
+      btn.onclick = async () => {
+        if (!confirm('ลบแบบฟอร์มนี้?')) return;
+        await api('/api/admin/forms/' + btn.dataset.id, { method: 'DELETE' });
+        editorEl.classList.add('hidden');
+        responsesEl.classList.add('hidden');
+        loadList();
+      };
+    });
+  }
+
+  async function openEditor(formId) {
+    responsesEl.classList.add('hidden');
+    const formRes = await api('/api/admin/forms/' + formId);
+    const form = formRes.data;
+    const coursesRes = await api('/api/admin/courses').catch(() => ({ data: [] }));
+    const courses = coursesRes.data || [];
+    editorEl.classList.remove('hidden');
+    const questions = form.questions || [];
+    const isDisc = form.form_type === 'disc';
+    const isCourse = form.form_type === 'course';
+
+    editorEl.innerHTML = `
+      <div class="p-4 rounded-2xl border border-[rgba(151,66,88,.14)] bg-[rgba(151,66,88,.03)] mb-4">
+        <h4 class="font-bold text-primary mb-3">แก้ไขแบบฟอร์ม #${form.form_id}</h4>
+        <div class="grid gap-3 md:grid-cols-2 mb-3">
+          <div>
+            <label class="text-xs font-bold">ชื่อแบบฟอร์ม</label>
+            <input id="fe-title" class="adm-c-search w-full" value="${escapeHtml(form.title || '')}">
+          </div>
+          <div>
+            <label class="text-xs font-bold">ประเภทแบบฟอร์ม</label>
+            <select id="fe-type" class="adm-c-search w-full">
+              <option value="general" ${!isDisc && !isCourse ? 'selected' : ''}>ทั่วไป</option>
+              <option value="disc" ${isDisc ? 'selected' : ''}>DISC — รู้สไตล์ตัวเอง (D/I/S/C)</option>
+              <option value="course" ${isCourse ? 'selected' : ''}>ก่อนเริ่มคอร์ส</option>
+            </select>
+          </div>
+          <div id="fe-course-wrap" class="${isCourse ? '' : 'hidden'} md:col-span-2">
+            <label class="text-xs font-bold">เชื่อมกับหลักสูตร</label>
+            <select id="fe-course" class="adm-c-search w-full">
+              <option value="">— เลือกหลักสูตร —</option>
+              ${courses.map((c) => `<option value="${c.course_id}" ${Number(form.course_id) === Number(c.course_id) ? 'selected' : ''}>${escapeHtml(c.course_name || ('#' + c.course_id))}</option>`).join('')}
+            </select>
+            <p class="text-xs text-on-surface-variant mt-1">ผู้ใช้ต้องกรอกฟอร์มนี้ก่อนเข้าเรียนหลักสูตรที่เลือก</p>
+          </div>
+          <div class="flex flex-wrap items-end gap-4">
+            <label class="text-sm flex items-center gap-2"><input type="checkbox" id="fe-pub" ${form.is_published ? 'checked' : ''}> เปิดให้ผู้ใช้กรอก</label>
+            <label class="text-sm flex items-center gap-2"><input type="checkbox" id="fe-resub" ${form.allow_resubmit ? 'checked' : ''}> อนุญาตส่งซ้ำ</label>
+          </div>
+        </div>
+        <div class="mb-3">
+          <label class="text-xs font-bold">คำอธิบาย</label>
+          <textarea id="fe-desc" class="adm-c-search w-full" rows="2">${escapeHtml(form.description || '')}</textarea>
+        </div>
+        ${isDisc ? `<p class="text-xs text-on-surface-variant mb-3">คำถาม DISC จะใช้ตัวเลือกคงที่: D กระทิง · I อินทรี · S หนู · C หมี · U ยังไม่ทราบ</p>` : ''}
+        <button type="button" class="pts-btn pts-btn-primary" id="fe-save-meta">บันทึกแบบฟอร์ม</button>
+        <a class="pts-btn pts-btn-outline ml-2" href="FormFill.html?id=${form.form_id}" target="_blank">ดูหน้าผู้ใช้</a>
+      </div>
+
+      <div class="mb-3 flex items-center justify-between gap-3 flex-wrap">
+        <h4 class="font-bold">คำถาม (${questions.length})</h4>
+      </div>
+      <div id="fe-questions" class="space-y-3 mb-4"></div>
+
+      <div class="p-4 rounded-2xl border border-dashed border-[rgba(151,66,88,.28)]">
+        <h4 class="font-bold mb-3">+ เพิ่มคำถาม</h4>
+        <div class="grid gap-3 md:grid-cols-2">
+          <div class="${isDisc ? 'md:col-span-2' : ''}">
+            <label class="text-xs font-bold">ข้อความคำถาม</label>
+            <input id="fq-label" class="adm-c-search w-full" placeholder="${isDisc ? 'เช่น เมื่อต้องทำงานเป็นทีม คุณมักเป็นคนแบบไหน?' : 'เช่น ชื่อ-นามสกุล'}">
+          </div>
+          <div class="${isDisc ? 'hidden' : ''}">
+            <label class="text-xs font-bold">ประเภท</label>
+            <select id="fq-type" class="adm-c-search w-full">
+              ${Q_TYPES.map((t) => `<option value="${t.v}">${t.l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-xs font-bold">คำอธิบายช่วยเหลือ (ไม่บังคับ)</label>
+            <input id="fq-help" class="adm-c-search w-full">
+          </div>
+          <div class="md:col-span-2 ${isDisc ? 'hidden' : ''}" id="fq-opts-wrap">
+            <label class="text-xs font-bold">ตัวเลือก (คั่นด้วยคอมมา หรือขึ้นบรรทัดใหม่)</label>
+            <textarea id="fq-opts" class="adm-c-search w-full" rows="2" placeholder="Online, Onsite, Hybrid"></textarea>
+          </div>
+          <label class="text-sm flex items-center gap-2"><input type="checkbox" id="fq-req" checked> บังคับตอบ</label>
+        </div>
+        <button type="button" class="pts-btn pts-btn-primary mt-3" id="fq-add">เพิ่มคำถาม</button>
+      </div>
+    `;
+
+    const syncTypeUi = () => {
+      const t = document.getElementById('fe-type').value;
+      document.getElementById('fe-course-wrap').classList.toggle('hidden', t !== 'course');
+    };
+    document.getElementById('fe-type').onchange = syncTypeUi;
+    const qBox = document.getElementById('fe-questions');
+    function renderQuestions() {
+      if (!questions.length) {
+        qBox.innerHTML = '<p class="text-sm text-on-surface-variant">ยังไม่มีคำถาม</p>';
+        return;
+      }
+      qBox.innerHTML = questions.map((q, idx) => `
+        <div class="p-3 rounded-xl border border-[rgba(151,66,88,.12)] bg-white" data-qid="${q.question_id}">
+          <div class="flex flex-wrap gap-2 items-start justify-between">
+            <div>
+              <div class="font-bold">${idx + 1}. ${escapeHtml(q.label)} ${q.is_required ? '<span style="color:#ba1a1a">*</span>' : ''}</div>
+              <div class="text-xs text-on-surface-variant mt-1">${escapeHtml(q.question_type)}
+                ${q.options && q.options.length ? ' · ' + escapeHtml(q.options.join(', ')) : ''}</div>
+            </div>
+            <div class="adm-c-actions">
+              <button type="button" class="pts-btn pts-btn-ghost q-up" data-id="${q.question_id}" ${idx === 0 ? 'disabled' : ''}>ขึ้น</button>
+              <button type="button" class="pts-btn pts-btn-ghost q-down" data-id="${q.question_id}" ${idx === questions.length - 1 ? 'disabled' : ''}>ลง</button>
+              <button type="button" class="pts-btn pts-btn-ghost q-del" data-id="${q.question_id}" style="color:#ba1a1a">ลบ</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      qBox.querySelectorAll('.q-del').forEach((btn) => {
+        btn.onclick = async () => {
+          if (!confirm('ลบคำถามนี้?')) return;
+          await api('/api/admin/form-questions/' + btn.dataset.id, { method: 'DELETE' });
+          openEditor(formId);
+        };
+      });
+      qBox.querySelectorAll('.q-up').forEach((btn) => {
+        btn.onclick = async () => {
+          const id = Number(btn.dataset.id);
+          const i = questions.findIndex((q) => q.question_id === id);
+          if (i <= 0) return;
+          const a = questions[i - 1];
+          const b = questions[i];
+          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: b.sort_order }) });
+          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: a.sort_order }) });
+          openEditor(formId);
+        };
+      });
+      qBox.querySelectorAll('.q-down').forEach((btn) => {
+        btn.onclick = async () => {
+          const id = Number(btn.dataset.id);
+          const i = questions.findIndex((q) => q.question_id === id);
+          if (i < 0 || i >= questions.length - 1) return;
+          const a = questions[i];
+          const b = questions[i + 1];
+          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: b.sort_order }) });
+          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: a.sort_order }) });
+          openEditor(formId);
+        };
+      });
+    }
+    renderQuestions();
+
+    const syncOpts = () => {
+      if (isDisc) {
+        document.getElementById('fq-opts-wrap').style.display = 'none';
+        return;
+      }
+      const typeEl = document.getElementById('fq-type');
+      document.getElementById('fq-opts-wrap').style.display =
+        needsOpts(typeEl.value) ? '' : 'none';
+    };
+    document.getElementById('fq-type')?.addEventListener('change', syncOpts);
+    syncOpts();
+
+    document.getElementById('fe-save-meta').onclick = async () => {
+      const formType = document.getElementById('fe-type').value;
+      await api('/api/admin/forms/' + formId, {
+        method: 'PUT',
+        body: JSON.stringify({
+          title: document.getElementById('fe-title').value,
+          description: document.getElementById('fe-desc').value,
+          is_published: document.getElementById('fe-pub').checked,
+          allow_resubmit: document.getElementById('fe-resub').checked,
+          form_type: formType,
+          course_id: formType === 'course' ? (document.getElementById('fe-course').value || null) : null
+        })
+      });
+      loadList();
+      openEditor(formId);
+    };
+
+    document.getElementById('fq-add').onclick = async () => {
+      const label = document.getElementById('fq-label').value.trim();
+      const question_type = isDisc ? 'radio' : document.getElementById('fq-type').value;
+      if (!label) return alert('กรุณาระบุคำถาม');
+      const payload = {
+        label,
+        question_type,
+        help_text: document.getElementById('fq-help').value.trim(),
+        is_required: document.getElementById('fq-req').checked,
+        options: isDisc ? '' : document.getElementById('fq-opts').value
+      };
+      await api('/api/admin/forms/' + formId + '/questions', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      openEditor(formId);
+      loadList();
+    };
+  }
+
+  async function openResponses(formId) {
+    editorEl.classList.add('hidden');
+    const [{ data: form }, { data: rows }] = await Promise.all([
+      api('/api/admin/forms/' + formId),
+      api('/api/admin/forms/' + formId + '/responses')
+    ]);
+    responsesEl.classList.remove('hidden');
+    const list = rows || [];
+    responsesEl.innerHTML = `
+      <div class="p-4 rounded-2xl border border-[rgba(151,66,88,.14)]">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h4 class="font-bold text-primary">คำตอบ — ${escapeHtml(form.title)}</h4>
+          <button type="button" class="pts-btn pts-btn-ghost" id="fr-close">ปิด</button>
+        </div>
+        ${!list.length ? '<p class="text-sm text-on-surface-variant">ยังไม่มีผู้ส่ง</p>' : `
+          <div class="overflow-x-auto mb-3">
+            <table class="adm-c-table">
+              <thead><tr><th>ผู้ใช้</th><th>อีเมล</th><th>ผล DISC</th><th>เวลา</th><th></th></tr></thead>
+              <tbody>
+                ${list.map((r) => `
+                  <tr>
+                    <td>${escapeHtml(r.full_name || ('#' + r.user_id))}</td>
+                    <td>${escapeHtml(r.email || '—')}</td>
+                    <td>${r.result_label ? escapeHtml((r.result_code || '') + ' · ' + r.result_label) : '—'}</td>
+                    <td>${escapeHtml(new Date(r.submitted_at).toLocaleString('th-TH'))}</td>
+                    <td><button type="button" class="pts-btn pts-btn-outline fr-view" data-id="${r.response_id}">ดู</button></td>
+                  </tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div id="fr-detail"></div>
+        `}
+      </div>`;
+    document.getElementById('fr-close').onclick = () => responsesEl.classList.add('hidden');
+    responsesEl.querySelectorAll('.fr-view').forEach((btn) => {
+      btn.onclick = async () => {
+        const { data } = await api(`/api/admin/forms/${formId}/responses/${btn.dataset.id}`);
+        const detail = document.getElementById('fr-detail');
+        detail.innerHTML = `
+          <div class="p-3 rounded-xl bg-[rgba(151,66,88,.04)] text-sm space-y-2">
+            <p class="font-bold">${escapeHtml(data.full_name || '')} · ${escapeHtml(data.email || '')}</p>
+            ${(data.answers || []).map((a) => `
+              <div><span class="font-bold">${escapeHtml(a.label || ('#' + a.question_id))}:</span> ${escapeHtml(a.answer_text || '—')}</div>
+            `).join('')}
+          </div>`;
+      };
+    });
+  }
+
+  document.getElementById('form-create-btn').onclick = async () => {
+    const box = document.getElementById('form-create-box');
+    const coursesRes = await api('/api/admin/courses').catch(() => ({ data: [] }));
+    const courses = coursesRes.data || [];
+    box.classList.remove('hidden');
+    box.innerHTML = `
+      <h4 class="font-bold mb-3">สร้างแบบฟอร์มใหม่</h4>
+      <div class="grid gap-3 md:grid-cols-2">
+        <div>
+          <label class="text-xs font-bold">ชื่อ</label>
+          <input id="fc-title" class="adm-c-search w-full" placeholder="เช่น แบบประเมิน DISC">
+        </div>
+        <div>
+          <label class="text-xs font-bold">ประเภท</label>
+          <select id="fc-type" class="adm-c-search w-full">
+            <option value="disc">DISC — รู้สไตล์ตัวเอง (D/I/S/C)</option>
+            <option value="course">ก่อนเริ่มคอร์ส</option>
+            <option value="general">ทั่วไป</option>
+          </select>
+        </div>
+        <div id="fc-course-wrap" class="hidden md:col-span-2">
+          <label class="text-xs font-bold">เชื่อมกับหลักสูตร</label>
+          <select id="fc-course" class="adm-c-search w-full">
+            <option value="">— เลือกหลักสูตร —</option>
+            ${courses.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name || ('#' + c.course_id))}</option>`).join('')}
+          </select>
+        </div>
+        <div class="md:col-span-2">
+          <label class="text-xs font-bold">คำอธิบาย</label>
+          <input id="fc-desc" class="adm-c-search w-full">
+        </div>
+      </div>
+      <div class="mt-3 flex gap-2">
+        <button type="button" class="pts-btn pts-btn-primary" id="fc-save">สร้าง</button>
+        <button type="button" class="pts-btn pts-btn-ghost" id="fc-cancel">ยกเลิก</button>
+      </div>`;
+    const sync = () => {
+      box.querySelector('#fc-course-wrap').classList.toggle('hidden', box.querySelector('#fc-type').value !== 'course');
+    };
+    box.querySelector('#fc-type').onchange = sync;
+    sync();
+    box.querySelector('#fc-cancel').onclick = () => box.classList.add('hidden');
+    box.querySelector('#fc-save').onclick = async () => {
+      const title = box.querySelector('#fc-title').value.trim();
+      const form_type = box.querySelector('#fc-type').value;
+      const course_id = box.querySelector('#fc-course').value || null;
+      if (!title) return alert('กรุณาระบุชื่อแบบฟอร์ม');
+      if (form_type === 'course' && !course_id) return alert('กรุณาเลือกหลักสูตร');
+      const { data } = await api('/api/admin/forms', {
+        method: 'POST',
+        body: JSON.stringify({
+          title,
+          description: box.querySelector('#fc-desc').value.trim(),
+          form_type,
+          course_id,
+          is_published: false,
+          allow_resubmit: form_type === 'disc'
+        })
+      });
+      box.classList.add('hidden');
+      await loadList();
+      if (data && data.form_id) openEditor(data.form_id);
+    };
+  };
+
+  await loadList();
+}
+
 async function renderUsers() {
   const { data } = await api('/api/admin/users');
   const usersCache = data || [];
@@ -2471,6 +2869,7 @@ const tabs = {
   courses: renderCourses,
   lessons: renderLessons,
   schedules: renderSchedules,
+  forms: renderForms,
   banners: renderBanners,
   cert: renderCertAssets,
   users: renderUsers,

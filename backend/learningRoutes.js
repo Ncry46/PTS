@@ -6,6 +6,7 @@ const multer = require('multer');
 const { buildPromptPayPayload, getPromptPayId } = require('./promptpay');
 const { mapHeroSlidesImages } = require('./heroImages');
 const { markPaidAndEnroll } = require('./paymentActions');
+const { findRequiredCourseForm } = require('./formRoutes');
 const { tryUploadLocalFile } = require('./googleDrive');
 
 const SLIP_DIR = path.join(__dirname, '..', 'uploads', 'slips');
@@ -115,6 +116,10 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             }
 
             const enrolled = await ensureEnrolled(pool, user.user_id, courseId);
+            let required_form = null;
+            if (enrolled && (user.role || '').toLowerCase() !== 'admin') {
+                required_form = await findRequiredCourseForm(pool, user.user_id, courseId);
+            }
             const lessons = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .input('userId', sql.Int, user.user_id)
@@ -132,8 +137,9 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             res.json({
                 success: true,
                 enrolled,
+                required_form,
                 course: course.recordset[0],
-                data: lessons.recordset
+                data: required_form ? [] : lessons.recordset
             });
         } catch (error) {
             console.error('❌ lessons list:', error.message);
@@ -173,6 +179,16 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const enrolled = await ensureEnrolled(pool, user.user_id, lesson.course_id);
             if (!enrolled && user.role !== 'admin') {
                 return res.status(403).json({ success: false, message: 'กรุณาสมัครเรียนหลักสูตรนี้ก่อนเข้าเรียน' });
+            }
+            if ((user.role || '').toLowerCase() !== 'admin') {
+                const requiredForm = await findRequiredCourseForm(pool, user.user_id, lesson.course_id);
+                if (requiredForm) {
+                    return res.status(403).json({
+                        success: false,
+                        message: 'กรุณากรอกแบบฟอร์มก่อนเริ่มเรียนหลักสูตรนี้',
+                        required_form: requiredForm
+                    });
+                }
             }
 
             const siblings = await pool.request()
