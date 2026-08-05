@@ -507,7 +507,7 @@
           </div>
           <div class="pts-topnav__actions">
             <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
-            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Register.html">${t('nav.register', 'สมัครสมาชิก')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Login.html?tab=register">${t('nav.register', 'สมัครสมาชิก')}</a>
             ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>
@@ -517,7 +517,7 @@
           ${coursesMobileHtml()}
           <a href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
           <a href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
-          <a href="Register.html" style="color:#974258;font-weight:700">${t('nav.register', 'สมัครสมาชิก')}</a>
+          <a href="Login.html?tab=register" style="color:#974258;font-weight:700">${t('nav.register', 'สมัครสมาชิก')}</a>
         </div>
       </nav>`;
     bindToggles(container);
