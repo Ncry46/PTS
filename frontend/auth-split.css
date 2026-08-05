@@ -318,8 +318,8 @@ body.pts-body.pts-login.pts-auth-duo {
 }
 
 @keyframes pts-auth-ribbon {
-  0%, 100% { transform: translateX(0) rotate(var(--r, -10deg)); opacity: 0.3; }
-  50% { transform: translateX(4%) rotate(var(--r, -10deg)); opacity: 0.55; }
+  0%, 100% { transform: translateX(0) rotate(var(--ribbon-rot, -10deg)); opacity: 0.3; }
+  50% { transform: translateX(4%) rotate(var(--ribbon-rot, -10deg)); opacity: 0.55; }
 }
 
 @keyframes pts-auth-ring {
