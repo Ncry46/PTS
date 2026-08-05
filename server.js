@@ -50,7 +50,7 @@ app.get(['/Login.html', '/login.html'], (req, res) => {
 });
 
 app.get(['/Register.html', '/register.html'], (req, res) => {
-    res.sendFile(path.join(__dirname, 'Register.html'));
+    res.sendFile(path.join(frontendDir, 'Register.html'));
 });
 
 app.get(['/kiosk', '/kiosk.html'], (req, res) => {
