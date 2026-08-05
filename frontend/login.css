@@ -12,8 +12,7 @@ input[type="password"]::-ms-reveal,
     --login-pearl: #fff9f7;
     --login-champagne: #f4e6d4;
     --login-mint: #d9ebe0;
-    /* Hero scene (.pts-auth-scene) provides the red Iridescence background */
-    background-color: transparent !important;
+    background-color: #ffffff !important;
     background-image: none !important;
     color: var(--pts-text, #1c1520);
     overflow-x: hidden;
@@ -841,7 +840,7 @@ input[type="password"]::-ms-reveal,
 
   /* Dark theme — clean studio */
   html[data-theme="dark"] body.pts-body.pts-login {
-    background: transparent !important;
+    background: #121014 !important;
     background-image: none !important;
     color: var(--pts-text);
   }

@@ -8,47 +8,31 @@
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
-<link rel="stylesheet" href="auth-scene.css?v=20260805iri5">
-<link rel="stylesheet" href="login.css?v=20260805iri5">
-<link rel="stylesheet" href="register.css?v=20260805iri5">
-<link rel="stylesheet" href="auth-split.css?v=20260805iri5">
-<link rel="stylesheet" href="Iridescence.css?v=20260804iri4">
+<link rel="stylesheet" href="auth-scene.css?v=20260805white2">
+<link rel="stylesheet" href="login.css?v=20260805white2">
+<link rel="stylesheet" href="register.css?v=20260805white2">
+<link rel="stylesheet" href="auth-split.css?v=20260805white2">
 <style id="pts-auth-force-bg">
-  /* Red Iridescence auth backdrop — survives stale cached CSS */
+  /* White auth page backdrop */
   body.pts-login, body.pts-register {
-    background: #ff1f2e !important;
+    background: #ffffff !important;
     background-image: none !important;
   }
-  .pts-auth-scene__geo { display: none !important; }
-  .pts-auth-scene { background: #ff1f2e !important; }
-  .pts-auth-scene::before {
-    content: "";
-    display: block !important;
-    position: absolute; inset: -15%;
-    background:
-      radial-gradient(circle at 20% 30%, #ffb1c1, transparent 45%),
-      radial-gradient(circle at 80% 20%, #ff503c, transparent 40%),
-      radial-gradient(circle at 60% 80%, #9b1230, transparent 45%),
-      linear-gradient(135deg, #ff1f2e, #7a1028);
-    animation: ptsForceIri 9s ease-in-out infinite alternate;
-  }
+  .pts-auth-scene { background: #ffffff !important; }
+  .pts-auth-scene__geo,
+  .pts-auth-scene::before,
   .pts-auth-scene::after,
   .pts-auth-scene__fx,
-  #auth-iridescence {
-    display: block !important;
-  }
-  @keyframes ptsForceIri {
-    from { transform: scale(1) translate(0,0); }
-    to { transform: scale(1.08) translate(2%,1%); }
+  #auth-iridescence,
+  .pts-auth-build {
+    display: none !important;
   }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
-<body class="pts-body pts-login pts-auth-duo" data-pts-auth-build="iri5-20260805">
-<div class="pts-auth-scene" aria-hidden="true">
-  <div class="pts-auth-scene__fx" id="auth-iridescence"></div>
-</div>
+<body class="pts-body pts-login pts-auth-duo">
+<div class="pts-auth-scene" aria-hidden="true"></div>
 <div id="app-navbar"></div>
 
 <main class="pts-login__stage">
@@ -273,11 +257,10 @@
   </div>
 </div>
 
-<script src="auth-split.js?v=20260805iri5"></script>
+<script src="auth-split.js?v=20260805white2"></script>
 <script src="login.js?v=20260805split1"></script>
 <script src="register.js?v=20260805split1"></script>
 <script src="password-toggle.js?v=20260720e"></script>
 <script src="/comp/navbar.js?v=20260805split1"></script>
-<script type="module" src="auth-iridescence-boot.js?v=20260804iri4"></script>
 </body>
 </html>
