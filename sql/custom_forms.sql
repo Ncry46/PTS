@@ -68,10 +68,10 @@ END
 GO
 
 -- Optional user DISC profile columns
-IF COL_LENGTH('dbo.users_main', 'disc_code') IS NULL
-  ALTER TABLE dbo.users_main ADD disc_code VARCHAR(8) NULL;
-IF COL_LENGTH('dbo.users_main', 'disc_label') IS NULL
-  ALTER TABLE dbo.users_main ADD disc_label NVARCHAR(100) NULL;
-IF COL_LENGTH('dbo.users_main', 'disc_updated_at') IS NULL
-  ALTER TABLE dbo.users_main ADD disc_updated_at DATETIME NULL;
+IF COL_LENGTH('dbo.users', 'disc_code') IS NULL
+  ALTER TABLE dbo.users ADD disc_code VARCHAR(8) NULL;
+IF COL_LENGTH('dbo.users', 'disc_label') IS NULL
+  ALTER TABLE dbo.users ADD disc_label NVARCHAR(100) NULL;
+IF COL_LENGTH('dbo.users', 'disc_updated_at') IS NULL
+  ALTER TABLE dbo.users ADD disc_updated_at DATETIME NULL;
 GO

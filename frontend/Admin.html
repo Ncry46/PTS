@@ -1938,7 +1938,7 @@ async function renderForms() {
               <tbody>
                 ${list.map((r) => `
                   <tr>
-                    <td>${escapeHtml(r.full_name || ('#' + r.user_id))}</td>
+                    <td>${escapeHtml(r.username || ('#' + r.user_id))}</td>
                     <td>${escapeHtml(r.email || '—')}</td>
                     <td>${r.result_label ? escapeHtml((r.result_code || '') + ' · ' + r.result_label) : '—'}</td>
                     <td>${escapeHtml(new Date(r.submitted_at).toLocaleString('th-TH'))}</td>
@@ -1957,7 +1957,7 @@ async function renderForms() {
         const detail = document.getElementById('fr-detail');
         detail.innerHTML = `
           <div class="p-3 rounded-xl bg-[rgba(151,66,88,.04)] text-sm space-y-2">
-            <p class="font-bold">${escapeHtml(data.full_name || '')} · ${escapeHtml(data.email || '')}</p>
+            <p class="font-bold">${escapeHtml(data.username || '')} · ${escapeHtml(data.email || '')}</p>
             ${(data.answers || []).map((a) => `
               <div><span class="font-bold">${escapeHtml(a.label || ('#' + a.question_id))}:</span> ${escapeHtml(a.answer_text || '—')}</div>
             `).join('')}
@@ -2076,7 +2076,7 @@ async function renderUsers() {
       <td>
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
-          <div class="adm-c-name">${escapeHtml(u.full_name || '—')}</div>
+          <div class="adm-c-name">${escapeHtml(u.username || '—')}</div>
         </div>
       </td>
       <td>${escapeHtml(u.email || '—')}</td>
@@ -2091,7 +2091,7 @@ async function renderUsers() {
       <div class="adm-c-card__top">
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
-          <div class="adm-c-name">${escapeHtml(u.full_name || '—')}</div>
+          <div class="adm-c-name">${escapeHtml(u.username || '—')}</div>
         </div>
         <span class="adm-c-badge${isAdminRole(u) ? ' is-on' : ''}">${escapeHtml(String(u.Role || u.role || 'student').toLowerCase())}</span>
       </div>
@@ -2118,7 +2118,7 @@ async function renderUsers() {
       idStr,
       `id ${idStr}`,
       `#${idStr}`,
-      u.full_name,
+      u.username,
       u.email,
       u.phone,
       u.Role || u.role,
@@ -2497,7 +2497,7 @@ async function renderPayments() {
             ${rows.map((p) => `
               <tr>
                 <td>
-                  <div class="adm-c-name">${escapeHtml(p.full_name || '—')}</div>
+                  <div class="adm-c-name">${escapeHtml(p.username || '—')}</div>
                   <div class="adm-pay-meta">${escapeHtml(p.email || '')}</div>
                 </td>
                 <td>${escapeHtml(p.course_name || '—')}</td>
@@ -2530,7 +2530,7 @@ async function renderPayments() {
           <article class="adm-c-card">
             <div class="adm-c-card__top">
               <div>
-                <div class="adm-c-name">${escapeHtml(p.full_name || '—')}</div>
+                <div class="adm-c-name">${escapeHtml(p.username || '—')}</div>
                 <div class="adm-pay-meta">${escapeHtml(p.email || '')}</div>
               </div>
               ${statusBadge(p)}

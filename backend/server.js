@@ -229,7 +229,7 @@ app.get('/api/users/me', async (req, res) => {
                         await pool.request()
                             .input('userId', sql.Int, req.session.user.user_id)
                             .input('url', sql.NVarChar, localUrl)
-                            .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                            .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
                     } catch (_) { /* session still updated for navbar */ }
                 } catch (err) {
                     console.warn('[avatar] users/me restore:', err.message);
@@ -245,7 +245,7 @@ app.get('/api/users/me', async (req, res) => {
                 .input('userId', sql.Int, req.session.user.user_id)
                 .query(`
                     SELECT disc_code, disc_label, disc_updated_at
-                    FROM dbo.users_main
+                    FROM dbo.users
                     WHERE user_id = @userId
                 `);
             const d = disc.recordset[0] || {};
@@ -278,8 +278,8 @@ app.post('/api/users/login', async (req, res) => {
             .input('email', sql.VarChar, email)
             .input('pass', sql.VarChar, password)
             .query(`
-                SELECT user_id, email, full_name, Role, FlagUse, Url
-                FROM dbo.users_main
+                SELECT user_id, email, username, Role, FlagUse, Url
+                FROM dbo.users
                 WHERE email = @email AND password_hash = @pass
             `);
 
@@ -294,7 +294,7 @@ app.post('/api/users/login', async (req, res) => {
             // 🌟 7. จัดเก็บข้อมูลลงในเซสชันของหลังบ้าน
             req.session.user = {
                 user_id: userData.user_id,
-                name: userData.full_name,
+                name: userData.username,
                 email: userData.email,
                 Url: userData.Url || null,
                 // แปลงสิทธิ์เป็นตัวพิมพ์เล็ก (เช่น admin / student) เพื่อให้ตรงกับโค้ด navbar.js
@@ -303,7 +303,7 @@ app.post('/api/users/login', async (req, res) => {
 
             res.json({
                 success: true,
-                message: `เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ${userData.full_name}`,
+                message: `เข้าสู่ระบบสำเร็จ! สวัสดีคุณ ${userData.username}`,
                 role: req.session.user.role
             });
         } else {
@@ -318,9 +318,9 @@ app.post('/api/users/login', async (req, res) => {
 // [API สมัครสมาชิก]
 // -------------------------------------------------------------------------
 app.post('/api/users/register', async (req, res) => {
-    const { full_name, email, phone, password } = req.body;
+    const { username, email, phone, password } = req.body;
 
-    if (!full_name || !email || !password) {
+    if (!username || !email || !password) {
         return res.status(400).json({ success: false, message: 'กรุณากรอกชื่อ อีเมล และรหัสผ่านให้ครบ' });
     }
 
@@ -329,7 +329,7 @@ app.post('/api/users/register', async (req, res) => {
 
         const existing = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id FROM dbo.users_main WHERE email = @email');
+            .query('SELECT user_id FROM dbo.users WHERE email = @email');
 
         if (existing.recordset.length > 0) {
             return res.status(400).json({ success: false, message: 'อีเมลนี้เคยลงทะเบียนในระบบไว้แล้ว' });
@@ -337,17 +337,17 @@ app.post('/api/users/register', async (req, res) => {
 
         await pool.request()
             .input('email', sql.VarChar, email)
-            .input('fullName', sql.NVarChar, full_name)
+            .input('fullName', sql.NVarChar, username)
             .input('phone', sql.VarChar, phone || '-')
             .input('pass', sql.VarChar, password)
             .query(`
-                INSERT INTO dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse)
+                INSERT INTO dbo.users (email, username, phone, password_hash, Role, FlagUse)
                 VALUES (@email, @fullName, @phone, @pass, 'student', 'Y')
             `);
 
         const created = await pool.request()
             .input('email', sql.VarChar, email)
-            .query(`SELECT user_id FROM dbo.users_main WHERE email = @email`);
+            .query(`SELECT user_id FROM dbo.users WHERE email = @email`);
         if (created.recordset[0]) {
             try {
                 await createNotification(
@@ -385,7 +385,7 @@ app.post('/api/users/request-otp', async (req, res) => {
         const pool = await poolPromise;
         const userCheck = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id, email FROM dbo.users_main WHERE email = @email');
+            .query('SELECT user_id, email FROM dbo.users WHERE email = @email');
 
         if (userCheck.recordset.length === 0) {
             return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งานที่ตรงกับอีเมลนี้' });
@@ -438,7 +438,7 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
         const pool = await poolPromise;
         const userCheck = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id FROM dbo.users_main WHERE email = @email');
+            .query('SELECT user_id FROM dbo.users WHERE email = @email');
         if (!userCheck.recordset.length) {
             return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งาน' });
         }
@@ -446,7 +446,7 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
         await pool.request()
             .input('email', sql.VarChar, email)
             .input('newPass', sql.VarChar, newPassword)
-            .query('UPDATE dbo.users_main SET password_hash = @newPass WHERE email = @email');
+            .query('UPDATE dbo.users SET password_hash = @newPass WHERE email = @email');
 
         res.json({ success: true, message: 'ยืนยัน OTP สำเร็จ และตั้งรหัสผ่านใหม่เรียบร้อยแล้ว' });
     } catch (error) {
@@ -498,7 +498,7 @@ app.get('/api/courses', async (req, res) => {
                             WHERE e.user_id = @userId AND e.course_id = c.course_id
                         ) THEN 1 ELSE 0
                     END AS is_enrolled
-                FROM dbo.courses_main c
+                FROM dbo.courses c
                 WHERE ISNULL(c.flag_use, 1) = 1
                 ORDER BY c.created_at DESC
             `);
@@ -534,8 +534,8 @@ app.get('/api/community', async (req, res) => {
                 p.post_id,
                 p.content,
                 p.created_at,
-                u.full_name AS author_name,
-                ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
+                u.username AS author_name,
+                ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
                 (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
                 CASE
@@ -584,14 +584,14 @@ app.get('/api/my/liked-posts', async (req, res) => {
                     p.post_id,
                     p.content,
                     p.created_at,
-                    u.full_name AS author_name,
-                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
+                    u.username AS author_name,
+                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
                     (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
                     (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
                     1 AS liked_by_me
                 FROM dbo.post_likes pl
                 INNER JOIN dbo.community_posts p ON p.post_id = pl.post_id
-                INNER JOIN dbo.users_main u ON u.user_id = p.user_id
+                INNER JOIN dbo.users u ON u.user_id = p.user_id
                 WHERE pl.user_id = @userId AND p.flag_use = 1
                 ORDER BY p.created_at DESC
             `);
@@ -620,7 +620,7 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                     1 AS is_favorited,
                     CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
                 FROM dbo.course_favorites f
-                INNER JOIN dbo.courses_main c ON c.course_id = f.course_id
+                INNER JOIN dbo.courses c ON c.course_id = f.course_id
                 LEFT JOIN dbo.course_enrollments e
                     ON e.course_id = c.course_id AND e.user_id = @userId
                 WHERE f.user_id = @userId
@@ -807,10 +807,10 @@ app.get('/api/community/:postId/comments', async (req, res) => {
                     c.post_id,
                     c.content,
                     c.created_at,
-                    u.full_name AS author_name,
-                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar
+                    u.username AS author_name,
+                    ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar
                 FROM dbo.post_comments c
-                INNER JOIN dbo.users_main u ON c.user_id = u.user_id
+                INNER JOIN dbo.users u ON c.user_id = u.user_id
                 WHERE c.post_id = @postId
                 ORDER BY c.created_at ASC
             `);
@@ -883,7 +883,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
 
         const courseCheck = await pool.request()
             .input('courseId', sql.Int, courseId)
-            .query('SELECT course_id, course_name FROM dbo.courses_main WHERE course_id = @courseId');
+            .query('SELECT course_id, course_name FROM dbo.courses WHERE course_id = @courseId');
 
         if (courseCheck.recordset.length === 0) {
             return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตรนี้ในระบบ' });
@@ -964,7 +964,7 @@ app.get('/api/my/courses', async (req, res) => {
                     c.start_date,
                     c.is_open_soon
                 FROM dbo.course_enrollments e
-                INNER JOIN dbo.courses_main c ON e.course_id = c.course_id
+                INNER JOIN dbo.courses c ON e.course_id = c.course_id
                 WHERE e.user_id = @userId
                   AND ISNULL(c.flag_use, 1) = 1
                 ORDER BY e.updated_at DESC
@@ -1065,8 +1065,8 @@ app.post('/api/attendance/scan', async (req, res) => {
         const userResult = await pool.request()
             .input('email', sql.VarChar, employee_id)
             .query(`
-                SELECT full_name, email, Role
-                FROM dbo.users_main
+                SELECT username, email, Role
+                FROM dbo.users
                 WHERE email = @email
             `);
 
@@ -1111,7 +1111,7 @@ app.post('/api/attendance/scan', async (req, res) => {
             success: true,
             message: 'บันทึกเวลาสำเร็จ',
             data: {
-                employee_name: empInfo.full_name,
+                employee_name: empInfo.username,
                 employee_code: empInfo.email,
                 department: empInfo.Role || 'student',
                 scan_time: now.toLocaleTimeString('th-TH'),

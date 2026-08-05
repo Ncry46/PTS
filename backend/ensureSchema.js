@@ -160,8 +160,8 @@ async function ensureLearningSchema(pool) {
             CONSTRAINT DF_course_enrollments_gcal_notify DEFAULT (0)`,
 
         /* —— courses_main (สร้างก่อน แล้วค่อยเติมคอลัมน์ถ้าตารางเก่ายังขาด) —— */
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NULL
-         CREATE TABLE dbo.courses_main (
+        `IF OBJECT_ID('dbo.courses', 'U') IS NULL
+         CREATE TABLE dbo.courses (
             course_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
             course_name NVARCHAR(255) NOT NULL,
             instructor_name NVARCHAR(255) NULL,
@@ -181,45 +181,45 @@ async function ensureLearningSchema(pool) {
             start_date DATE NULL,
             is_open_soon BIT NOT NULL CONSTRAINT DF_courses_main_open_soon DEFAULT (0)
          )`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'price') IS NULL
-         ALTER TABLE dbo.courses_main ADD price DECIMAL(10,2) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'description') IS NULL
-         ALTER TABLE dbo.courses_main ADD description NVARCHAR(MAX) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'flag_use') IS NULL
-         ALTER TABLE dbo.courses_main ADD flag_use BIT NOT NULL
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'price') IS NULL
+         ALTER TABLE dbo.courses ADD price DECIMAL(10,2) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description') IS NULL
+         ALTER TABLE dbo.courses ADD description NVARCHAR(MAX) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'flag_use') IS NULL
+         ALTER TABLE dbo.courses ADD flag_use BIT NOT NULL
             CONSTRAINT DF_courses_main_flag_use DEFAULT (1)`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'coursesFlag') IS NULL
-         ALTER TABLE dbo.courses_main ADD coursesFlag NVARCHAR(10) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'coursescat_id') IS NULL
-         ALTER TABLE dbo.courses_main ADD coursescat_id INT NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'total_enrolled') IS NULL
-         ALTER TABLE dbo.courses_main ADD total_enrolled INT NOT NULL
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'coursesFlag') IS NULL
+         ALTER TABLE dbo.courses ADD coursesFlag NVARCHAR(10) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'coursescat_id') IS NULL
+         ALTER TABLE dbo.courses ADD coursescat_id INT NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'total_enrolled') IS NULL
+         ALTER TABLE dbo.courses ADD total_enrolled INT NOT NULL
             CONSTRAINT DF_courses_main_enrolled DEFAULT (0)`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'start_date') IS NULL
-         ALTER TABLE dbo.courses_main ADD start_date DATE NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'is_open_soon') IS NULL
-         ALTER TABLE dbo.courses_main ADD is_open_soon BIT NOT NULL
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'start_date') IS NULL
+         ALTER TABLE dbo.courses ADD start_date DATE NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'is_open_soon') IS NULL
+         ALTER TABLE dbo.courses ADD is_open_soon BIT NOT NULL
             CONSTRAINT DF_courses_main_open_soon DEFAULT (0)`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'instructor_name') IS NULL
-         ALTER TABLE dbo.courses_main ADD instructor_name NVARCHAR(255) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'delivery_mode') IS NULL
-         ALTER TABLE dbo.courses_main ADD delivery_mode VARCHAR(20) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'total_hours') IS NULL
-         ALTER TABLE dbo.courses_main ADD total_hours DECIMAL(10,2) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'average_rating') IS NULL
-         ALTER TABLE dbo.courses_main ADD average_rating DECIMAL(4,2) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'total_reviews') IS NULL
-         ALTER TABLE dbo.courses_main ADD total_reviews INT NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'cover_image_url') IS NULL
-         ALTER TABLE dbo.courses_main ADD cover_image_url NVARCHAR(1000) NULL`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'is_featured') IS NULL
-         ALTER TABLE dbo.courses_main ADD is_featured BIT NOT NULL
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name') IS NULL
+         ALTER TABLE dbo.courses ADD instructor_name NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'delivery_mode') IS NULL
+         ALTER TABLE dbo.courses ADD delivery_mode VARCHAR(20) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'total_hours') IS NULL
+         ALTER TABLE dbo.courses ADD total_hours DECIMAL(10,2) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'average_rating') IS NULL
+         ALTER TABLE dbo.courses ADD average_rating DECIMAL(4,2) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'total_reviews') IS NULL
+         ALTER TABLE dbo.courses ADD total_reviews INT NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'cover_image_url') IS NULL
+         ALTER TABLE dbo.courses ADD cover_image_url NVARCHAR(1000) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'is_featured') IS NULL
+         ALTER TABLE dbo.courses ADD is_featured BIT NOT NULL
             CONSTRAINT DF_courses_main_featured DEFAULT (0)`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'created_at') IS NULL
-         ALTER TABLE dbo.courses_main ADD created_at DATETIME NOT NULL
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'created_at') IS NULL
+         ALTER TABLE dbo.courses ADD created_at DATETIME NOT NULL
             CONSTRAINT DF_courses_main_created DEFAULT (GETDATE())`,
-        `IF OBJECT_ID('dbo.courses_main', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses_main', 'course_name') IS NULL
-         ALTER TABLE dbo.courses_main ADD course_name NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name') IS NULL
+         ALTER TABLE dbo.courses ADD course_name NVARCHAR(255) NULL`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
          CREATE TABLE dbo.attendance_logs (
             log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -310,12 +310,12 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.custom_form_responses ADD result_label NVARCHAR(100) NULL`,
         `IF COL_LENGTH('dbo.custom_form_responses', 'result_json') IS NULL
          ALTER TABLE dbo.custom_form_responses ADD result_json NVARCHAR(MAX) NULL`,
-        `IF COL_LENGTH('dbo.users_main', 'disc_code') IS NULL
-         ALTER TABLE dbo.users_main ADD disc_code VARCHAR(8) NULL`,
-        `IF COL_LENGTH('dbo.users_main', 'disc_label') IS NULL
-         ALTER TABLE dbo.users_main ADD disc_label NVARCHAR(100) NULL`,
-        `IF COL_LENGTH('dbo.users_main', 'disc_updated_at') IS NULL
-         ALTER TABLE dbo.users_main ADD disc_updated_at DATETIME NULL`
+        `IF COL_LENGTH('dbo.users', 'disc_code') IS NULL
+         ALTER TABLE dbo.users ADD disc_code VARCHAR(8) NULL`,
+        `IF COL_LENGTH('dbo.users', 'disc_label') IS NULL
+         ALTER TABLE dbo.users ADD disc_label NVARCHAR(100) NULL`,
+        `IF COL_LENGTH('dbo.users', 'disc_updated_at') IS NULL
+         ALTER TABLE dbo.users ADD disc_updated_at DATETIME NULL`
     ];
 
     let failed = 0;
@@ -493,12 +493,12 @@ async function seedHeroSlidesIfEmpty(pool) {
 async function seedSampleCourseIfEmpty(pool) {
     try {
         const exists = await pool.request().query(`
-            SELECT OBJECT_ID('dbo.courses_main', 'U') AS oid
+            SELECT OBJECT_ID('dbo.courses', 'U') AS oid
         `);
         if (!exists.recordset[0] || !exists.recordset[0].oid) return;
 
         const count = await pool.request().query(`
-            SELECT COUNT(*) AS c FROM dbo.courses_main WHERE ISNULL(flag_use, 1) = 1
+            SELECT COUNT(*) AS c FROM dbo.courses WHERE ISNULL(flag_use, 1) = 1
         `);
         if (Number(count.recordset[0].c || 0) > 0) return;
 
@@ -510,7 +510,7 @@ async function seedSampleCourseIfEmpty(pool) {
             .input('price', sql.Decimal(10, 2), 990)
             .input('desc', sql.NVarChar, 'หลักสูตรตัวอย่างสำหรับทดสอบระบบ — แก้ไขหรือลบได้จากหน้า Admin')
             .query(`
-                INSERT INTO dbo.courses_main
+                INSERT INTO dbo.courses
                 (course_name, instructor_name, delivery_mode, total_hours,
                  average_rating, total_reviews, cover_image_url, is_featured,
                  coursesFlag, created_at, price, description, flag_use,

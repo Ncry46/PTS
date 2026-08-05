@@ -97,9 +97,9 @@ async function getPool() {
 // [จุดที่ 1] API สำหรับหน้าเว็บจริงของคุณ: บันทึกข้อมูลสมัครสมาชิก/ลงทะเบียนพนักงาน
 // -------------------------------------------------------------------------
 app.post('/api/users/register', async (req, res) => {
-    const { full_name, email, phone, password } = req.body;
+    const { username, email, phone, password } = req.body;
 
-    if (!full_name || !email || !password) {
+    if (!username || !email || !password) {
         return res.status(400).json({ success: false, message: 'กรุณากรอกข้อมูลหลักให้ครบถ้วน' });
     }
 
@@ -110,13 +110,13 @@ app.post('/api/users/register', async (req, res) => {
         }
 
         const insertUserQuery = `
-            INSERT INTO dbo.users_main (email, full_name, phone, password_hash)
+            INSERT INTO dbo.users (email, username, phone, password_hash)
             VALUES (@email, @fullName, @phone, @pass)
         `;
 
         await pool.request()
             .input('email', sql.VarChar, email)
-            .input('fullName', sql.NVarChar, full_name)
+            .input('fullName', sql.NVarChar, username)
             .input('phone', sql.VarChar, phone || '-')
             .input('pass', sql.VarChar, password)
             .query(insertUserQuery);
@@ -153,7 +153,7 @@ app.post('/api/attendance/scan', async (req, res) => {
         const localISOTime = new Date(now.getTime() - tzoffset).toISOString().slice(0, 19).replace('T', ' ');
         const currentDateOnly = localISOTime.split(' ')[0];
 
-        const userQuery = `SELECT full_name FROM dbo.users_main WHERE email = @email`;
+        const userQuery = `SELECT username FROM dbo.users WHERE email = @email`;
         const userResult = await pool.request().input('email', sql.VarChar, employee_id).query(userQuery);
 
         if (userResult.recordset.length === 0) {
@@ -198,7 +198,7 @@ app.post('/api/attendance/scan', async (req, res) => {
             success: true,
             message: 'บันทึกเวลาสำเร็จ',
             data: {
-                employee_name: empInfo.full_name,
+                employee_name: empInfo.username,
                 scan_time: now.toLocaleTimeString('th-TH'),
                 scan_type: scan_type === 'IN' ? 'เข้างาน' : 'ออกงาน',
                 status: status === 'LATE' ? 'มาสาย' : 'ปกติ'
@@ -222,9 +222,9 @@ app.get('/api/attendance/report', async (req, res) => {
         }
 
         const reportQuery = `
-            SELECT a.log_id, u.email, u.full_name, u.phone, a.scan_timestamp, a.scan_type, a.status
+            SELECT a.log_id, u.email, u.username, u.phone, a.scan_timestamp, a.scan_type, a.status
             FROM dbo.attendance_logs a
-            LEFT JOIN dbo.users_main u ON a.employee_id = u.email
+            LEFT JOIN dbo.users u ON a.employee_id = u.email
             ORDER BY a.log_id DESC
         `;
         const result = await pool.request().query(reportQuery);

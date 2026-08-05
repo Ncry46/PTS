@@ -68,7 +68,7 @@ async function restoreAvatarFromDriveIfNeeded(row, { pool, userId, sessionUser }
         await pool.request()
             .input('userId', sql.Int, userId)
             .input('url', sql.NVarChar, localUrl)
-            .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
+            .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
         row.Url = localUrl;
         if (sessionUser) sessionUser.Url = localUrl;
     } catch (err) {
@@ -80,7 +80,7 @@ async function restoreAvatarFromDriveIfNeeded(row, { pool, userId, sessionUser }
                 await pool.request()
                     .input('userId', sql.Int, userId)
                     .input('url', sql.NVarChar, fixed)
-                    .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                    .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
                 if (sessionUser) sessionUser.Url = fixed;
             } catch (_) { /* ignore */ }
         }
@@ -99,8 +99,8 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .query(`
-                    SELECT user_id, email, full_name, phone, Role, FlagUse, Url
-                    FROM dbo.users_main WHERE user_id = @userId
+                    SELECT user_id, email, username, phone, Role, FlagUse, Url
+                    FROM dbo.users WHERE user_id = @userId
                 `);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
@@ -122,26 +122,26 @@ function createProfileRouter({ poolPromise, requireLogin }) {
     router.put('/profile', async (req, res) => {
         const user = requireLogin(req, res);
         if (!user) return;
-        const { full_name, phone, url } = req.body;
-        if (!full_name || !String(full_name).trim()) {
+        const { username, phone, url } = req.body;
+        if (!username || !String(username).trim()) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อ' });
         }
         try {
             const pool = await poolPromise;
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .input('name', sql.NVarChar, String(full_name).trim())
+                .input('name', sql.NVarChar, String(username).trim())
                 .input('phone', sql.VarChar, phone || '-')
                 .input('url', sql.NVarChar, url || null)
                 .query(`
-                    UPDATE dbo.users_main
-                    SET full_name = @name,
+                    UPDATE dbo.users
+                    SET username = @name,
                         phone = @phone,
                         Url = COALESCE(@url, Url)
                     WHERE user_id = @userId
                 `);
 
-            req.session.user.name = String(full_name).trim();
+            req.session.user.name = String(username).trim();
             if (url) req.session.user.Url = url;
 
             res.json({ success: true, message: 'บันทึกโปรไฟล์แล้ว', user: req.session.user });
@@ -171,7 +171,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 const pool = await poolPromise;
                 const prev = await pool.request()
                     .input('userId', sql.Int, user.user_id)
-                    .query(`SELECT Url FROM dbo.users_main WHERE user_id = @userId`);
+                    .query(`SELECT Url FROM dbo.users WHERE user_id = @userId`);
                 const oldUrl = prev.recordset[0]?.Url || '';
 
                 // Always keep a local file for <img> display. Drive is a backup copy.
@@ -196,7 +196,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 await pool.request()
                     .input('userId', sql.Int, user.user_id)
                     .input('url', sql.NVarChar, publicUrl)
-                    .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                    .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
 
                 req.session.user.Url = publicUrl;
 
@@ -236,7 +236,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(`SELECT email FROM dbo.users_main WHERE user_id = @userId`);
+                .query(`SELECT email FROM dbo.users WHERE user_id = @userId`);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
@@ -273,7 +273,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const profile = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(`SELECT email, password_hash FROM dbo.users_main WHERE user_id = @userId`);
+                .query(`SELECT email, password_hash FROM dbo.users WHERE user_id = @userId`);
             if (!profile.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
@@ -291,7 +291,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('pass', sql.VarChar, new_password)
-                .query(`UPDATE dbo.users_main SET password_hash = @pass WHERE user_id = @userId`);
+                .query(`UPDATE dbo.users SET password_hash = @pass WHERE user_id = @userId`);
             res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ (ยืนยันด้วย OTP จากอีเมลแล้ว)' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -366,7 +366,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                              WHEN EXISTS (SELECT 1 FROM dbo.course_enrollments e WHERE e.user_id=@userId AND e.course_id=c.course_id) THEN 1 ELSE 0 END AS is_enrolled,
                         CASE WHEN @userId IS NULL THEN 0
                              WHEN EXISTS (SELECT 1 FROM dbo.payments p WHERE p.user_id=@userId AND p.course_id=c.course_id AND p.status='paid') THEN 1 ELSE 0 END AS is_paid
-                    FROM dbo.courses_main c
+                    FROM dbo.courses c
                     WHERE c.course_id = @courseId
                       AND ISNULL(c.flag_use, 1) = 1
                 `);

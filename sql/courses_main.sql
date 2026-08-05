@@ -1,9 +1,9 @@
 -- courses_main — ตารางหลักสูตร
 -- ensureSchema.js จะ CREATE อัตโนมัติตอน npm start ถ้ายังไม่มี
 
-IF OBJECT_ID('dbo.courses_main', 'U') IS NULL
+IF OBJECT_ID('dbo.courses', 'U') IS NULL
 BEGIN
-  CREATE TABLE dbo.courses_main (
+  CREATE TABLE dbo.courses (
     course_id         INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
     course_name       NVARCHAR(255) NOT NULL,
     instructor_name   NVARCHAR(255) NULL,

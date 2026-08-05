@@ -228,7 +228,7 @@ function createLineRouter({ poolPromise, requireLogin }) {
                 });
             }
             await line.pushMessage(lineUserId, line.buildHomeMessages({
-                displayName: user.name || user.full_name || ''
+                displayName: user.name || user.username || ''
             }));
             return res.json({ success: true, message: 'ส่งเมนูสวยๆ เข้า LINE แล้ว เปิดแชท OA ดูได้เลย' });
         } catch (error) {
@@ -369,7 +369,7 @@ async function handleEvent(poolPromise, event) {
                     SELECT TOP 8
                         course_id, course_name, instructor_name, total_hours, price,
                         delivery_mode, cover_image_url, is_featured
-                    FROM dbo.courses_main
+                    FROM dbo.courses
                     WHERE ISNULL(flag_use, 1) = 1
                     ORDER BY ISNULL(is_featured, 0) DESC, course_id DESC
                 `);

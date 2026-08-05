@@ -72,7 +72,7 @@
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({
-          full_name: document.getElementById('reg-fullname').value,
+          username: document.getElementById('reg-fullname').value,
           email: document.getElementById('reg-email').value,
           phone: document.getElementById('reg-phone').value,
           password

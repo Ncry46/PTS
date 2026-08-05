@@ -163,7 +163,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                          WHERE r.form_id = f.form_id AND r.user_id = @userId
                          ORDER BY r.submitted_at DESC) AS my_result_label
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE ISNULL(f.flag_use,1)=1 AND ISNULL(f.is_published,0)=1
                       AND (@courseId IS NULL OR f.course_id = @courseId)
                     ORDER BY
@@ -220,7 +220,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                            f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
                            f.course_id, c.course_name
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE f.form_id = @formId AND ISNULL(f.flag_use,1)=1
                 `);
             const form = formRes.recordset[0];
@@ -430,7 +430,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                         .input('code', sql.VarChar, discResult.result_code)
                         .input('label', sql.NVarChar, discResult.result_label)
                         .query(`
-                            UPDATE dbo.users_main
+                            UPDATE dbo.users
                             SET disc_code = @code, disc_label = @label, disc_updated_at = GETDATE()
                             WHERE user_id = @userId
                         `);
@@ -493,7 +493,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                     (SELECT COUNT(*) FROM dbo.custom_form_responses r
                      WHERE r.form_id = f.form_id) AS response_count
                 FROM dbo.custom_forms f
-                LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                 WHERE ISNULL(f.flag_use,1)=1
                 ORDER BY f.updated_at DESC, f.form_id DESC
             `);
@@ -521,7 +521,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             if (courseId) {
                 const c = await pool.request()
                     .input('courseId', sql.Int, courseId)
-                    .query(`SELECT course_id FROM dbo.courses_main WHERE course_id=@courseId`);
+                    .query(`SELECT course_id FROM dbo.courses WHERE course_id=@courseId`);
                 if (!c.recordset[0]) {
                     return res.status(400).json({ success: false, message: 'ไม่พบหลักสูตรที่เลือก' });
                 }
@@ -557,7 +557,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT f.*, ISNULL(f.form_type,'general') AS form_type, c.course_name
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE f.form_id = @formId AND ISNULL(f.flag_use,1)=1
                 `);
             const form = formRes.recordset[0];
@@ -833,9 +833,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                     SELECT
                         r.response_id, r.form_id, r.user_id, r.submitted_at,
                         r.result_code, r.result_label,
-                        u.full_name, u.email
+                        u.username, u.email
                     FROM dbo.custom_form_responses r
-                    LEFT JOIN dbo.users_main u ON u.user_id = r.user_id
+                    LEFT JOIN dbo.users u ON u.user_id = r.user_id
                     WHERE r.form_id = @formId
                     ORDER BY r.submitted_at DESC
                 `);
@@ -860,9 +860,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT r.response_id, r.form_id, r.user_id, r.submitted_at,
                            r.result_code, r.result_label, r.result_json,
-                           u.full_name, u.email
+                           u.username, u.email
                     FROM dbo.custom_form_responses r
-                    LEFT JOIN dbo.users_main u ON u.user_id = r.user_id
+                    LEFT JOIN dbo.users u ON u.user_id = r.user_id
                     WHERE r.response_id=@responseId AND r.form_id=@formId
                 `);
             const row = resp.recordset[0];

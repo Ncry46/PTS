@@ -50,9 +50,9 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
                 .input('userId', sql.Int, userId)
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT u.full_name, u.email, c.course_name
-                    FROM dbo.users_main u
-                    CROSS JOIN dbo.courses_main c
+                    SELECT u.username, u.email, c.course_name
+                    FROM dbo.users u
+                    CROSS JOIN dbo.courses c
                     WHERE u.user_id = @userId AND c.course_id = @courseId
                 `);
             const row = info.recordset[0] || {};
@@ -65,7 +65,7 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
             );
             if (row.email) {
                 sendEnrollmentConfirmEmail(row.email, {
-                    fullName: row.full_name,
+                    fullName: row.username,
                     courseName: row.course_name
                 }).catch((err) => console.warn('[mail] enrollment confirm:', err.message));
             }

@@ -184,7 +184,7 @@
 
           <div id="edit-profile-panel" class="set-edit-panel" hidden>
             <div class="set-divider"></div>
-            <label class="set-field"><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><input id="full_name" class="set-input"></label>
+            <label class="set-field"><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><input id="username" class="set-input"></label>
             <label class="set-field"><span data-i18n="settings.phone">เบอร์โทร</span><input id="phone" class="set-input"></label>
             <button id="save-profile" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.saveProfile">บันทึกโปรไฟล์</button>
             <p id="profile-msg" class="pts-msg"></p>
@@ -341,7 +341,7 @@ function setAvatarPreview(url, name) {
 }
 
 function syncProfileMeta() {
-  const name = document.getElementById('full_name').value || '—';
+  const name = document.getElementById('username').value || '—';
   const phone = document.getElementById('phone').value || '—';
   document.getElementById('display-name').textContent = name;
   document.getElementById('meta-name').textContent = name;
@@ -376,11 +376,11 @@ function syncRoleLabel() {
 
   const profile = await fetch('/api/profile', { credentials: 'include' }).then(r => r.json());
   if (!profile.success) { console.error(profile.message || 'โหลดโปรไฟล์ไม่สำเร็จ'); return location.href = 'Login.html'; }
-  document.getElementById('full_name').value = profile.data.full_name || '';
+  document.getElementById('username').value = profile.data.username || '';
   document.getElementById('email').value = profile.data.email || '';
   document.getElementById('phone').value = profile.data.phone || '';
   currentAvatarUrl = profile.data.Url || '';
-  setAvatarPreview(currentAvatarUrl, profile.data.full_name);
+  setAvatarPreview(currentAvatarUrl, profile.data.username);
   syncProfileMeta();
   syncLangRadios();
 
@@ -598,7 +598,7 @@ document.getElementById('avatar-file').onchange = (e) => {
   nameEl.textContent = 'ไฟล์ที่เลือก: ' + file.name;
   clearBtn.classList.remove('hidden');
   const localUrl = URL.createObjectURL(file);
-  setAvatarPreview(localUrl, document.getElementById('full_name').value);
+  setAvatarPreview(localUrl, document.getElementById('username').value);
   msg.textContent = 'เลือกไฟล์แล้ว — กดบันทึกโปรไฟล์เพื่ออัปโหลด';
   msg.className = 'pts-msg';
 };
@@ -608,7 +608,7 @@ document.getElementById('clear-avatar-pick').onclick = () => {
   document.getElementById('avatar-file').value = '';
   document.getElementById('avatar-file-name').textContent = '';
   document.getElementById('clear-avatar-pick').classList.add('hidden');
-  setAvatarPreview(currentAvatarUrl, document.getElementById('full_name').value);
+  setAvatarPreview(currentAvatarUrl, document.getElementById('username').value);
   document.getElementById('profile-msg').textContent = '';
 };
 
@@ -636,7 +636,7 @@ document.getElementById('save-profile').onclick = async () => {
       document.getElementById('avatar-file').value = '';
       document.getElementById('avatar-file-name').textContent = '';
       document.getElementById('clear-avatar-pick').classList.add('hidden');
-      setAvatarPreview(currentAvatarUrl, document.getElementById('full_name').value);
+      setAvatarPreview(currentAvatarUrl, document.getElementById('username').value);
       if (typeof window.checkUserAndRenderNavbar === 'function') {
         window.checkUserAndRenderNavbar();
       }
@@ -653,7 +653,7 @@ document.getElementById('save-profile').onclick = async () => {
         method: 'PUT', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          full_name: document.getElementById('full_name').value,
+          username: document.getElementById('username').value,
           phone: document.getElementById('phone').value
         })
       });
@@ -674,7 +674,7 @@ document.getElementById('save-profile').onclick = async () => {
       method: 'PUT', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        full_name: document.getElementById('full_name').value,
+        username: document.getElementById('username').value,
         phone: document.getElementById('phone').value
       })
     });

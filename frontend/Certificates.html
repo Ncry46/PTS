@@ -437,7 +437,7 @@ function render() {
 async function init() {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
-  userName = me.user?.name || me.user?.full_name || 'ผู้เรียน';
+  userName = me.user?.name || me.user?.username || 'ผู้เรียน';
 
   const res = await fetch('/api/my/certificates', { credentials: 'include' });
   const data = await res.json();

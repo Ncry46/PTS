@@ -123,8 +123,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    (SELECT COUNT(*) FROM dbo.users_main) AS users_count,
-                    (SELECT COUNT(*) FROM dbo.courses_main) AS courses_count,
+                    (SELECT COUNT(*) FROM dbo.users) AS users_count,
+                    (SELECT COUNT(*) FROM dbo.courses) AS courses_count,
                     (SELECT COUNT(*) FROM dbo.course_enrollments) AS enrollments_count,
                     (SELECT COUNT(*) FROM dbo.community_posts WHERE flag_use = 1) AS posts_count,
                     (SELECT COUNT(*) FROM dbo.payments WHERE status = 'paid') AS paid_count,
@@ -141,8 +141,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await pool.request().query(`
-                SELECT TOP 200 user_id, email, full_name, phone, Role, FlagUse, Url
-                FROM dbo.users_main
+                SELECT TOP 200 user_id, email, username, phone, Role, FlagUse, Url
+                FROM dbo.users
                 ORDER BY user_id DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -164,7 +164,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('role', sql.VarChar, role || null)
                 .input('flagUse', sql.VarChar, flag_use || null)
                 .query(`
-                    UPDATE dbo.users_main
+                    UPDATE dbo.users
                     SET
                         Role = COALESCE(@role, Role),
                         FlagUse = COALESCE(@flagUse, FlagUse)
@@ -200,7 +200,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     total_enrolled,
                     start_date,
                     is_open_soon
-                FROM dbo.courses_main
+                FROM dbo.courses
                 WHERE ISNULL(flag_use, 1) = 1
                 ORDER BY created_at DESC
             `);
@@ -240,7 +240,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('startDate', sql.Date, start_date || null)
                 .input('openSoon', sql.Bit, is_open_soon ? 1 : 0)
                 .query(`
-                    INSERT INTO dbo.courses_main
+                    INSERT INTO dbo.courses
                     (course_name, instructor_name, delivery_mode, total_hours,
                      average_rating, total_reviews, cover_image_url, is_featured,
                      coursesFlag, created_at, price, description, flag_use,
@@ -292,7 +292,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('hasStart', sql.Bit, body.start_date !== undefined ? 1 : 0)
                 .input('openSoon', sql.Bit, typeof body.is_open_soon === 'boolean' ? (body.is_open_soon ? 1 : 0) : null)
                 .query(`
-                    UPDATE dbo.courses_main
+                    UPDATE dbo.courses
                     SET
                         course_name = COALESCE(@name, course_name),
                         instructor_name = COALESCE(@instructor, instructor_name),
@@ -325,7 +325,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    UPDATE dbo.courses_main
+                    UPDATE dbo.courses
                     SET flag_use = 0
                     WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
                 `);
@@ -441,7 +441,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request().query(`
                 SELECT s.*, c.course_name
                 FROM dbo.class_schedules s
-                LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
+                LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE s.flag_use = 1
                 ORDER BY s.start_at DESC
             `);
@@ -507,9 +507,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request().query(`
                 SELECT TOP 200
                     p.post_id, p.user_id, p.content, p.created_at, p.flag_use,
-                    u.full_name AS author_name, u.email
+                    u.username AS author_name, u.email
                 FROM dbo.community_posts p
-                INNER JOIN dbo.users_main u ON u.user_id = p.user_id
+                INNER JOIN dbo.users u ON u.user_id = p.user_id
                 ORDER BY p.created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -588,14 +588,14 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     p.reference_code, p.paid_at, p.created_at,
                     p.slip_image_url, p.transfer_at, p.reviewed_by, p.reviewed_at, p.reject_reason,
                     p.access_code_id,
-                    u.full_name, u.email,
+                    u.username, u.email,
                     c.course_name,
-                    reviewer.full_name AS reviewer_name,
+                    reviewer.username AS reviewer_name,
                     ac.code AS access_code
                 FROM dbo.payments p
-                INNER JOIN dbo.users_main u ON u.user_id = p.user_id
-                INNER JOIN dbo.courses_main c ON c.course_id = p.course_id
-                LEFT JOIN dbo.users_main reviewer ON reviewer.user_id = p.reviewed_by
+                INNER JOIN dbo.users u ON u.user_id = p.user_id
+                INNER JOIN dbo.courses c ON c.course_id = p.course_id
+                LEFT JOIN dbo.users reviewer ON reviewer.user_id = p.reviewed_by
                 LEFT JOIN dbo.access_codes ac ON ac.access_code_id = p.access_code_id
                 ${where}
                 ORDER BY
@@ -734,10 +734,10 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT TOP 200
                     a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                     a.expires_at, a.note, a.flag_use, a.created_at, a.created_by,
-                    c.course_name, u.full_name AS created_by_name
+                    c.course_name, u.username AS created_by_name
                 FROM dbo.access_codes a
-                INNER JOIN dbo.courses_main c ON c.course_id = a.course_id
-                LEFT JOIN dbo.users_main u ON u.user_id = a.created_by
+                INNER JOIN dbo.courses c ON c.course_id = a.course_id
+                LEFT JOIN dbo.users u ON u.user_id = a.created_by
                 ORDER BY a.created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -778,7 +778,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name FROM dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name FROM dbo.courses WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }

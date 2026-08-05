@@ -596,7 +596,7 @@ async function listUserFutureSchedules(pool, userId, courseId) {
             s.schedule_id, s.title, s.start_at, s.end_at, s.location,
             s.meeting_url, s.delivery_mode, s.course_id, c.course_name
         FROM dbo.class_schedules s
-        LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
+        LEFT JOIN dbo.courses c ON c.course_id = s.course_id
         WHERE s.flag_use = 1
           AND s.course_id IS NOT NULL
           AND s.end_at >= DATEADD(day, -1, GETDATE())
@@ -917,7 +917,7 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
                     s.schedule_id, s.title, s.start_at, s.end_at, s.location,
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                 FROM dbo.class_schedules s
-                LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
+                LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE s.schedule_id = @scheduleId AND s.flag_use = 1 AND s.course_id IS NOT NULL
             `);
         const schedule = scheduleResult.recordset[0];

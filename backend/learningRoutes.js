@@ -110,7 +110,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name FROM dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name FROM dbo.courses WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
@@ -165,7 +165,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         l.sort_order, l.duration_minutes, c.course_name,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
-                    INNER JOIN dbo.courses_main c ON c.course_id = l.course_id
+                    INNER JOIN dbo.courses c ON c.course_id = l.course_id
                     LEFT JOIN dbo.lesson_progress lp
                         ON lp.lesson_id = l.lesson_id AND lp.user_id = @userId
                     WHERE l.lesson_id = @lessonId AND l.flag_use = 1
@@ -265,7 +265,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         s.schedule_id, s.title, s.start_at, s.end_at, s.location,
                         s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                     FROM dbo.class_schedules s
-                    LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                     WHERE s.flag_use = 1
                       AND s.course_id IS NOT NULL
                       AND EXISTS (
@@ -288,7 +288,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     s.schedule_id, s.title, s.start_at, s.end_at, s.location,
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                 FROM dbo.class_schedules s
-                LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
+                LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE s.flag_use = 1 AND s.start_at >= DATEADD(day, -1, GETDATE())
                 ORDER BY s.start_at ASC
             `);
@@ -314,7 +314,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         c.delivery_mode,
                         COALESCE(prog.last_completed_at, CASE WHEN e.status = 'completed' THEN e.updated_at END, cert.issued_at) AS completed_at
                     FROM dbo.certificates cert
-                    INNER JOIN dbo.courses_main c ON c.course_id = cert.course_id
+                    INNER JOIN dbo.courses c ON c.course_id = cert.course_id
                     LEFT JOIN dbo.course_enrollments e
                         ON e.user_id = cert.user_id AND e.course_id = cert.course_id
                     OUTER APPLY (
@@ -369,7 +369,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         p.reject_reason,
                         c.course_id, c.course_name, c.cover_image_url
                     FROM dbo.payments p
-                    INNER JOIN dbo.courses_main c ON c.course_id = p.course_id
+                    INNER JOIN dbo.courses c ON c.course_id = p.course_id
                     WHERE p.user_id = @userId
                     ORDER BY p.created_at DESC
                 `);
@@ -397,7 +397,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         p.slip_image_url, p.transfer_at, p.reject_reason,
                         c.course_name
                     FROM dbo.payments p
-                    INNER JOIN dbo.courses_main c ON c.course_id = p.course_id
+                    INNER JOIN dbo.courses c ON c.course_id = p.course_id
                     WHERE p.payment_id = @paymentId AND p.user_id = @userId
                 `);
             if (!result.recordset.length) {
@@ -438,7 +438,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM dbo.courses WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
@@ -729,7 +729,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                         a.expires_at, a.flag_use, c.course_name, ISNULL(c.price, 0) AS price
                     FROM dbo.access_codes a
-                    INNER JOIN dbo.courses_main c ON c.course_id = a.course_id
+                    INNER JOIN dbo.courses c ON c.course_id = a.course_id
                     WHERE UPPER(a.code) = @code
                 `);
             if (!found.recordset.length) {

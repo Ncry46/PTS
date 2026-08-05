@@ -91,8 +91,8 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
         const existing = await pool.request()
             .input('email', sql.VarChar, email)
             .query(`
-                SELECT user_id, email, full_name, Role, FlagUse, Url
-                FROM dbo.users_main
+                SELECT user_id, email, username, Role, FlagUse, Url
+                FROM dbo.users
                 WHERE LOWER(email) = @email
             `);
 
@@ -107,7 +107,7 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
                     await pool.request()
                         .input('userId', sql.Int, userRow.user_id)
                         .input('url', sql.NVarChar, picture)
-                        .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                        .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
                     userRow.Url = picture;
                 } catch (_) { /* ignore */ }
             }
@@ -120,15 +120,15 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
                 .input('pass', sql.VarChar, randomPass)
                 .input('url', sql.NVarChar, picture)
                 .query(`
-                    INSERT INTO dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse, Url)
+                    INSERT INTO dbo.users (email, username, phone, password_hash, Role, FlagUse, Url)
                     VALUES (@email, @fullName, @phone, @pass, 'student', 'Y', @url)
                 `);
 
             const created = await pool.request()
                 .input('email', sql.VarChar, email)
                 .query(`
-                    SELECT user_id, email, full_name, Role, FlagUse, Url
-                    FROM dbo.users_main
+                    SELECT user_id, email, username, Role, FlagUse, Url
+                    FROM dbo.users
                     WHERE LOWER(email) = @email
                 `);
             userRow = created.recordset[0];
@@ -151,7 +151,7 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
 
         req.session.user = {
             user_id: userRow.user_id,
-            name: userRow.full_name,
+            name: userRow.username,
             email: userRow.email,
             Url: userRow.Url || picture || null,
             role: userRow.Role ? String(userRow.Role).toLowerCase() : 'student'
