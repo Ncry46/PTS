@@ -108,19 +108,30 @@
       switchToCovered();
     });
 
-    // Soft parallax on cover FX
+    // Soft parallax on cover FX layers
     if (!reduceMotion) {
       cover.addEventListener('pointermove', (e) => {
         if (window.innerWidth < 900) return;
         const rect = cover.getBoundingClientRect();
-        const x = ((e.clientX - rect.left) / rect.width - 0.5) * 12;
-        const y = ((e.clientY - rect.top) / rect.height - 0.5) * 10;
+        const nx = (e.clientX - rect.left) / rect.width - 0.5;
+        const ny = (e.clientY - rect.top) / rect.height - 0.5;
         const fx = cover.querySelector('.pts-auth-split__cover-fx');
-        if (fx) fx.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+        if (fx) fx.style.transform = `translate3d(${nx * 18}px, ${ny * 14}px, 0) scale(1.04)`;
+        cover.querySelectorAll('.pts-auth-split__blob').forEach((el, i) => {
+          const m = 8 + i * 4;
+          el.style.translate = `${nx * m}px ${ny * m}px`;
+        });
+        cover.querySelectorAll('.pts-auth-split__orb').forEach((el, i) => {
+          const m = 12 + i * 3;
+          el.style.translate = `${nx * -m}px ${ny * -m}px`;
+        });
       });
       cover.addEventListener('pointerleave', () => {
         const fx = cover.querySelector('.pts-auth-split__cover-fx');
         if (fx) fx.style.transform = '';
+        cover.querySelectorAll('.pts-auth-split__blob, .pts-auth-split__orb').forEach((el) => {
+          el.style.translate = '';
+        });
       });
     }
   }
