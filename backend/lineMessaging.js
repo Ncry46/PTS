@@ -1000,7 +1000,7 @@ async function getLinkedLineUserId(pool, userId) {
         .input('userId', sql.Int, userId)
         .query(`
             SELECT line_user_id
-            FROM BD_PTS.dbo.line_account_links
+            FROM dbo.line_account_links
             WHERE user_id = @userId
         `);
     return result.recordset[0]?.line_user_id || null;

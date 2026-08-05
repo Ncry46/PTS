@@ -6,6 +6,7 @@
   "scripts": {
     "test": "node --test",
     "start": "node backend/server.js",
+    "db:check": "node backend/check-db.js",
     "google:check": "node backend/check-google-setup.js",
     "google:setup": "node backend/write-google-local.js"
   },

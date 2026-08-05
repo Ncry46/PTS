@@ -1,11 +1,17 @@
 const express = require('express');
-const sql = require('mssql');
 const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
 const { ensureLearningSchema, createNotification } = require('./ensureSchema');
+const {
+    sql,
+    DB_NAME,
+    connectPool,
+    isAutoSchemaEnabled,
+    verifyCoreTables
+} = require('./db');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createProfileRouter } = require('./profileRoutes');
@@ -93,9 +99,18 @@ app.get(['/LineApp.html', '/lineapp.html', '/line', '/line-app'], (req, res) => 
 // Health check สำหรับ Docker / Render / โหลดบาลานเซอร์
 app.get('/api/health', async (req, res) => {
     try {
-        const pool = await poolPromise;
+        const pool = await connectPool();
         await pool.request().query('SELECT 1 AS ok');
-        res.json({ ok: true, db: true, service: 'pts-learning' });
+        const check = pool._ptsDbCheck || await verifyCoreTables(pool);
+        res.json({
+            ok: true,
+            db: true,
+            service: 'pts-learning',
+            database: DB_NAME,
+            users: check.users_ok ? check.users_count : null,
+            courses: check.courses_ok ? check.courses_count : null,
+            tables_ok: check.users_ok && check.courses_ok
+        });
     } catch (error) {
         res.status(503).json({
             ok: false,
@@ -106,22 +121,10 @@ app.get('/api/health', async (req, res) => {
     }
 });
 
-// 🔗 1. ตั้งค่าการเชื่อมต่อ Microsoft SQL Server (override ได้ด้วย env / Docker)
-const dbConfig = {
-    user: process.env.DB_USER || 'uinet',
-    password: process.env.DB_PASSWORD || 'p@$$w0rd',
-    server: process.env.DB_SERVER || 'tvsdb2.thanvasupos.com',
-    port: Number(process.env.DB_PORT) || 28914,
-    database: process.env.DB_NAME || 'BD_PTS',
-    options: {
-        encrypt: process.env.DB_ENCRYPT !== 'false',
-        trustServerCertificate: process.env.DB_TRUST_CERT !== 'false'
-    },
-    pool: { max: 10, min: 0, idleTimeoutMillis: 30000 }
-};
+// 🔗 การเชื่อมต่อ SQL Server — ตั้งค่าใน .env (ดู .env.example)
+// DB_NAME = ชื่อ database ที่มี users_main / courses_main อยู่แล้ว
 
 // 📧 ตั้งค่าส่ง Email OTP — แนะนำตั้งผ่าน .env (SMTP_*) เมื่อรัน Docker
-// ค่าด้านล่างเป็น fallback สำหรับรันในเครื่อง; mailSecrets อ่าน process.env ก่อน
 const mailConfig = {
     mode: process.env.MAIL_MODE || 'smtp',
     smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -145,15 +148,17 @@ try {
     console.error('⚠️ บันทึกค่าอีเมลไม่สำเร็จ:', e.message);
 }
 
-const poolPromise = new sql.ConnectionPool(dbConfig)
-    .connect()
-    .then(async pool => {
-        console.log('🔌 Connected to Microsoft SQL Server Successfully!');
-        try {
-            await ensureLearningSchema(pool);
-            console.log('📚 Learning schema ready');
-        } catch (schemaErr) {
-            console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
+const poolPromise = connectPool()
+    .then(async (pool) => {
+        if (isAutoSchemaEnabled()) {
+            try {
+                await ensureLearningSchema(pool);
+                console.log('📚 Learning schema ready (DB_AUTO_SCHEMA=true)');
+            } catch (schemaErr) {
+                console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
+            }
+        } else {
+            console.log('📚 DB connect-only — ใช้ตาราง users_main / courses_main ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
         }
         const mail = getMailStatus();
         const localPath = path.join(__dirname, 'mail.local.js');
@@ -177,7 +182,7 @@ const poolPromise = new sql.ConnectionPool(dbConfig)
         } catch (_) { /* ignore */ }
         return pool;
     })
-    .catch(err => {
+    .catch((err) => {
         console.error('❌ SQL Server Connection Failed: ', err);
         process.exit(1);
     });
@@ -223,7 +228,7 @@ app.get('/api/users/me', async (req, res) => {
                         await pool.request()
                             .input('userId', sql.Int, req.session.user.user_id)
                             .input('url', sql.NVarChar, localUrl)
-                            .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                            .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
                     } catch (_) { /* session still updated for navbar */ }
                 } catch (err) {
                     console.warn('[avatar] users/me restore:', err.message);
@@ -259,7 +264,7 @@ app.post('/api/users/login', async (req, res) => {
             .input('pass', sql.VarChar, password)
             .query(`
                 SELECT user_id, email, full_name, Role, FlagUse, Url
-                FROM BD_PTS.dbo.users_main
+                FROM dbo.users_main
                 WHERE email = @email AND password_hash = @pass
             `);
 
@@ -309,7 +314,7 @@ app.post('/api/users/register', async (req, res) => {
 
         const existing = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+            .query('SELECT user_id FROM dbo.users_main WHERE email = @email');
 
         if (existing.recordset.length > 0) {
             return res.status(400).json({ success: false, message: 'อีเมลนี้เคยลงทะเบียนในระบบไว้แล้ว' });
@@ -321,13 +326,13 @@ app.post('/api/users/register', async (req, res) => {
             .input('phone', sql.VarChar, phone || '-')
             .input('pass', sql.VarChar, password)
             .query(`
-                INSERT INTO BD_PTS.dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse)
+                INSERT INTO dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse)
                 VALUES (@email, @fullName, @phone, @pass, 'student', 'Y')
             `);
 
         const created = await pool.request()
             .input('email', sql.VarChar, email)
-            .query(`SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email`);
+            .query(`SELECT user_id FROM dbo.users_main WHERE email = @email`);
         if (created.recordset[0]) {
             try {
                 await createNotification(
@@ -365,7 +370,7 @@ app.post('/api/users/request-otp', async (req, res) => {
         const pool = await poolPromise;
         const userCheck = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id, email FROM BD_PTS.dbo.users_main WHERE email = @email');
+            .query('SELECT user_id, email FROM dbo.users_main WHERE email = @email');
 
         if (userCheck.recordset.length === 0) {
             return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งานที่ตรงกับอีเมลนี้' });
@@ -418,7 +423,7 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
         const pool = await poolPromise;
         const userCheck = await pool.request()
             .input('email', sql.VarChar, email)
-            .query('SELECT user_id FROM BD_PTS.dbo.users_main WHERE email = @email');
+            .query('SELECT user_id FROM dbo.users_main WHERE email = @email');
         if (!userCheck.recordset.length) {
             return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งาน' });
         }
@@ -426,7 +431,7 @@ app.post('/api/users/verify-otp-reset', async (req, res) => {
         await pool.request()
             .input('email', sql.VarChar, email)
             .input('newPass', sql.VarChar, newPassword)
-            .query('UPDATE BD_PTS.dbo.users_main SET password_hash = @newPass WHERE email = @email');
+            .query('UPDATE dbo.users_main SET password_hash = @newPass WHERE email = @email');
 
         res.json({ success: true, message: 'ยืนยัน OTP สำเร็จ และตั้งรหัสผ่านใหม่เรียบร้อยแล้ว' });
     } catch (error) {
@@ -467,18 +472,18 @@ app.get('/api/courses', async (req, res) => {
                     CASE
                         WHEN @userId IS NULL THEN 0
                         WHEN EXISTS (
-                            SELECT 1 FROM BD_PTS.dbo.course_favorites f
+                            SELECT 1 FROM dbo.course_favorites f
                             WHERE f.user_id = @userId AND f.course_id = c.course_id
                         ) THEN 1 ELSE 0
                     END AS is_favorited,
                     CASE
                         WHEN @userId IS NULL THEN 0
                         WHEN EXISTS (
-                            SELECT 1 FROM BD_PTS.dbo.course_enrollments e
+                            SELECT 1 FROM dbo.course_enrollments e
                             WHERE e.user_id = @userId AND e.course_id = c.course_id
                         ) THEN 1 ELSE 0
                     END AS is_enrolled
-                FROM BD_PTS.dbo.courses_main c
+                FROM dbo.courses_main c
                 WHERE ISNULL(c.flag_use, 1) = 1
                 ORDER BY c.created_at DESC
             `);
@@ -569,9 +574,9 @@ app.get('/api/my/liked-posts', async (req, res) => {
                     (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
                     (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
                     1 AS liked_by_me
-                FROM BD_PTS.dbo.post_likes pl
-                INNER JOIN BD_PTS.dbo.community_posts p ON p.post_id = pl.post_id
-                INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
+                FROM dbo.post_likes pl
+                INNER JOIN dbo.community_posts p ON p.post_id = pl.post_id
+                INNER JOIN dbo.users_main u ON u.user_id = p.user_id
                 WHERE pl.user_id = @userId AND p.flag_use = 1
                 ORDER BY p.created_at DESC
             `);
@@ -599,9 +604,9 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                     c.total_enrolled, c.start_date, c.is_open_soon,
                     1 AS is_favorited,
                     CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
-                FROM BD_PTS.dbo.course_favorites f
-                INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = f.course_id
-                LEFT JOIN BD_PTS.dbo.course_enrollments e
+                FROM dbo.course_favorites f
+                INNER JOIN dbo.courses_main c ON c.course_id = f.course_id
+                LEFT JOIN dbo.course_enrollments e
                     ON e.course_id = c.course_id AND e.user_id = @userId
                 WHERE f.user_id = @userId
                   AND ISNULL(c.flag_use, 1) = 1
@@ -625,20 +630,20 @@ app.post('/api/courses/:courseId/favorite', async (req, res) => {
         const existing = await pool.request()
             .input('userId', sql.Int, user.user_id)
             .input('courseId', sql.Int, courseId)
-            .query(`SELECT COUNT(*) AS cnt FROM BD_PTS.dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
+            .query(`SELECT COUNT(*) AS cnt FROM dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
 
         let favorited = false;
         if (existing.recordset[0].cnt > 0) {
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('courseId', sql.Int, courseId)
-                .query(`DELETE FROM BD_PTS.dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
+                .query(`DELETE FROM dbo.course_favorites WHERE user_id = @userId AND course_id = @courseId`);
             favorited = false;
         } else {
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('courseId', sql.Int, courseId)
-                .query(`INSERT INTO BD_PTS.dbo.course_favorites (user_id, course_id) VALUES (@userId, @courseId)`);
+                .query(`INSERT INTO dbo.course_favorites (user_id, course_id) VALUES (@userId, @courseId)`);
             favorited = true;
         }
 
@@ -691,7 +696,7 @@ app.post('/api/community', async (req, res) => {
             .input('userId', sql.Int, req.session.user.user_id)
             .input('content', sql.NVarChar, content)
             .query(`
-                INSERT INTO BD_PTS.dbo.community_posts (user_id, content, flag_use, created_at)
+                INSERT INTO dbo.community_posts (user_id, content, flag_use, created_at)
                 OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.created_at
                 VALUES (@userId, @content, 1, GETDATE())
             `);
@@ -736,26 +741,26 @@ app.post('/api/community/:postId/like', async (req, res) => {
         const existing = await pool.request()
             .input('postId', sql.Int, postId)
             .input('userId', sql.Int, userId)
-            .query('SELECT COUNT(*) AS cnt FROM BD_PTS.dbo.post_likes WHERE post_id = @postId AND user_id = @userId');
+            .query('SELECT COUNT(*) AS cnt FROM dbo.post_likes WHERE post_id = @postId AND user_id = @userId');
 
         let liked = false;
         if (existing.recordset[0].cnt > 0) {
             await pool.request()
                 .input('postId', sql.Int, postId)
                 .input('userId', sql.Int, userId)
-                .query('DELETE FROM BD_PTS.dbo.post_likes WHERE post_id = @postId AND user_id = @userId');
+                .query('DELETE FROM dbo.post_likes WHERE post_id = @postId AND user_id = @userId');
             liked = false;
         } else {
             await pool.request()
                 .input('postId', sql.Int, postId)
                 .input('userId', sql.Int, userId)
-                .query('INSERT INTO BD_PTS.dbo.post_likes (post_id, user_id) VALUES (@postId, @userId)');
+                .query('INSERT INTO dbo.post_likes (post_id, user_id) VALUES (@postId, @userId)');
             liked = true;
         }
 
         const countResult = await pool.request()
             .input('postId', sql.Int, postId)
-            .query('SELECT COUNT(*) AS like_count FROM BD_PTS.dbo.post_likes WHERE post_id = @postId');
+            .query('SELECT COUNT(*) AS like_count FROM dbo.post_likes WHERE post_id = @postId');
 
         res.json({
             success: true,
@@ -789,8 +794,8 @@ app.get('/api/community/:postId/comments', async (req, res) => {
                     c.created_at,
                     u.full_name AS author_name,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.full_name, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar
-                FROM BD_PTS.dbo.post_comments c
-                INNER JOIN BD_PTS.dbo.users_main u ON c.user_id = u.user_id
+                FROM dbo.post_comments c
+                INNER JOIN dbo.users_main u ON c.user_id = u.user_id
                 WHERE c.post_id = @postId
                 ORDER BY c.created_at ASC
             `);
@@ -825,7 +830,7 @@ app.post('/api/community/:postId/comments', async (req, res) => {
             .input('userId', sql.Int, user.user_id)
             .input('content', sql.NVarChar, content)
             .query(`
-                INSERT INTO BD_PTS.dbo.post_comments (post_id, user_id, content, created_at)
+                INSERT INTO dbo.post_comments (post_id, user_id, content, created_at)
                 OUTPUT INSERTED.comment_id, INSERTED.post_id, INSERTED.content, INSERTED.created_at
                 VALUES (@postId, @userId, @content, GETDATE())
             `);
@@ -863,7 +868,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
 
         const courseCheck = await pool.request()
             .input('courseId', sql.Int, courseId)
-            .query('SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId');
+            .query('SELECT course_id, course_name FROM dbo.courses_main WHERE course_id = @courseId');
 
         if (courseCheck.recordset.length === 0) {
             return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตรนี้ในระบบ' });
@@ -873,7 +878,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
             .input('userId', sql.Int, user.user_id)
             .input('courseId', sql.Int, courseId)
             .query(`
-                SELECT enrollment_id FROM BD_PTS.dbo.course_enrollments
+                SELECT enrollment_id FROM dbo.course_enrollments
                 WHERE user_id = @userId AND course_id = @courseId
             `);
 
@@ -890,7 +895,7 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
             .input('userId', sql.Int, user.user_id)
             .input('courseId', sql.Int, courseId)
             .query(`
-                INSERT INTO BD_PTS.dbo.course_enrollments (user_id, course_id, progress_percent, status)
+                INSERT INTO dbo.course_enrollments (user_id, course_id, progress_percent, status)
                 OUTPUT INSERTED.enrollment_id
                 VALUES (@userId, @courseId, 0, 'in_progress')
             `);
@@ -943,8 +948,8 @@ app.get('/api/my/courses', async (req, res) => {
                     c.total_enrolled,
                     c.start_date,
                     c.is_open_soon
-                FROM BD_PTS.dbo.course_enrollments e
-                INNER JOIN BD_PTS.dbo.courses_main c ON e.course_id = c.course_id
+                FROM dbo.course_enrollments e
+                INNER JOIN dbo.courses_main c ON e.course_id = c.course_id
                 WHERE e.user_id = @userId
                   AND ISNULL(c.flag_use, 1) = 1
                 ORDER BY e.updated_at DESC
@@ -995,7 +1000,7 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
             .input('progress', sql.Int, progress)
             .input('status', sql.VarChar, status)
             .query(`
-                UPDATE BD_PTS.dbo.course_enrollments
+                UPDATE dbo.course_enrollments
                 SET progress_percent = @progress,
                     status = @status,
                     updated_at = GETDATE()
@@ -1044,7 +1049,7 @@ app.post('/api/attendance/scan', async (req, res) => {
             .input('email', sql.VarChar, employee_id)
             .query(`
                 SELECT full_name, email, Role
-                FROM BD_PTS.dbo.users_main
+                FROM dbo.users_main
                 WHERE email = @email
             `);
 
@@ -1059,7 +1064,7 @@ app.post('/api/attendance/scan', async (req, res) => {
             .input('localDate', sql.VarChar, currentDateOnly)
             .query(`
                 SELECT TOP 1 scan_type
-                FROM BD_PTS.dbo.attendance_logs
+                FROM dbo.attendance_logs
                 WHERE employee_id = @email AND CAST(scan_timestamp AS DATE) = CAST(@localDate AS DATE)
                 ORDER BY log_id DESC
             `);
@@ -1081,7 +1086,7 @@ app.post('/api/attendance/scan', async (req, res) => {
             .input('kioskId', sql.VarChar, kiosk_device_id)
             .input('status', sql.VarChar, status)
             .query(`
-                INSERT INTO BD_PTS.dbo.attendance_logs (employee_id, scan_timestamp, scan_type, kiosk_device_id, status)
+                INSERT INTO dbo.attendance_logs (employee_id, scan_timestamp, scan_type, kiosk_device_id, status)
                 VALUES (@email, @scanTime, @scanType, @kioskId, @status)
             `);
 

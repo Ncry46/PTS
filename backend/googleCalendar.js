@@ -375,7 +375,7 @@ async function getLink(pool, userId) {
         .query(`
             SELECT user_id, google_email, access_token, refresh_token, token_expiry, calendar_id,
                    connected_at, ISNULL(reminders_enabled, 1) AS reminders_enabled
-            FROM BD_PTS.dbo.google_calendar_links
+            FROM dbo.google_calendar_links
             WHERE user_id = @userId
         `);
     return result.recordset[0] || null;
@@ -390,7 +390,7 @@ async function setRemindersEnabled(pool, userId, enabled) {
         .input('userId', sql.Int, userId)
         .input('enabled', sql.Bit, enabled ? 1 : 0)
         .query(`
-            UPDATE BD_PTS.dbo.google_calendar_links
+            UPDATE dbo.google_calendar_links
             SET reminders_enabled = @enabled, updated_at = GETDATE()
             WHERE user_id = @userId
         `);
@@ -424,8 +424,8 @@ async function saveLink(pool, userId, tokens, googleEmail) {
         .input('refresh', sql.NVarChar, refresh)
         .input('expiry', sql.DateTime, expiry)
         .query(`
-            IF EXISTS (SELECT 1 FROM BD_PTS.dbo.google_calendar_links WHERE user_id = @userId)
-                UPDATE BD_PTS.dbo.google_calendar_links
+            IF EXISTS (SELECT 1 FROM dbo.google_calendar_links WHERE user_id = @userId)
+                UPDATE dbo.google_calendar_links
                 SET google_email = @email,
                     access_token = @access,
                     refresh_token = @refresh,
@@ -433,7 +433,7 @@ async function saveLink(pool, userId, tokens, googleEmail) {
                     updated_at = GETDATE()
                 WHERE user_id = @userId
             ELSE
-                INSERT INTO BD_PTS.dbo.google_calendar_links
+                INSERT INTO dbo.google_calendar_links
                 (user_id, google_email, access_token, refresh_token, token_expiry, calendar_id)
                 VALUES (@userId, @email, @access, @refresh, @expiry, 'primary')
         `);
@@ -492,14 +492,14 @@ async function upsertEventMap(pool, userId, scheduleId, googleEventId) {
         .input('eventId', sql.NVarChar, googleEventId)
         .query(`
             IF EXISTS (
-                SELECT 1 FROM BD_PTS.dbo.google_calendar_events
+                SELECT 1 FROM dbo.google_calendar_events
                 WHERE user_id = @userId AND schedule_id = @scheduleId
             )
-                UPDATE BD_PTS.dbo.google_calendar_events
+                UPDATE dbo.google_calendar_events
                 SET google_event_id = @eventId, synced_at = GETDATE()
                 WHERE user_id = @userId AND schedule_id = @scheduleId
             ELSE
-                INSERT INTO BD_PTS.dbo.google_calendar_events (user_id, schedule_id, google_event_id)
+                INSERT INTO dbo.google_calendar_events (user_id, schedule_id, google_event_id)
                 VALUES (@userId, @scheduleId, @eventId)
         `);
 }
@@ -509,7 +509,7 @@ async function getEventMap(pool, userId, scheduleId) {
         .input('userId', sql.Int, userId)
         .input('scheduleId', sql.Int, scheduleId)
         .query(`
-            SELECT google_event_id FROM BD_PTS.dbo.google_calendar_events
+            SELECT google_event_id FROM dbo.google_calendar_events
             WHERE user_id = @userId AND schedule_id = @scheduleId
         `);
     return result.recordset[0] || null;
@@ -520,7 +520,7 @@ async function deleteEventMap(pool, userId, scheduleId) {
         .input('userId', sql.Int, userId)
         .input('scheduleId', sql.Int, scheduleId)
         .query(`
-            DELETE FROM BD_PTS.dbo.google_calendar_events
+            DELETE FROM dbo.google_calendar_events
             WHERE user_id = @userId AND schedule_id = @scheduleId
         `);
 }
@@ -595,13 +595,13 @@ async function listUserFutureSchedules(pool, userId, courseId) {
         SELECT
             s.schedule_id, s.title, s.start_at, s.end_at, s.location,
             s.meeting_url, s.delivery_mode, s.course_id, c.course_name
-        FROM BD_PTS.dbo.class_schedules s
-        LEFT JOIN BD_PTS.dbo.courses_main c ON c.course_id = s.course_id
+        FROM dbo.class_schedules s
+        LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
         WHERE s.flag_use = 1
           AND s.course_id IS NOT NULL
           AND s.end_at >= DATEADD(day, -1, GETDATE())
           AND EXISTS (
-                SELECT 1 FROM BD_PTS.dbo.course_enrollments e
+                SELECT 1 FROM dbo.course_enrollments e
                 WHERE e.user_id = @userId
                   AND e.course_id = s.course_id
                   AND ISNULL(e.gcal_notify, 0) = 1
@@ -618,7 +618,7 @@ async function isEnrolledInCourse(pool, userId, courseId) {
         .input('courseId', sql.Int, courseId)
         .query(`
             SELECT TOP 1 enrollment_id, ISNULL(gcal_notify, 0) AS gcal_notify
-            FROM BD_PTS.dbo.course_enrollments
+            FROM dbo.course_enrollments
             WHERE user_id = @userId AND course_id = @courseId
         `);
     return result.recordset[0] || null;
@@ -636,7 +636,7 @@ async function getCourseNotifyPref(pool, userId, courseId) {
                 SELECT
                   SUM(CASE WHEN flag_use = 1 THEN 1 ELSE 0 END) AS total_count,
                   SUM(CASE WHEN flag_use = 1 AND end_at >= DATEADD(day, -1, GETDATE()) THEN 1 ELSE 0 END) AS upcoming_count
-                FROM BD_PTS.dbo.class_schedules
+                FROM dbo.class_schedules
                 WHERE course_id = @courseId
             `);
         const row = counts.recordset[0] || {};
@@ -662,8 +662,8 @@ async function removeCourseCalendarEvents(pool, userId, courseId) {
         .input('courseId', sql.Int, courseId)
         .query(`
             SELECT e.schedule_id
-            FROM BD_PTS.dbo.google_calendar_events e
-            INNER JOIN BD_PTS.dbo.class_schedules s ON s.schedule_id = e.schedule_id
+            FROM dbo.google_calendar_events e
+            INNER JOIN dbo.class_schedules s ON s.schedule_id = e.schedule_id
             WHERE e.user_id = @userId AND s.course_id = @courseId
         `);
     let removed = 0;
@@ -691,7 +691,7 @@ async function setCourseNotifyPref(pool, userId, courseId, enabled) {
         .input('courseId', sql.Int, courseId)
         .input('enabled', sql.Bit, on ? 1 : 0)
         .query(`
-            UPDATE BD_PTS.dbo.course_enrollments
+            UPDATE dbo.course_enrollments
             SET gcal_notify = @enabled, updated_at = GETDATE()
             WHERE user_id = @userId AND course_id = @courseId
         `);
@@ -770,14 +770,14 @@ async function syncUserSchedules(pool, userId, options = {}) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT
-                      (SELECT COUNT(*) FROM BD_PTS.dbo.course_enrollments
+                      (SELECT COUNT(*) FROM dbo.course_enrollments
                         WHERE user_id = @userId AND course_id = @courseId) AS enrolled,
-                      (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules
+                      (SELECT COUNT(*) FROM dbo.class_schedules
                         WHERE flag_use = 1 AND course_id = @courseId) AS course_schedule_count,
-                      (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules
+                      (SELECT COUNT(*) FROM dbo.class_schedules
                         WHERE flag_use = 1 AND course_id = @courseId
                           AND end_at >= DATEADD(day, -1, GETDATE())) AS upcoming_count,
-                      (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules
+                      (SELECT COUNT(*) FROM dbo.class_schedules
                         WHERE flag_use = 1 AND course_id = @courseId
                           AND end_at < DATEADD(day, -1, GETDATE())) AS past_count
                 `);
@@ -810,9 +810,9 @@ async function syncUserSchedules(pool, userId, options = {}) {
             .input('userId', sql.Int, userId)
             .query(`
                 SELECT
-                  (SELECT COUNT(*) FROM BD_PTS.dbo.course_enrollments WHERE user_id = @userId) AS enroll_count,
-                  (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules WHERE flag_use = 1 AND course_id IS NOT NULL AND end_at >= DATEADD(day,-1,GETDATE())) AS schedule_count,
-                  (SELECT COUNT(*) FROM BD_PTS.dbo.class_schedules WHERE flag_use = 1 AND course_id IS NULL) AS unbound_count
+                  (SELECT COUNT(*) FROM dbo.course_enrollments WHERE user_id = @userId) AS enroll_count,
+                  (SELECT COUNT(*) FROM dbo.class_schedules WHERE flag_use = 1 AND course_id IS NOT NULL AND end_at >= DATEADD(day,-1,GETDATE())) AS schedule_count,
+                  (SELECT COUNT(*) FROM dbo.class_schedules WHERE flag_use = 1 AND course_id IS NULL) AS unbound_count
             `);
         const h = hint.recordset[0] || {};
         let message = 'ยังไม่มีตารางเรียนที่จะซิงค์';
@@ -916,8 +916,8 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
                 SELECT
                     s.schedule_id, s.title, s.start_at, s.end_at, s.location,
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
-                FROM BD_PTS.dbo.class_schedules s
-                LEFT JOIN BD_PTS.dbo.courses_main c ON c.course_id = s.course_id
+                FROM dbo.class_schedules s
+                LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
                 WHERE s.schedule_id = @scheduleId AND s.flag_use = 1 AND s.course_id IS NOT NULL
             `);
         const schedule = scheduleResult.recordset[0];
@@ -927,8 +927,8 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
             .input('courseId', sql.Int, schedule.course_id)
             .query(`
                 SELECT e.user_id
-                FROM BD_PTS.dbo.course_enrollments e
-                INNER JOIN BD_PTS.dbo.google_calendar_links g ON g.user_id = e.user_id
+                FROM dbo.course_enrollments e
+                INNER JOIN dbo.google_calendar_links g ON g.user_id = e.user_id
                 WHERE e.course_id = @courseId
                   AND ISNULL(e.gcal_notify, 0) = 1
             `);
@@ -958,7 +958,7 @@ async function removeScheduleFromAllCalendars(pool, scheduleId) {
             .input('scheduleId', sql.Int, scheduleId)
             .query(`
                 SELECT user_id, google_event_id
-                FROM BD_PTS.dbo.google_calendar_events
+                FROM dbo.google_calendar_events
                 WHERE schedule_id = @scheduleId
             `);
         for (const row of maps.recordset) {
@@ -974,7 +974,7 @@ async function disconnectUser(pool, userId, options = {}) {
         const maps = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
-                SELECT schedule_id FROM BD_PTS.dbo.google_calendar_events WHERE user_id = @userId
+                SELECT schedule_id FROM dbo.google_calendar_events WHERE user_id = @userId
             `);
         for (const row of maps.recordset) {
             await deleteOneScheduleEvent(pool, userId, row.schedule_id);
@@ -982,12 +982,12 @@ async function disconnectUser(pool, userId, options = {}) {
     } else {
         await pool.request()
             .input('userId', sql.Int, userId)
-            .query(`DELETE FROM BD_PTS.dbo.google_calendar_events WHERE user_id = @userId`);
+            .query(`DELETE FROM dbo.google_calendar_events WHERE user_id = @userId`);
     }
 
     await pool.request()
         .input('userId', sql.Int, userId)
-        .query(`DELETE FROM BD_PTS.dbo.google_calendar_links WHERE user_id = @userId`);
+        .query(`DELETE FROM dbo.google_calendar_links WHERE user_id = @userId`);
 }
 
 function newOAuthState() {

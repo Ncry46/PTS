@@ -92,7 +92,7 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
             .input('email', sql.VarChar, email)
             .query(`
                 SELECT user_id, email, full_name, Role, FlagUse, Url
-                FROM BD_PTS.dbo.users_main
+                FROM dbo.users_main
                 WHERE LOWER(email) = @email
             `);
 
@@ -107,7 +107,7 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
                     await pool.request()
                         .input('userId', sql.Int, userRow.user_id)
                         .input('url', sql.NVarChar, picture)
-                        .query(`UPDATE BD_PTS.dbo.users_main SET Url = @url WHERE user_id = @userId`);
+                        .query(`UPDATE dbo.users_main SET Url = @url WHERE user_id = @userId`);
                     userRow.Url = picture;
                 } catch (_) { /* ignore */ }
             }
@@ -120,7 +120,7 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
                 .input('pass', sql.VarChar, randomPass)
                 .input('url', sql.NVarChar, picture)
                 .query(`
-                    INSERT INTO BD_PTS.dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse, Url)
+                    INSERT INTO dbo.users_main (email, full_name, phone, password_hash, Role, FlagUse, Url)
                     VALUES (@email, @fullName, @phone, @pass, 'student', 'Y', @url)
                 `);
 
@@ -128,7 +128,7 @@ async function completeGoogleLogin(req, res, { poolPromise, code }) {
                 .input('email', sql.VarChar, email)
                 .query(`
                     SELECT user_id, email, full_name, Role, FlagUse, Url
-                    FROM BD_PTS.dbo.users_main
+                    FROM dbo.users_main
                     WHERE LOWER(email) = @email
                 `);
             userRow = created.recordset[0];

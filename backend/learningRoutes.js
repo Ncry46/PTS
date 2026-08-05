@@ -46,11 +46,11 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             .input('courseId', sql.Int, courseId)
             .query(`
                 SELECT
-                    (SELECT COUNT(*) FROM BD_PTS.dbo.course_lessons WHERE course_id = @courseId AND flag_use = 1) AS total_lessons,
+                    (SELECT COUNT(*) FROM dbo.course_lessons WHERE course_id = @courseId AND flag_use = 1) AS total_lessons,
                     (
                         SELECT COUNT(*)
-                        FROM BD_PTS.dbo.lesson_progress lp
-                        INNER JOIN BD_PTS.dbo.course_lessons l ON lp.lesson_id = l.lesson_id
+                        FROM dbo.lesson_progress lp
+                        INNER JOIN dbo.course_lessons l ON lp.lesson_id = l.lesson_id
                         WHERE lp.user_id = @userId AND l.course_id = @courseId AND lp.completed = 1 AND l.flag_use = 1
                     ) AS completed_lessons
             `);
@@ -66,7 +66,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             .input('progress', sql.Int, progress)
             .input('status', sql.VarChar, status)
             .query(`
-                UPDATE BD_PTS.dbo.course_enrollments
+                UPDATE dbo.course_enrollments
                 SET progress_percent = @progress, status = @status, updated_at = GETDATE()
                 WHERE user_id = @userId AND course_id = @courseId
             `);
@@ -79,9 +79,9 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('code', sql.VarChar, code)
                 .query(`
                     IF NOT EXISTS (
-                        SELECT 1 FROM BD_PTS.dbo.certificates WHERE user_id = @userId AND course_id = @courseId
+                        SELECT 1 FROM dbo.certificates WHERE user_id = @userId AND course_id = @courseId
                     )
-                    INSERT INTO BD_PTS.dbo.certificates (user_id, course_id, certificate_code)
+                    INSERT INTO dbo.certificates (user_id, course_id, certificate_code)
                     VALUES (@userId, @courseId, @code)
                 `);
         }
@@ -93,7 +93,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         const existing = await pool.request()
             .input('userId', sql.Int, userId)
             .input('courseId', sql.Int, courseId)
-            .query(`SELECT enrollment_id FROM BD_PTS.dbo.course_enrollments WHERE user_id = @userId AND course_id = @courseId`);
+            .query(`SELECT enrollment_id FROM dbo.course_enrollments WHERE user_id = @userId AND course_id = @courseId`);
         return existing.recordset.length > 0;
     }
 
@@ -109,7 +109,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name FROM dbo.courses_main WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
@@ -122,8 +122,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     SELECT
                         l.lesson_id, l.course_id, l.title, l.video_url, l.sort_order, l.duration_minutes,
                         ISNULL(lp.completed, 0) AS completed
-                    FROM BD_PTS.dbo.course_lessons l
-                    LEFT JOIN BD_PTS.dbo.lesson_progress lp
+                    FROM dbo.course_lessons l
+                    LEFT JOIN dbo.lesson_progress lp
                         ON lp.lesson_id = l.lesson_id AND lp.user_id = @userId
                     WHERE l.course_id = @courseId AND l.flag_use = 1
                     ORDER BY l.sort_order ASC, l.lesson_id ASC
@@ -158,9 +158,9 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         l.lesson_id, l.course_id, l.title, l.content_html, l.video_url,
                         l.sort_order, l.duration_minutes, c.course_name,
                         ISNULL(lp.completed, 0) AS completed
-                    FROM BD_PTS.dbo.course_lessons l
-                    INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = l.course_id
-                    LEFT JOIN BD_PTS.dbo.lesson_progress lp
+                    FROM dbo.course_lessons l
+                    INNER JOIN dbo.courses_main c ON c.course_id = l.course_id
+                    LEFT JOIN dbo.lesson_progress lp
                         ON lp.lesson_id = l.lesson_id AND lp.user_id = @userId
                     WHERE l.lesson_id = @lessonId AND l.flag_use = 1
                 `);
@@ -179,7 +179,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, lesson.course_id)
                 .query(`
                     SELECT lesson_id, title, sort_order
-                    FROM BD_PTS.dbo.course_lessons
+                    FROM dbo.course_lessons
                     WHERE course_id = @courseId AND flag_use = 1
                     ORDER BY sort_order ASC, lesson_id ASC
                 `);
@@ -202,7 +202,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const lesson = await pool.request()
                 .input('lessonId', sql.Int, lessonId)
-                .query(`SELECT lesson_id, course_id FROM BD_PTS.dbo.course_lessons WHERE lesson_id = @lessonId AND flag_use = 1`);
+                .query(`SELECT lesson_id, course_id FROM dbo.course_lessons WHERE lesson_id = @lessonId AND flag_use = 1`);
 
             if (!lesson.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบบทเรียน' });
@@ -218,12 +218,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .input('lessonId', sql.Int, lessonId)
                 .query(`
-                    IF EXISTS (SELECT 1 FROM BD_PTS.dbo.lesson_progress WHERE user_id = @userId AND lesson_id = @lessonId)
-                        UPDATE BD_PTS.dbo.lesson_progress
+                    IF EXISTS (SELECT 1 FROM dbo.lesson_progress WHERE user_id = @userId AND lesson_id = @lessonId)
+                        UPDATE dbo.lesson_progress
                         SET completed = 1, completed_at = GETDATE()
                         WHERE user_id = @userId AND lesson_id = @lessonId
                     ELSE
-                        INSERT INTO BD_PTS.dbo.lesson_progress (user_id, lesson_id, completed, completed_at)
+                        INSERT INTO dbo.lesson_progress (user_id, lesson_id, completed, completed_at)
                         VALUES (@userId, @lessonId, 1, GETDATE())
                 `);
 
@@ -248,12 +248,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     SELECT
                         s.schedule_id, s.title, s.start_at, s.end_at, s.location,
                         s.meeting_url, s.delivery_mode, s.course_id, c.course_name
-                    FROM BD_PTS.dbo.class_schedules s
-                    LEFT JOIN BD_PTS.dbo.courses_main c ON c.course_id = s.course_id
+                    FROM dbo.class_schedules s
+                    LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
                     WHERE s.flag_use = 1
                       AND s.course_id IS NOT NULL
                       AND EXISTS (
-                            SELECT 1 FROM BD_PTS.dbo.course_enrollments e
+                            SELECT 1 FROM dbo.course_enrollments e
                             WHERE e.user_id = @userId AND e.course_id = s.course_id
                       )
                     ORDER BY s.start_at ASC
@@ -271,8 +271,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 SELECT TOP 50
                     s.schedule_id, s.title, s.start_at, s.end_at, s.location,
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
-                FROM BD_PTS.dbo.class_schedules s
-                LEFT JOIN BD_PTS.dbo.courses_main c ON c.course_id = s.course_id
+                FROM dbo.class_schedules s
+                LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
                 WHERE s.flag_use = 1 AND s.start_at >= DATEADD(day, -1, GETDATE())
                 ORDER BY s.start_at ASC
             `);
@@ -297,14 +297,14 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         c.course_id, c.course_name, c.instructor_name, c.cover_image_url,
                         c.delivery_mode,
                         COALESCE(prog.last_completed_at, CASE WHEN e.status = 'completed' THEN e.updated_at END, cert.issued_at) AS completed_at
-                    FROM BD_PTS.dbo.certificates cert
-                    INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = cert.course_id
-                    LEFT JOIN BD_PTS.dbo.course_enrollments e
+                    FROM dbo.certificates cert
+                    INNER JOIN dbo.courses_main c ON c.course_id = cert.course_id
+                    LEFT JOIN dbo.course_enrollments e
                         ON e.user_id = cert.user_id AND e.course_id = cert.course_id
                     OUTER APPLY (
                         SELECT MAX(lp.completed_at) AS last_completed_at
-                        FROM BD_PTS.dbo.lesson_progress lp
-                        INNER JOIN BD_PTS.dbo.course_lessons l ON l.lesson_id = lp.lesson_id
+                        FROM dbo.lesson_progress lp
+                        INNER JOIN dbo.course_lessons l ON l.lesson_id = lp.lesson_id
                         WHERE lp.user_id = cert.user_id
                           AND l.course_id = cert.course_id
                           AND lp.completed = 1
@@ -352,8 +352,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         p.reference_code, p.paid_at, p.created_at, p.slip_image_url, p.transfer_at,
                         p.reject_reason,
                         c.course_id, c.course_name, c.cover_image_url
-                    FROM BD_PTS.dbo.payments p
-                    INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = p.course_id
+                    FROM dbo.payments p
+                    INNER JOIN dbo.courses_main c ON c.course_id = p.course_id
                     WHERE p.user_id = @userId
                     ORDER BY p.created_at DESC
                 `);
@@ -380,8 +380,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         p.reference_code, p.paid_at, p.created_at, p.course_id,
                         p.slip_image_url, p.transfer_at, p.reject_reason,
                         c.course_name
-                    FROM BD_PTS.dbo.payments p
-                    INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = p.course_id
+                    FROM dbo.payments p
+                    INNER JOIN dbo.courses_main c ON c.course_id = p.course_id
                     WHERE p.payment_id = @paymentId AND p.user_id = @userId
                 `);
             if (!result.recordset.length) {
@@ -422,7 +422,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM dbo.courses_main WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
@@ -435,7 +435,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const paid = await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT TOP 1 payment_id FROM BD_PTS.dbo.payments WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'`);
+                .query(`SELECT TOP 1 payment_id FROM dbo.payments WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'`);
             if (paid.recordset.length) {
                 return res.json({ success: true, already_paid: true, message: 'คุณชำระเงินหลักสูตรนี้แล้ว' });
             }
@@ -447,7 +447,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('method', sql.VarChar, method)
                 .query(`
                     SELECT TOP 1 payment_id, reference_code, amount, status, method, source
-                    FROM BD_PTS.dbo.payments
+                    FROM dbo.payments
                     WHERE user_id = @userId AND course_id = @courseId
                       AND status IN ('pending', 'pending_review', 'rejected')
                       AND method = @method
@@ -462,7 +462,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('amount', sql.Decimal(10, 2), amount)
                     .input('source', sql.VarChar, source)
                     .query(`
-                        UPDATE BD_PTS.dbo.payments
+                        UPDATE dbo.payments
                         SET amount = @amount, status = 'pending', source = @source,
                             slip_image_url = NULL, transfer_at = NULL, reject_reason = NULL,
                             reviewed_by = NULL, reviewed_at = NULL
@@ -481,7 +481,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('source', sql.VarChar, source)
                     .input('reference', sql.VarChar, reference)
                     .query(`
-                        INSERT INTO BD_PTS.dbo.payments
+                        INSERT INTO dbo.payments
                         (user_id, course_id, amount, currency, status, method, source, reference_code)
                         OUTPUT INSERTED.payment_id, INSERTED.reference_code, INSERTED.amount, INSERTED.status, INSERTED.method, INSERTED.source
                         VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference)
@@ -529,7 +529,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('userId', sql.Int, user.user_id)
                     .query(`
                         SELECT payment_id, course_id, status, method, slip_image_url
-                        FROM BD_PTS.dbo.payments
+                        FROM dbo.payments
                         WHERE payment_id = @paymentId AND user_id = @userId
                     `);
 
@@ -594,7 +594,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('slipUrl', sql.NVarChar, slipUrl)
                     .input('transferAt', sql.DateTime, transferAt)
                     .query(`
-                        UPDATE BD_PTS.dbo.payments
+                        UPDATE dbo.payments
                         SET status = 'pending_review',
                             slip_image_url = @slipUrl,
                             transfer_at = COALESCE(@transferAt, GETDATE()),
@@ -655,7 +655,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT payment_id, course_id, status, method, amount
-                    FROM BD_PTS.dbo.payments
+                    FROM dbo.payments
                     WHERE payment_id = @paymentId AND user_id = @userId
                 `);
             if (!payment.recordset.length) {
@@ -675,7 +675,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('method', sql.VarChar, 'card')
                 .input('source', sql.VarChar, 'direct_signup')
                 .query(`
-                    UPDATE BD_PTS.dbo.payments
+                    UPDATE dbo.payments
                     SET method = @method, source = @source
                     WHERE payment_id = @paymentId
                 `);
@@ -712,8 +712,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     SELECT TOP 1
                         a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                         a.expires_at, a.flag_use, c.course_name, ISNULL(c.price, 0) AS price
-                    FROM BD_PTS.dbo.access_codes a
-                    INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = a.course_id
+                    FROM dbo.access_codes a
+                    INNER JOIN dbo.courses_main c ON c.course_id = a.course_id
                     WHERE UPPER(a.code) = @code
                 `);
             if (!found.recordset.length) {
@@ -734,7 +734,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .input('courseId', sql.Int, row.course_id)
                 .query(`
-                    SELECT TOP 1 payment_id FROM BD_PTS.dbo.payments
+                    SELECT TOP 1 payment_id FROM dbo.payments
                     WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'
                 `);
             if (alreadyPaid.recordset.length) {
@@ -764,7 +764,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('reference', sql.VarChar, reference)
                 .input('accessCodeId', sql.Int, row.access_code_id)
                 .query(`
-                    INSERT INTO BD_PTS.dbo.payments
+                    INSERT INTO dbo.payments
                     (user_id, course_id, amount, currency, status, method, source, reference_code, access_code_id, paid_at)
                     OUTPUT INSERTED.payment_id
                     VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @accessCodeId, NULL)
@@ -774,7 +774,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             await pool.request()
                 .input('accessCodeId', sql.Int, row.access_code_id)
                 .query(`
-                    UPDATE BD_PTS.dbo.access_codes
+                    UPDATE dbo.access_codes
                     SET used_count = ISNULL(used_count, 0) + 1
                     WHERE access_code_id = @accessCodeId
                 `);
@@ -805,7 +805,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     slide_id, sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color
-                FROM BD_PTS.dbo.hero_slides
+                FROM dbo.hero_slides
                 WHERE flag_use = 1
                 ORDER BY sort_order ASC, slide_id ASC
             `);

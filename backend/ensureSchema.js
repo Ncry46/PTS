@@ -320,7 +320,7 @@ async function ensureHeroSlideThemes(pool) {
     try {
         const rows = await pool.request().query(`
             SELECT slide_id, sort_order, theme
-            FROM BD_PTS.dbo.hero_slides
+            FROM dbo.hero_slides
             WHERE flag_use = 1
             ORDER BY sort_order ASC, slide_id ASC
         `);
@@ -333,13 +333,13 @@ async function ensureHeroSlideThemes(pool) {
             await pool.request()
                 .input('slideId', sql.Int, list[i].slide_id)
                 .input('theme', sql.NVarChar, cycle[i % cycle.length])
-                .query(`UPDATE BD_PTS.dbo.hero_slides SET theme = @theme WHERE slide_id = @slideId`);
+                .query(`UPDATE dbo.hero_slides SET theme = @theme WHERE slide_id = @slideId`);
         }
     } catch (_) { /* ignore */ }
 }
 
 async function seedHeroSlidesIfEmpty(pool) {
-    const count = await pool.request().query(`SELECT COUNT(*) AS c FROM BD_PTS.dbo.hero_slides`);
+    const count = await pool.request().query(`SELECT COUNT(*) AS c FROM dbo.hero_slides`);
     if (Number(count.recordset[0].c || 0) > 0) return;
 
     const seeds = [
@@ -414,7 +414,7 @@ async function seedHeroSlidesIfEmpty(pool) {
             .input('badge_subtitle', sql.NVarChar, s.badge_subtitle)
             .input('theme', sql.NVarChar, s.theme || 'rose')
             .query(`
-                INSERT INTO BD_PTS.dbo.hero_slides (
+                INSERT INTO dbo.hero_slides (
                     sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, flag_use
@@ -471,7 +471,7 @@ async function createNotification(pool, userId, title, body, linkUrl) {
         .input('body', sql.NVarChar, body || null)
         .input('link', sql.NVarChar, linkUrl || null)
         .query(`
-            INSERT INTO BD_PTS.dbo.notifications (user_id, title, body, link_url, is_read)
+            INSERT INTO dbo.notifications (user_id, title, body, link_url, is_read)
             VALUES (@userId, @title, @body, @link, 0)
         `);
 
@@ -481,7 +481,7 @@ async function createNotification(pool, userId, title, body, linkUrl) {
             .input('userId', sql.Int, userId)
             .query(`
                 SELECT line_user_id, notify_enabled
-                FROM BD_PTS.dbo.line_account_links
+                FROM dbo.line_account_links
                 WHERE user_id = @userId
             `);
         const row = pref.recordset[0];

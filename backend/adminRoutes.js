@@ -123,12 +123,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    (SELECT COUNT(*) FROM BD_PTS.dbo.users_main) AS users_count,
-                    (SELECT COUNT(*) FROM BD_PTS.dbo.courses_main) AS courses_count,
-                    (SELECT COUNT(*) FROM BD_PTS.dbo.course_enrollments) AS enrollments_count,
-                    (SELECT COUNT(*) FROM BD_PTS.dbo.community_posts WHERE flag_use = 1) AS posts_count,
-                    (SELECT COUNT(*) FROM BD_PTS.dbo.payments WHERE status = 'paid') AS paid_count,
-                    (SELECT ISNULL(SUM(amount), 0) FROM BD_PTS.dbo.payments WHERE status = 'paid') AS revenue
+                    (SELECT COUNT(*) FROM dbo.users_main) AS users_count,
+                    (SELECT COUNT(*) FROM dbo.courses_main) AS courses_count,
+                    (SELECT COUNT(*) FROM dbo.course_enrollments) AS enrollments_count,
+                    (SELECT COUNT(*) FROM dbo.community_posts WHERE flag_use = 1) AS posts_count,
+                    (SELECT COUNT(*) FROM dbo.payments WHERE status = 'paid') AS paid_count,
+                    (SELECT ISNULL(SUM(amount), 0) FROM dbo.payments WHERE status = 'paid') AS revenue
             `);
             res.json({ success: true, data: result.recordset[0] });
         } catch (error) {
@@ -142,7 +142,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT TOP 200 user_id, email, full_name, phone, Role, FlagUse, Url
-                FROM BD_PTS.dbo.users_main
+                FROM dbo.users_main
                 ORDER BY user_id DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -164,7 +164,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('role', sql.VarChar, role || null)
                 .input('flagUse', sql.VarChar, flag_use || null)
                 .query(`
-                    UPDATE BD_PTS.dbo.users_main
+                    UPDATE dbo.users_main
                     SET
                         Role = COALESCE(@role, Role),
                         FlagUse = COALESCE(@flagUse, FlagUse)
@@ -200,7 +200,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     total_enrolled,
                     start_date,
                     is_open_soon
-                FROM BD_PTS.dbo.courses_main
+                FROM dbo.courses_main
                 WHERE ISNULL(flag_use, 1) = 1
                 ORDER BY created_at DESC
             `);
@@ -240,7 +240,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('startDate', sql.Date, start_date || null)
                 .input('openSoon', sql.Bit, is_open_soon ? 1 : 0)
                 .query(`
-                    INSERT INTO BD_PTS.dbo.courses_main
+                    INSERT INTO dbo.courses_main
                     (course_name, instructor_name, delivery_mode, total_hours,
                      average_rating, total_reviews, cover_image_url, is_featured,
                      coursesFlag, created_at, price, description, flag_use,
@@ -292,7 +292,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('hasStart', sql.Bit, body.start_date !== undefined ? 1 : 0)
                 .input('openSoon', sql.Bit, typeof body.is_open_soon === 'boolean' ? (body.is_open_soon ? 1 : 0) : null)
                 .query(`
-                    UPDATE BD_PTS.dbo.courses_main
+                    UPDATE dbo.courses_main
                     SET
                         course_name = COALESCE(@name, course_name),
                         instructor_name = COALESCE(@instructor, instructor_name),
@@ -325,7 +325,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    UPDATE BD_PTS.dbo.courses_main
+                    UPDATE dbo.courses_main
                     SET flag_use = 0
                     WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
                 `);
@@ -356,7 +356,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('sort', sql.Int, Number(sort_order || 1))
                 .input('duration', sql.Int, Number(duration_minutes || 15))
                 .query(`
-                    INSERT INTO BD_PTS.dbo.course_lessons
+                    INSERT INTO dbo.course_lessons
                     (course_id, title, content_html, video_url, sort_order, duration_minutes, flag_use)
                     OUTPUT INSERTED.lesson_id, INSERTED.title
                     VALUES (@courseId, @title, @content, @video, @sort, @duration, 1)
@@ -376,7 +376,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT lesson_id, course_id, title, content_html, video_url, sort_order, duration_minutes, flag_use
-                    FROM BD_PTS.dbo.course_lessons
+                    FROM dbo.course_lessons
                     WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
                     ORDER BY sort_order ASC, lesson_id ASC
                 `);
@@ -402,7 +402,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('sort', sql.Int, sort_order != null ? Number(sort_order) : null)
                 .input('duration', sql.Int, duration_minutes != null ? Number(duration_minutes) : null)
                 .query(`
-                    UPDATE BD_PTS.dbo.course_lessons
+                    UPDATE dbo.course_lessons
                     SET
                         title = COALESCE(@title, title),
                         content_html = COALESCE(@content, content_html),
@@ -427,7 +427,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             await pool.request()
                 .input('lessonId', sql.Int, lessonId)
-                .query(`UPDATE BD_PTS.dbo.course_lessons SET flag_use = 0 WHERE lesson_id = @lessonId`);
+                .query(`UPDATE dbo.course_lessons SET flag_use = 0 WHERE lesson_id = @lessonId`);
             res.json({ success: true, message: 'ปิดการใช้งานบทเรียนแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -440,8 +440,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT s.*, c.course_name
-                FROM BD_PTS.dbo.class_schedules s
-                LEFT JOIN BD_PTS.dbo.courses_main c ON c.course_id = s.course_id
+                FROM dbo.class_schedules s
+                LEFT JOIN dbo.courses_main c ON c.course_id = s.course_id
                 WHERE s.flag_use = 1
                 ORDER BY s.start_at DESC
             `);
@@ -472,7 +472,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('meeting', sql.NVarChar, meeting_url || null)
                 .input('mode', sql.VarChar, delivery_mode || 'online')
                 .query(`
-                    INSERT INTO BD_PTS.dbo.class_schedules
+                    INSERT INTO dbo.class_schedules
                     (course_id, title, start_at, end_at, location, meeting_url, delivery_mode, flag_use)
                     OUTPUT INSERTED.schedule_id
                     VALUES (@courseId, @title, @startAt, @endAt, @location, @meeting, @mode, 1)
@@ -492,7 +492,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             await pool.request()
                 .input('scheduleId', sql.Int, scheduleId)
-                .query(`UPDATE BD_PTS.dbo.class_schedules SET flag_use = 0 WHERE schedule_id = @scheduleId`);
+                .query(`UPDATE dbo.class_schedules SET flag_use = 0 WHERE schedule_id = @scheduleId`);
             removeScheduleFromAllCalendars(pool, scheduleId).catch(() => {});
             res.json({ success: true, message: 'ลบตารางเรียนแล้ว' });
         } catch (error) {
@@ -508,8 +508,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT TOP 200
                     p.post_id, p.user_id, p.content, p.created_at, p.flag_use,
                     u.full_name AS author_name, u.email
-                FROM BD_PTS.dbo.community_posts p
-                INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
+                FROM dbo.community_posts p
+                INNER JOIN dbo.users_main u ON u.user_id = p.user_id
                 ORDER BY p.created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -525,7 +525,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             await pool.request()
                 .input('postId', sql.Int, postId)
-                .query(`UPDATE BD_PTS.dbo.community_posts SET flag_use = 0 WHERE post_id = @postId`);
+                .query(`UPDATE dbo.community_posts SET flag_use = 0 WHERE post_id = @postId`);
             res.json({ success: true, message: 'ซ่อนโพสต์แล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -544,7 +544,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('postId', sql.Int, postId)
                 .input('flag', sql.Bit, visible ? 1 : 0)
                 .query(`
-                    UPDATE BD_PTS.dbo.community_posts
+                    UPDATE dbo.community_posts
                     SET flag_use = @flag
                     WHERE post_id = @postId
                 `);
@@ -592,11 +592,11 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     c.course_name,
                     reviewer.full_name AS reviewer_name,
                     ac.code AS access_code
-                FROM BD_PTS.dbo.payments p
-                INNER JOIN BD_PTS.dbo.users_main u ON u.user_id = p.user_id
-                INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = p.course_id
-                LEFT JOIN BD_PTS.dbo.users_main reviewer ON reviewer.user_id = p.reviewed_by
-                LEFT JOIN BD_PTS.dbo.access_codes ac ON ac.access_code_id = p.access_code_id
+                FROM dbo.payments p
+                INNER JOIN dbo.users_main u ON u.user_id = p.user_id
+                INNER JOIN dbo.courses_main c ON c.course_id = p.course_id
+                LEFT JOIN dbo.users_main reviewer ON reviewer.user_id = p.reviewed_by
+                LEFT JOIN dbo.access_codes ac ON ac.access_code_id = p.access_code_id
                 ${where}
                 ORDER BY
                     CASE WHEN p.status = 'pending_review' THEN 0
@@ -647,7 +647,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('paymentId', sql.Int, paymentId)
                 .query(`
                     SELECT payment_id, user_id, course_id, status, method, slip_image_url
-                    FROM BD_PTS.dbo.payments
+                    FROM dbo.payments
                     WHERE payment_id = @paymentId
                 `);
             if (!payment.recordset.length) {
@@ -687,7 +687,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('paymentId', sql.Int, paymentId)
                 .query(`
                     SELECT payment_id, user_id, course_id, status
-                    FROM BD_PTS.dbo.payments
+                    FROM dbo.payments
                     WHERE payment_id = @paymentId
                 `);
             if (!payment.recordset.length) {
@@ -703,7 +703,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('reason', sql.NVarChar, reason.slice(0, 500))
                 .input('reviewedBy', sql.Int, admin.user_id)
                 .query(`
-                    UPDATE BD_PTS.dbo.payments
+                    UPDATE dbo.payments
                     SET status = 'rejected',
                         reject_reason = @reason,
                         reviewed_by = @reviewedBy,
@@ -735,9 +735,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                     a.expires_at, a.note, a.flag_use, a.created_at, a.created_by,
                     c.course_name, u.full_name AS created_by_name
-                FROM BD_PTS.dbo.access_codes a
-                INNER JOIN BD_PTS.dbo.courses_main c ON c.course_id = a.course_id
-                LEFT JOIN BD_PTS.dbo.users_main u ON u.user_id = a.created_by
+                FROM dbo.access_codes a
+                INNER JOIN dbo.courses_main c ON c.course_id = a.course_id
+                LEFT JOIN dbo.users_main u ON u.user_id = a.created_by
                 ORDER BY a.created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -778,7 +778,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name FROM BD_PTS.dbo.courses_main WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name FROM dbo.courses_main WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
@@ -791,7 +791,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('note', sql.NVarChar, note)
                 .input('createdBy', sql.Int, admin.user_id)
                 .query(`
-                    INSERT INTO BD_PTS.dbo.access_codes
+                    INSERT INTO dbo.access_codes
                     (code, course_id, max_uses, used_count, expires_at, note, flag_use, created_by)
                     OUTPUT INSERTED.access_code_id, INSERTED.code, INSERTED.course_id, INSERTED.max_uses,
                            INSERTED.used_count, INSERTED.expires_at, INSERTED.note, INSERTED.flag_use, INSERTED.created_at
@@ -825,7 +825,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('id', sql.Int, id)
                 .input('flag', sql.Bit, flag ? 1 : 0)
                 .query(`
-                    UPDATE BD_PTS.dbo.access_codes SET flag_use = @flag
+                    UPDATE dbo.access_codes SET flag_use = @flag
                     WHERE access_code_id = @id
                 `);
             if (!result.rowsAffected?.[0]) {
@@ -848,7 +848,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color,
                     flag_use, created_at, updated_at
-                FROM BD_PTS.dbo.hero_slides
+                FROM dbo.hero_slides
                 ORDER BY sort_order ASC, slide_id ASC
             `);
             res.json({ success: true, data: mapHeroSlidesImages(result.recordset) });
@@ -866,7 +866,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await bindHeroInputs(pool.request(), data).query(`
-                INSERT INTO BD_PTS.dbo.hero_slides (
+                INSERT INTO dbo.hero_slides (
                     sort_order, eyebrow, title, title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color, flag_use
@@ -897,7 +897,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await bindHeroInputs(pool.request(), data)
                 .input('slideId', sql.Int, slideId)
                 .query(`
-                    UPDATE BD_PTS.dbo.hero_slides
+                    UPDATE dbo.hero_slides
                     SET sort_order = @sort_order,
                         eyebrow = @eyebrow,
                         title = @title,
@@ -936,7 +936,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             await pool.request()
                 .input('slideId', sql.Int, slideId)
                 .query(`
-                    UPDATE BD_PTS.dbo.hero_slides
+                    UPDATE dbo.hero_slides
                     SET flag_use = 0, updated_at = GETDATE()
                     WHERE slide_id = @slideId
                 `);
@@ -1003,7 +1003,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 request = request.input(name, type, value);
             });
             const result = await request.query(`
-                UPDATE BD_PTS.dbo.hero_slides
+                UPDATE dbo.hero_slides
                 SET ${sets.join(', ')}
                 WHERE slide_id = @slideId
             `);

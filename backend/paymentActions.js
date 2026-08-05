@@ -7,7 +7,7 @@ async function ensureEnrolled(pool, userId, courseId) {
     const existing = await pool.request()
         .input('userId', sql.Int, userId)
         .input('courseId', sql.Int, courseId)
-        .query(`SELECT enrollment_id FROM BD_PTS.dbo.course_enrollments WHERE user_id = @userId AND course_id = @courseId`);
+        .query(`SELECT enrollment_id FROM dbo.course_enrollments WHERE user_id = @userId AND course_id = @courseId`);
     return existing.recordset.length > 0;
 }
 
@@ -23,7 +23,7 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
         .input('paymentId', sql.Int, paymentId)
         .input('reviewedBy', sql.Int, reviewedBy)
         .query(`
-            UPDATE BD_PTS.dbo.payments
+            UPDATE dbo.payments
             SET status = 'paid',
                 paid_at = GETDATE(),
                 reviewed_at = CASE WHEN @reviewedBy IS NULL THEN reviewed_at ELSE GETDATE() END,
@@ -38,7 +38,7 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
             .input('userId', sql.Int, userId)
             .input('courseId', sql.Int, courseId)
             .query(`
-                INSERT INTO BD_PTS.dbo.course_enrollments (user_id, course_id, progress_percent, status)
+                INSERT INTO dbo.course_enrollments (user_id, course_id, progress_percent, status)
                 VALUES (@userId, @courseId, 0, 'in_progress')
             `);
         syncAfterEnroll(pool, userId, courseId).catch(() => {});
@@ -51,8 +51,8 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT u.full_name, u.email, c.course_name
-                    FROM BD_PTS.dbo.users_main u
-                    CROSS JOIN BD_PTS.dbo.courses_main c
+                    FROM dbo.users_main u
+                    CROSS JOIN dbo.courses_main c
                     WHERE u.user_id = @userId AND c.course_id = @courseId
                 `);
             const row = info.recordset[0] || {};

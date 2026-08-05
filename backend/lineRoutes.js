@@ -33,7 +33,7 @@ function createLineRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT line_user_id, display_name, picture_url, linked_at, notify_enabled
-                    FROM BD_PTS.dbo.line_account_links
+                    FROM dbo.line_account_links
                     WHERE user_id = @userId
                 `);
             const row = link.recordset[0] || null;
@@ -107,7 +107,7 @@ function createLineRouter({ poolPromise, requireLogin }) {
                 .input('lineUserId', sql.NVarChar, lineUserId)
                 .input('userId', sql.Int, user.user_id)
                 .query(`
-                    SELECT user_id FROM BD_PTS.dbo.line_account_links
+                    SELECT user_id FROM dbo.line_account_links
                     WHERE line_user_id = @lineUserId AND user_id <> @userId
                 `);
             if (taken.recordset.length) {
@@ -123,7 +123,7 @@ function createLineRouter({ poolPromise, requireLogin }) {
                 .input('displayName', sql.NVarChar, displayName)
                 .input('pictureUrl', sql.NVarChar, pictureUrl)
                 .query(`
-                    MERGE BD_PTS.dbo.line_account_links AS t
+                    MERGE dbo.line_account_links AS t
                     USING (SELECT @userId AS user_id) AS s
                     ON t.user_id = s.user_id
                     WHEN MATCHED THEN UPDATE SET
@@ -176,7 +176,7 @@ function createLineRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(`DELETE FROM BD_PTS.dbo.line_account_links WHERE user_id = @userId`);
+                .query(`DELETE FROM dbo.line_account_links WHERE user_id = @userId`);
             return res.json({ success: true, message: 'ยกเลิกการเชื่อม LINE แล้ว', linked: false });
         } catch (error) {
             console.error('[line/unlink]', error.message);
@@ -194,7 +194,7 @@ function createLineRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .input('enabled', sql.Bit, enabled ? 1 : 0)
                 .query(`
-                    UPDATE BD_PTS.dbo.line_account_links
+                    UPDATE dbo.line_account_links
                     SET notify_enabled = @enabled, updated_at = GETDATE()
                     WHERE user_id = @userId;
                     SELECT @@ROWCOUNT AS affected;
@@ -369,7 +369,7 @@ async function handleEvent(poolPromise, event) {
                     SELECT TOP 8
                         course_id, course_name, instructor_name, total_hours, price,
                         delivery_mode, cover_image_url, is_featured
-                    FROM BD_PTS.dbo.courses_main
+                    FROM dbo.courses_main
                     WHERE ISNULL(flag_use, 1) = 1
                     ORDER BY ISNULL(is_featured, 0) DESC, course_id DESC
                 `);
