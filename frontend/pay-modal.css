@@ -134,9 +134,9 @@ body.pts-pay-modal-open { overflow: hidden; }
 }
 .pts-pay-modal .pts-input:focus {
   outline: none;
-  border-color: #974258;
+  border-color: #CA1156;
   background: #fff;
-  box-shadow: 0 0 0 3px rgba(151, 66, 88, 0.14);
+  box-shadow: 0 0 0 3px rgba(202, 17, 86, 0.14);
 }
 
 html[data-theme="dark"] .pts-pay-modal__card {
