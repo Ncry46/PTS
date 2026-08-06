@@ -9,8 +9,10 @@ const {
     sql,
     DB_NAME,
     connectPool,
+    getPool,
     isAutoSchemaEnabled,
-    verifyCoreTables
+    verifyCoreTables,
+    flagActiveSql
 } = require('./db');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
@@ -82,16 +84,45 @@ try {
 }
 try { fs.mkdirSync(path.join(uploadsDir, 'slips'), { recursive: true }); } catch (_) {}
 
+// API ห้าม cache — กันรีเฟรชแล้วได้ผลลัพธ์ค้าง/สลับได้-ไม่ได้
+app.use('/api', (req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    next();
+});
+
+function staticCacheHeaders(res, filePath) {
+    const ext = path.extname(String(filePath || '')).toLowerCase();
+    // HTML ต้องไม่ค้างในเบราว์เซอร์ ไม่งั้นรีเฟรชแล้วเจอโค้ดเก่าสลับกับใหม่
+    if (ext === '.html' || ext === '.htm') {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        return;
+    }
+    // JS/CSS ใช้ query ?v= อยู่แล้ว — อนุญาต cache สั้น ๆ
+    if (ext === '.js' || ext === '.css') {
+        res.setHeader('Cache-Control', 'public, max-age=120, must-revalidate');
+        return;
+    }
+    if (['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.ico', '.woff2', '.woff'].includes(ext)) {
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+}
+
+const staticOpts = { setHeaders: staticCacheHeaders, etag: true, lastModified: true };
+
 // เสิร์ฟหน้าบ้านจาก frontend/
-app.use(express.static(frontendDir));
+app.use(express.static(frontendDir, staticOpts));
 // shared UI (navbar.js ฯลฯ) อยู่ที่ components/ — เสิร์ฟที่ / และ /comp
-app.use(express.static(componentsDir));
-app.use('/comp', express.static(componentsDir));
-app.use('/comp', express.static(frontendDir)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
+app.use(express.static(componentsDir, staticOpts));
+app.use('/comp', express.static(componentsDir, staticOpts));
+app.use('/comp', express.static(frontendDir, staticOpts)); // กันพาธเก่าที่เคยชี้ /comp ไปหน้า frontend
 // รูปโปรไฟล์ / แบนเนอร์ที่อัปโหลด
-app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', express.static(uploadsDir, { maxAge: '1d', etag: true }));
 // ogl (WebGL) for Iridescence auth background
-app.use('/vendor/ogl', express.static(path.join(__dirname, '..', 'node_modules', 'ogl', 'src')));
+app.use('/vendor/ogl', express.static(path.join(__dirname, '..', 'node_modules', 'ogl', 'src'), { maxAge: '7d' }));
 
 // LINE LIFF entry (explicit — avoids 404 if static miss / case issues)
 app.get(['/LineApp.html', '/lineapp.html', '/line', '/line-app'], (req, res) => {
@@ -150,29 +181,34 @@ try {
     console.error('⚠️ บันทึกค่าอีเมลไม่สำเร็จ:', e.message);
 }
 
-const poolPromise = connectPool()
-    .then(async (pool) => {
-        if (isAutoSchemaEnabled()) {
-            try {
-                await ensureLearningSchema(pool);
-                console.log('📚 Learning schema ready (DB_AUTO_SCHEMA=true)');
-            } catch (schemaErr) {
-                console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
-            }
-        } else {
-            console.log('📚 DB connect-only — ใช้ตาราง users / courses ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
-        }
+let schemaReadyPool = null;
+
+async function preparePool(pool) {
+    if (schemaReadyPool === pool) return pool;
+
+    if (isAutoSchemaEnabled()) {
         try {
-            await ensureCompatColumns(pool);
-        } catch (compatErr) {
-            console.warn('⚠️ column compat:', compatErr.message);
+            await ensureLearningSchema(pool);
+            console.log('📚 Learning schema ready (DB_AUTO_SCHEMA=true)');
+        } catch (schemaErr) {
+            console.error('⚠️ ไม่สามารถเตรียมตาราง learning ได้:', schemaErr.message);
         }
-        try {
-            await ensureCourseReviewsTable(pool);
-            console.log('⭐ course_reviews table ready');
-        } catch (revErr) {
-            console.warn('⚠️ course_reviews:', revErr.message);
-        }
+    } else if (!schemaReadyPool) {
+        console.log('📚 DB connect-only — ใช้ตาราง users / courses ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
+    }
+    try {
+        await ensureCompatColumns(pool);
+    } catch (compatErr) {
+        console.warn('⚠️ column compat:', compatErr.message);
+    }
+    try {
+        await ensureCourseReviewsTable(pool);
+        if (!schemaReadyPool) console.log('⭐ course_reviews table ready');
+    } catch (revErr) {
+        console.warn('⚠️ course_reviews:', revErr.message);
+    }
+
+    if (!schemaReadyPool) {
         const mail = getMailStatus();
         const localPath = path.join(__dirname, 'mail.local.js');
         console.log('📁 mail.local.js =', localPath, fs.existsSync(localPath) ? '(มีไฟล์)' : '(ไม่พบ)');
@@ -193,12 +229,34 @@ const poolPromise = connectPool()
                 console.warn('⚠️ LINE: ตั้ง APP_BASE_URL หรือ LINE_LIFF_ID ด้วย — ไม่งั้นลิงก์ในแชทจะพาไป 404');
             }
         } catch (_) { /* ignore */ }
-        return pool;
-    })
-    .catch((err) => {
-        console.error('❌ SQL Server Connection Failed: ', err);
-        process.exit(1);
-    });
+    }
+
+    schemaReadyPool = pool;
+    return pool;
+}
+
+/** Always resolve to a live SQL pool (reconnects after transient drops). */
+async function readyPool() {
+    const pool = await getPool(2);
+    return preparePool(pool);
+}
+
+const poolPromise = {
+    then(onFulfilled, onRejected) {
+        return readyPool().then(onFulfilled, onRejected);
+    },
+    catch(onRejected) {
+        return readyPool().catch(onRejected);
+    },
+    finally(onFinally) {
+        return readyPool().finally(onFinally);
+    }
+};
+
+readyPool().catch((err) => {
+    console.error('❌ SQL Server Connection Failed: ', err);
+    process.exit(1);
+});
 linePoolRef.promise = poolPromise;
 
 function requireLogin(req, res) {

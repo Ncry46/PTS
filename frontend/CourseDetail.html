@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายละเอียดหลักสูตร | PTS Learning</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260727cardicons">
@@ -280,24 +283,34 @@ async function mountCourseNotifyControls(hostEl) {
 }
 
 (async () => {
+  const content = document.getElementById('content');
   if (!courseId) {
-    document.getElementById('content').innerHTML = '<div class="pts-empty">ไม่พบรหัสหลักสูตร</div>';
+    content.innerHTML = '<div class="pts-empty">ไม่พบรหัสหลักสูตร</div>';
     return;
   }
-  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
-  const res = await fetch(`/api/courses/${courseId}`, { credentials:'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    document.getElementById('content').innerHTML = `<div class="pts-empty pts-msg--err">${escapeHtml(data.message||'โหลดไม่สำเร็จ')}</div>`;
-    return;
-  }
+  const showLoadError = (message) => {
+    content.innerHTML = `<div class="pts-empty pts-msg--err">
+      <p>${escapeHtml(message || 'โหลดไม่สำเร็จ')}</p>
+      <button type="button" class="pts-btn pts-btn-primary" style="margin-top:14px" id="retry-course-load">ลองโหลดอีกครั้ง</button>
+    </div>`;
+    document.getElementById('retry-course-load')?.addEventListener('click', () => location.reload());
+  };
+  try {
+    const meOut = await ptsFetch('/api/users/me');
+    const me = meOut.data || {};
+    const courseOut = await ptsFetch(`/api/courses/${courseId}`);
+    const data = courseOut.data || {};
+    if (!courseOut.ok || !data.success) {
+      showLoadError(data.message || 'โหลดไม่สำเร็จ');
+      return;
+    }
   const c = data.data;
   const price = Number(c.price || 0);
   const enrolled = Number(c.is_enrolled) === 1;
   const loggedIn = !!me.loggedIn;
   const favorited = Number(c.is_favorited) === 1;
   let isFavorited = favorited;
-  document.getElementById('content').innerHTML = `
+  content.innerHTML = `
     <article class="pts-card overflow-hidden">
       <div class="grid grid-cols-1 lg:grid-cols-2">
         <div class="relative min-h-[240px] lg:min-h-[420px]">
@@ -541,6 +554,9 @@ async function mountCourseNotifyControls(hostEl) {
 
   if (loggedIn && enrolled) {
     await mountCourseNotifyControls(document.getElementById('course-notify-host'));
+  }
+  } catch (err) {
+    showLoadError(err.message || 'โหลดไม่สำเร็จ — ลองรีเฟรชอีกครั้ง');
   }
 })();
 </script>

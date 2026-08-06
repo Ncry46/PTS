@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>เรียนบทเรียน | PTS Learning</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
@@ -54,10 +56,10 @@ async function loadCourseLessons() {
     document.getElementById('course-section_title').textContent = 'ไม่พบรหัสหลักสูตร';
     return;
   }
-  const res = await fetch(`/api/courses/${courseId}/lessons`, { credentials: 'include' });
-  const data = await res.json();
-  if (res.status === 401) return location.href = 'Login.html';
-  if (!res.ok || !data.success) throw new Error(data.message || 'โหลดบทเรียนไม่สำเร็จ');
+  const resOut = await ptsFetch(`/api/courses/${courseId}/lessons`);
+  const data = resOut.data || {};
+  if (resOut.status === 401) return location.href = 'Login.html';
+  if (!resOut.ok || !data.success) throw new Error(data.message || 'โหลดบทเรียนไม่สำเร็จ');
   if (!data.enrolled) {
     document.getElementById('course-section_title').textContent = data.course.course_name;
     document.getElementById('lesson-view').innerHTML = `<div class="pts-empty" style="border:none;padding:24px 0"><p class="mb-4">คุณยังไม่ได้สมัครหลักสูตรนี้</p><a class="pts-btn pts-btn-primary" href="Courses.html">ไปสมัครเรียน</a></div>`;
@@ -95,13 +97,14 @@ async function loadCourseLessons() {
 async function openLesson(lessonId) {
   const view = document.getElementById('lesson-view');
   view.innerHTML = 'กำลังโหลดบทเรียน...';
-  const res = await fetch(`/api/lessons/${lessonId}`, { credentials: 'include' });
-  const data = await res.json();
-  if (!res.ok || !data.success) {
-    view.innerHTML = `<p class="pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</p>`;
-    return;
-  }
-  const lesson = data.data;
+  try {
+    const out = await ptsFetch(`/api/lessons/${lessonId}`);
+    const data = out.data || {};
+    if (!out.ok || !data.success) {
+      view.innerHTML = `<p class="pts-msg--err">${escapeHtml(data.message || 'โหลดไม่สำเร็จ')}</p>`;
+      return;
+    }
+    const lesson = data.data;
   const video = lesson.video_url
     ? `<div class="aspect-video mb-5 rounded-xl overflow-hidden bg-black"><iframe class="w-full h-full" src="${escapeHtml(lesson.video_url)}" allowfullscreen></iframe></div>`
     : '';
@@ -124,6 +127,9 @@ async function openLesson(lessonId) {
     msg.className = 'pts-msg pts-msg--ok';
     loadCourseLessons();
   };
+  } catch (err) {
+    view.innerHTML = `<p class="pts-msg--err">${escapeHtml(err.message || 'โหลดไม่สำเร็จ')}</p>`;
+  }
 }
 
 loadCourseLessons().catch(err => {

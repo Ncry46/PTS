@@ -4,7 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>หลักสูตร | PTS Learning</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -265,12 +268,11 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
 
 (async () => {
   try {
-    const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
+    const meOut = await ptsFetch('/api/users/me');
+    const me = meOut.data || {};
     currentUser = me.loggedIn ? me.user : null;
     renderAuthChrome();
-    const res = await fetch('/api/courses', { credentials: 'include' });
-    const data = await res.json();
-    if (!res.ok || !data.success) throw new Error(data.message || 'โหลดหลักสูตรไม่สำเร็จ');
+    const data = await ptsJson('/api/courses');
     renderCourses(data.data || []);
     const urlFilter = new URLSearchParams(location.search).get('filter');
     if (urlFilter) {
@@ -278,7 +280,7 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
       if (btn) { setActiveFilter(btn); filterCourses(btn.dataset.filter); }
     }
   } catch (err) {
-    document.getElementById('courses-grid').innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(err.message)}</div>`;
+    document.getElementById('courses-grid').innerHTML = `<div class="pts-card p-5 text-error col-span-full">${escapeHtml(err.message)} <button type="button" class="pts-btn pts-btn-outline" style="margin-left:8px" onclick="location.reload()">ลองใหม่</button></div>`;
   }
 })();
 </script>

@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>หลักสูตรของฉัน | PTS Learning</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -376,13 +378,12 @@ document.querySelectorAll('.myc-filter').forEach((btn) => {
 });
 
 (async () => {
-  const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());
-  if (!me.loggedIn) return (location.href = 'Login.html');
-
   try {
-    const res = await fetch('/api/my/courses', { credentials: 'include' });
-    const payload = await res.json();
-    if (!res.ok || !payload.success) throw new Error(payload.message || 'โหลดหลักสูตรไม่สำเร็จ');
+    const meOut = await ptsFetch('/api/users/me');
+    const me = meOut.data || {};
+    if (!me.loggedIn) return (location.href = 'Login.html');
+
+    const payload = await ptsJson('/api/my/courses');
 
     allCourses = payload.data || [];
     const summary = payload.summary || {};
@@ -396,7 +397,7 @@ document.querySelectorAll('.myc-filter').forEach((btn) => {
     renderAll();
   } catch (err) {
     const msg = escapeHtml(err.message || 'เกิดข้อผิดพลาด');
-    document.getElementById('list-in-progress').innerHTML = `<div class="pts-card p-5 text-error">${msg}</div>`;
+    document.getElementById('list-in-progress').innerHTML = `<div class="pts-card p-5 text-error">${msg} <button type="button" class="pts-btn pts-btn-outline" onclick="location.reload()">ลองใหม่</button></div>`;
     document.getElementById('list-all').innerHTML = `<div class="pts-card p-5 text-error">${msg}</div>`;
   }
 })();

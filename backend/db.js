@@ -123,6 +123,15 @@ async function verifyCoreTables(pool) {
 
 let poolPromise = null;
 
+function isTransientDbError(err) {
+    const msg = String((err && err.message) || err || '');
+    const code = String((err && (err.code || err.number)) || '');
+    return (
+        /ECONNRESET|ESOCKET|ETIMEOUT|ETIMEDOUT|ECONNREFUSED|ConnectionError|Timeout|socket hang up|connect ETIMEDOUT/i.test(msg)
+        || /ESOCKET|ETIMEOUT|ECONNRESET|ELOGIN/i.test(code)
+    );
+}
+
 function connectPool() {
     if (poolPromise) return poolPromise;
 
@@ -130,6 +139,11 @@ function connectPool() {
         .connect()
         .then(async (pool) => {
             console.log(`🔌 Connected to SQL Server → ${dbConfig.server}:${dbConfig.port} / ${DB_NAME}`);
+            pool.on('error', (err) => {
+                console.error('❌ SQL pool error — จะเชื่อมใหม่รอบถัดไป:', err.message || err);
+                try { pool.close(); } catch (_) { /* ignore */ }
+                poolPromise = null;
+            });
             const check = await verifyCoreTables(pool);
             if (check.users_ok) {
                 console.log(`👤 ${USERS_TABLE}: ${check.users_count} รายการ`);
@@ -152,6 +166,39 @@ function connectPool() {
     return poolPromise;
 }
 
+/** ดึง pool พร้อม retry เมื่อสาย DB หลุดชั่วคราว */
+async function getPool(retries = 1) {
+    let lastErr = null;
+    for (let i = 0; i <= retries; i += 1) {
+        try {
+            return await connectPool();
+        } catch (err) {
+            lastErr = err;
+            poolPromise = null;
+            if (i >= retries || !isTransientDbError(err)) throw err;
+            await new Promise((r) => setTimeout(r, 300 * (i + 1)));
+        }
+    }
+    throw lastErr;
+}
+
+/**
+ * รันงานกับ DB พร้อม retry 1 ครั้งเมื่อ connection หลุดกลางคัน
+ * @template T
+ * @param {(pool: import('mssql').ConnectionPool) => Promise<T>} fn
+ */
+async function withDb(fn) {
+    try {
+        const pool = await getPool(1);
+        return await fn(pool);
+    } catch (err) {
+        if (!isTransientDbError(err)) throw err;
+        poolPromise = null;
+        const pool = await getPool(1);
+        return fn(pool);
+    }
+}
+
 module.exports = {
     sql,
     dbConfig,
@@ -169,7 +216,9 @@ module.exports = {
     isAutoSchemaEnabled,
     verifyCoreTables,
     connectPool,
-    getPool: connectPool,
+    getPool,
+    withDb,
+    isTransientDbError,
     get poolPromise() {
         return connectPool();
     }

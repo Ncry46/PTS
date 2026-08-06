@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>รายการโปรด | PTS Learning</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <script src="/comp/theme-boot.js"></script>
+<script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -109,28 +111,30 @@ document.getElementById('tab-courses').onclick = () => setTab('courses');
 document.getElementById('tab-posts').onclick = () => setTab('posts');
 
 (async () => {
-  const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
+  try {
+  const meOut = await ptsFetch('/api/users/me');
+  const me = meOut.data || {};
   if (!me.loggedIn) return location.href = 'Login.html';
 
   const courseBox = document.getElementById('course-list');
   const postBox = document.getElementById('post-list');
 
-  const [courseRes, postRes] = await Promise.all([
-    fetch('/api/my/favorite-courses', { credentials:'include' }),
-    fetch('/api/my/liked-posts', { credentials:'include' })
+  const [courseOut, postOut] = await Promise.all([
+    ptsFetch('/api/my/favorite-courses'),
+    ptsFetch('/api/my/liked-posts')
   ]);
-  const courseData = await courseRes.json();
-  const postData = await postRes.json();
+  const courseData = courseOut.data || {};
+  const postData = postOut.data || {};
 
-  if (!courseRes.ok || !courseData.success) {
-    courseBox.innerHTML = `<div class="pts-empty pts-card text-error">${escapeHtml(courseData.message||'โหลดหลักสูตรโปรดไม่สำเร็จ')}</div>`;
+  if (!courseOut.ok || !courseData.success) {
+    courseBox.innerHTML = `<div class="pts-empty pts-card text-error">${escapeHtml(courseData.message||'โหลดหลักสูตรโปรดไม่สำเร็จ')} <button type="button" class="pts-btn pts-btn-outline" onclick="location.reload()">ลองใหม่</button></div>`;
   } else if (!courseData.data.length) {
     courseBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
   } else {
     courseBox.innerHTML = courseData.data.map(courseCard).join('');
   }
 
-  if (!postRes.ok || !postData.success) {
+  if (!postOut.ok || !postData.success) {
     postBox.innerHTML = `<div class="pts-card p-5 text-error">${escapeHtml(postData.message||'โหลดโพสต์โปรดไม่สำเร็จ')}</div>`;
   } else if (!postData.data.length) {
     postBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ<br><a class="text-primary font-bold" href="Community.html">ไปสำรวจคอมมูนิตี้</a></div>`;
@@ -179,6 +183,12 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   });
 
   setTab(location.hash === '#posts' ? 'posts' : 'courses');
+  } catch (err) {
+    const box = document.getElementById('course-list');
+    if (box) {
+      box.innerHTML = `<div class="pts-empty pts-card text-error">${escapeHtml(err.message||'โหลดไม่สำเร็จ')} <button type="button" class="pts-btn pts-btn-outline" onclick="location.reload()">ลองใหม่</button></div>`;
+    }
+  }
 })();
 </script>
 <script src="/comp/user-sidebar.js?v=20260727paymodal"></script>
