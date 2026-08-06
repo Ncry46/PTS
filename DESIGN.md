@@ -2,7 +2,7 @@
 name: PTS Learning
 description: Thanvasu Personal Assistant e-learning — warm rose brand, calm product UI
 colors:
-  primary: "#974258"
+  primary: "#ca1156"
   primary-deep: "#7a2f42"
   primary-soft: "#f6e6ea"
   accent: "#3d5a4c"
@@ -12,7 +12,7 @@ colors:
   surface: "#ffffff"
   text: "#1c1520"
   muted: "#5c4f55"
-  border: "#97425824"
+  border: "#ca115624"
   error: "#ba1a1a"
   on-primary: "#ffffff"
 typography:
@@ -88,7 +88,7 @@ Density is moderate. Marketing-ish heroes on Home may breathe; dashboards, Setti
 This system rejects purple SaaS gradients, Inter monoculture, nested card stacks, and yellow guest-shame banners as primary messaging.
 
 **Key Characteristics:**
-- Rose primary (`#974258`) on soft tinted neutrals
+- Rose primary (`#ca1156`) on soft tinted neutrals
 - IBM Plex Sans Thai for UI; Sora for display/brand marks
 - Pill primary actions; soft panels with light borders
 - Max content width ~1120px under a fixed 68px nav
@@ -98,7 +98,7 @@ This system rejects purple SaaS gradients, Inter monoculture, nested card stacks
 A restrained rose palette: one primary voice, one quiet green accent, tinted neutrals.
 
 ### Primary
-- **PTS Rose** (#974258): primary actions, active links, chips, key emphasis. Keep rare enough that buttons still read as “the next step.”
+- **PTS Rose** (#ca1156): primary actions, active links, chips, key emphasis. Keep rare enough that buttons still read as “the next step.”
 - **Rose Deep** (#7a2f42): hover / pressed primary.
 - **Rose Soft** (#f6e6ea): chip backgrounds, soft hover fills, date badges.
 

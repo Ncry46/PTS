@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <script src="https://cdn.tailwindcss.com"></script>
-<script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
+<script>tailwind.config={theme:{extend:{colors:{primary:'#ca1156','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 <style>
   .ff-field { margin-bottom: 18px; }
   .ff-field label { display:block; font-size:14px; font-weight:700; margin-bottom:6px; color:#3d2f34; }
@@ -29,7 +29,7 @@
   }
   .ff-field textarea { min-height:110px; resize:vertical; }
   .ff-field input:focus, .ff-field select:focus, .ff-field textarea:focus {
-    border-color:#974258; box-shadow:0 0 0 4px rgba(151,66,88,.14); background:#fff;
+    border-color:#ca1156; box-shadow:0 0 0 4px rgba(151,66,88,.14); background:#fff;
   }
   .ff-choice { display:flex; flex-direction:column; gap:8px; }
   .ff-choice label { font-weight:500; display:flex; align-items:center; gap:10px; margin:0; cursor:pointer; }
@@ -212,7 +212,7 @@ async function boot() {
       const out = await r.json().catch(() => ({}));
       if (!r.ok || out.success === false) throw new Error(out.message || 'ส่งไม่สำเร็จ');
       msg.textContent = out.message || 'ส่งสำเร็จ';
-      msg.style.color = '#974258';
+      msg.style.color = '#ca1156';
       msg.classList.remove('hidden');
       const safeNext = nextUrl && /^[A-Za-z0-9._\-/?#%=]+$/.test(nextUrl) && !nextUrl.includes('://')
         ? nextUrl

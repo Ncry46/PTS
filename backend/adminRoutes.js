@@ -1086,7 +1086,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             } else {
                 const themeColor = normalizeHexColor(raw);
                 if (!themeColor) {
-                    return res.status(400).json({ success: false, message: 'รหัสสีไม่ถูกต้อง (ใช้เช่น #974258)' });
+                    return res.status(400).json({ success: false, message: 'รหัสสีไม่ถูกต้อง (ใช้เช่น #ca1156)' });
                 }
                 sets.push('theme_color = @theme_color');
                 inputs.push(['theme_color', sql.NVarChar(20), themeColor]);

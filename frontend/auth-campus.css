@@ -217,7 +217,7 @@
   left: 50%; top: 8px;
   width: 46px; height: 12px;
   transform: translateX(-50%) rotate(0deg);
-  background: #974258;
+  background: #ca1156;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
 }
 .pts-campus__cap::after {
@@ -274,7 +274,7 @@
   position: absolute;
   width: 18px;
   height: 46px;
-  background: linear-gradient(180deg, #e53955, #974258);
+  background: linear-gradient(180deg, #e53955, #ca1156);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 78%, 0 100%);
   box-shadow: 0 10px 20px rgba(151, 66, 88, 0.18);
   animation: pts-campus-float 12s ease-in-out infinite;

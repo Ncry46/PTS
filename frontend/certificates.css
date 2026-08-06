@@ -10,7 +10,7 @@
 .cert-page .text-sm { font-size: 14px; }
 .cert-page .text-xs { font-size: 12px; }
 .cert-page .font-bold { font-weight: 700; }
-.cert-page .text-primary { color: var(--pts-primary, #974258); }
+.cert-page .text-primary { color: var(--pts-primary, #ca1156); }
 .cert-page .text-on-surface-variant { color: var(--pts-muted, #5c4f55); }
 .cert-page .max-w-2xl { max-width: 42rem; }
 .cert-page .text-3xl { font-size: 1.875rem; line-height: 1.2; }
@@ -50,8 +50,8 @@
   outline: none;
 }
 .cert-search input:focus {
-  border-color: color-mix(in srgb, var(--pts-primary, #974258) 45%, transparent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pts-primary, #974258) 14%, transparent);
+  border-color: color-mix(in srgb, var(--pts-primary, #ca1156) 45%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--pts-primary, #ca1156) 14%, transparent);
 }
 .cert-filters {
   display: flex;
@@ -83,7 +83,7 @@
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
-  background: #974258;
+  background: #ca1156;
   color: #fff;
   font-size: 11px;
 }
@@ -193,7 +193,7 @@
   border-radius: 12px;
   border: 1px solid var(--pts-border, rgba(151,66,88,.2));
   background: var(--pts-surface, #fff);
-  color: var(--pts-primary, #974258);
+  color: var(--pts-primary, #ca1156);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -226,14 +226,14 @@
   height: 44px;
   border-radius: 999px;
   background: #f6e6ea;
-  color: #974258;
+  color: #ca1156;
   display: grid;
   place-items: center;
 }
 .cert-teaser__icon .material-symbols-outlined { font-size: 22px; }
 .cert-teaser p { margin: 0; color: #5c4f55; font-size: 12px; line-height: 1.45; max-width: 14rem; }
 .cert-teaser a {
-  color: #974258;
+  color: #ca1156;
   font-weight: 700;
   text-decoration: none;
 }
@@ -246,7 +246,7 @@
 }
 .cert-page .pts-empty__icon {
   width: 56px; height: 56px; margin: 0 auto 10px;
-  border-radius: 999px; background: #f6e6ea; color: #974258;
+  border-radius: 999px; background: #f6e6ea; color: #ca1156;
   display: grid; place-items: center;
 }
 

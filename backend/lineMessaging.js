@@ -1,12 +1,12 @@
 /**
  * LINE Messaging API helpers (Official Account)
- * Brand colors match PTS mock: maroon #974258 + soft lavender chat feel
+ * Brand colors match PTS mock: maroon #ca1156 + soft lavender chat feel
  */
 const crypto = require('crypto');
 const sql = require('mssql');
 
 const BRAND = {
-    primary: '#974258',
+    primary: '#ca1156',
     primaryDeep: '#7a2f42',
     soft: '#f6e6ea',
     lavender: '#f1e8f0',

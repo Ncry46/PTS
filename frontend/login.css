@@ -7,7 +7,7 @@ input[type="password"]::-ms-reveal,
 
   body.pts-body.pts-login {
     --login-rose: #d9778e;
-    --login-deep: #974258;
+    --login-deep: #ca1156;
     --login-blush: #f7d7df;
     --login-pearl: #fff9f7;
     --login-champagne: #f4e6d4;
@@ -420,7 +420,7 @@ input[type="password"]::-ms-reveal,
     font-weight: 700;
     letter-spacing: .18em;
     text-transform: uppercase;
-    color: var(--pts-primary, #974258);
+    color: var(--pts-primary, #ca1156);
   }
 
   .pts-login__section_title {
@@ -468,7 +468,7 @@ input[type="password"]::-ms-reveal,
     border: 0;
     background: none;
     padding: 0;
-    color: #974258;
+    color: #ca1156;
     font-size: 13px;
     font-weight: 700;
     cursor: pointer;
@@ -492,7 +492,7 @@ input[type="password"]::-ms-reveal,
     transition: color .2s ease, transform .2s ease;
   }
   .pts-login__control:focus-within > .pts-login__ico {
-    color: var(--pts-primary, #974258);
+    color: var(--pts-primary, #ca1156);
     transform: translateY(-50%) scale(1.08);
   }
 
@@ -508,11 +508,11 @@ input[type="password"]::-ms-reveal,
     outline: none;
     transition: border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .2s ease;
   }
-  .pts-login__input:hover { border-color: color-mix(in srgb, var(--pts-primary, #974258) 40%, transparent); }
+  .pts-login__input:hover { border-color: color-mix(in srgb, var(--pts-primary, #ca1156) 40%, transparent); }
   .pts-login__input:focus {
     background: var(--pts-surface, #fff);
-    border-color: var(--pts-primary, #974258);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--pts-primary, #974258) 18%, transparent);
+    border-color: var(--pts-primary, #ca1156);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--pts-primary, #ca1156) 18%, transparent);
     transform: translateY(-1px);
   }
   /* Kill browser autofill cyan/blue wash */
@@ -539,7 +539,7 @@ input[type="password"]::-ms-reveal,
   }
   .pts-login__remember input {
     width: 18px; height: 18px;
-    accent-color: #974258;
+    accent-color: #ca1156;
     cursor: pointer;
   }
 
@@ -551,7 +551,7 @@ input[type="password"]::-ms-reveal,
     border: 0;
     border-radius: 999px;
     overflow: hidden;
-    background: linear-gradient(135deg, #c4637b, #974258 55%, #7a2f42);
+    background: linear-gradient(135deg, #c4637b, #ca1156 55%, #7a2f42);
     color: #fff;
     font: inherit;
     font-size: 15px;
@@ -583,7 +583,7 @@ input[type="password"]::-ms-reveal,
 
   .pts-login__msg { margin: 0; text-align: center; font-size: 14px; color: #ba1a1a; }
   .pts-login__msg.hidden { display: none; }
-  .pts-login__msg.is-info { color: #974258; }
+  .pts-login__msg.is-info { color: #ca1156; }
 
   .pts-login__divider {
     display: flex;
@@ -621,7 +621,7 @@ input[type="password"]::-ms-reveal,
   }
   .pts-login__google:hover {
     background: var(--pts-input-bg, #faf7f8);
-    border-color: color-mix(in srgb, var(--pts-primary, #974258) 40%, transparent);
+    border-color: color-mix(in srgb, var(--pts-primary, #ca1156) 40%, transparent);
     transform: translateY(-1px);
     box-shadow: 0 8px 20px rgba(28,21,32,.06);
   }
@@ -635,7 +635,7 @@ input[type="password"]::-ms-reveal,
     color: var(--pts-muted, #5c4f55);
   }
   .pts-login__foot a {
-    color: var(--pts-primary, #974258);
+    color: var(--pts-primary, #ca1156);
     font-weight: 700;
     text-decoration: none;
     position: relative;
@@ -645,7 +645,7 @@ input[type="password"]::-ms-reveal,
     position: absolute;
     left: 0; right: 0; bottom: -1px;
     height: 1.5px;
-    background: var(--pts-primary, #974258);
+    background: var(--pts-primary, #ca1156);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform .2s ease;
@@ -667,7 +667,7 @@ input[type="password"]::-ms-reveal,
     text-decoration: none;
     transition: color .15s ease;
   }
-  .pts-login__legal a:hover { color: var(--pts-primary, #974258); }
+  .pts-login__legal a:hover { color: var(--pts-primary, #ca1156); }
 
   /* Modal */
   .pts-login-modal {
@@ -703,7 +703,7 @@ input[type="password"]::-ms-reveal,
     text-align: center;
     font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
     font-size: 1.25rem;
-    color: var(--pts-primary, #974258);
+    color: var(--pts-primary, #ca1156);
   }
   .pts-login-modal__card > p {
     margin: 8px 0 0;
@@ -743,7 +743,7 @@ input[type="password"]::-ms-reveal,
     border: 0;
     border-radius: 12px;
     padding: 0 14px;
-    background: #974258;
+    background: #ca1156;
     color: #fff;
     font-weight: 700;
     font-size: 13px;
@@ -770,7 +770,7 @@ input[type="password"]::-ms-reveal,
   }
   .pts-login-modal__confirm {
     border: 0;
-    background: #974258;
+    background: #ca1156;
     color: #fff;
   }
   .pts-login-modal__confirm:disabled,
@@ -791,7 +791,7 @@ input[type="password"]::-ms-reveal,
   }
   .pts-login-modal__otp-field { margin-bottom: 14px; }
   .pts-login-modal__otp-label {
-    color: #974258 !important;
+    color: #ca1156 !important;
     display: flex !important;
     align-items: center;
     gap: 4px;

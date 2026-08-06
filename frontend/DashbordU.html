@@ -82,10 +82,10 @@
     bottom: 4px;
     width: 3px;
     border-radius: 999px;
-    background: linear-gradient(180deg, #974258, #3d5a4c);
+    background: linear-gradient(180deg, #ca1156, #3d5a4c);
   }
   .dash-section-head a {
-    color: #974258;
+    color: #ca1156;
     font-weight: 600;
   }
 
@@ -206,7 +206,7 @@
     margin-bottom: 6px;
     gap: 8px;
   }
-  .myc-progress-row strong { color: #974258; }
+  .myc-progress-row strong { color: #ca1156; }
   .myc-bar {
     height: 6px;
     width: 100%;
@@ -217,7 +217,7 @@
   .myc-bar > span {
     display: block;
     height: 100%;
-    background: linear-gradient(90deg, #974258, #c46a82);
+    background: linear-gradient(90deg, #ca1156, #c46a82);
     border-radius: 999px;
   }
   .myc-status {
@@ -231,7 +231,7 @@
   }
   .myc-status--progress {
     background: rgba(151,66,88,.1);
-    color: #974258;
+    color: #ca1156;
   }
   .myc-status--done {
     background: rgba(46,125,50,.12);
@@ -259,7 +259,7 @@
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-    color: #974258;
+    color: #ca1156;
     text-decoration: none;
     padding: 2px 0;
   }
@@ -281,7 +281,7 @@
     align-items: center;
     justify-content: center;
     background: rgba(151,66,88,.1);
-    color: #974258;
+    color: #ca1156;
   }
   .dash-myc-empty__icon .material-symbols-outlined { font-size: 26px; }
   .dash-myc-empty__section_title {
@@ -316,7 +316,7 @@
     border-radius: 22px;
     background:
       radial-gradient(circle at 85% 15%, rgba(255,255,255,0.22), transparent 42%),
-      linear-gradient(135deg, #7a2f42 0%, #974258 48%, #3d5a4c 118%);
+      linear-gradient(135deg, #7a2f42 0%, #ca1156 48%, #3d5a4c 118%);
     color: #fff;
     box-shadow: 0 14px 34px -12px rgba(122, 47, 66, 0.45);
   }
@@ -364,11 +364,11 @@
                     "on-background": "#1a1930",
                     "tertiary-container": "#55a56b",
                     "inverse-surface": "#302e46",
-                    "on-secondary-container": "#526b4d",
+                    "on-secondary-container": "#007ede",
                     "surface-container-low": "#f7f2f3",
-                    "primary": "#974258",
+                    "primary": "#ca1156",
                     "on-primary-fixed-variant": "#7a2b41",
-                    "secondary": "#4c6548",
+                    "secondary": "#007ede",
                     "primary-container": "#d9778e",
                     "tertiary": "#166c39",
                     "surface-container-highest": "#ebe4e6",
@@ -383,7 +383,7 @@
                     "on-surface-variant": "#544245",
                     "surface-variant": "#ebe4e6",
                     "on-secondary-fixed": "#0a2009",
-                    "surface-tint": "#974258",
+                    "surface-tint": "#ca1156",
                     "surface-dim": "#e8e2e4",
                     "on-primary": "#ffffff",
                     "surface-bright": "#faf7f8",
@@ -470,7 +470,7 @@
         }
         .circular-progress {
             background: radial-gradient(closest-side, white 79%, transparent 80% 100%),
-                        conic-gradient(#974258 75%, #f4c7d3 0);
+                        conic-gradient(#ca1156 75%, #f4c7d3 0);
             box-shadow: inset 0 0 0 1px rgba(151,66,88,0.08);
         }
         html[data-theme="dark"] .circular-progress {
@@ -495,8 +495,8 @@
       + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1c1520;font-weight:700">'
       + '<img src="/logo.png" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
       + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
       + '</div></div></nav>';
   }
 })();
@@ -836,7 +836,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
             avgEl.textContent = avg + '%';
             const ring = avgEl.closest('.circular-progress');
             if (ring) {
-                ring.style.background = `radial-gradient(closest-side, white 79%, transparent 80% 100%), conic-gradient(#974258 ${avg}%, #f4c7d3 0)`;
+                ring.style.background = `radial-gradient(closest-side, white 79%, transparent 80% 100%), conic-gradient(#ca1156 ${avg}%, #f4c7d3 0)`;
             }
         }
         const hoursEl = document.getElementById('dash-total-hours');

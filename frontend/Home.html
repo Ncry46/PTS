@@ -50,11 +50,11 @@
                                 "on-background": "#1a1930",
                                 "tertiary-container": "#55a56b",
                                 "inverse-surface": "#302e46",
-                                "on-secondary-container": "#526b4d",
+                                "on-secondary-container": "#007ede",
                                 "surface-container-low": "#fff1f2",
-                                "primary": "#974258",
+                                "primary": "#ca1156",
                                 "on-primary-fixed-variant": "#7a2b41",
-                                "secondary": "#4c6548",
+                                "secondary": "#007ede",
                                 "primary-container": "#d9778e",
                                 "tertiary": "#166c39",
                                 "surface-container-highest": "#ffffff",
@@ -69,7 +69,7 @@
                                 "on-surface-variant": "#544245",
                                 "surface-variant": "#fff1f2",
                                 "on-secondary-fixed": "#0a2009",
-                                "surface-tint": "#974258",
+                                "surface-tint": "#ca1156",
                                 "surface-dim": "#f3e8ea",
                                 "on-primary": "#ffffff",
                                 "surface-bright": "#fff9f4",
@@ -147,8 +147,8 @@
         </span>
       </a>
       <div style="display:flex;align-items:center;gap:8px;">
-        <a href="Login.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(151,66,88,.28);color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:#974258;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+        <a href="Login.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;border:1px solid rgba(151,66,88,.28);color:#ca1156;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="display:inline-flex;align-items:center;height:40px;padding:0 16px;border-radius:999px;background:#ca1156;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
       </div>
     </div>
   </nav>
@@ -211,8 +211,8 @@
 <span class="material-symbols-outlined text-primary text-[32px]">business</span>
 </div>
 <div class="flex items-center gap-xs mb-sm">
-<span class="w-3 h-3 rounded-full bg-[#f59e0b]"></span>
-<span class="font-headline-sm text-headline-sm text-[#f59e0b]">Onsite</span>
+<span class="w-3 h-3 rounded-full bg-[#ffc800]"></span>
+<span class="font-headline-sm text-headline-sm text-[#ffc800]">Onsite</span>
 </div>
 <p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow" data-i18n="home.onsiteDesc">เรียนที่ PTS Academy เช็กอินและเช็กเอาต์ผ่าน QR Code ได้รับใบประกาศเมื่อเรียนครบ</p>
 
@@ -735,7 +735,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
       const price = Number(c.price || 0).toLocaleString('th-TH');
       const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
-      const badgeBg = mode === 'onsite' ? '#f59e0b' : mode === 'hybrid' ? '#526b4d' : '#0d9488';
+      const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00e001';
       return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
         <div class="pts-course-card__media">
           <img alt="" src="${img}" loading="lazy">
@@ -798,8 +798,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
       + '<img src="/logo.png" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
       + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
       + '</div></div></nav>';
   }
 })();

@@ -62,10 +62,10 @@ function buildOtpContent(otp, purpose) {
     const text = `รหัส OTP สำหรับ${action}ของ PTS Learning คือ ${otp}\nรหัสมีอายุ 5 นาที\nหากคุณไม่ได้ขอรหัสนี้ ให้เพิกเฉยอีเมลนี้`;
     const html = `
       <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:480px;margin:0 auto;padding:28px;color:#1c1520;background:#fff;border:1px solid #f0e4e7;border-radius:16px">
-        <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#974258;margin-bottom:12px">PTS Learning</div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#ca1156;margin-bottom:12px">PTS Learning</div>
         <h2 style="margin:0 0 12px;font-size:22px;color:#1c1520">ยืนยันตัวตนด้วยรหัส OTP</h2>
         <p style="margin:0 0 18px;color:#5c4f55;line-height:1.5">รหัส OTP สำหรับ<strong>${action}</strong>ของคุณคือ</p>
-        <p style="font-size:34px;letter-spacing:10px;font-weight:700;color:#974258;margin:0 0 18px;text-align:center">${otp}</p>
+        <p style="font-size:34px;letter-spacing:10px;font-weight:700;color:#ca1156;margin:0 0 18px;text-align:center">${otp}</p>
         <p style="margin:0;color:#5c4f55;font-size:13px;line-height:1.5">รหัสมีอายุ 5 นาที หากคุณไม่ได้ขอรหัสนี้ ให้เพิกเฉยอีเมลนี้</p>
       </div>
     `;
@@ -263,7 +263,7 @@ async function sendEnrollmentConfirmEmail(to, { fullName, courseName }) {
     const text = `สวัสดีคุณ ${name}\n\nการชำระเงินได้รับการยืนยันแล้ว และเปิดสิทธิ์เข้าเรียนหลักสูตร "${course}" ให้คุณแล้ว\nเข้าสู่ระบบแล้วไปที่หน้าหลักสูตรของฉันเพื่อเริ่มเรียนได้ทันที\n\n— PTS Learning`;
     const html = `
       <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:520px;margin:0 auto;padding:28px;color:#1c1520;background:#fff;border:1px solid #f0e4e7;border-radius:16px">
-        <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#974258;margin-bottom:12px">PTS Learning</div>
+        <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#ca1156;margin-bottom:12px">PTS Learning</div>
         <h2 style="margin:0 0 12px;font-size:22px;color:#1c1520">เปิดสิทธิ์เรียนแล้ว</h2>
         <p style="margin:0 0 12px;color:#5c4f55;line-height:1.55">สวัสดีคุณ <strong>${name.replace(/</g, '')}</strong></p>
         <p style="margin:0 0 18px;color:#5c4f55;line-height:1.55">การชำระเงินได้รับการยืนยันแล้ว และเปิดสิทธิ์เข้าเรียนหลักสูตร <strong>${course.replace(/</g, '')}</strong> ให้คุณแล้ว — รีเฟรชหน้าเว็บแล้วเริ่มเรียนได้ทันที</p>

@@ -20,7 +20,7 @@
     const input = wrap.querySelector('input');
     const icon = wrap.querySelector(':scope > .pts-login__ico');
     if (!input || !icon) return;
-    input.addEventListener('focus', () => { icon.style.color = '#974258'; });
+    input.addEventListener('focus', () => { icon.style.color = '#ca1156'; });
     input.addEventListener('blur', () => { icon.style.color = ''; });
   });
 
@@ -102,7 +102,7 @@
     const el = document.getElementById('reset-msg');
     if (!el) return;
     el.textContent = text;
-    el.style.color = isError ? '#ba1a1a' : '#974258';
+    el.style.color = isError ? '#ba1a1a' : '#ca1156';
     el.classList.remove('hidden');
   }
 

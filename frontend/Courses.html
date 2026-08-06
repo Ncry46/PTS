@@ -31,12 +31,12 @@ tailwind.config = {
   theme: {
     extend: {
       colors: {
-        primary: '#974258',
+        primary: '#ca1156',
         'on-surface': '#1a1930',
         'on-surface-variant': '#544245',
         'outline-variant': '#d9c1c4',
         'secondary-container': '#ceeac5',
-        'on-secondary-container': '#526b4d',
+        'on-secondary-container': '#007ede',
         error: '#ba1a1a'
       }
     }
@@ -53,8 +53,8 @@ tailwind.config = {
         PTS Learning
       </a>
       <div style="display:flex;gap:8px;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
       </div>
     </div>
   </nav>
@@ -118,14 +118,14 @@ function makeCourseCard(course) {
   const enrolled = Number(course.is_enrolled) === 1;
   const hours = Number(course.total_hours || 0).toFixed(1).replace('.0', '');
   const img = course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course';
-  const badgeBg = mode === 'onsite' ? '#f59e0b' : mode === 'hybrid' ? '#526b4d' : mode === 'online' ? '#0d9488' : '#974258';
+  const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : mode === 'online' ? '#00e001' : '#ca1156';
   return `
     <article data-type="${mode}" class="pts-course-card">
       <div class="pts-course-card__media">
         <img src="${img}" alt="${escapeHtml(course.course_name || '')}" loading="lazy">
         <span class="pts-course-card__badge" style="background:${badgeBg}">${badge.label}${course.is_featured ? ' · ยอดนิยม' : ''}</span>
         ${currentUser ? `
-          <button type="button" class="fav-btn" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด" style="position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.95);border:none;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;${favorited ? 'color:#974258' : 'color:#544245'}">
+          <button type="button" class="fav-btn" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด" style="position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.95);border:none;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;${favorited ? 'color:#ca1156' : 'color:#544245'}">
             <span class="material-symbols-outlined" style="font-size:18px">favorite</span>
           </button>` : ''}
       </div>
@@ -141,7 +141,12 @@ function makeCourseCard(course) {
             <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
             <span>${hours} ชม. · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}${course.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}</span>
           </div>
-          ${course.price != null ? `<p class="pts-course-card__meta" style="margin-top:4px">${Number(course.price).toLocaleString('th-TH')} บาท · ลงทะเบียน ${Number(course.total_enrolled || 0)}</p>` : ''}
+          ${course.price != null ? `
+            <p class="pts-course-card__meta flex items-center justify-between" style="margin-top:4px">
+              <span>ลงทะเบียน ${Number(course.total_enrolled || 0)}</span>
+              <span class="text-base font-bold text-primary">${Number(course.price).toLocaleString('th-TH')} บาท</span>
+            </p>
+          ` : ''}
         </div>
         <div class="pts-course-card__actions">
           <a href="${enrolled ? `Learn.html?courseId=${course.course_id}` : `CourseDetail.html?courseId=${course.course_id}`}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}">
@@ -174,7 +179,7 @@ function openCourseModal(course) {
             ${enrolled
               ? `<a class="pts-btn pts-btn-primary flex-1" href="Learn.html?courseId=${course.course_id}">เข้าเรียนเลย</a>`
               : `<a class="pts-btn pts-btn-primary flex-1" href="CourseDetail.html?courseId=${course.course_id}">ดูรายละเอียด</a>`}
-            <button type="button" id="fav-course-btn" class="pts-course-icon-btn${Number(course.is_favorited) ? ' is-active' : ''}" aria-label="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" style="width:44px;height:44px;border-radius:999px;border:1.5px solid rgba(151,66,88,.18);background:#fff;color:${Number(course.is_favorited) ? '#974258' : '#5c4f55'};display:inline-grid;place-items:center;cursor:pointer;flex-shrink:0;">
+            <button type="button" id="fav-course-btn" class="pts-course-icon-btn${Number(course.is_favorited) ? ' is-active' : ''}" aria-label="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${Number(course.is_favorited) ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" style="width:44px;height:44px;border-radius:999px;border:1.5px solid rgba(151,66,88,.18);background:#fff;color:${Number(course.is_favorited) ? '#ca1156' : '#5c4f55'};display:inline-grid;place-items:center;cursor:pointer;flex-shrink:0;">
               <span class="material-symbols-outlined" aria-hidden="true" style="font-size:22px;${Number(course.is_favorited) ? "font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24;" : ''}">favorite</span>
             </button>
           </div>
@@ -198,7 +203,7 @@ function openCourseModal(course) {
       course.is_favorited = data.favorited ? 1 : 0;
       const on = !!data.favorited;
       favBtn.classList.toggle('is-active', on);
-      favBtn.style.color = on ? '#974258' : '#5c4f55';
+      favBtn.style.color = on ? '#ca1156' : '#5c4f55';
       const label = on ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด';
       favBtn.setAttribute('aria-label', label);
       favBtn.setAttribute('title', label);
@@ -299,8 +304,8 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
       + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
       + '<img src="/logo.png" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
       + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #974258;border-radius:999px;color:#974258;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#974258;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
       + '</div></div></nav>';
   }
 })();

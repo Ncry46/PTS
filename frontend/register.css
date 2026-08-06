@@ -1,7 +1,7 @@
 /* Register — share Login look; only small layout tweaks for taller form */
 
 body.pts-body.pts-register {
-  --reg-deep: #974258;
+  --reg-deep: #ca1156;
   background-color: #ffffff !important;
   background-image: none !important;
 }
