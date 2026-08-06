@@ -371,7 +371,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุหลักสูตรและชื่อบทเรียน' });
         }
 
-        const flagActive = !(flag_use === 'N' || flag_use === '0' || flag_use === 0 || flag_use === false);
+        const flagActive = flag_use !== undefined && flag_use !== null
+            ? isFlagActive(flag_use)
+            : true;
 
         try {
             const pool = await poolPromise;
