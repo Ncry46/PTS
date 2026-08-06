@@ -5,7 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const { buildPromptPayPayload, getPromptPayId } = require('./promptpay');
 const { mapHeroSlidesImages } = require('./heroImages');
-const { markPaidAndEnroll } = require('./paymentActions');
+const { markPaidAndEnroll, ensureEnrolled } = require('./paymentActions');
 const { findRequiredCourseForm } = require('./formRoutes');
 const { tryUploadLocalFile } = require('./googleDrive');
 const { flagActiveSql, isFlagActive } = require('./db');
@@ -428,6 +428,84 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    router.get('/courses/:courseId/checkout', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+
+        const courseId = parseInt(req.params.courseId, 10);
+        if (!courseId) {
+            return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
+        }
+
+        try {
+            const pool = await poolPromise;
+            const course = await pool.request()
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    SELECT course_id, course_name, ISNULL(price, 0) AS price
+                    FROM dbo.courses
+                    WHERE course_id = @courseId
+                `);
+            if (!course.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
+            }
+
+            const row = course.recordset[0];
+            const isEnrolled = await ensureEnrolled(pool, user.user_id, courseId);
+
+            const paid = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    SELECT TOP 1 payment_id FROM dbo.payments
+                    WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'
+                `);
+
+            const pending = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    SELECT TOP 1
+                        payment_id, amount, status, method, reference_code, slip_image_url
+                    FROM dbo.payments
+                    WHERE user_id = @userId AND course_id = @courseId
+                      AND status IN ('pending', 'pending_review', 'rejected')
+                    ORDER BY created_at DESC
+                `);
+
+            let pendingPayment = null;
+            if (pending.recordset.length) {
+                const p = pending.recordset[0];
+                pendingPayment = {
+                    payment_id: p.payment_id,
+                    amount: p.amount,
+                    status: p.status,
+                    method: p.method,
+                    reference_code: p.reference_code,
+                    qr_payload: null
+                };
+                if (p.method === 'promptpay' && p.status === 'pending') {
+                    const promptpayId = getPromptPayId();
+                    pendingPayment.qr_payload = buildPromptPayPayload(promptpayId, p.amount);
+                }
+            }
+
+            res.json({
+                success: true,
+                data: {
+                    course_id: row.course_id,
+                    course_name: row.course_name,
+                    price: Number(row.price) || 0,
+                    is_enrolled: isEnrolled,
+                    is_paid: paid.recordset.length > 0,
+                    pending_payment: pendingPayment
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
     router.post('/courses/:courseId/pay', async (req, res) => {
         const user = requireLogin(req, res);
         if (!user) return;
@@ -445,14 +523,21 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .query(`SELECT course_id, course_name, ISNULL(price, 990) AS price FROM dbo.courses WHERE course_id = @courseId`);
+                .query(`SELECT course_id, course_name, ISNULL(price, 0) AS price FROM dbo.courses WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
 
-            const amount = Number(req.body.amount != null ? req.body.amount : course.recordset[0].price || 990);
+            const dbPrice = Number(course.recordset[0].price) || 0;
+            let amount = req.body.amount != null && req.body.amount !== ''
+                ? Number(req.body.amount)
+                : dbPrice;
+            if (!Number.isFinite(amount) || amount <= 0) amount = dbPrice;
             if (Number.isNaN(amount) || amount <= 0) {
-                return res.status(400).json({ success: false, message: 'จำนวนเงินไม่ถูกต้อง' });
+                return res.status(400).json({
+                    success: false,
+                    message: 'หลักสูตรนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน หรือใช้รหัสเข้าเรียน'
+                });
             }
 
             const paid = await pool.request()

@@ -12,7 +12,8 @@
     method: 'promptpay',
     paymentId: null,
     qrWidget: null,
-    onSuccess: null
+    onSuccess: null,
+    opening: false
   };
 
   function esc(t) {
@@ -113,9 +114,44 @@
     el.className = 'pts-pay-modal__msg' + (text ? (ok ? ' is-ok' : ' is-err') : '');
   }
 
+  function clearQr(root) {
+    var frame = $('[data-qr-frame]', root);
+    if (!frame) return;
+    frame.innerHTML = '<span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span>';
+    state.qrWidget = null;
+  }
+
+  function resetModalUi(root) {
+    root = root || document.getElementById('pts-pay-modal');
+    if (!root) return;
+    state.paymentId = null;
+    clearQr(root);
+    var meta = $('[data-qr-meta]', root);
+    if (meta) meta.textContent = 'กด “สร้าง QR CODE” เพื่อชำระ';
+    var slipBox = $('[data-slip-box]', root);
+    if (slipBox) slipBox.hidden = true;
+    var slip = $('[data-slip-file]', root);
+    if (slip) slip.value = '';
+    var coupon = $('[data-coupon]', root);
+    if (coupon) coupon.value = '';
+    var createBtn = $('[data-create-qr]', root);
+    if (createBtn) {
+      createBtn.disabled = false;
+      createBtn.textContent = 'สร้าง QR CODE';
+    }
+    var cardBtn = $('[data-pay-card]', root);
+    if (cardBtn) {
+      cardBtn.disabled = false;
+      cardBtn.textContent = 'ชำระด้วยบัตรเครดิต';
+    }
+    setMethod('promptpay');
+    setMsg('');
+  }
+
   function setMethod(method) {
     state.method = method === 'card' ? 'card' : 'promptpay';
     var root = document.getElementById('pts-pay-modal');
+    if (!root) return;
     root.querySelectorAll('.pay-method').forEach(function (btn) {
       var on = btn.getAttribute('data-method') === state.method;
       btn.classList.toggle('is-active', on);
@@ -156,20 +192,29 @@
     });
   }
 
+  async function apiJson(url, options) {
+    var res = await fetch(url, Object.assign({
+      credentials: 'include',
+      cache: 'no-store'
+    }, options || {}));
+    var data = await res.json().catch(function () { return {}; });
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || 'คำขอไม่สำเร็จ');
+    }
+    return data;
+  }
+
   async function createPayment(method) {
     if (!state.courseId) throw new Error('ไม่พบหลักสูตร');
-    if (!(Number(state.price) > 0) && method !== 'access_code') {
-      throw new Error('หลักสูตรนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน');
-    }
-    var res = await fetch('/api/courses/' + encodeURIComponent(state.courseId) + '/pay', {
+    var data = await apiJson('/api/courses/' + encodeURIComponent(state.courseId) + '/pay', {
       method: 'POST',
-      credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ amount: Number(state.price) || 0, method: method })
     });
-    var data = await res.json();
-    if (!res.ok || data.success === false) throw new Error(data.message || 'สร้างรายการไม่สำเร็จ');
-    if (data.already_paid) throw new Error(data.message || 'ชำระหลักสูตรนี้แล้ว');
+    if (data.already_paid) {
+      finishSuccess(data.message || 'ชำระหลักสูตรนี้แล้ว');
+      throw new Error('__handled');
+    }
     return data;
   }
 
@@ -184,13 +229,51 @@
     }, 700);
   }
 
+  async function restorePendingPayment(root) {
+    try {
+      var data = await apiJson('/api/courses/' + encodeURIComponent(state.courseId) + '/checkout');
+      var checkout = data.data || {};
+      if (checkout.is_paid || checkout.is_enrolled) {
+        setMsg(checkout.is_enrolled ? 'คุณสมัครหลักสูตรนี้แล้ว — กำลังพาไปหน้าเรียน...' : 'ชำระเงินแล้ว — กำลังพาไปหน้าเรียน...', true);
+        setTimeout(function () {
+          close();
+          location.href = 'Learn.html?courseId=' + encodeURIComponent(state.courseId);
+        }, 600);
+        return;
+      }
+      var pending = checkout.pending_payment;
+      if (!pending || !pending.payment_id) return;
+      state.paymentId = pending.payment_id;
+      if (pending.status === 'pending_review') {
+        setMsg('ส่งสลิปแล้ว — รอแอดมินตรวจสอบ', true);
+        return;
+      }
+      if (pending.method === 'promptpay' && pending.qr_payload) {
+        renderQr(pending.qr_payload);
+        $('[data-qr-meta]', root).innerHTML =
+          'ยอด <strong>' + money(pending.amount) + '</strong><br>' +
+          'รหัสอ้างอิง <strong>' + esc(pending.reference_code) + '</strong>';
+        $('[data-slip-box]', root).hidden = false;
+        setMsg('พบรายการชำระค้างอยู่ — สแกน QR หรือแนบสลิปได้เลย', true);
+      }
+    } catch (_) { /* optional restore */ }
+  }
+
   function bind(root) {
     root.addEventListener('click', function (e) {
-      if (e.target === root || e.target.closest('[data-pay-close]')) close();
+      if (e.target === root) close();
     });
 
+    var card = root.querySelector('[data-pay-card]');
+    if (card) {
+      card.addEventListener('click', function (e) {
+        e.stopPropagation();
+      });
+    }
+
     root.querySelectorAll('.pay-method').forEach(function (btn) {
-      btn.addEventListener('click', function () {
+      btn.addEventListener('click', function (e) {
+        e.stopPropagation();
         setMethod(btn.getAttribute('data-method'));
       });
     });
@@ -214,7 +297,8 @@
       });
     }
 
-    $('[data-create-qr]', root).addEventListener('click', async function () {
+    $('[data-create-qr]', root).addEventListener('click', async function (e) {
+      e.stopPropagation();
       var btn = $('[data-create-qr]', root);
       btn.disabled = true;
       btn.textContent = 'กำลังสร้าง QR...';
@@ -231,14 +315,15 @@
         $('[data-slip-box]', root).hidden = false;
         setMsg(data.message || 'สร้าง QR แล้ว — โอนแล้วแนบสลิปด้านล่าง', true);
       } catch (err) {
-        setMsg(err.message || 'สร้าง QR ไม่สำเร็จ', false);
+        if (err.message !== '__handled') setMsg(err.message || 'สร้าง QR ไม่สำเร็จ', false);
       } finally {
         btn.disabled = false;
         btn.textContent = 'สร้าง QR CODE';
       }
     });
 
-    $('[data-confirm-qr]', root).addEventListener('click', async function () {
+    $('[data-confirm-qr]', root).addEventListener('click', async function (e) {
+      e.stopPropagation();
       if (!state.paymentId) return setMsg('ยังไม่มีรายการ QR', false);
       var fileInput = $('[data-slip-file]', root);
       if (!fileInput.files || !fileInput.files[0]) {
@@ -249,13 +334,10 @@
       try {
         var fd = new FormData();
         fd.append('slip', fileInput.files[0]);
-        var res = await fetch('/api/payments/' + state.paymentId + '/confirm', {
+        var data = await apiJson('/api/payments/' + state.paymentId + '/confirm', {
           method: 'POST',
-          credentials: 'include',
           body: fd
         });
-        var data = await res.json();
-        if (!res.ok || data.success === false) throw new Error(data.message || 'ส่งสลิปไม่สำเร็จ');
         setMsg(data.message || 'ส่งสลิปแล้ว รอแอดมินตรวจสอบ', true);
         $('[data-slip-box]', root).hidden = true;
         fileInput.value = '';
@@ -266,7 +348,8 @@
       }
     });
 
-    $('[data-pay-card]', root).addEventListener('click', async function () {
+    $('[data-pay-card]', root).addEventListener('click', async function (e) {
+      e.stopPropagation();
       var btn = $('[data-pay-card]', root);
       btn.disabled = true;
       btn.textContent = 'กำลังชำระ...';
@@ -276,9 +359,8 @@
         var paymentId = data.data.payment_id;
         state.paymentId = paymentId;
         var exp = ($('[data-card-exp]', root).value || '').split('/');
-        var res = await fetch('/api/payments/' + paymentId + '/charge-card', {
+        var result = await apiJson('/api/payments/' + paymentId + '/charge-card', {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             card_name: $('[data-card-name]', root).value,
@@ -288,38 +370,42 @@
             cvc: $('[data-card-cvc]', root).value
           })
         });
-        var result = await res.json();
-        if (!res.ok || result.success === false) throw new Error(result.message || 'ชำระด้วยบัตรไม่สำเร็จ');
         finishSuccess(result.message || 'ชำระสำเร็จ');
       } catch (err) {
-        setMsg(err.message, false);
+        if (err.message !== '__handled') setMsg(err.message, false);
       } finally {
         btn.disabled = false;
         btn.textContent = 'ชำระด้วยบัตรเครดิต';
       }
     });
 
-    $('[data-apply-coupon]', root).addEventListener('click', async function () {
+    $('[data-apply-coupon]', root).addEventListener('click', async function (e) {
+      e.stopPropagation();
       var btn = $('[data-apply-coupon]', root);
       btn.disabled = true;
       try {
         var code = ($('[data-coupon]', root).value || '').trim();
         if (!code) throw new Error('กรุณากรอกคูปองโค้ด');
-        var res = await fetch('/api/access-codes/redeem', {
+        var data = await apiJson('/api/access-codes/redeem', {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: code, courseId: state.courseId })
         });
-        var data = await res.json();
-        if (!res.ok || data.success === false) throw new Error(data.message || 'ใช้คูปองไม่สำเร็จ');
         $('[data-coupon]', root).value = '';
         finishSuccess(data.message || 'ใช้คูปองสำเร็จ — เปิดสิทธิ์เรียนแล้ว');
       } catch (err) {
-        setMsg(err.message, false);
+        if (err.message !== '__handled') setMsg(err.message, false);
       } finally {
         btn.disabled = false;
       }
+    });
+
+    root.querySelectorAll('[data-pay-close]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        close();
+      });
     });
 
     document.addEventListener('keydown', function (e) {
@@ -331,29 +417,34 @@
     opts = opts || {};
     if (!opts.courseId) {
       console.warn('PTSPayModal.open requires courseId');
-      return;
+      return false;
     }
+    if (state.opening) return false;
+
+    close();
+
     state.courseId = opts.courseId;
     state.courseName = opts.courseName || '';
     state.price = Number(opts.price || 0);
-    state.paymentId = null;
     state.onSuccess = opts.onSuccess || null;
 
     var root = ensureDom();
+    resetModalUi(root);
+
     $('[data-pay-sub]', root).textContent = state.courseName
       ? 'หลักสูตร: ' + state.courseName
       : 'เลือกช่องทางชำระเงินด้านล่าง';
     $('[data-pay-amount]', root).textContent = money(state.price);
-    $('[data-qr-frame]', root).innerHTML = '<span class="text-sm text-on-surface-variant">กดสร้าง QR เพื่อเริ่มชำระ</span>';
-    $('[data-qr-meta]', root).textContent = 'กด “สร้าง QR CODE” เพื่อชำระ';
-    $('[data-slip-box]', root).hidden = true;
-    var slip = $('[data-slip-file]', root);
-    if (slip) slip.value = '';
-    setMethod('promptpay');
-    setMsg('');
 
     root.classList.add('is-open');
     document.body.classList.add('pts-pay-modal-open');
+
+    state.opening = true;
+    restorePendingPayment(root).finally(function () {
+      state.opening = false;
+    });
+
+    return true;
   }
 
   function close() {
@@ -361,6 +452,7 @@
     if (!root) return;
     root.classList.remove('is-open');
     document.body.classList.remove('pts-pay-modal-open');
+    resetModalUi(root);
   }
 
   window.PTSPayModal = { open: open, close: close };

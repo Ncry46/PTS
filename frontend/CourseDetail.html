@@ -12,10 +12,11 @@
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link rel="stylesheet" href="site.css?v=20260727cardicons">
 <link rel="stylesheet" href="payments.css?v=20260727enrollpay">
-<link rel="stylesheet" href="pay-modal.css?v=20260727cardicons">
+<link rel="stylesheet" href="pay-modal.css?v=20260806payfix">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="/comp/pay-modal.js?v=20260806payfix"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#974258','on-surface-variant':'#5c4f55',error:'#ba1a1a'}}}}</script>
 <style>
   .pts-notify {
@@ -504,14 +505,61 @@ async function mountCourseNotifyControls(hostEl) {
     location.href = href;
   });
 
-  document.getElementById('pay-course')?.addEventListener('click', () => {
-    if (!window.PTSPayModal) return;
-    window.PTSPayModal.open({
+  function showToolbarMsg(text, ok) {
+    const msg = document.getElementById('course-toolbar-msg');
+    if (!msg) return;
+    msg.hidden = !text;
+    msg.textContent = text || '';
+    msg.className = 'pts-msg' + (text ? (ok ? ' pts-msg--ok' : ' pts-msg--err') : '');
+  }
+
+  async function enrollFreeCourse() {
+    const res = await fetch(`/api/courses/${courseId}/enroll`, {
+      method: 'POST',
+      credentials: 'include',
+      cache: 'no-store'
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok || out.success === false) throw new Error(out.message || 'สมัครเรียนไม่สำเร็จ');
+    showToolbarMsg(out.message || 'สมัครเรียนสำเร็จ', true);
+    setTimeout(() => { location.href = `Learn.html?courseId=${c.course_id}`; }, 500);
+  }
+
+  function openPaymentModal() {
+    if (!window.PTSPayModal || typeof window.PTSPayModal.open !== 'function') {
+      showToolbarMsg('ระบบชำระเงินยังโหลดไม่เสร็จ กรุณารีเฟรชแล้วลองอีกครั้ง', false);
+      return;
+    }
+    const opened = window.PTSPayModal.open({
       courseId: c.course_id,
       courseName: c.course_name,
-      price: price
+      price: price,
+      onSuccess: () => showToolbarMsg('ชำระเงินสำเร็จ — กำลังเปิดหลักสูตร', true)
     });
-  });
+    if (!opened) showToolbarMsg('ไม่สามารถเปิดหน้าชำระเงินได้ กรุณาลองอีกครั้ง', false);
+  }
+
+  const ctaRow = document.querySelector('.pts-course-cta-row');
+  if (ctaRow) {
+    ctaRow.addEventListener('click', async (e) => {
+      const btn = e.target.closest('#pay-course');
+      if (!btn || btn.disabled) return;
+      e.preventDefault();
+      showToolbarMsg('');
+      btn.disabled = true;
+      try {
+        if (price > 0) {
+          openPaymentModal();
+        } else {
+          await enrollFreeCourse();
+        }
+      } catch (err) {
+        showToolbarMsg(err.message || 'สมัครเรียนไม่สำเร็จ', false);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
 
   document.getElementById('calendar-course')?.addEventListener('click', () => {
     const msg = document.getElementById('course-toolbar-msg');
@@ -581,7 +629,6 @@ async function mountCourseNotifyControls(hostEl) {
   }
 })();
 </script>
-<script src="/comp/pay-modal.js?v=20260727cardicons"></script>
 <script src="/comp/navbar.js?v=20260727paymodal"></script>
 </body>
 </html>

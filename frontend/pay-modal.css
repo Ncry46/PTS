@@ -10,8 +10,14 @@
   background: rgba(20, 18, 24, 0.48);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
+  pointer-events: none;
+  visibility: hidden;
 }
-.pts-pay-modal.is-open { display: flex; }
+.pts-pay-modal.is-open {
+  display: flex;
+  pointer-events: auto;
+  visibility: visible;
+}
 body.pts-pay-modal-open { overflow: hidden; }
 
 .pts-pay-modal__card {
