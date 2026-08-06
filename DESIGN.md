@@ -123,17 +123,17 @@ A restrained rose palette: one primary voice, one quiet green accent, tinted neu
 **Display Font:** Sora (fallback IBM Plex Sans Thai)
 **Body Font:** IBM Plex Sans Thai
 
-**Character:** Thai-capable humanist UI type with a slightly sharper display face for brand and page titles — professional, not playful.
+**Character:** Thai-capable humanist UI type with a slightly sharper display face for brand and page section_titles — professional, not playful.
 
 ### Hierarchy
 - **Display** (Sora, 600–700): brand name, page heroes (`pts-display`), large numerals in date badges.
-- **Headline** (IBM Plex / Sora mix, bold): section titles (`h1`/`h2` around 1.75–2.25rem on product pages).
-- **Title** (IBM Plex, 600–700, ~1.125rem): panel headings, card titles.
+- **Headline** (IBM Plex / Sora mix, bold): section section_titles (`h1`/`h2` around 1.75–2.25rem on product pages).
+- **section_title** (IBM Plex, 600–700, ~1.125rem): panel headings, card section_titles.
 - **Body** (IBM Plex, 400–500, ~15px, line-height ~1.5): form copy, descriptions; keep prose readable.
 - **Label** (IBM Plex, 600, ~12–13px): field labels, chips, nav meta.
 
 ### Named Rules
-**The Product Type Rule.** Prefer IBM Plex Sans Thai for labels, buttons, and data. Reserve Sora for brand and major titles — not every heading.
+**The Product Type Rule.** Prefer IBM Plex Sans Thai for labels, buttons, and data. Reserve Sora for brand and major section_titles — not every heading.
 
 ## 4. Elevation
 

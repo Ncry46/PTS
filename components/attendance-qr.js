@@ -58,7 +58,7 @@
             <span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>
             Onsite Check-in
           </span>
-          <h3 class="pts-attend-qr__title">QR เข้าเรียนออนไซต์</h3>
+          <h3 class="pts-attend-qr__section_title">QR เข้าเรียนออนไซต์</h3>
           <p class="pts-attend-qr__lead">แสดง QR นี้ที่จุดสแกนเมื่อเข้าคลาส Onsite — ระบบใช้เมลที่คุณล็อกอิน</p>
         </div>
         <div class="pts-attend-qr__frame" data-pts-attend-qr-frame></div>

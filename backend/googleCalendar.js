@@ -250,7 +250,7 @@ function buildEventBody(schedule, options = {}) {
     }
 
     const body = {
-        summary: `${schedule.title}${courseLabel}`,
+        summary: `${schedule.section_title}${courseLabel}`,
         description: lines.join('\n'),
         location: schedule.location || schedule.meeting_url || '',
         start: {
@@ -593,7 +593,7 @@ async function listUserFutureSchedules(pool, userId, courseId) {
     }
     const result = await req.query(`
         SELECT
-            s.schedule_id, s.title, s.start_at, s.end_at, s.location,
+            s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
             s.meeting_url, s.delivery_mode, s.course_id, c.course_name
         FROM dbo.class_schedules s
         LEFT JOIN dbo.courses c ON c.course_id = s.course_id
@@ -914,7 +914,7 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
             .input('scheduleId', sql.Int, scheduleId)
             .query(`
                 SELECT
-                    s.schedule_id, s.title, s.start_at, s.end_at, s.location,
+                    s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
@@ -940,7 +940,7 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
                     pool,
                     row.user_id,
                     'ตารางเรียนใหม่ในปฏิทิน',
-                    `${schedule.title} ถูกเพิ่มลง Google Calendar พร้อมแจ้งเตือน`,
+                    `${schedule.section_title} ถูกเพิ่มลง Google Calendar พร้อมแจ้งเตือน`,
                     'Schedule.html'
                 );
             } catch (err) {

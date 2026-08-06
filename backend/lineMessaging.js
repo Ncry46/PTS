@@ -332,8 +332,8 @@ function buildQuickActionsCarousel(opts = {}) {
 
     const cards = [
         actionBubble({
-            title: 'คอร์สเรียน',
-            subtitle: 'COURSES',
+            section_title: 'คอร์สเรียน',
+            subsection_title: 'COURSES',
             body: 'ดูรายการหลักสูตรแนะนำ พร้อมราคาและรายละเอียด',
             color: BRAND.primary,
             banner: 'https://placehold.co/800x420/974258/ffffff/png?text=Courses',
@@ -341,8 +341,8 @@ function buildQuickActionsCarousel(opts = {}) {
             uri: courses
         }),
         actionBubble({
-            title: 'สมัครเรียน',
-            subtitle: 'REGISTER',
+            section_title: 'สมัครเรียน',
+            subsection_title: 'REGISTER',
             body: 'เลือกคอร์สแล้วสมัคร / ชำระเงินได้จากใน LINE',
             color: BRAND.teal,
             banner: 'https://placehold.co/800x420/0f766e/ffffff/png?text=Register',
@@ -350,8 +350,8 @@ function buildQuickActionsCarousel(opts = {}) {
             uri: register
         }),
         actionBubble({
-            title: 'ตารางเรียน',
-            subtitle: 'SCHEDULE',
+            section_title: 'ตารางเรียน',
+            subsection_title: 'SCHEDULE',
             body: 'ดูรอบเรียน Online / Onsite / Hybrid ของคุณ',
             color: BRAND.accent,
             banner: 'https://placehold.co/800x420/3d5a4c/ffffff/png?text=Schedule',
@@ -359,8 +359,8 @@ function buildQuickActionsCarousel(opts = {}) {
             uri: schedule
         }),
         actionBubble({
-            title: 'โปรไฟล์',
-            subtitle: 'PROFILE',
+            section_title: 'โปรไฟล์',
+            subsection_title: 'PROFILE',
             body: 'เชื่อมบัญชี PTS กับ LINE เพื่อรับแจ้งเตือน',
             color: BRAND.olive,
             banner: 'https://placehold.co/800x420/6b7c3c/ffffff/png?text=Profile',
@@ -379,7 +379,7 @@ function buildQuickActionsCarousel(opts = {}) {
     };
 }
 
-function actionBubble({ title, subtitle, body, color, banner, cta, uri }) {
+function actionBubble({ section_title, subsection_title, body, color, banner, cta, uri }) {
     return {
         type: 'bubble',
         size: 'mega',
@@ -405,7 +405,7 @@ function actionBubble({ title, subtitle, body, color, banner, cta, uri }) {
                             contents: [
                                 {
                                     type: 'text',
-                                    text: subtitle,
+                                    text: subsection_title,
                                     size: 'xxs',
                                     color: '#ffffff',
                                     weight: 'bold'
@@ -416,7 +416,7 @@ function actionBubble({ title, subtitle, body, color, banner, cta, uri }) {
                 },
                 {
                     type: 'text',
-                    text: title,
+                    text: section_title,
                     weight: 'bold',
                     size: 'xl',
                     color: BRAND.text,
@@ -534,7 +534,7 @@ function buildHomeMessages(opts = {}) {
     ];
 }
 
-function menuTile(title, subtitle, uri, color) {
+function menuTile(section_title, subsection_title, uri, color) {
     return {
         type: 'box',
         layout: 'vertical',
@@ -561,7 +561,7 @@ function menuTile(title, subtitle, uri, color) {
             },
             {
                 type: 'text',
-                text: title,
+                text: section_title,
                 weight: 'bold',
                 size: 'sm',
                 color: BRAND.text,
@@ -569,7 +569,7 @@ function menuTile(title, subtitle, uri, color) {
             },
             {
                 type: 'text',
-                text: subtitle,
+                text: subsection_title,
                 size: 'xxs',
                 color: BRAND.muted,
                 wrap: true,
@@ -580,13 +580,13 @@ function menuTile(title, subtitle, uri, color) {
 }
 
 /** Payment / general notification card like the mock */
-function buildNotifyFlex(title, body, linkUrl) {
-    const isPay = /ชำระ|จ่าย|payment|pay|ค้างชำระ/i.test(String(title || '') + String(body || ''));
-    const isSuccess = /สำเร็จ|เปิดสิทธิ์|ลงทะเบียน|สมัคร.*แล้ว|enroll/i.test(String(title || '') + String(body || ''));
+function buildNotifyFlex(section_title, body, linkUrl) {
+    const isPay = /ชำระ|จ่าย|payment|pay|ค้างชำระ/i.test(String(section_title || '') + String(body || ''));
+    const isSuccess = /สำเร็จ|เปิดสิทธิ์|ลงทะเบียน|สมัคร.*แล้ว|enroll/i.test(String(section_title || '') + String(body || ''));
 
     if (isSuccess && !isPay) {
         return buildRegistrationSuccessFlex({
-            title: title || 'ลงทะเบียนสำเร็จแล้ว',
+            section_title: section_title || 'ลงทะเบียนสำเร็จแล้ว',
             body,
             linkUrl
         });
@@ -595,7 +595,7 @@ function buildNotifyFlex(title, body, linkUrl) {
     const contents = [
         {
             type: 'text',
-            text: String(title || 'การแจ้งเตือน').slice(0, 80),
+            text: String(section_title || 'การแจ้งเตือน').slice(0, 80),
             weight: 'bold',
             size: 'lg',
             color: BRAND.primary,
@@ -661,14 +661,14 @@ function buildNotifyFlex(title, body, linkUrl) {
 
     return {
         type: 'flex',
-        altText: String(title || 'PTS Learning').slice(0, 100),
+        altText: String(section_title || 'PTS Learning').slice(0, 100),
         contents: bubble
     };
 }
 
 /** Registration success card (green check) matching OA mock */
 function buildRegistrationSuccessFlex(opts = {}) {
-    const title = String(opts.title || 'ลงทะเบียนสำเร็จแล้ว').slice(0, 60);
+    const section_title = String(opts.section_title || 'ลงทะเบียนสำเร็จแล้ว').slice(0, 60);
     const code = String(opts.code || opts.ref || '').trim();
     const courseName = String(opts.courseName || opts.body || '').slice(0, 80);
     const linkUrl = opts.linkUrl || 'MyCourses.html';
@@ -701,7 +701,7 @@ function buildRegistrationSuccessFlex(opts = {}) {
 
     return {
         type: 'flex',
-        altText: title,
+        altText: section_title,
         contents: {
             type: 'bubble',
             size: 'mega',
@@ -737,7 +737,7 @@ function buildRegistrationSuccessFlex(opts = {}) {
                                 contents: [
                                     {
                                         type: 'text',
-                                        text: title,
+                                        text: section_title,
                                         weight: 'bold',
                                         size: 'md',
                                         color: BRAND.text,
@@ -841,9 +841,9 @@ function buildPaymentFlex(opts = {}) {
     };
 }
 
-function buildSuccessFlex(title, rows) {
+function buildSuccessFlex(section_title, rows) {
     return buildRegistrationSuccessFlex({
-        title,
+        section_title,
         code: (rows || []).find((r) => /รหัส|code|ref/i.test(String(r.label || '')))?.value,
         courseName: (rows || []).find((r) => /หลักสูตร|course/i.test(String(r.label || '')))?.value
             || (rows || []).map((r) => r.value).filter(Boolean).join(' · ')
@@ -852,7 +852,7 @@ function buildSuccessFlex(title, rows) {
 
 function buildCourseBubble(course) {
     const id = course.course_id || course.id;
-    const name = String(course.course_name || course.title || 'หลักสูตร').slice(0, 80);
+    const name = String(course.course_name || course.section_title || 'หลักสูตร').slice(0, 80);
     const instructor = String(course.instructor_name || 'PTS Instructor').slice(0, 40);
     const hours = Number(course.total_hours || 0);
     const price = Number(course.price || 0);
@@ -1006,11 +1006,11 @@ async function getLinkedLineUserId(pool, userId) {
     return result.recordset[0]?.line_user_id || null;
 }
 
-async function pushToUser(pool, userId, title, body, linkUrl) {
+async function pushToUser(pool, userId, section_title, body, linkUrl) {
     if (!isMessagingConfigured()) return { skipped: true, reason: 'messaging_not_configured' };
     const lineUserId = await getLinkedLineUserId(pool, userId);
     if (!lineUserId) return { skipped: true, reason: 'not_linked' };
-    await pushMessage(lineUserId, [buildNotifyFlex(title, body, linkUrl)]);
+    await pushMessage(lineUserId, [buildNotifyFlex(section_title, body, linkUrl)]);
     return { ok: true };
 }
 

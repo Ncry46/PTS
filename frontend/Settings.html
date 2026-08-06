@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ตั้งค่าบัญชี | PTS Learning</title>
+<section_title>ตั้งค่าบัญชี | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -29,7 +29,7 @@
   @media (min-width: 900px) {
     .set-grid-2 { grid-template-columns: 1fr 1.15fr; gap: 28px; }
   }
-  .set-title {
+  .set-section_title {
     font-size: 1.05rem;
     font-weight: 700;
     color: #1c1520;
@@ -113,7 +113,7 @@
   }
   .set-conn__icon--line { color: #06C755; }
   .set-conn__body { flex: 1; min-width: 0; }
-  .set-conn__title { font-size: 14px; font-weight: 700; color: #1c1520; }
+  .set-conn__section_title { font-size: 14px; font-weight: 700; color: #1c1520; }
   .set-conn__status { font-size: 12px; color: #5c4f55; margin-top: 2px; }
   .set-conn__status.is-on { color: #2e7d32; font-weight: 600; }
   .set-radio {
@@ -154,7 +154,7 @@
   <div class="set-page">
     <section class="pts-page-hero" style="margin-bottom:18px;">
       <span class="pts-chip mb-3">Account</span>
-      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.settings.title">ตั้งค่าบัญชี</h1>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.settings.section_title">ตั้งค่าบัญชี</h1>
       <p class="text-on-surface-variant" data-i18n="page.settings.sub">จัดการโปรไฟล์และความปลอดภัย รวมถึงการเชื่อมต่อของคุณ</p>
     </section>
 
@@ -162,11 +162,11 @@
     <section class="set-card">
       <div class="set-grid-2">
         <div>
-          <h2 class="set-title" data-i18n="settings.profile">ข้อมูลส่วนตัว</h2>
+          <h2 class="set-section_title" data-i18n="settings.profile">ข้อมูลส่วนตัว</h2>
           <div class="set-profile">
             <div class="set-avatar-wrap">
               <img id="avatar-preview" class="set-avatar" src="" alt="รูปโปรไฟล์">
-              <button type="button" id="pick-avatar" class="set-avatar-edit" data-i18n-title="settings.changeAvatar" data-i18n-aria-label="settings.changeAvatar" title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
+              <button type="button" id="pick-avatar" class="set-avatar-edit" data-i18n-section_title="settings.changeAvatar" data-i18n-aria-label="settings.changeAvatar" section_title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
                 <span class="material-symbols-outlined">photo_camera</span>
               </button>
               <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
@@ -192,7 +192,7 @@
         </div>
 
         <div>
-          <h2 class="set-title" data-i18n="settings.account">บัญชีและความปลอดภัย</h2>
+          <h2 class="set-section_title" data-i18n="settings.account">บัญชีและความปลอดภัย</h2>
           <label class="set-field"><span data-i18n="settings.email">อีเมล</span><input id="email" class="set-input" disabled></label>
           <label class="set-field"><span data-i18n="settings.currentPassword">รหัสผ่านปัจจุบัน</span>
             <div class="pts-pw-wrap relative">
@@ -220,7 +220,7 @@
 
     <!-- Middle: Language + Connections -->
     <section class="set-card" id="connections" style="margin-top:18px;">
-      <h2 class="set-title" data-i18n="settings.langConnections">ภาษาและการเชื่อมต่อ</h2>
+      <h2 class="set-section_title" data-i18n="settings.langConnections">ภาษาและการเชื่อมต่อ</h2>
       <p class="set-sub" data-i18n="settings.language">ภาษา</p>
       <div class="set-radio" role="radiogroup" data-i18n-aria-label="settings.language" aria-label="ภาษา">
         <label><input type="radio" name="lang" value="th" checked> <span data-i18n="settings.lang.th">ไทย</span></label>
@@ -232,10 +232,10 @@
       <div class="set-conn" id="line-oa">
         <div class="set-conn__icon set-conn__icon--line"><span class="material-symbols-outlined">chat</span></div>
         <div class="set-conn__body">
-          <div class="set-conn__title">LINE OA</div>
+          <div class="set-conn__section_title">LINE OA</div>
           <div class="set-conn__status" id="line-status-text">กำลังตรวจสอบ...</div>
         </div>
-        <label class="pts-switch" title="เชื่อม LINE OA">
+        <label class="pts-switch" section_title="เชื่อม LINE OA">
           <input type="checkbox" id="line-toggle">
           <span class="pts-switch__slider"></span>
         </label>
@@ -255,10 +255,10 @@
       <div class="set-conn scroll-mt-24" id="google-calendar">
         <div class="set-conn__icon"><span class="material-symbols-outlined">calendar_month</span></div>
         <div class="set-conn__body">
-          <div class="set-conn__title">Google Calendar</div>
+          <div class="set-conn__section_title">Google Calendar</div>
           <div class="set-conn__status" id="gcal-status-text">กำลังตรวจสอบ...</div>
         </div>
-        <label class="pts-switch" title="เชื่อม Google Calendar">
+        <label class="pts-switch" section_title="เชื่อม Google Calendar">
           <input type="checkbox" id="gcal-toggle">
           <span class="pts-switch__slider"></span>
         </label>
@@ -269,7 +269,7 @@
           <p class="font-semibold text-sm" data-i18n="settings.gcalReminders">การแจ้งเตือนก่อนวันเรียน</p>
           <p class="text-xs text-on-surface-variant mt-0.5" data-i18n="settings.gcalRemindersHint">เปิด = แจ้งล่วงหน้า 1 วัน และ 1 ชั่วโมง ใน Google Calendar</p>
         </div>
-        <label class="pts-switch" title="เปิด/ปิดการแจ้งเตือน">
+        <label class="pts-switch" section_title="เปิด/ปิดการแจ้งเตือน">
           <input type="checkbox" id="gcal-reminders-toggle">
           <span class="pts-switch__slider"></span>
         </label>

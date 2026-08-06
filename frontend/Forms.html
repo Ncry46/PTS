@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>แบบฟอร์ม | PTS Learning</title>
+<section_title>แบบฟอร์ม | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -101,7 +101,7 @@ async function load() {
               <span class="pts-chip" style="margin:0">${escapeHtml(typeLabel(f.form_type))}</span>
               ${discDone}
             </div>
-            <h2 class="text-lg font-bold text-primary mb-1">${escapeHtml(f.title)}</h2>
+            <h2 class="text-lg font-bold text-primary mb-1">${escapeHtml(f.section_title)}</h2>
             <p class="text-sm text-on-surface-variant">${escapeHtml(f.description || '—')}</p>
             ${courseHint}
             <p class="text-xs text-on-surface-variant mt-2">${Number(f.question_count || 0)} คำถาม

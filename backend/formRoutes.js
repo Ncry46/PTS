@@ -107,7 +107,7 @@ async function findRequiredCourseForm(pool, userId, courseId) {
         .input('userId', sql.Int, userId)
         .query(`
             SELECT TOP 1
-                f.form_id, f.title,
+                f.form_id, f.section_title,
                 (SELECT TOP 1 r.response_id
                  FROM dbo.custom_form_responses r
                  WHERE r.form_id = f.form_id AND r.user_id = @userId
@@ -122,7 +122,7 @@ async function findRequiredCourseForm(pool, userId, courseId) {
     const row = result.recordset[0];
     if (!row) return null;
     if (row.my_response_id) return null;
-    return { form_id: row.form_id, title: row.title };
+    return { form_id: row.form_id, section_title: row.section_title };
 }
 
 function createFormRouter({ poolPromise, requireLogin }) {
@@ -140,7 +140,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT
-                        f.form_id, f.title, f.description, f.allow_resubmit, f.updated_at, f.created_at,
+                        f.form_id, f.section_title, f.description, f.allow_resubmit, f.updated_at, f.created_at,
                         ISNULL(f.form_type, 'general') AS form_type,
                         f.course_id,
                         c.course_name,
@@ -216,7 +216,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
             const formRes = await pool.request()
                 .input('formId', sql.Int, formId)
                 .query(`
-                    SELECT f.form_id, f.title, f.description, f.is_published, f.allow_resubmit,
+                    SELECT f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
                            f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
                            f.course_id, c.course_name
                     FROM dbo.custom_forms f
@@ -484,7 +484,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    f.form_id, f.title, f.description, f.is_published, f.allow_resubmit,
+                    f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
                     f.flag_use, f.created_by, f.created_at, f.updated_at,
                     ISNULL(f.form_type,'general') AS form_type,
                     f.course_id, c.course_name,
@@ -506,8 +506,8 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
     router.post('/forms', async (req, res) => {
         const admin = requireAdmin(req, res);
         if (!admin) return;
-        const title = String(req.body?.title || '').trim();
-        if (!title) return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อแบบฟอร์ม' });
+        const section_title = String(req.body?.section_title || '').trim();
+        if (!section_title) return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อแบบฟอร์ม' });
         const formType = normalizeFormType(req.body?.form_type);
         let courseId = req.body?.course_id != null && req.body?.course_id !== ''
             ? Number(req.body.course_id)
@@ -527,7 +527,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 }
             }
             const result = await pool.request()
-                .input('title', sql.NVarChar, title)
+                .input('section_title', sql.NVarChar, section_title)
                 .input('description', sql.NVarChar, String(req.body?.description || '').trim() || null)
                 .input('published', sql.Bit, req.body?.is_published ? 1 : 0)
                 .input('resubmit', sql.Bit, formType === 'disc' ? 1 : (req.body?.allow_resubmit ? 1 : 0))
@@ -536,9 +536,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     INSERT INTO dbo.custom_forms
-                        (title, description, is_published, allow_resubmit, flag_use, created_by, form_type, course_id)
+                        (section_title, description, is_published, allow_resubmit, flag_use, created_by, form_type, course_id)
                     OUTPUT INSERTED.*
-                    VALUES (@title, @description, @published, @resubmit, 1, @createdBy, @formType, @courseId)
+                    VALUES (@section_title, @description, @published, @resubmit, 1, @createdBy, @formType, @courseId)
                 `);
             res.json({ success: true, data: result.recordset[0], disc_option_labels: DISC_OPTION_LABELS });
         } catch (error) {
@@ -615,7 +615,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
 
             const result = await pool.request()
                 .input('formId', sql.Int, formId)
-                .input('title', sql.NVarChar, body.title != null ? String(body.title).trim() : null)
+                .input('section_title', sql.NVarChar, body.section_title != null ? String(body.section_title).trim() : null)
                 .input('description', sql.NVarChar, body.description != null ? String(body.description).trim() : null)
                 .input('published', sql.Bit, body.is_published == null ? null : (body.is_published ? 1 : 0))
                 .input('resubmit', sql.Bit, body.allow_resubmit == null ? null : (body.allow_resubmit ? 1 : 0))
@@ -624,7 +624,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     UPDATE dbo.custom_forms
                     SET
-                        title = COALESCE(@title, title),
+                        section_title = COALESCE(@section_title, section_title),
                         description = CASE WHEN @description IS NULL THEN description ELSE @description END,
                         is_published = COALESCE(@published, is_published),
                         allow_resubmit = COALESCE(@resubmit, allow_resubmit),

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>PTS ใน LINE | Personal Assistant Academy</title>
+<section_title>PTS ใน LINE | Personal Assistant Academy</section_title>
 <script src="/comp/theme-boot.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
@@ -116,7 +116,7 @@
   }
   .la-course__meta span { display: inline-flex; align-items: center; gap: 4px; }
   .la-course__meta .material-symbols-outlined { font-size: 15px; }
-  .la-course__title {
+  .la-course__section_title {
     margin: 0 0 10px; font-size: 1.05rem; line-height: 1.35; font-weight: 700;
     color: var(--la-text);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
@@ -221,7 +221,7 @@
           <span>Personal Assistant Academy</span>
         </div>
       </div>
-      <button type="button" class="la-icon-btn" id="la-refresh" title="รีเฟรช" aria-label="รีเฟรช">
+      <button type="button" class="la-icon-btn" id="la-refresh" section_title="รีเฟรช" aria-label="รีเฟรช">
         <span class="material-symbols-outlined">refresh</span>
       </button>
     </div>
@@ -417,7 +417,7 @@
               <span><span class="material-symbols-outlined">person</span>${escapeHtml(c.instructor_name || 'PTS Instructor')}</span>
               <span><span class="material-symbols-outlined">schedule</span>${hours || '-'} ชม.</span>
             </div>
-            <h3 class="la-course__title">${escapeHtml(c.course_name)}</h3>
+            <h3 class="la-course__section_title">${escapeHtml(c.course_name)}</h3>
             <div class="la-course__foot">
               <div class="la-price">
                 ${price && compare ? `<s>฿${compare.toLocaleString('th-TH')}</s>` : ''}
@@ -463,7 +463,7 @@
       }
       notifyEl.innerHTML = rows.slice(0, 20).map((n) => `
         <a class="la-notif" href="${escapeHtml(n.link_url || 'Notifications.html')}">
-          <strong>${escapeHtml(n.title || 'การแจ้งเตือน')}</strong>
+          <strong>${escapeHtml(n.section_title || 'การแจ้งเตือน')}</strong>
           <p>${escapeHtml(n.body || '')}</p>
         </a>`).join('');
     } catch (err) {

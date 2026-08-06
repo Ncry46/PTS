@@ -125,7 +125,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        l.lesson_id, l.course_id, l.title, l.video_url, l.flag_use, l.duration_minutes,
+                        l.lesson_id, l.course_id, l.section_title, l.video_url, l.flag_use, l.duration_minutes,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
                     LEFT JOIN dbo.lesson_progress lp
@@ -161,7 +161,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        l.lesson_id, l.course_id, l.title, l.content_html, l.video_url,
+                        l.lesson_id, l.course_id, l.section_title, l.content_html, l.video_url,
                         l.flag_use, l.duration_minutes, c.course_name,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
@@ -194,7 +194,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const siblings = await pool.request()
                 .input('courseId', sql.Int, lesson.course_id)
                 .query(`
-                    SELECT lesson_id, title, flag_use
+                    SELECT lesson_id, section_title, flag_use
                     FROM dbo.course_lessons
                     WHERE course_id = @courseId AND flag_use = 1
                     ORDER BY flag_use ASC, lesson_id ASC
@@ -262,7 +262,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        s.schedule_id, s.title, s.start_at, s.end_at, s.location,
+                        s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
                         s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                     FROM dbo.class_schedules s
                     LEFT JOIN dbo.courses c ON c.course_id = s.course_id
@@ -285,7 +285,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT TOP 50
-                    s.schedule_id, s.title, s.start_at, s.end_at, s.location,
+                    s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
@@ -818,9 +818,9 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    slide_id, flag_use, eyebrow, title, title_highlight, lead,
+                    slide_id, flag_use, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, theme_color
+                    image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, theme_color
                 FROM dbo.hero_slides
                 WHERE flag_use = 1
                 ORDER BY flag_use ASC, slide_id ASC

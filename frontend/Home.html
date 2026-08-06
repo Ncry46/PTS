@@ -235,7 +235,7 @@
 <!-- Why Choose PTS Learning Section -->
 <section class="py-xl bg-surface-container-low">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
-<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl" data-i18n="home.whyTitle">ทำไมต้องเลือก PTS Learning</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl" data-i18n="home.whysection_title">ทำไมต้องเลือก PTS Learning</h2>
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
 <div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
 <div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
@@ -743,7 +743,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
         <div class="pts-course-card__body">
           <div class="pts-course-card__copy">
-            <div class="pts-course-card__meta-row" title="${escapeHtml(c.instructor_name || '-')}">
+            <div class="pts-course-card__meta-row" section_title="${escapeHtml(c.instructor_name || '-')}">
               <span class="material-symbols-outlined" aria-hidden="true">person</span>
               <span>${escapeHtml(c.instructor_name || '-')}</span>
             </div>
@@ -751,7 +751,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
               <span>${escapeHtml(hours)}</span>
             </div>
-            <h3 class="pts-course-card__title">${escapeHtml(c.course_name)}</h3>
+            <h3 class="pts-course-card__section_title">${escapeHtml(c.course_name)}</h3>
           </div>
           <div class="pts-course-card__foot">
             <span class="pts-course-card__price">฿${price}</span>

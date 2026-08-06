@@ -48,8 +48,8 @@
     scope.querySelectorAll('[data-i18n-aria-label]').forEach(function (el) {
       setAttr(el, 'aria-label', el.getAttribute('data-i18n-aria-label'));
     });
-    scope.querySelectorAll('[data-i18n-title]').forEach(function (el) {
-      setAttr(el, 'title', el.getAttribute('data-i18n-title'));
+    scope.querySelectorAll('[data-i18n-section_title]').forEach(function (el) {
+      setAttr(el, 'section_title', el.getAttribute('data-i18n-section_title'));
     });
     scope.querySelectorAll('[data-i18n-value]').forEach(function (el) {
       var key = el.getAttribute('data-i18n-value');

@@ -368,7 +368,7 @@ input[type="password"]::-ms-reveal,
     backdrop-filter: blur(8px);
   }
 
-  .pts-login__visual-title {
+  .pts-login__visual-section_title {
     margin: 0;
     font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
     font-size: clamp(1.35rem, 2.6vw, 1.85rem);
@@ -423,7 +423,7 @@ input[type="password"]::-ms-reveal,
     color: var(--pts-primary, #974258);
   }
 
-  .pts-login__title {
+  .pts-login__section_title {
     margin: 0;
     font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
     font-size: clamp(1.55rem, 3vw, 1.9rem);

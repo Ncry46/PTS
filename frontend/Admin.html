@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin | PTS Learning</title>
+<section_title>Admin | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -268,8 +268,8 @@
     display:inline-flex; padding:4px 10px; border-radius:999px; margin:0 0 8px;
     background:rgba(255,255,255,.18); font-size:11px; font-weight:700;
   }
-  .ban-preview__title { margin:0 0 6px; font-size:1.25rem; font-weight:800; line-height:1.25; }
-  .ban-preview__title em { font-style:normal; color:#ffd0da; }
+  .ban-preview__section_title { margin:0 0 6px; font-size:1.25rem; font-weight:800; line-height:1.25; }
+  .ban-preview__section_title em { font-style:normal; color:#ffd0da; }
   .ban-preview__lead { margin:0; font-size:13px; opacity:.88; line-height:1.45; }
   .ban-preview__img {
     width:100%; aspect-ratio:4/5; max-height:180px; object-fit:cover; object-position:center 14%;
@@ -516,7 +516,7 @@
   <div class="admin-main">
     <section class="pts-page-hero">
       <span class="pts-chip mb-3">Admin</span>
-      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.admin.title">แผงควบคุมแอดมิน</h1>
+      <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.admin.section_title">แผงควบคุมแอดมิน</h1>
       <p class="text-on-surface-variant" data-i18n="page.admin.sub">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์ รูปใบประกาศ และการส่งอีเมล OTP</p>
     </section>
     <section id="panel" class="pts-panel"></section>
@@ -608,7 +608,7 @@ async function renderCourses() {
     <tr data-course-id="${c.course_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
+          <span class="adm-c-id" section_title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
           ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
         </div>
@@ -627,7 +627,7 @@ async function renderCourses() {
     <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
+          <span class="adm-c-id" section_title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
@@ -677,7 +677,7 @@ async function renderCourses() {
   };
 
   document.getElementById('panel').innerHTML = `
-    <h2 id="course-form-title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
+    <h2 id="course-form-section_title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร *">
       <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
@@ -685,7 +685,7 @@ async function renderCourses() {
       <input id="c-hours" type="number" step="0.1" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง (total_hours)" value="4">
       <input id="c-price" type="number" step="0.01" class="border rounded-xl px-3 py-2" placeholder="ราคา (price)">
       <input id="c-cat" type="number" class="border rounded-xl px-3 py-2" placeholder="หมวดหมู่ (coursescat_id)">
-      <input id="c-start" type="date" class="border rounded-xl px-3 py-2" title="start_date">
+      <input id="c-start" type="date" class="border rounded-xl px-3 py-2" section_title="start_date">
       <input id="c-enrolled" type="number" class="border rounded-xl px-3 py-2" placeholder="จำนวนลงทะเบียน (total_enrolled)" value="0">
       <input id="c-flag" class="border rounded-xl px-3 py-2" placeholder="coursesFlag (เช่น Y)" value="Y">
       <input id="c-cover" class="border rounded-xl px-3 py-2" placeholder="URL รูปปก (cover_image_url)">
@@ -713,7 +713,7 @@ async function renderCourses() {
   `;
 
   const formMsg = document.getElementById('course-form-msg');
-  const formTitle = document.getElementById('course-form-title');
+  const formsection_title = document.getElementById('course-form-section_title');
   const createBtn = document.getElementById('create-course');
   const cancelBtn = document.getElementById('cancel-edit-course');
   const searchInput = document.getElementById('course-search');
@@ -743,7 +743,7 @@ async function renderCourses() {
     });
     if (course) {
       fillForm(course);
-      formTitle.textContent = 'แก้ไขหลักสูตร';
+      formsection_title.textContent = 'แก้ไขหลักสูตร';
       createBtn.textContent = 'บันทึกการแก้ไข';
       cancelBtn.classList.remove('hidden');
       formMsg.textContent = `กำลังแก้ไข ID ${course.course_id}`;
@@ -754,7 +754,7 @@ async function renderCourses() {
       document.getElementById('c-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       fillForm(null);
-      formTitle.textContent = 'สร้างหลักสูตรใหม่';
+      formsection_title.textContent = 'สร้างหลักสูตรใหม่';
       createBtn.textContent = 'สร้างหลักสูตร';
       cancelBtn.classList.add('hidden');
       formMsg.textContent = '';
@@ -891,12 +891,12 @@ async function renderLessons() {
   let editingLessonId = null;
 
   document.getElementById('panel').innerHTML = `
-    <h2 id="lesson-form-title" class="font-bold text-lg mb-3">เพิ่มบทเรียนใหม่</h2>
+    <h2 id="lesson-form-section_title" class="font-bold text-lg mb-3">เพิ่มบทเรียนใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <select id="l-course" class="border rounded-xl px-3 py-2">
         ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)} (ID ${c.course_id})</option>`).join('')}
       </select>
-      <input id="l-title" class="border rounded-xl px-3 py-2" placeholder="ชื่อบทเรียน">
+      <input id="l-section_title" class="border rounded-xl px-3 py-2" placeholder="ชื่อบทเรียน">
       <input id="l-video" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="Video embed URL (เช่น YouTube embed)">
       <textarea id="l-content" class="border rounded-xl px-3 py-2 md:col-span-2" rows="4" placeholder="เนื้อหา HTML/ข้อความ"></textarea>
       <input id="l-sort" type="number" class="border rounded-xl px-3 py-2" value="1" placeholder="ลำดับ">
@@ -921,7 +921,7 @@ async function renderLessons() {
     <div id="lesson-list-area"></div>
   `;
 
-  const formTitle = document.getElementById('lesson-form-title');
+  const formsection_title = document.getElementById('lesson-form-section_title');
   const formMsg = document.getElementById('lesson-form-msg');
   const saveBtn = document.getElementById('add-lesson');
   const cancelBtn = document.getElementById('cancel-edit-lesson');
@@ -931,7 +931,7 @@ async function renderLessons() {
   const listArea = document.getElementById('lesson-list-area');
 
   const fillForm = (l) => {
-    document.getElementById('l-title').value = l?.title || '';
+    document.getElementById('l-section_title').value = l?.section_title || '';
     document.getElementById('l-video').value = l?.video_url || '';
     document.getElementById('l-content').value = l?.content_html || '';
     document.getElementById('l-sort').value = l?.flag_use != null ? Number(l.flag_use) : 1;
@@ -943,7 +943,7 @@ async function renderLessons() {
     document.querySelectorAll('[data-lesson-id].is-editing').forEach((el) => el.classList.remove('is-editing'));
     if (lesson) {
       fillForm(lesson);
-      formTitle.textContent = 'แก้ไขบทเรียน';
+      formsection_title.textContent = 'แก้ไขบทเรียน';
       saveBtn.textContent = 'บันทึกการแก้ไข';
       cancelBtn.classList.remove('hidden');
       formMsg.textContent = `กำลังแก้ไข ID ${lesson.lesson_id}`;
@@ -951,10 +951,10 @@ async function renderLessons() {
       document.querySelectorAll(`[data-lesson-id="${lesson.lesson_id}"]`).forEach((el) => {
         el.classList.add('is-editing');
       });
-      document.getElementById('l-title').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('l-section_title').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       fillForm(null);
-      formTitle.textContent = 'เพิ่มบทเรียนใหม่';
+      formsection_title.textContent = 'เพิ่มบทเรียนใหม่';
       saveBtn.textContent = 'เพิ่มบทเรียน';
       cancelBtn.classList.add('hidden');
       formMsg.textContent = '';
@@ -972,8 +972,8 @@ async function renderLessons() {
     <tr data-lesson-id="${l.lesson_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
-          <div class="adm-c-name">${escapeHtml(l.title)}</div>
+          <span class="adm-c-id" section_title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
+          <div class="adm-c-name">${escapeHtml(l.section_title)}</div>
         </div>
       </td>
       <td>${Number(l.flag_use || 0)}</td>
@@ -986,8 +986,8 @@ async function renderLessons() {
     <article class="adm-c-card" data-lesson-id="${l.lesson_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
-          <div class="adm-c-name">${escapeHtml(l.title)}</div>
+          <span class="adm-c-id" section_title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
+          <div class="adm-c-name">${escapeHtml(l.section_title)}</div>
         </div>
         <span class="adm-c-badge">ลำดับ ${Number(l.flag_use || 0)}</span>
       </div>
@@ -1013,7 +1013,7 @@ async function renderLessons() {
       idStr,
       `id ${idStr}`,
       `#${idStr}`,
-      l.title,
+      l.section_title,
       l.flag_use,
       l.duration_minutes,
       l.video_url,
@@ -1106,7 +1106,7 @@ async function renderLessons() {
   saveBtn.onclick = async () => {
     const courseId = courseSelect.value;
     const payload = {
-      title: document.getElementById('l-title').value,
+      section_title: document.getElementById('l-section_title').value,
       content_html: document.getElementById('l-content').value,
       video_url: document.getElementById('l-video').value,
       flag_use: Number(document.getElementById('l-sort').value || 1),
@@ -1245,16 +1245,16 @@ async function renderSchedules() {
 
   const paintList = () => {
     const el = document.getElementById('admin-schedule-list');
-    const title = document.getElementById('admin-schedule-list-title');
+    const section_title = document.getElementById('admin-schedule-list-section_title');
     const clearBtn = document.getElementById('admin-cal-clear-filter');
-    if (!el || !title) return;
+    if (!el || !section_title) return;
     let rows = adminSchedulesCache.slice();
     if (adminCalSelectedDay) {
       rows = rows.filter((s) => toDateKey(s.start_at) === adminCalSelectedDay);
-      title.textContent = `รายการวันที่ ${adminCalSelectedDay.replace(/-/g, '/')}`;
+      section_title.textContent = `รายการวันที่ ${adminCalSelectedDay.replace(/-/g, '/')}`;
       clearBtn?.classList.remove('hidden');
     } else {
-      title.textContent = 'ตารางที่มีอยู่';
+      section_title.textContent = 'ตารางที่มีอยู่';
       clearBtn?.classList.add('hidden');
     }
     if (!adminSchedulesCache.length) {
@@ -1273,7 +1273,7 @@ async function renderSchedules() {
         : `${d.toLocaleString('th-TH')} – ${end.toLocaleString('th-TH')}`;
       return `<div class="border rounded-xl p-3 flex justify-between gap-2">
         <div>
-          <p class="font-bold">${escapeHtml(s.title)}</p>
+          <p class="font-bold">${escapeHtml(s.section_title)}</p>
           <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${escapeHtml(range)}</p>
           <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(s.delivery_mode || 'online')}${s.location ? ` · ${escapeHtml(s.location)}` : ''}</p>
         </div>
@@ -1291,7 +1291,7 @@ async function renderSchedules() {
   document.getElementById('panel').innerHTML = `
     <div id="admin-schedule-calendar" class="pts-cal">
       <div class="pts-cal__head">
-        <h2 class="pts-cal__title" id="admin-cal-month-label">—</h2>
+        <h2 class="pts-cal__section_title" id="admin-cal-month-label">—</h2>
         <div class="pts-cal__nav">
           <button type="button" class="pts-btn pts-btn-outline" id="admin-cal-prev" aria-label="เดือนก่อน">‹</button>
           <button type="button" class="pts-btn pts-btn-ghost" id="admin-cal-today">วันนี้</button>
@@ -1308,7 +1308,7 @@ async function renderSchedules() {
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-      <h3 class="font-bold text-lg m-0" id="admin-schedule-list-title">ตารางที่มีอยู่</h3>
+      <h3 class="font-bold text-lg m-0" id="admin-schedule-list-section_title">ตารางที่มีอยู่</h3>
       <button type="button" class="pts-btn pts-btn-ghost hidden" id="admin-cal-clear-filter">แสดงทั้งหมด</button>
     </div>
     <div id="admin-schedule-list" class="space-y-2 mb-6"></div>
@@ -1316,7 +1316,7 @@ async function renderSchedules() {
     <h2 class="font-bold text-lg mb-3">เพิ่มตารางเรียน</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <label class="text-sm font-semibold text-on-surface-variant">หัวข้อคลาส
-        <input id="s-title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
+        <input id="s-section_title" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น เรียนบทที่ 1">
       </label>
       <label class="text-sm font-semibold text-on-surface-variant">ผูกกับหลักสูตร (จำเป็น — ต้องเป็นหลักสูตรที่นักเรียนสมัครไว้)
         <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
@@ -1373,9 +1373,9 @@ async function renderSchedules() {
   document.getElementById('add-schedule').onclick = async () => {
     const formMsg = document.getElementById('schedule-form-msg');
     const showErr = (t) => { formMsg.textContent = t; formMsg.className = 'pts-msg pts-msg--err mb-4'; };
-    const title = document.getElementById('s-title').value.trim();
+    const section_title = document.getElementById('s-section_title').value.trim();
     const courseId = document.getElementById('s-course').value;
-    if (!title) return showErr('กรุณาใส่หัวข้อคลาส');
+    if (!section_title) return showErr('กรุณาใส่หัวข้อคลาส');
     if (!courseId) return showErr('กรุณาเลือกหลักสูตรที่ผูกตาราง (จำเป็นสำหรับซิงค์ Google Calendar)');
     formMsg.textContent = 'กำลังบันทึก...';
     formMsg.className = 'pts-msg mb-4';
@@ -1383,7 +1383,7 @@ async function renderSchedules() {
       await api('/api/admin/schedules', {
         method: 'POST',
         body: JSON.stringify({
-          title,
+          section_title,
           course_id: courseId,
           start_at: document.getElementById('s-start').value,
           end_at: document.getElementById('s-end').value,
@@ -1505,8 +1505,8 @@ async function renderBanners() {
              onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">`;
       return `
       <article class="ban-list-item" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
-        <div class="ban-list-handle" title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
-        <div class="ban-thumb" title="คลิกเพื่อพรีวิว">${thumb}</div>
+        <div class="ban-list-handle" section_title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
+        <div class="ban-thumb" section_title="คลิกเพื่อพรีวิว">${thumb}</div>
         <div class="min-w-0">
           <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}${i === 0 ? ' · ขึ้นก่อน' : ''} · ${kindLabel}</p>
           <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
@@ -1688,7 +1688,7 @@ async function renderForms() {
             ${rows.map((f) => `
               <tr>
                 <td>
-                  <div class="adm-c-name">${escapeHtml(f.title)}</div>
+                  <div class="adm-c-name">${escapeHtml(f.section_title)}</div>
                   <div class="text-xs text-on-surface-variant">${escapeHtml(f.description || '')}</div>
                 </td>
                 <td><span class="adm-c-badge">${escapeHtml(f.form_type === 'disc' ? 'DISC' : f.form_type === 'course' ? 'ก่อนคอร์ส' : 'ทั่วไป')}</span></td>
@@ -1742,7 +1742,7 @@ async function renderForms() {
         <div class="grid gap-3 md:grid-cols-2 mb-3">
           <div>
             <label class="text-xs font-bold">ชื่อแบบฟอร์ม</label>
-            <input id="fe-title" class="adm-c-search w-full" value="${escapeHtml(form.title || '')}">
+            <input id="fe-section_title" class="adm-c-search w-full" value="${escapeHtml(form.section_title || '')}">
           </div>
           <div>
             <label class="text-xs font-bold">ประเภทแบบฟอร์ม</label>
@@ -1885,7 +1885,7 @@ async function renderForms() {
       await api('/api/admin/forms/' + formId, {
         method: 'PUT',
         body: JSON.stringify({
-          title: document.getElementById('fe-title').value,
+          section_title: document.getElementById('fe-section_title').value,
           description: document.getElementById('fe-desc').value,
           is_published: document.getElementById('fe-pub').checked,
           allow_resubmit: document.getElementById('fe-resub').checked,
@@ -1928,7 +1928,7 @@ async function renderForms() {
     responsesEl.innerHTML = `
       <div class="p-4 rounded-2xl border border-[rgba(151,66,88,.14)]">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-          <h4 class="font-bold text-primary">คำตอบ — ${escapeHtml(form.title)}</h4>
+          <h4 class="font-bold text-primary">คำตอบ — ${escapeHtml(form.section_title)}</h4>
           <button type="button" class="pts-btn pts-btn-ghost" id="fr-close">ปิด</button>
         </div>
         ${!list.length ? '<p class="text-sm text-on-surface-variant">ยังไม่มีผู้ส่ง</p>' : `
@@ -1976,7 +1976,7 @@ async function renderForms() {
       <div class="grid gap-3 md:grid-cols-2">
         <div>
           <label class="text-xs font-bold">ชื่อ</label>
-          <input id="fc-title" class="adm-c-search w-full" placeholder="เช่น แบบประเมิน DISC">
+          <input id="fc-section_title" class="adm-c-search w-full" placeholder="เช่น แบบประเมิน DISC">
         </div>
         <div>
           <label class="text-xs font-bold">ประเภท</label>
@@ -2009,15 +2009,15 @@ async function renderForms() {
     sync();
     box.querySelector('#fc-cancel').onclick = () => box.classList.add('hidden');
     box.querySelector('#fc-save').onclick = async () => {
-      const title = box.querySelector('#fc-title').value.trim();
+      const section_title = box.querySelector('#fc-section_title').value.trim();
       const form_type = box.querySelector('#fc-type').value;
       const course_id = box.querySelector('#fc-course').value || null;
-      if (!title) return alert('กรุณาระบุชื่อแบบฟอร์ม');
+      if (!section_title) return alert('กรุณาระบุชื่อแบบฟอร์ม');
       if (form_type === 'course' && !course_id) return alert('กรุณาเลือกหลักสูตร');
       const { data } = await api('/api/admin/forms', {
         method: 'POST',
         body: JSON.stringify({
-          title,
+          section_title,
           description: box.querySelector('#fc-desc').value.trim(),
           form_type,
           course_id,
@@ -2075,7 +2075,7 @@ async function renderUsers() {
     <tr data-user-id="${u.user_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
+          <span class="adm-c-id" section_title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
           <div class="adm-c-name">${escapeHtml(u.username || '—')}</div>
         </div>
       </td>
@@ -2090,7 +2090,7 @@ async function renderUsers() {
     <article class="adm-c-card" data-user-id="${u.user_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
+          <span class="adm-c-id" section_title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
           <div class="adm-c-name">${escapeHtml(u.username || '—')}</div>
         </div>
         <span class="adm-c-badge${isAdminRole(u) ? ' is-on' : ''}">${escapeHtml(String(u.Role || u.role || 'student').toLowerCase())}</span>
@@ -2253,7 +2253,7 @@ async function renderPosts() {
     <tr data-post-id="${p.post_id}" class="${isVisible(p) ? '' : 'opacity-60'}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
+          <span class="adm-c-id" section_title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
           <div class="adm-c-name" style="font-weight:600;white-space:pre-wrap;">${escapeHtml(snippet(p.content, 160))}</div>
         </div>
       </td>
@@ -2270,7 +2270,7 @@ async function renderPosts() {
     <article class="adm-c-card ${isVisible(p) ? '' : 'opacity-70'}" data-post-id="${p.post_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
+          <span class="adm-c-id" section_title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
           <div class="adm-c-name" style="font-weight:600;white-space:pre-wrap;">${escapeHtml(snippet(p.content, 180))}</div>
         </div>
         <span class="adm-c-badge${isVisible(p) ? ' is-on' : ''}">${isVisible(p) ? 'แสดงอยู่' : 'ซ่อนแล้ว'}</span>
@@ -2398,9 +2398,9 @@ async function renderPayments() {
   const sourceBadge = (p) => {
     const src = String(p.source || 'direct_signup');
     if (src === 'access_code') {
-      return `<span class="adm-pay-src adm-pay-src--code" title="ใช้รหัสเข้าเรียน">🔑 ใช้รหัสเข้าเรียน</span>`;
+      return `<span class="adm-pay-src adm-pay-src--code" section_title="ใช้รหัสเข้าเรียน">🔑 ใช้รหัสเข้าเรียน</span>`;
     }
-    return `<span class="adm-pay-src adm-pay-src--direct" title="สมัครผ่านเว็บ">🏷️ สมัครผ่านเว็บ</span>`;
+    return `<span class="adm-pay-src adm-pay-src--direct" section_title="สมัครผ่านเว็บ">🏷️ สมัครผ่านเว็บ</span>`;
   };
 
   const statusBadge = (p) => {

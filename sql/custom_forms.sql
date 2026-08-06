@@ -11,7 +11,7 @@ IF OBJECT_ID('dbo.custom_forms', 'U') IS NULL
 BEGIN
   CREATE TABLE dbo.custom_forms (
     form_id           INT IDENTITY(1,1) PRIMARY KEY,
-    title             NVARCHAR(255)  NOT NULL,
+    section_title             NVARCHAR(255)  NOT NULL,
     description       NVARCHAR(MAX)  NULL,
     is_published      BIT            NOT NULL CONSTRAINT DF_custom_forms_pub DEFAULT 0,
     allow_resubmit    BIT            NOT NULL CONSTRAINT DF_custom_forms_resub DEFAULT 0,

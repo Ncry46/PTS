@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>การแจ้งเตือน | PTS Learning</title>
+<section_title>การแจ้งเตือน | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -18,7 +18,7 @@
 <main class="pts-main" data-user-shell>
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Notifications</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.notifications.title">การแจ้งเตือน</h1>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.notifications.section_title">การแจ้งเตือน</h1>
     <p class="text-on-surface-variant max-w-xl" data-i18n="page.notifications.sub">ข่าวสารและอัปเดตที่เกี่ยวข้องกับบัญชีของคุณ</p>
   </section>
 
@@ -32,8 +32,8 @@
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-function notifIcon(title, body) {
-  const t = `${title || ''} ${body || ''}`.toLowerCase();
+function notifIcon(section_title, body) {
+  const t = `${section_title || ''} ${body || ''}`.toLowerCase();
   if (/ชำระ|จ่าย|สลิป|payment|paid/.test(t)) return 'payments';
   if (/สิทธิ์|เรียน|หลักสูตร|enroll|course/.test(t)) return 'school';
   if (/ปฏิทิน|ตาราง|calendar|schedule/.test(t)) return 'event';
@@ -91,7 +91,7 @@ async function load() {
 
   box.innerHTML = rows.map((n) => {
     const unreadItem = !n.is_read;
-    const icon = notifIcon(n.title, n.body);
+    const icon = notifIcon(n.section_title, n.body);
     return `
     <article class="pts-notif ${unreadItem ? 'pts-notif--unread' : 'pts-notif--read'}">
       <div class="pts-notif__icon" aria-hidden="true">
@@ -99,8 +99,8 @@ async function load() {
       </div>
       <div class="pts-notif__main">
         <div class="pts-notif__head">
-          <h2 class="pts-notif__title">${escapeHtml(n.title)}</h2>
-          ${unreadItem ? '<span class="pts-notif__dot" title="ยังไม่อ่าน"></span>' : ''}
+          <h2 class="pts-notif__section_title">${escapeHtml(n.section_title)}</h2>
+          ${unreadItem ? '<span class="pts-notif__dot" section_title="ยังไม่อ่าน"></span>' : ''}
         </div>
         ${n.body ? `<p class="pts-notif__body">${escapeHtml(n.body)}</p>` : ''}
         <p class="pts-notif__time">${escapeHtml(relativeTime(n.created_at))}</p>

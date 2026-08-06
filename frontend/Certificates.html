@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ใบประกาศนียบัตร | PTS Learning</title>
+<section_title>ใบประกาศนียบัตร | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -18,7 +18,7 @@
 <main class="pts-main" data-user-shell>
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Certificates</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.certificates.title">ใบประกาศนียบัตรของคุณ</h1>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.certificates.section_title">ใบประกาศนียบัตรของคุณ</h1>
     <p class="text-on-surface-variant max-w-2xl" data-i18n="page.certificates.sub">ใบประกาศมาตรฐาน Personal Assistant Academy — ออกอัตโนมัติเมื่อเรียนจบหลักสูตร ฟอร์แมตเดียวกันทุกใบ</p>
   </section>
 
@@ -43,7 +43,7 @@
 
 <!-- Full certificate viewer / print target -->
 <div id="cert-modal" class="cert-modal" aria-hidden="true">
-  <div class="cert-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cert-modal-title">
+  <div class="cert-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="cert-modal-section_title">
     <div class="cert-modal__bar no-print">
       <button type="button" class="pts-btn pts-btn-primary" id="cert-print-btn">
         <span class="material-symbols-outlined" style="font-size:18px">download</span>
@@ -51,7 +51,7 @@
       </button>
       <button type="button" class="pts-btn pts-btn-outline" id="cert-close-btn">ปิด</button>
     </div>
-    <h2 id="cert-modal-title" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">ใบประกาศนียบัตร</h2>
+    <h2 id="cert-modal-section_title" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">ใบประกาศนียบัตร</h2>
     <div id="cert-print-root"></div>
   </div>
 </div>
@@ -338,7 +338,7 @@ async function shareCert(cert) {
   const text = `ฉันได้รับใบประกาศนียบัตรหลักสูตร “${cert.course_name}” จาก Personal Assistant Academy (รหัส ${cert.certificate_code})`;
   try {
     if (navigator.share) {
-      await navigator.share({ title: 'PA Academy Certificate', text });
+      await navigator.share({ section_title: 'PA Academy Certificate', text });
       return;
     }
   } catch (_) { /* user cancelled */ }
@@ -387,7 +387,7 @@ function render() {
           <div class="cert-card__preview-scale">${preview}</div>
         </div>
         <div class="cert-card__body">
-          <h3 class="cert-card__title">${escapeHtml(c.course_name)}</h3>
+          <h3 class="cert-card__section_title">${escapeHtml(c.course_name)}</h3>
           <p class="cert-card__meta">เรียนจบเมื่อ: ${escapeHtml(dateText)}</p>
           <div class="cert-card__actions">
             <button type="button" class="pts-btn pts-btn-primary cert-download" data-id="${c.certificate_id}">

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>รายการโปรด | PTS Learning</title>
+<section_title>รายการโปรด | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -43,7 +43,7 @@
   </a>
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">Favorites</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.favorites.title">รายการโปรด</h1>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.favorites.section_title">รายการโปรด</h1>
     <p class="text-on-surface-variant" data-i18n="page.favorites.sub">รวมหลักสูตรโปรดและโพสต์ที่ถูกใจไว้ในหน้าเดียว</p>
   </section>
 
@@ -90,8 +90,8 @@ function courseCard(c) {
       </div>
       <div class="pts-course-card__body">
         <div class="pts-course-card__copy">
-          <h3 class="pts-course-card__title">${escapeHtml(c.course_name)}</h3>
-          <div class="pts-course-card__meta-row" title="${escapeHtml(c.instructor_name || '-')}">
+          <h3 class="pts-course-card__section_title">${escapeHtml(c.course_name)}</h3>
+          <div class="pts-course-card__meta-row" section_title="${escapeHtml(c.instructor_name || '-')}">
             <span class="material-symbols-outlined" aria-hidden="true">person</span>
             <span>${escapeHtml(c.instructor_name || '-')}</span>
           </div>

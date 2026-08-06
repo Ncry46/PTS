@@ -39,14 +39,14 @@
     root.className = 'pts-pay-modal';
     root.setAttribute('role', 'dialog');
     root.setAttribute('aria-modal', 'true');
-    root.setAttribute('aria-labelledby', 'pts-pay-modal-title');
+    root.setAttribute('aria-labelledby', 'pts-pay-modal-section_title');
     root.innerHTML =
       '<div class="pts-pay-modal__card" data-pay-card>' +
       '  <button type="button" class="pts-pay-modal__close" data-pay-close aria-label="ปิด">' +
       '    <span class="material-symbols-outlined" style="font-size:20px">close</span>' +
       '  </button>' +
       '  <p class="pts-pay-modal__eyebrow">Checkout</p>' +
-      '  <h2 class="pts-pay-modal__title" id="pts-pay-modal-title">ชำระเงินหลักสูตร</h2>' +
+      '  <h2 class="pts-pay-modal__section_title" id="pts-pay-modal-section_title">ชำระเงินหลักสูตร</h2>' +
       '  <p class="pts-pay-modal__sub" data-pay-sub></p>' +
       '  <div class="pay-summary">' +
       '    <span class="pay-summary__label">ยอดชำระ</span>' +

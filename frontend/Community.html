@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Community | PTS Learning</title>
+<section_title>Community | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -49,7 +49,7 @@ tailwind.config = {
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
         <span class="pts-chip mb-3">PTS Community</span>
-        <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight mb-2 pts-display" data-i18n="page.community.title">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
+        <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight mb-2 pts-display" data-i18n="page.community.section_title">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
         <p class="text-on-surface-variant max-w-2xl" data-i18n="page.community.sub">แลกเปลี่ยนประสบการณ์ อ่านโพสต์ และเรียนรู้จากเพื่อนร่วมอาชีพ</p>
       </div>
       <div id="hero-actions" class="flex flex-wrap gap-2"></div>
@@ -124,7 +124,7 @@ function makePostCard(post) {
       </div>
       <p class="whitespace-pre-line text-on-surface-variant mb-4">${escapeHtml(post.content || '')}</p>
       <div class="flex items-center gap-4 border-t border-outline-variant/30 pt-3 text-on-surface-variant">
-        <button type="button" class="like-btn inline-flex items-center gap-1 ${liked ? 'pts-like-active' : ''}" data-post-id="${post.post_id}" ${currentUser ? '' : 'title="เข้าสู่ระบบเพื่อกดถูกใจ"'}>
+        <button type="button" class="like-btn inline-flex items-center gap-1 ${liked ? 'pts-like-active' : ''}" data-post-id="${post.post_id}" ${currentUser ? '' : 'section_title="เข้าสู่ระบบเพื่อกดถูกใจ"'}>
           <span class="material-symbols-outlined text-[20px]">favorite</span>
           <span class="like-count text-sm font-semibold">${post.like_count || 0}</span>
         </button>

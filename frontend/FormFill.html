@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>กรอกแบบฟอร์ม | PTS Learning</title>
+<section_title>กรอกแบบฟอร์ม | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -175,7 +175,7 @@ async function boot() {
   document.getElementById('root').innerHTML = `
     <div class="ff-shell">
       ${typeChip}
-      <h1 class="text-2xl font-bold text-primary mb-2 pts-display">${escapeHtml(form.title)}</h1>
+      <h1 class="text-2xl font-bold text-primary mb-2 pts-display">${escapeHtml(form.section_title)}</h1>
       <p class="text-sm text-on-surface-variant mb-6">${escapeHtml(form.description || '')}</p>
       ${form.form_type === 'disc' ? '<p class="text-xs text-on-surface-variant mb-4">ตัวเลือก: D กระทิง · I อินทรี · S หนู · C หมี · U ยังไม่ทราบ</p>' : ''}
       ${priorHtml}

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>หลักสูตรของฉัน | PTS Learning</title>
+<section_title>หลักสูตรของฉัน | PTS Learning</section_title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -48,7 +48,7 @@
     gap: 12px;
     margin-bottom: 12px;
   }
-  .myc-section__title {
+  .myc-section__section_title {
     font-size: 1.1rem;
     font-weight: 700;
     color: var(--pts-text, #1c1520);
@@ -118,7 +118,7 @@
     gap: 6px;
     min-width: 0;
   }
-  .myc-card__title {
+  .myc-card__section_title {
     font-size: 0.95rem;
     font-weight: 700;
     color: var(--pts-text, #1c1520);
@@ -226,7 +226,7 @@
 <main class="pts-main" data-user-shell>
   <section class="pts-page-hero">
     <span class="pts-chip mb-3">My Courses</span>
-    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.mycourses.title">หลักสูตรของฉัน</h1>
+    <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.mycourses.section_title">หลักสูตรของฉัน</h1>
     <p class="text-on-surface-variant" data-i18n="page.mycourses.sub">ดูว่าตอนนี้เรียนถึงไหนแล้ว และหลักสูตรที่สมัครไว้ทั้งหมด</p>
   </section>
 
@@ -239,7 +239,7 @@
 
   <section class="myc-section" id="section-in-progress">
     <div class="myc-section__head">
-      <h2 class="myc-section__title" data-i18n="myc.sectionProgress">กำลังเรียนอยู่</h2>
+      <h2 class="myc-section__section_title" data-i18n="myc.sectionProgress">กำลังเรียนอยู่</h2>
       <p class="myc-section__hint" id="hint-in-progress" data-i18n="myc.sectionProgressHint">หลักสูตรที่ยังเรียนไม่จบ</p>
     </div>
     <div id="list-in-progress" class="myc-list">
@@ -249,7 +249,7 @@
 
   <section class="myc-section" id="section-all">
     <div class="myc-section__head">
-      <h2 class="myc-section__title" data-i18n="myc.sectionAll">หลักสูตรที่สมัครทั้งหมด</h2>
+      <h2 class="myc-section__section_title" data-i18n="myc.sectionAll">หลักสูตรที่สมัครทั้งหมด</h2>
       <p class="myc-section__hint" data-i18n="myc.sectionAllHint">เรียงตามอัปเดตล่าสุด</p>
     </div>
     <div class="myc-filters" role="tablist" aria-label="กรองหลักสูตร">
@@ -299,7 +299,7 @@ function courseCard(course, { emphasizeProgress = false } = {}) {
             <span class="myc-status ${st.cls}">${st.text}</span>
             ${hours ? `<span class="myc-card__meta">${escapeHtml(hours)}</span>` : ''}
           </div>
-          <h3 class="myc-card__title">${escapeHtml(course.course_name)}</h3>
+          <h3 class="myc-card__section_title">${escapeHtml(course.course_name)}</h3>
           <p class="myc-card__meta">โดย ${escapeHtml(course.instructor_name || '-')}</p>
         </div>
         <div class="myc-card__foot">

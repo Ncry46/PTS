@@ -21,7 +21,7 @@ async function ensureLearningSchema(pool) {
          CREATE TABLE dbo.course_lessons (
             lesson_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
             course_id INT NOT NULL,
-            title NVARCHAR(255) NOT NULL,
+            section_title NVARCHAR(255) NOT NULL,
             content_html NVARCHAR(MAX) NULL,
             video_url NVARCHAR(500) NULL,
             flag_use INT NOT NULL CONSTRAINT DF_course_lessons_sort DEFAULT (1),
@@ -42,7 +42,7 @@ async function ensureLearningSchema(pool) {
          CREATE TABLE dbo.class_schedules (
             schedule_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
             course_id INT NULL,
-            title NVARCHAR(255) NOT NULL,
+            section_title NVARCHAR(255) NOT NULL,
             start_at DATETIME NOT NULL,
             end_at DATETIME NOT NULL,
             location NVARCHAR(255) NULL,
@@ -115,7 +115,7 @@ async function ensureLearningSchema(pool) {
          CREATE TABLE dbo.notifications (
             notification_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
             user_id INT NOT NULL,
-            title NVARCHAR(255) NOT NULL,
+            section_title NVARCHAR(255) NOT NULL,
             body NVARCHAR(1000) NULL,
             link_url NVARCHAR(500) NULL,
             is_read BIT NOT NULL CONSTRAINT DF_notifications_read DEFAULT (0),
@@ -235,8 +235,8 @@ async function ensureLearningSchema(pool) {
             slide_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
             flag_use INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
             eyebrow NVARCHAR(100) NULL,
-            title NVARCHAR(255) NOT NULL,
-            title_highlight NVARCHAR(255) NULL,
+            section_title NVARCHAR(255) NOT NULL,
+            section_title_highlight NVARCHAR(255) NULL,
             lead NVARCHAR(1000) NULL,
             cta_primary_label NVARCHAR(100) NULL,
             cta_primary_href NVARCHAR(500) NULL,
@@ -245,8 +245,8 @@ async function ensureLearningSchema(pool) {
             image_url NVARCHAR(1000) NULL,
             image_alt NVARCHAR(255) NULL,
             badge_icon NVARCHAR(64) NULL,
-            badge_title NVARCHAR(100) NULL,
-            badge_subtitle NVARCHAR(255) NULL,
+            badge_section_title NVARCHAR(100) NULL,
+            badge_subsection_title NVARCHAR(255) NULL,
             theme NVARCHAR(32) NOT NULL CONSTRAINT DF_hero_slides_theme DEFAULT ('rose'),
             theme_color NVARCHAR(32) NULL,
             flag_use BIT NOT NULL CONSTRAINT DF_hero_slides_flag DEFAULT (1),
@@ -263,7 +263,7 @@ async function ensureLearningSchema(pool) {
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'custom_forms')
          CREATE TABLE dbo.custom_forms (
             form_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-            title NVARCHAR(255) NOT NULL,
+            section_title NVARCHAR(255) NOT NULL,
             description NVARCHAR(MAX) NULL,
             is_published BIT NOT NULL CONSTRAINT DF_custom_forms_pub DEFAULT (0),
             allow_resubmit BIT NOT NULL CONSTRAINT DF_custom_forms_resub DEFAULT (0),
@@ -410,8 +410,8 @@ async function seedHeroSlidesIfEmpty(pool) {
             flag_use: 1,
             theme: 'rose',
             eyebrow: 'PTS Learning',
-            title: 'ยกระดับทักษะ Personal Assistant สู่มาตรฐานมืออาชีพ',
-            title_highlight: 'Personal Assistant',
+            section_title: 'ยกระดับทักษะ Personal Assistant สู่มาตรฐานมืออาชีพ',
+            section_title_highlight: 'Personal Assistant',
             lead: 'เรียน Online · Onsite · Hybrid ในระบบเดียว พร้อมตารางเรียน ใบประกาศ และคอมมูนิตี้ผู้ช่วยมืออาชีพ',
             cta_primary_label: 'ดูหลักสูตร',
             cta_primary_href: 'Courses.html',
@@ -420,15 +420,15 @@ async function seedHeroSlidesIfEmpty(pool) {
             image_url: '/uploads/hero/home-banner.png',
             image_alt: 'ผู้ช่วยมืออาชีพทำงานที่โต๊ะด้วยแล็ปท็อป',
             badge_icon: 'check_circle',
-            badge_title: 'Certified',
-            badge_subtitle: 'หลักสูตรรับรองวิชาชีพ'
+            badge_section_title: 'Certified',
+            badge_subsection_title: 'หลักสูตรรับรองวิชาชีพ'
         },
         {
             flag_use: 2,
             theme: 'sage',
             eyebrow: 'เรียนได้ทุกที่',
-            title: 'เลือกสไตล์การเรียน Online · Onsite · Hybrid ได้ตามชีวิตคุณ',
-            title_highlight: 'Online · Onsite · Hybrid',
+            section_title: 'เลือกสไตล์การเรียน Online · Onsite · Hybrid ได้ตามชีวิตคุณ',
+            section_title_highlight: 'Online · Onsite · Hybrid',
             lead: 'จัดตารางเรียนเอง เช็กอินออนไซต์ด้วย QR และเรียนต่อออนไลน์ได้เมื่อติดงาน — ครบในแพลตฟอร์มเดียว',
             cta_primary_label: 'เริ่มเลือกโหมดเรียน',
             cta_primary_href: 'Courses.html?mode=online',
@@ -437,15 +437,15 @@ async function seedHeroSlidesIfEmpty(pool) {
             image_url: '/uploads/hero/home-banner.png',
             image_alt: 'ผู้เชี่ยวชาญวางแผนงานอย่างมืออาชีพ',
             badge_icon: 'schedule',
-            badge_title: 'Flexible',
-            badge_subtitle: 'เรียนได้ตามตารางงานจริง'
+            badge_section_title: 'Flexible',
+            badge_subsection_title: 'เรียนได้ตามตารางงานจริง'
         },
         {
             flag_use: 3,
             theme: 'gold',
             eyebrow: 'พร้อมใบประกาศ',
-            title: 'จบหลักสูตรได้ ใบประกาศนียบัตร ที่นำไปใช้ต่อได้จริง',
-            title_highlight: 'ใบประกาศนียบัตร',
+            section_title: 'จบหลักสูตรได้ ใบประกาศนียบัตร ที่นำไปใช้ต่อได้จริง',
+            section_title_highlight: 'ใบประกาศนียบัตร',
             lead: 'เรียนครบ ทำแบบทดสอบผ่านเกณฑ์ แล้วรับใบประกาศดิจิทัลเก็บในโปรไฟล์ พร้อมคอมมูนิตี้เพื่อนร่วมอาชีพ',
             cta_primary_label: 'ดูใบประกาศ',
             cta_primary_href: 'Certificates.html',
@@ -454,8 +454,8 @@ async function seedHeroSlidesIfEmpty(pool) {
             image_url: '/uploads/hero/home-banner.png',
             image_alt: 'ทีมงานประชุมพัฒนาทักษะการทำงาน',
             badge_icon: 'workspace_premium',
-            badge_title: 'Certificate',
-            badge_subtitle: 'เก็บใบประกาศในระบบได้ทันที'
+            badge_section_title: 'Certificate',
+            badge_subsection_title: 'เก็บใบประกาศในระบบได้ทันที'
         }
     ];
 
@@ -463,8 +463,8 @@ async function seedHeroSlidesIfEmpty(pool) {
         await pool.request()
             .input('flag_use', sql.Int, s.flag_use)
             .input('eyebrow', sql.NVarChar, s.eyebrow)
-            .input('title', sql.NVarChar, s.title)
-            .input('title_highlight', sql.NVarChar, s.title_highlight)
+            .input('section_title', sql.NVarChar, s.section_title)
+            .input('section_title_highlight', sql.NVarChar, s.section_title_highlight)
             .input('lead', sql.NVarChar, s.lead)
             .input('cta_primary_label', sql.NVarChar, s.cta_primary_label)
             .input('cta_primary_href', sql.NVarChar, s.cta_primary_href)
@@ -473,18 +473,18 @@ async function seedHeroSlidesIfEmpty(pool) {
             .input('image_url', sql.NVarChar, s.image_url)
             .input('image_alt', sql.NVarChar, s.image_alt)
             .input('badge_icon', sql.NVarChar, s.badge_icon)
-            .input('badge_title', sql.NVarChar, s.badge_title)
-            .input('badge_subtitle', sql.NVarChar, s.badge_subtitle)
+            .input('badge_section_title', sql.NVarChar, s.badge_section_title)
+            .input('badge_subsection_title', sql.NVarChar, s.badge_subsection_title)
             .input('theme', sql.NVarChar, s.theme || 'rose')
             .query(`
                 INSERT INTO dbo.hero_slides (
-                    flag_use, eyebrow, title, title_highlight, lead,
+                    flag_use, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_title, badge_subtitle, theme, flag_use
+                    image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, flag_use
                 ) VALUES (
-                    @flag_use, @eyebrow, @title, @title_highlight, @lead,
+                    @flag_use, @eyebrow, @section_title, @section_title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
-                    @image_url, @image_alt, @badge_icon, @badge_title, @badge_subtitle, @theme, 1
+                    @image_url, @image_alt, @badge_icon, @badge_section_title, @badge_subsection_title, @theme, 1
                 )
             `);
     }
@@ -527,15 +527,15 @@ async function seedSampleCourseIfEmpty(pool) {
     }
 }
 
-async function createNotification(pool, userId, title, body, linkUrl) {
+async function createNotification(pool, userId, section_title, body, linkUrl) {
     await pool.request()
         .input('userId', sql.Int, userId)
-        .input('title', sql.NVarChar, title)
+        .input('section_title', sql.NVarChar, section_title)
         .input('body', sql.NVarChar, body || null)
         .input('link', sql.NVarChar, linkUrl || null)
         .query(`
-            INSERT INTO dbo.notifications (user_id, title, body, link_url, is_read)
-            VALUES (@userId, @title, @body, @link, 0)
+            INSERT INTO dbo.notifications (user_id, section_title, body, link_url, is_read)
+            VALUES (@userId, @section_title, @body, @link, 0)
         `);
 
     // Mirror to LINE OA when the user linked their account (best-effort)
@@ -557,25 +557,25 @@ async function createNotification(pool, userId, title, body, linkUrl) {
                 isMessagingConfigured
             } = require('./lineMessaging');
             if (isMessagingConfigured()) {
-                const titleStr = String(title || '');
+                const section_titleStr = String(section_title || '');
                 const bodyStr = String(body || '');
                 let flex;
-                if (/ชำระ|จ่าย|payment|pay|ค้างชำระ/i.test(titleStr + bodyStr)) {
+                if (/ชำระ|จ่าย|payment|pay|ค้างชำระ/i.test(section_titleStr + bodyStr)) {
                     flex = buildPaymentFlex({
                         courseName: bodyStr,
                         payUrl: linkUrl,
                         linkUrl
                     });
-                } else if (/สำเร็จ|เปิดสิทธิ์|ลงทะเบียน|สมัคร/i.test(titleStr)) {
+                } else if (/สำเร็จ|เปิดสิทธิ์|ลงทะเบียน|สมัคร/i.test(section_titleStr)) {
                     const codeMatch = bodyStr.match(/#PTS-\d+/i);
                     flex = buildRegistrationSuccessFlex({
-                        title: titleStr,
+                        section_title: section_titleStr,
                         code: codeMatch ? codeMatch[0] : '',
                         courseName: bodyStr.replace(/·\s*รหัส.*$/i, '').replace(/^หลักสูตร\s*/i, '').trim(),
                         linkUrl
                     });
                 } else {
-                    flex = buildNotifyFlex(title, body, linkUrl);
+                    flex = buildNotifyFlex(section_title, body, linkUrl);
                 }
                 await pushMessage(row.line_user_id, [flex]);
             }
@@ -591,13 +591,13 @@ async function seedSampleFormIfEmpty(pool) {
         if (Number(count.recordset[0].c || 0) > 0) return;
 
         const form = await pool.request()
-            .input('title', sql.NVarChar, 'แบบประเมินสไตล์ DISC')
+            .input('section_title', sql.NVarChar, 'แบบประเมินสไตล์ DISC')
             .input('description', sql.NVarChar, 'ตอบคำถามเพื่อดูว่าคุณใกล้เคียงสไตล์ใด: D กระทิง · I อินทรี · S หนู · C หมี')
             .query(`
                 INSERT INTO dbo.custom_forms
-                    (title, description, is_published, allow_resubmit, flag_use, form_type)
+                    (section_title, description, is_published, allow_resubmit, flag_use, form_type)
                 OUTPUT INSERTED.form_id
-                VALUES (@title, @description, 1, 1, 1, 'disc')
+                VALUES (@section_title, @description, 1, 1, 1, 'disc')
             `);
         const formId = form.recordset[0].form_id;
         const discOpts = JSON.stringify([

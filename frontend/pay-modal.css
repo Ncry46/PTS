@@ -50,7 +50,7 @@ body.pts-pay-modal-open { overflow: hidden; }
   text-transform: uppercase;
   color: #974258;
 }
-.pts-pay-modal__title {
+.pts-pay-modal__section_title {
   margin: 0 0 6px;
   font-size: 1.35rem;
   font-weight: 700;
@@ -137,7 +137,7 @@ html[data-theme="dark"] .pts-pay-modal__card {
   background: #1c161a;
   border-color: rgba(255, 255, 255, 0.08);
 }
-html[data-theme="dark"] .pts-pay-modal__title { color: var(--pts-text, #f5f0f2); }
+html[data-theme="dark"] .pts-pay-modal__section_title { color: var(--pts-text, #f5f0f2); }
 html[data-theme="dark"] .pts-pay-modal__sub,
 html[data-theme="dark"] .pts-pay-modal__coupon-label { color: var(--pts-muted, #b8aeb2); }
 html[data-theme="dark"] .pts-pay-modal__close {

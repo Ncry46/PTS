@@ -157,7 +157,7 @@
   flex: 1;
   min-width: 0;
 }
-.cert-card__title {
+.cert-card__section_title {
   margin: 0;
   font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
   font-size: 0.92rem;

@@ -708,7 +708,7 @@ input.pts-pw-input::-ms-clear {
   color: var(--pts-primary);
 }
 
-.pts-hero-banner__title {
+.pts-hero-banner__section_title {
   margin: 0 0 16px;
   font-family: var(--pts-display);
   font-size: clamp(1.85rem, 4.2vw, 3.15rem);
@@ -719,7 +719,7 @@ input.pts-pw-input::-ms-clear {
   text-wrap: balance;
 }
 
-.pts-hero-banner__title span {
+.pts-hero-banner__section_title span {
   color: var(--pts-primary);
 }
 

@@ -306,7 +306,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .query(`
-                    SELECT TOP 50 notification_id, title, body, link_url, is_read, created_at
+                    SELECT TOP 50 notification_id, section_title, body, link_url, is_read, created_at
                     FROM dbo.notifications
                     WHERE user_id = @userId
                     ORDER BY created_at DESC
@@ -376,7 +376,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const lessons = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT lesson_id, title, flag_use, duration_minutes
+                    SELECT lesson_id, section_title, flag_use, duration_minutes
                     FROM dbo.course_lessons
                     WHERE course_id = @courseId AND flag_use = 1
                     ORDER BY flag_use ASC, lesson_id ASC

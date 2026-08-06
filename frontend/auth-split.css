@@ -541,7 +541,7 @@ body.pts-body.pts-login.pts-auth-duo {
   color: rgba(255, 236, 242, 0.85);
 }
 
-.pts-auth-split__veil-title {
+.pts-auth-split__veil-section_title {
   margin: 0;
   font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
   font-size: clamp(1.35rem, 2.4vw, 1.75rem);

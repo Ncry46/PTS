@@ -67,7 +67,7 @@
   function themeToggleHtml() {
     return `
       <button type="button" class="pts-theme-toggle" data-pts-theme-toggle
-        aria-label="${escapeAttr(t('nav.themeToggle', 'สลับโหมดมืด/สว่าง'))}" title="${escapeAttr(t('nav.themeToggle', 'สลับโหมดมืด/สว่าง'))}">
+        aria-label="${escapeAttr(t('nav.themeToggle', 'สลับโหมดมืด/สว่าง'))}" section_title="${escapeAttr(t('nav.themeToggle', 'สลับโหมดมืด/สว่าง'))}">
         <svg class="pts-theme-icon--moon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path d="M21 14.3A9 9 0 1 1 9.7 3a7 7 0 1 0 11.3 11.3Z"
             stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
@@ -88,7 +88,7 @@
       ? t('nav.themeToLight', 'สลับเป็นโหมดสว่าง')
       : t('nav.themeToDark', 'สลับเป็นโหมดมืด');
     btn.setAttribute('aria-label', label);
-    btn.title = label;
+    btn.section_title = label;
     btn.onclick = (e) => {
       e.preventDefault();
       theme.toggle();
@@ -175,7 +175,7 @@
       .pts-topnav__mega-icon--hybrid { background:#e8f6ec; color:#166c39; }
       html[data-theme="dark"] .pts-topnav__mega-icon--onsite { background:rgba(76,101,72,.28); color:#b3ceab; }
       html[data-theme="dark"] .pts-topnav__mega-icon--hybrid { background:rgba(22,108,57,.28); color:#a2f5b4; }
-      .pts-topnav__mega-title { font-size:15px; font-weight:700; margin:0 0 2px; }
+      .pts-topnav__mega-section_title { font-size:15px; font-weight:700; margin:0 0 2px; }
       .pts-topnav__mega-desc { font-size:13px; color:var(--pts-muted,#6b5c62); margin:0; line-height:1.4; }
       .pts-topnav__mega-foot {
         padding:12px 16px; border-top:1px solid var(--pts-border,rgba(151,66,88,.12));
@@ -358,21 +358,21 @@
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="online">
               <span class="pts-topnav__mega-icon">On</span>
               <span>
-                <p class="pts-topnav__mega-title">Online</p>
+                <p class="pts-topnav__mega-section_title">Online</p>
                 <p class="pts-topnav__mega-desc">${t('nav.mega.online', 'เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา')}</p>
               </span>
             </button>
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="onsite">
               <span class="pts-topnav__mega-icon pts-topnav__mega-icon--onsite">Os</span>
               <span>
-                <p class="pts-topnav__mega-title">Onsite</p>
+                <p class="pts-topnav__mega-section_title">Onsite</p>
                 <p class="pts-topnav__mega-desc">${t('nav.mega.onsite', 'เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code')}</p>
               </span>
             </button>
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="hybrid">
               <span class="pts-topnav__mega-icon pts-topnav__mega-icon--hybrid">Hy</span>
               <span>
-                <p class="pts-topnav__mega-title">Hybrid</p>
+                <p class="pts-topnav__mega-section_title">Hybrid</p>
                 <p class="pts-topnav__mega-desc">${t('nav.mega.hybrid', 'เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว')}</p>
               </span>
             </button>
@@ -550,7 +550,7 @@
             <a class="pts-topnav__link" href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
           </div>
           <div class="pts-topnav__actions">
-            <a href="Notifications.html" class="pts-topnav__icon" title="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}" aria-label="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}">🔔</a>
+            <a href="Notifications.html" class="pts-topnav__icon" section_title="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}" aria-label="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}">🔔</a>
             ${profileMenuHtml(name, roleLabel, avatar, isAdmin)}
             ${langToggleHtml()}
             ${themeToggleHtml()}
