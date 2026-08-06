@@ -372,8 +372,7 @@ async function handleEvent(poolPromise, event) {
                     FROM dbo.courses
                     WHERE (
                         flag_use IS NULL
-                        OR TRY_CAST(flag_use AS INT) = 1
-                        OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+                        OR UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), flag_use)))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
                     )
                     ORDER BY ISNULL(is_featured, 0) DESC, course_id DESC
                 `);

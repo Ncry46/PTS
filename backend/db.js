@@ -35,15 +35,16 @@ const COURSES_SQL = qualify(COURSES_TABLE);
 
 /**
  * Active-row predicate for legacy flag columns.
- * Supports varchar Y/N and bit/int 1/0 without conversion errors.
+ * Uses NVARCHAR compare only — never casts varchar 'Y'/'N' to INT
+ * (avoids: Conversion failed when converting the varchar value 'N' to data type int).
+ * Works for varchar Y/N, bit/int 1/0 (CAST bit→'1'/'0').
  * @param {string} col e.g. 'c.flag_use' or 'flag_use'
  */
 function flagActiveSql(col) {
     const c = String(col || 'flag_use').trim();
     return `(
         ${c} IS NULL
-        OR TRY_CAST(${c} AS INT) = 1
-        OR UPPER(LTRIM(RTRIM(CAST(${c} AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+        OR UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), ${c})))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
     )`;
 }
 
@@ -51,10 +52,7 @@ function flagInactiveSql(col) {
     const c = String(col || 'flag_use').trim();
     return `(
         ${c} IS NOT NULL
-        AND (
-            TRY_CAST(${c} AS INT) = 0
-            OR UPPER(LTRIM(RTRIM(CAST(${c} AS NVARCHAR(20))))) IN (N'N', N'NO', N'0', N'FALSE', N'F')
-        )
+        AND UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), ${c})))) IN (N'N', N'NO', N'0', N'FALSE', N'F')
     )`;
 }
 
@@ -75,6 +73,84 @@ function isFlagActive(value) {
 function normalizeFlagYn(value, defaultOn = true) {
     if (value === undefined || value === null || value === '') return defaultOn ? 'Y' : 'N';
     return isFlagActive(value) ? 'Y' : 'N';
+}
+
+/** Cache: 'numeric' (bit/int) | 'string' (varchar Y/N) */
+const flagStorageKindCache = new Map();
+
+/**
+ * Detect how flag_use is stored on a table (bit/int vs varchar).
+ * @returns {Promise<'numeric'|'string'>}
+ */
+async function getFlagStorageKind(pool, tableName, column = 'flag_use') {
+    const table = String(tableName || '').replace(/^dbo\./i, '').trim();
+    const col = String(column || 'flag_use').trim();
+    const key = `${table}.${col}`.toLowerCase();
+    if (flagStorageKindCache.has(key)) return flagStorageKindCache.get(key);
+
+    try {
+        const result = await pool.request()
+            .input('table', sql.NVarChar(128), table)
+            .input('column', sql.NVarChar(128), col)
+            .query(`
+                SELECT TYPE_NAME(c.user_type_id) AS type_name
+                FROM sys.columns c
+                WHERE c.object_id = OBJECT_ID(N'dbo.' + @table)
+                  AND c.name = @column
+            `);
+        const typeName = String(result.recordset[0]?.type_name || '').toLowerCase();
+        const kind = ['bit', 'int', 'tinyint', 'smallint', 'bigint', 'decimal', 'numeric'].includes(typeName)
+            ? 'numeric'
+            : 'string';
+        flagStorageKindCache.set(key, kind);
+        return kind;
+    } catch (_) {
+        flagStorageKindCache.set(key, 'string');
+        return 'string';
+    }
+}
+
+/** Bind @flag param with the correct SQL type/value for the target table. */
+async function bindFlagInput(pool, request, inputName, tableName, active, column = 'flag_use') {
+    const kind = await getFlagStorageKind(pool, tableName, column);
+    const on = !!active;
+    if (kind === 'numeric') {
+        request.input(inputName, sql.Bit, on ? 1 : 0);
+    } else {
+        request.input(inputName, sql.VarChar(1), on ? 'Y' : 'N');
+    }
+    return kind;
+}
+
+/** SQL literal for INSERT/UPDATE without parameters */
+async function flagSqlLiteral(pool, tableName, active, column = 'flag_use') {
+    const kind = await getFlagStorageKind(pool, tableName, column);
+    if (kind === 'numeric') return active ? '1' : '0';
+    return active ? `'Y'` : `'N'`;
+}
+
+/**
+ * UPDATE dbo.<table> SET flag_use = on/off WHERE <idColumn> = @id
+ */
+async function setFlagUse(pool, {
+    table,
+    idColumn,
+    idValue,
+    active,
+    column = 'flag_use',
+    extraSet = ''
+}) {
+    const tableName = String(table || '').replace(/^dbo\./i, '').trim();
+    const col = String(column || 'flag_use').trim();
+    const idCol = String(idColumn || '').trim();
+    const req = pool.request().input('id', sql.Int, idValue);
+    await bindFlagInput(pool, req, 'flag', tableName, active, col);
+    const extra = extraSet ? `, ${extraSet}` : '';
+    return req.query(`
+        UPDATE dbo.[${tableName}]
+        SET [${col}] = @flag${extra}
+        WHERE [${idCol}] = @id
+    `);
 }
 
 function isAutoSchemaEnabled() {
@@ -219,6 +295,10 @@ module.exports = {
     getPool,
     withDb,
     isTransientDbError,
+    getFlagStorageKind,
+    bindFlagInput,
+    flagSqlLiteral,
+    setFlagUse,
     get poolPromise() {
         return connectPool();
     }

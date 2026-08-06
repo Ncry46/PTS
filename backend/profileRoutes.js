@@ -3,6 +3,7 @@ const sql = require('mssql');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const { flagActiveSql } = require('./db');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
 const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId, fetchDriveFile } = require('./googleDrive');
 
@@ -366,14 +367,10 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                              WHEN EXISTS (SELECT 1 FROM dbo.course_enrollments e WHERE e.user_id=@userId AND e.course_id=c.course_id) THEN 1 ELSE 0 END AS is_enrolled,
                         CASE WHEN @userId IS NULL THEN 0
                              WHEN EXISTS (SELECT 1 FROM dbo.payments p WHERE p.user_id=@userId AND p.course_id=c.course_id AND p.status='paid') THEN 1 ELSE 0 END AS is_paid
-                    FROM dbo.courses c
-                    WHERE c.course_id = @courseId
-                      AND (
-                        c.flag_use IS NULL
-                        OR TRY_CAST(c.flag_use AS INT) = 1
-                        OR UPPER(LTRIM(RTRIM(CAST(c.flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE')
-                      )
-                `);
+                FROM dbo.courses c
+                WHERE c.course_id = @courseId
+                  AND ${flagActiveSql('c.flag_use')}
+            `);
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
@@ -396,11 +393,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                             flag_use
                         FROM dbo.course_lessons
                         WHERE course_id = @courseId
-                          AND (
-                            flag_use IS NULL
-                            OR TRY_CAST(flag_use AS INT) = 1
-                            OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
-                          )
+                          AND ${flagActiveSql('flag_use')}
                         ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
                     `);
                 lessons = lessonsResult.recordset || [];
@@ -424,11 +417,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                                 flag_use
                             FROM dbo.course_lessons
                             WHERE course_id = @courseId
-                              AND (
-                                flag_use IS NULL
-                                OR TRY_CAST(flag_use AS INT) = 1
-                                OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
-                              )
+                              AND ${flagActiveSql('flag_use')}
                             ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
                         `);
                     lessons = legacy.recordset || [];

@@ -1,5 +1,5 @@
 const express = require('express');
-const { flagActiveSql } = require('./db');
+const { flagActiveSql, setFlagUse, bindFlagInput } = require('./db');
 const sql = require('mssql');
 
 async function ensureCourseReviewsTable(pool) {

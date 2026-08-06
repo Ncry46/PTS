@@ -387,8 +387,7 @@ async function ensureHeroSlideThemes(pool) {
             SELECT slide_id, sort_order, theme
             FROM dbo.hero_slides
             WHERE flag_use IS NULL
-               OR TRY_CAST(flag_use AS INT) = 1
-               OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+               OR UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), flag_use)))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
             ORDER BY ISNULL(sort_order, 999) ASC, slide_id ASC
         `);
         const list = rows.recordset || [];
@@ -503,8 +502,7 @@ async function seedSampleCourseIfEmpty(pool) {
 
         const count = await pool.request().query(`
             SELECT COUNT(*) AS c FROM dbo.courses WHERE flag_use IS NULL
-               OR TRY_CAST(flag_use AS INT) = 1
-               OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+               OR UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), flag_use)))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
         `);
         if (Number(count.recordset[0].c || 0) > 0) return;
 

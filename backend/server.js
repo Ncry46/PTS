@@ -779,14 +779,16 @@ app.post('/api/community', async (req, res) => {
         const pool = await poolPromise;
         const result = await pool.request()
             .input('userId', sql.Int, req.session.user.user_id)
-            .input('content', sql.NVarChar, content)
-            .query(`
+            .input('content', sql.NVarChar, content);
+        const { bindFlagInput } = require('./db');
+        await bindFlagInput(pool, result, 'flagUse', 'community_posts', true);
+        const inserted = await result.query(`
                 INSERT INTO dbo.community_posts (user_id, content, flag_use, created_at)
                 OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.created_at
-                VALUES (@userId, @content, 1, GETDATE())
+                VALUES (@userId, @content, @flagUse, GETDATE())
             `);
 
-        const created = result.recordset[0];
+        const created = inserted.recordset[0];
         res.json({
             success: true,
             message: 'โพสต์สำเร็จ',

@@ -1,4 +1,4 @@
-const { flagActiveSql } = require('./db');
+const { flagActiveSql, setFlagUse, bindFlagInput, isFlagActive } = require('./db');
 const express = require('express');
 const sql = require('mssql');
 
@@ -54,7 +54,7 @@ function mapQuestion(row) {
         options_json: row.options_json || null,
         is_required: !!row.is_required,
         sort_order: row.sort_order,
-        flag_use: row.flag_use == null ? 1 : Number(row.flag_use)
+        flag_use: row.flag_use
     };
 }
 
@@ -647,13 +647,13 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
         if (!formId) return res.status(400).json({ success: false, message: 'form_id ไม่ถูกต้อง' });
         try {
             const pool = await poolPromise;
-            await pool.request()
-                .input('formId', sql.Int, formId)
-                .query(`
-                    UPDATE dbo.custom_forms
-                    SET flag_use = 0, updated_at = GETDATE(), is_published = 0
-                    WHERE form_id = @formId
-                `);
+            await setFlagUse(pool, {
+                table: 'custom_forms',
+                idColumn: 'form_id',
+                idValue: formId,
+                active: false,
+                extraSet: 'updated_at = GETDATE(), is_published = 0'
+            });
             res.json({ success: true, message: 'ลบแบบฟอร์มแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -810,9 +810,12 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             if (!cur.recordset[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบคำถาม' });
             }
-            await pool.request()
-                .input('questionId', sql.Int, questionId)
-                .query(`UPDATE dbo.custom_form_questions SET flag_use = 0 WHERE question_id=@questionId`);
+            await setFlagUse(pool, {
+                table: 'custom_form_questions',
+                idColumn: 'question_id',
+                idValue: questionId,
+                active: false
+            });
             await pool.request()
                 .input('formId', sql.Int, cur.recordset[0].form_id)
                 .query(`UPDATE dbo.custom_forms SET updated_at = GETDATE() WHERE form_id = @formId`);

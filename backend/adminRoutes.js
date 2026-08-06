@@ -1,4 +1,4 @@
-const { flagActiveSql, isFlagActive, normalizeFlagYn } = require('./db');
+const { flagActiveSql, isFlagActive, normalizeFlagYn, bindFlagInput, flagSqlLiteral, setFlagUse } = require('./db');
 const express = require('express');
 const sql = require('mssql');
 const path = require('path');
@@ -85,10 +85,9 @@ function normalizeHeroBody(body = {}) {
     };
 }
 
-function bindHeroInputs(request, data) {
-    return request
+async function bindHeroInputs(pool, request, data) {
+    request
         .input('sort_order', sql.Int, data.sort_order)
-        .input('flag_use', sql.VarChar(1), data.flag_use)
         .input('eyebrow', sql.NVarChar(255), data.eyebrow)
         .input('section_title', sql.NVarChar(255), data.section_title)
         .input('section_title_highlight', sql.NVarChar(255), data.section_title_highlight)
@@ -104,6 +103,8 @@ function bindHeroInputs(request, data) {
         .input('badge_subsection_title', sql.NVarChar(255), data.badge_subsection_title)
         .input('theme', sql.NVarChar(50), data.theme)
         .input('theme_color', sql.NVarChar(20), data.theme_color);
+    await bindFlagInput(pool, request, 'flag_use', 'hero_slides', isFlagActive(data.flag_use));
+    return request;
 }
 
 function createAdminRouter({ poolPromise, requireLogin }) {
@@ -234,7 +235,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
+            const insertReq = pool.request()
                 .input('name', sql.NVarChar(255), course_name)
                 .input('instructor', sql.NVarChar(255), instructor_name || 'PTS Instructor')
                 .input('mode', sql.VarChar(20), delivery_mode || 'online')
@@ -247,8 +248,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('catId', sql.Int, coursescat_id != null && coursescat_id !== '' ? Number(coursescat_id) : null)
                 .input('enrolled', sql.Int, total_enrolled != null && total_enrolled !== '' ? Number(total_enrolled) : 0)
                 .input('startDate', sql.Date, start_date || null)
-                .input('openSoon', sql.Bit, is_open_soon ? 1 : 0)
-                .query(`
+                .input('openSoon', sql.Bit, is_open_soon ? 1 : 0);
+            await bindFlagInput(pool, insertReq, 'flagUse', 'courses', true);
+            const result = await insertReq.query(`
                     INSERT INTO dbo.courses
                     (course_name, instructor_name, delivery_mode, total_hours,
                      average_rating, total_reviews, cover_image_url, is_featured,
@@ -258,7 +260,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     VALUES (
                         @name, @instructor, @mode, @hours,
                         0, 0, @cover, @featured,
-                        @coursesFlag, GETDATE(), @price, @description, 'Y',
+                        @coursesFlag, GETDATE(), @price, @description, @flagUse,
                         @catId, @enrolled, @startDate, @openSoon
                     )
                 `);
@@ -331,13 +333,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
-                .input('courseId', sql.Int, courseId)
-                .query(`
-                    UPDATE dbo.courses
-                    SET flag_use = 'N'
-                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
-                `);
+            const result = await setFlagUse(pool, {
+                table: 'courses',
+                idColumn: 'course_id',
+                idValue: courseId,
+                active: false
+            });
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร หรือถูกลบไปแล้ว' });
             }
@@ -370,14 +371,11 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุหลักสูตรและชื่อบทเรียน' });
         }
 
-        let flagValue = 'Y';
-        if (flag_use !== undefined && flag_use !== null) {
-            flagValue = (flag_use === 'N' || flag_use === '0' || flag_use === 0 || flag_use === false) ? 'N' : 'Y';
-        }
+        const flagActive = !(flag_use === 'N' || flag_use === '0' || flag_use === 0 || flag_use === false);
 
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
+            const insertReq = pool.request()
                 .input('courseId', sql.Int, courseId)
                 .input('section_title', sql.NVarChar(255), section_title || 'บทเรียนทั่วไป')
                 .input('lesson_title', sql.NVarChar(255), lesson_title || section_title)
@@ -385,9 +383,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('video', sql.NVarChar(500), video_url || null)
                 .input('fileUrl', sql.NVarChar(500), file_url || null)
                 .input('duration', sql.Int, Number(duration_minutes) || 15)
-                .input('sort', sql.Int, Number(sort_order) || 1)
-                .input('flagUse', sql.VarChar(1), flagValue)
-                .query(`
+                .input('sort', sql.Int, Number(sort_order) || 1);
+            await bindFlagInput(pool, insertReq, 'flagUse', 'course_lessons', flagActive);
+            const result = await insertReq.query(`
                     INSERT INTO dbo.course_lessons
                     (
                         course_id, 
@@ -440,11 +438,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                            content_html, video_url, file_url, duration_minutes, sort_order, flag_use
                     FROM dbo.course_lessons
                     WHERE course_id = @courseId
-                      AND (
-                        flag_use IS NULL
-                        OR TRY_CAST(flag_use AS INT) = 1
-                        OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
-                      )
+                      AND ${flagActiveSql('flag_use')}
                     ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
                 `);
             res.json({ success: true, data: result.recordset });
@@ -472,24 +466,30 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const section_title = rawSection != null ? rawSection : rawTitle;
         const lesson_title = rawLesson != null ? rawLesson : (rawTitle != null ? rawTitle : null);
 
-        let flagValue = null;
+        let flagActive = null;
         if (flag_use !== undefined && flag_use !== null) {
-            flagValue = (flag_use === 'Y' || flag_use === '1' || flag_use === 1 || flag_use === true) ? 'Y' : 'N';
+            flagActive = isFlagActive(flag_use);
         }
 
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
+            const upd = pool.request()
                 .input('lessonId', sql.Int, lessonId)
                 .input('section_title', sql.NVarChar(255), section_title != null && section_title !== '' ? String(section_title) : null)
                 .input('lesson_title', sql.NVarChar(255), lesson_title != null && lesson_title !== '' ? String(lesson_title) : null)
                 .input('content', sql.NVarChar(sql.MAX), content_html != null ? String(content_html) : null)
                 .input('video', sql.NVarChar(500), video_url != null ? String(video_url) : null)
                 .input('fileUrl', sql.NVarChar(500), file_url != null ? String(file_url) : null)
-                .input('flagUse', sql.VarChar(1), flagValue)
                 .input('sort', sql.Int, sort_order != null && sort_order !== '' ? Number(sort_order) : null)
-                .input('duration', sql.Int, duration_minutes != null && duration_minutes !== '' ? Number(duration_minutes) : null)
-                .query(`
+                .input('duration', sql.Int, duration_minutes != null && duration_minutes !== '' ? Number(duration_minutes) : null);
+
+            let flagSet = '';
+            if (flagActive != null) {
+                await bindFlagInput(pool, upd, 'flagUse', 'course_lessons', flagActive);
+                flagSet = 'flag_use = @flagUse,';
+            }
+
+            const result = await upd.query(`
                     UPDATE dbo.course_lessons
                     SET
                         section_title = COALESCE(@section_title, section_title),
@@ -497,7 +497,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         content_html = COALESCE(@content, content_html),
                         video_url = COALESCE(@video, video_url),
                         file_url = COALESCE(@fileUrl, file_url),
-                        flag_use = COALESCE(@flagUse, flag_use),
+                        ${flagSet}
                         sort_order = COALESCE(@sort, sort_order),
                         duration_minutes = COALESCE(@duration, duration_minutes)
                     WHERE lesson_id = @lessonId
@@ -519,9 +519,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const lessonId = parseInt(req.params.lessonId, 10);
         try {
             const pool = await poolPromise;
-            await pool.request()
-                .input('lessonId', sql.Int, lessonId)
-                .query(`UPDATE dbo.course_lessons SET flag_use = 'N' WHERE lesson_id = @lessonId`);
+            await setFlagUse(pool, {
+                table: 'course_lessons',
+                idColumn: 'lesson_id',
+                idValue: lessonId,
+                active: false
+            });
             res.json({ success: true, message: 'ปิดการใช้งานบทเรียนแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -557,19 +560,20 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
+            const insertReq = pool.request()
                 .input('section_title', sql.NVarChar(255), section_title)
                 .input('courseId', sql.Int, Number(course_id))
                 .input('startAt', sql.DateTime, new Date(start_at))
                 .input('endAt', sql.DateTime, new Date(end_at))
                 .input('location', sql.NVarChar(255), location || null)
                 .input('meeting', sql.NVarChar(500), meeting_url || null)
-                .input('mode', sql.VarChar(20), delivery_mode || 'online')
-                .query(`
+                .input('mode', sql.VarChar(20), delivery_mode || 'online');
+            await bindFlagInput(pool, insertReq, 'flagUse', 'class_schedules', true);
+            const result = await insertReq.query(`
                     INSERT INTO dbo.class_schedules
                     (course_id, section_title, start_at, end_at, location, meeting_url, delivery_mode, flag_use)
                     OUTPUT INSERTED.schedule_id
-                    VALUES (@courseId, @section_title, @startAt, @endAt, @location, @meeting, @mode, 'Y')
+                    VALUES (@courseId, @section_title, @startAt, @endAt, @location, @meeting, @mode, @flagUse)
                 `);
             const scheduleId = result.recordset[0].schedule_id;
             syncScheduleToEnrolledUsers(pool, scheduleId).catch(() => {});
@@ -584,9 +588,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const scheduleId = parseInt(req.params.scheduleId, 10);
         try {
             const pool = await poolPromise;
-            await pool.request()
-                .input('scheduleId', sql.Int, scheduleId)
-                .query(`UPDATE dbo.class_schedules SET flag_use = 'N' WHERE schedule_id = @scheduleId`);
+            await setFlagUse(pool, {
+                table: 'class_schedules',
+                idColumn: 'schedule_id',
+                idValue: scheduleId,
+                active: false
+            });
             removeScheduleFromAllCalendars(pool, scheduleId).catch(() => {});
             res.json({ success: true, message: 'ลบตารางเรียนแล้ว' });
         } catch (error) {
@@ -617,9 +624,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const postId = parseInt(req.params.postId, 10);
         try {
             const pool = await poolPromise;
-            await pool.request()
-                .input('postId', sql.Int, postId)
-                .query(`UPDATE dbo.community_posts SET flag_use = 'N' WHERE post_id = @postId`);
+            await setFlagUse(pool, {
+                table: 'community_posts',
+                idColumn: 'post_id',
+                idValue: postId,
+                active: false
+            });
             res.json({ success: true, message: 'ซ่อนโพสต์แล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -631,17 +641,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const postId = parseInt(req.params.postId, 10);
         if (!postId) return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
 
-        const visible = !(req.body.flag_use === false || req.body.flag_use === 0 || req.body.flag_use === '0' || req.body.flag_use === 'N');
+        const visible = isFlagActive(req.body.flag_use === undefined ? true : req.body.flag_use);
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
-                .input('postId', sql.Int, postId)
-                .input('flag', sql.VarChar(1), visible ? 'Y' : 'N')
-                .query(`
-                    UPDATE dbo.community_posts
-                    SET flag_use = @flag
-                    WHERE post_id = @postId
-                `);
+            const result = await setFlagUse(pool, {
+                table: 'community_posts',
+                idColumn: 'post_id',
+                idValue: postId,
+                active: visible
+            });
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบโพสต์' });
             }
@@ -877,19 +885,20 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
 
-            const inserted = await pool.request()
+            const insertReq = pool.request()
                 .input('code', sql.VarChar(50), code)
                 .input('courseId', sql.Int, courseId)
                 .input('maxUses', sql.Int, maxUses)
                 .input('expiresAt', sql.DateTime, expiresAt)
                 .input('note', sql.NVarChar(255), note)
-                .input('createdBy', sql.Int, admin.user_id)
-                .query(`
+                .input('createdBy', sql.Int, admin.user_id);
+            await bindFlagInput(pool, insertReq, 'flagUse', 'access_codes', true);
+            const inserted = await insertReq.query(`
                     INSERT INTO dbo.access_codes
                     (code, course_id, max_uses, used_count, expires_at, note, flag_use, created_by)
                     OUTPUT INSERTED.access_code_id, INSERTED.code, INSERTED.course_id, INSERTED.max_uses,
                            INSERTED.used_count, INSERTED.expires_at, INSERTED.note, INSERTED.flag_use, INSERTED.created_at
-                    VALUES (@code, @courseId, @maxUses, 0, @expiresAt, @note, 'Y', @createdBy)
+                    VALUES (@code, @courseId, @maxUses, 0, @expiresAt, @note, @flagUse, @createdBy)
                 `);
 
             res.json({
@@ -916,19 +925,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุ flag_use' });
         }
 
-        const isEnable = (rawFlag === 1 || rawFlag === true || rawFlag === '1' || rawFlag === 'Y' || rawFlag === 'y');
-        const flagValue = isEnable ? 'Y' : 'N';
-
+        const isEnable = isFlagActive(rawFlag);
         try {
             const pool = await poolPromise;
-            const result = await pool.request()
-                .input('id', sql.Int, id)
-                .input('flag', sql.VarChar(1), flagValue)
-                .query(`
-                    UPDATE dbo.access_codes 
-                    SET flag_use = @flag
-                    WHERE access_code_id = @id
-                `);
+            const result = await setFlagUse(pool, {
+                table: 'access_codes',
+                idColumn: 'access_code_id',
+                idValue: id,
+                active: isEnable
+            });
 
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบรหัส' });
@@ -972,7 +977,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         }
         try {
             const pool = await poolPromise;
-            const result = await bindHeroInputs(pool.request(), data).query(`
+            const insertReq = pool.request();
+            await bindHeroInputs(pool, insertReq, data);
+            const result = await insertReq.query(`
                 INSERT INTO dbo.hero_slides (
                     sort_order, flag_use, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
@@ -1001,9 +1008,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         }
         try {
             const pool = await poolPromise;
-            const result = await bindHeroInputs(pool.request(), data)
-                .input('slideId', sql.Int, slideId)
-                .query(`
+            const updReq = pool.request().input('slideId', sql.Int, slideId);
+            await bindHeroInputs(pool, updReq, data);
+            const result = await updReq.query(`
                     UPDATE dbo.hero_slides
                     SET sort_order = @sort_order,
                         flag_use = @flag_use,
@@ -1040,13 +1047,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!slideId) return res.status(400).json({ success: false, message: 'รหัสแบนเนอร์ไม่ถูกต้อง' });
         try {
             const pool = await poolPromise;
-            await pool.request()
-                .input('slideId', sql.Int, slideId)
-                .query(`
-                    UPDATE dbo.hero_slides
-                    SET flag_use = 'N', updated_at = GETDATE()
-                    WHERE slide_id = @slideId
-                `);
+            await setFlagUse(pool, {
+                table: 'hero_slides',
+                idColumn: 'slide_id',
+                idValue: slideId,
+                active: false,
+                extraSet: 'updated_at = GETDATE()'
+            });
             res.json({ success: true, message: 'ซ่อนแบนเนอร์แล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -1088,9 +1095,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             }
         }
         if (req.body.flag_use != null) {
-            const flag = req.body.flag_use === false || req.body.flag_use === 0 || req.body.flag_use === '0' || req.body.flag_use === 'N' ? 'N' : 'Y';
             sets.push('flag_use = @flag_use');
-            inputs.push(['flag_use', sql.VarChar(1), flag]);
+            // bound later with bindFlagInput after pool is ready
+            inputs.push(['__flag_use_active__', null, isFlagActive(req.body.flag_use)]);
         }
         if (!sets.length) {
             return res.status(400).json({ success: false, message: 'ไม่มีข้อมูลที่จะอัปเดต' });
@@ -1100,9 +1107,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             let request = pool.request().input('slideId', sql.Int, slideId);
-            inputs.forEach(([name, type, value]) => {
-                request = request.input(name, type, value);
-            });
+            for (const [name, type, value] of inputs) {
+                if (name === '__flag_use_active__') {
+                    await bindFlagInput(pool, request, 'flag_use', 'hero_slides', value);
+                } else {
+                    request = request.input(name, type, value);
+                }
+            }
             const result = await request.query(`
                 UPDATE dbo.hero_slides
                 SET ${sets.join(', ')}
