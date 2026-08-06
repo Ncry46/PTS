@@ -365,9 +365,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         let flagValue = 'Y';
         if (flag_use !== undefined && flag_use !== null) {
-            flagValue = (flag_use === 'N' || flag_use === '0' || flag_use === 0 || flag_use === false) ? 'N' : 'Y';
+            const f = String(flag_use).toUpperCase();
+            flagValue = (f === 'N' || f === '0' || f === 'FALSE') ? 'N' : 'Y';
         }
-
         try {
             const pool = await poolPromise;
             const result = await pool.request()
@@ -448,7 +448,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         let flagValue = null;
         if (flag_use !== undefined && flag_use !== null) {
-            flagValue = (flag_use === 'Y' || flag_use === '1' || flag_use === 1 || flag_use === true) ? 'Y' : 'N';
+            const f = String(flag_use).toUpperCase();
+            flagValue = (f === 'Y' || f === '1' || f === 'TRUE') ? 'Y' : 'N';
         }
 
         try {

@@ -47,7 +47,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             .input('courseId', sql.Int, courseId)
             .query(`
                 SELECT
-                    (SELECT COUNT(*) FROM dbo.course_lessons WHERE course_id = @courseId AND flag_use = 1) AS total_lessons,
+                    (SELECT COUNT(*) FROM dbo.course_lessons WHERE course_id = @courseId AND ISNULL(flag_use, 'Y') = 'Y'  ) AS total_lessons,
                     (
                         SELECT COUNT(*)
                         FROM dbo.lesson_progress lp
@@ -196,7 +196,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT lesson_id, section_title, flag_use
                     FROM dbo.course_lessons
-                    WHERE course_id = @courseId AND flag_use = 1
+                    WHERE course_id = @courseId AND ISNULL(flag_use, 'Y') = 'Y'  
                     ORDER BY flag_use ASC, lesson_id ASC
                 `);
 

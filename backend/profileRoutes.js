@@ -382,7 +382,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT lesson_id, section_title, flag_use, duration_minutes
                     FROM dbo.course_lessons
-                    WHERE course_id = @courseId AND flag_use = 1
+                    WHERE course_id = @courseId AND ISNULL(flag_use, 'Y') = 'Y'  
                     ORDER BY flag_use ASC, lesson_id ASC
                 `);
             res.json({ success: true, loggedIn: !!userId, data: result.recordset[0], lessons: lessons.recordset });
