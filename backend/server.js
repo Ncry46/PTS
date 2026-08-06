@@ -15,6 +15,7 @@ const {
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createFormRouter, createAdminFormRouter } = require('./formRoutes');
+const { createReviewRouter, ensureCourseReviewsTable } = require('./reviewRoutes');
 const { createProfileRouter } = require('./profileRoutes');
 const { createGoogleCalendarRouter } = require('./googleCalendarRoutes');
 const { createGoogleAuthRouter } = require('./googleAuthRoutes');
@@ -160,6 +161,12 @@ const poolPromise = connectPool()
             }
         } else {
             console.log('📚 DB connect-only — ใช้ตาราง users / courses ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
+        }
+        try {
+            await ensureCourseReviewsTable(pool);
+            console.log('⭐ course_reviews table ready');
+        } catch (revErr) {
+            console.warn('⚠️ course_reviews:', revErr.message);
         }
         const mail = getMailStatus();
         const localPath = path.join(__dirname, 'mail.local.js');
@@ -1041,6 +1048,7 @@ app.patch('/api/my/courses/:courseId/progress', async (req, res) => {
 // -------------------------------------------------------------------------
 app.use('/api', createLearningRouter({ poolPromise, requireLogin }));
 app.use('/api', createProfileRouter({ poolPromise, requireLogin }));
+app.use('/api', createReviewRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleCalendarRouter({ poolPromise, requireLogin }));
 app.use('/api', createGoogleAuthRouter({ poolPromise }));
 app.use('/api', createLineRouter({ poolPromise, requireLogin }));

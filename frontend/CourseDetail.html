@@ -27,6 +27,59 @@
   .pts-notify__actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .pts-notify__actions .pts-btn { flex: 1 1 160px; justify-content: center; text-align: center; }
 
+  .pts-reviews { margin-top: 28px; }
+  .pts-reviews__head {
+    display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+    gap: 10px; margin-bottom: 16px;
+  }
+  .pts-reviews__avg { font-size: 15px; color: var(--pts-muted, #5c4f55); }
+  .pts-reviews__avg strong { color: var(--pts-primary, #974258); font-size: 22px; }
+  .pts-stars { display: inline-flex; gap: 2px; vertical-align: middle; }
+  .pts-stars .material-symbols-outlined {
+    font-size: 20px; color: #d4a017;
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  }
+  .pts-stars .is-empty { color: #d6c8cc; font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+  .pts-review-form {
+    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
+    border-radius: 18px; padding: 18px; margin-bottom: 18px;
+    background: color-mix(in srgb, var(--pts-primary, #974258) 4%, #fff);
+  }
+  .pts-review-form label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .pts-star-pick { display: flex; gap: 4px; margin-bottom: 12px; }
+  .pts-star-pick button {
+    border: none; background: transparent; padding: 2px; cursor: pointer; color: #d6c8cc;
+  }
+  .pts-star-pick button.is-on { color: #d4a017; }
+  .pts-star-pick .material-symbols-outlined {
+    font-size: 28px;
+    font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24;
+  }
+  .pts-star-pick button:not(.is-on) .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+  }
+  .pts-review-form textarea {
+    width: 100%; min-height: 90px; border-radius: 12px; padding: 12px 14px;
+    border: 1px solid var(--pts-border, rgba(151,66,88,.18));
+    font: inherit; resize: vertical; margin-bottom: 12px;
+  }
+  .pts-review-list { display: grid; gap: 12px; }
+  .pts-review-item {
+    border: 1px solid var(--pts-border, rgba(151,66,88,.12));
+    border-radius: 16px; padding: 14px 16px; background: #fff;
+  }
+  .pts-review-item__top {
+    display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+    gap: 8px; margin-bottom: 6px;
+  }
+  .pts-review-item__name { font-weight: 700; font-size: 14px; }
+  .pts-review-item__date { font-size: 12px; color: var(--pts-muted, #5c4f55); }
+  .pts-review-item__comment { font-size: 14px; line-height: 1.5; color: var(--pts-text, #1c1520); margin: 8px 0 0; }
+  .pts-review-gate {
+    font-size: 13px; color: var(--pts-muted, #5c4f55); padding: 12px 14px;
+    border-radius: 12px; background: rgba(0,0,0,.03); margin-bottom: 16px;
+  }
+
   .pts-course-card-head {
     display: flex;
     align-items: center;
@@ -264,6 +317,9 @@ async function mountCourseNotifyControls(hostEl) {
           <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
           <h1 class="text-3xl font-bold text-primary mb-2 pts-display">${escapeHtml(c.course_name)}</h1>
           <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
+          <p class="text-sm text-on-surface-variant mb-4" id="course-rating-line">
+            ${Number(c.average_rating || 0).toFixed(1)} ★ · ${Number(c.total_reviews || 0)} รีวิว
+          </p>
           <p class="text-on-surface-variant mb-5 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
           <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
           <div class="pts-course-cta-row">
@@ -282,7 +338,143 @@ async function mountCourseNotifyControls(hostEl) {
             : '<li class="text-sm text-on-surface-variant">ยังไม่มีบทเรียน — รอแอดมินเพิ่มเนื้อหา</li>'}</ul>
         </div>
       </div>
-    </article>`;
+    </article>
+    <section class="pts-reviews" id="reviews-section" aria-label="รีวิวหลักสูตร">
+      <div class="pts-reviews__head">
+        <h2 class="text-xl font-bold text-primary pts-display mb-0">รีวิวจากผู้เรียน</h2>
+        <p class="pts-reviews__avg" id="reviews-summary">กำลังโหลด...</p>
+      </div>
+      <div id="reviews-form-host"></div>
+      <div class="pts-review-list" id="reviews-list"></div>
+    </section>`;
+
+  const starsHtml = (n) => {
+    const score = Math.round(Number(n) || 0);
+    return `<span class="pts-stars" aria-label="${score} จาก 5 ดาว">${[1,2,3,4,5].map((i) =>
+      `<span class="material-symbols-outlined${i <= score ? '' : ' is-empty'}" aria-hidden="true">star</span>`
+    ).join('')}</span>`;
+  };
+
+  const fmtReviewDate = (v) => {
+    if (!v) return '';
+    try { return new Date(v).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }); }
+    catch (_) { return ''; }
+  };
+
+  async function loadReviews() {
+    const listEl = document.getElementById('reviews-list');
+    const formHost = document.getElementById('reviews-form-host');
+    const summaryEl = document.getElementById('reviews-summary');
+    try {
+      const r = await fetch(`/api/courses/${courseId}/reviews`, { credentials: 'include' });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || j.success === false) throw new Error(j.message || 'โหลดรีวิวไม่สำเร็จ');
+
+      const avg = Number(j.summary?.average_rating || 0).toFixed(1);
+      const total = Number(j.summary?.total_reviews || 0);
+      summaryEl.innerHTML = `${starsHtml(avg)} <strong>${avg}</strong> · ${total} รีวิว`;
+      const ratingLine = document.getElementById('course-rating-line');
+      if (ratingLine) ratingLine.textContent = `${avg} ★ · ${total} รีวิว`;
+
+      if (!loggedIn) {
+        formHost.innerHTML = `<p class="pts-review-gate">เข้าสู่ระบบ และสมัครเรียน+ชำระเงินแล้ว จึงจะรีวิวได้ · <a class="text-primary font-bold" href="Login.html">เข้าสู่ระบบ</a></p>`;
+      } else if (!j.can_review) {
+        formHost.innerHTML = `<p class="pts-review-gate">${escapeHtml(j.can_review_reason || 'ยังไม่สามารถรีวิวได้')}</p>`;
+      } else {
+        const mine = j.my_review;
+        const current = mine ? Number(mine.rating) : 0;
+        formHost.innerHTML = `
+          <div class="pts-review-form">
+            <p class="font-bold text-primary mb-2">${mine ? 'แก้ไขรีวิวของคุณ' : 'เขียนรีวิวหลักสูตรนี้'}</p>
+            <label>คะแนน</label>
+            <div class="pts-star-pick" id="star-pick" data-rating="${current}">
+              ${[1,2,3,4,5].map((i) => `<button type="button" data-star="${i}" class="${i <= current ? 'is-on' : ''}" aria-label="${i} ดาว"><span class="material-symbols-outlined">star</span></button>`).join('')}
+            </div>
+            <label for="review-comment">ความคิดเห็น (ไม่บังคับ)</label>
+            <textarea id="review-comment" maxlength="1000" placeholder="แชร์ประสบการณ์เรียนของคุณ...">${escapeHtml(mine?.comment || '')}</textarea>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="pts-btn pts-btn-primary" id="review-submit">${mine ? 'อัปเดตรีวิว' : 'ส่งรีวิว'}</button>
+              ${mine ? `<button type="button" class="pts-btn pts-btn-ghost" id="review-delete" style="color:#ba1a1a">ลบรีวิว</button>` : ''}
+            </div>
+            <p id="review-msg" class="pts-msg" style="margin-top:10px" hidden></p>
+          </div>`;
+
+        const pick = document.getElementById('star-pick');
+        pick.querySelectorAll('button').forEach((btn) => {
+          btn.onclick = () => {
+            const v = Number(btn.dataset.star);
+            pick.dataset.rating = String(v);
+            pick.querySelectorAll('button').forEach((b) => {
+              b.classList.toggle('is-on', Number(b.dataset.star) <= v);
+            });
+          };
+        });
+
+        document.getElementById('review-submit').onclick = async () => {
+          const msg = document.getElementById('review-msg');
+          const rating = Number(pick.dataset.rating || 0);
+          const comment = document.getElementById('review-comment').value.trim();
+          msg.hidden = false;
+          if (!rating) {
+            msg.textContent = 'กรุณาเลือกคะแนนดาว';
+            msg.className = 'pts-msg pts-msg--err';
+            return;
+          }
+          try {
+            const res = await fetch(`/api/courses/${courseId}/reviews`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ rating, comment })
+            });
+            const out = await res.json().catch(() => ({}));
+            if (!res.ok || out.success === false) throw new Error(out.message || 'ส่งรีวิวไม่สำเร็จ');
+            msg.textContent = out.message || 'บันทึกแล้ว';
+            msg.className = 'pts-msg pts-msg--ok';
+            await loadReviews();
+          } catch (err) {
+            msg.textContent = err.message || 'ส่งรีวิวไม่สำเร็จ';
+            msg.className = 'pts-msg pts-msg--err';
+          }
+        };
+
+        document.getElementById('review-delete')?.addEventListener('click', async () => {
+          if (!confirm('ลบรีวิวของคุณ?')) return;
+          try {
+            const res = await fetch(`/api/courses/${courseId}/reviews/me`, {
+              method: 'DELETE',
+              credentials: 'include'
+            });
+            const out = await res.json().catch(() => ({}));
+            if (!res.ok || out.success === false) throw new Error(out.message || 'ลบไม่สำเร็จ');
+            await loadReviews();
+          } catch (err) {
+            alert(err.message || 'ลบไม่สำเร็จ');
+          }
+        });
+      }
+
+      const rows = j.data || [];
+      if (!rows.length) {
+        listEl.innerHTML = '<p class="text-sm text-on-surface-variant">ยังไม่มีรีวิว — เป็นคนแรกที่รีวิวได้หลังสมัครและชำระเงิน</p>';
+      } else {
+        listEl.innerHTML = rows.map((rv) => `
+          <article class="pts-review-item">
+            <div class="pts-review-item__top">
+              <span class="pts-review-item__name">${escapeHtml(rv.full_name || 'ผู้เรียน')}</span>
+              <span class="pts-review-item__date">${escapeHtml(fmtReviewDate(rv.updated_at || rv.created_at))}</span>
+            </div>
+            ${starsHtml(rv.rating)}
+            ${rv.comment ? `<p class="pts-review-item__comment">${escapeHtml(rv.comment)}</p>` : ''}
+          </article>`).join('');
+      }
+    } catch (err) {
+      summaryEl.textContent = 'โหลดรีวิวไม่สำเร็จ';
+      listEl.innerHTML = `<p class="text-sm text-error">${escapeHtml(err.message || '')}</p>`;
+    }
+  }
+
+  await loadReviews();
 
   document.getElementById('go-learn')?.addEventListener('click', async (e) => {
     e.preventDefault();
