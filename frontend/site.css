@@ -2,15 +2,15 @@
 @import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap');
 
 :root {
-  --pts-primary: #974258;
-  --pts-primary-deep: #7a2f42;
-  --pts-primary-soft: #f6e6ea;
+  --pts-primary: #CA1156;
+  --pts-primary-deep: #a50e48;
+  --pts-primary-soft: #fce8ef;
   --pts-accent: #3d5a4c;
   --pts-bg: #f3f0f1;
   --pts-surface: #ffffff;
   --pts-text: #1c1520;
   --pts-muted: #5c4f55;
-  --pts-border: rgba(151, 66, 88, 0.14);
+  --pts-border: rgba(202, 17, 86, 0.14);
   --pts-shadow: 0 10px 36px rgba(28, 21, 32, 0.07);
   --pts-shadow-sm: 0 2px 10px rgba(28, 21, 32, 0.04);
   --pts-radius: 18px;
@@ -21,8 +21,8 @@
   --pts-font: 'SN Pro', 'Bai Jamjuree', sans-serif;
   --pts-display: 'SN Pro', 'Bai Jamjuree', sans-serif;
   --pts-nav-bg: #ffffff;
-  --pts-nav-hover: #f6e6ea;
-  --pts-wash-a: rgba(151, 66, 88, 0.12);
+  --pts-nav-hover: #fce8ef;
+  --pts-wash-a: rgba(202, 17, 86, 0.12);
   --pts-wash-b: rgba(61, 90, 76, 0.08);
   --pts-wash-top: #faf7f8;
   --pts-wash-bottom: #efeceb;

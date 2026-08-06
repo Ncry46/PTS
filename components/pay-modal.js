@@ -33,6 +33,10 @@
 
   function ensureDom() {
     var root = document.getElementById('pts-pay-modal');
+    if (root && !root.querySelector('[data-pay-sub]')) {
+      root.remove();
+      root = null;
+    }
     if (root) return root;
 
     root = document.createElement('div');
@@ -42,7 +46,7 @@
     root.setAttribute('aria-modal', 'true');
     root.setAttribute('aria-labelledby', 'pts-pay-modal-section_title');
     root.innerHTML =
-      '<div class="pts-pay-modal__card" data-pay-card>' +
+      '<div class="pts-pay-modal__card" data-pay-panel>' +
       '  <button type="button" class="pts-pay-modal__close" data-pay-close aria-label="ปิด">' +
       '    <span class="material-symbols-outlined" style="font-size:20px">close</span>' +
       '  </button>' +
@@ -86,7 +90,7 @@
       '        <label class="pts-field"><span>CVC</span><input data-card-cvc class="pts-input" inputmode="numeric" autocomplete="cc-csc" placeholder="•••" maxlength="4"></label>' +
       '      </div>' +
       '    </div>' +
-      '    <button type="button" class="pts-btn pts-btn-primary w-full" data-pay-card>ชำระด้วยบัตรเครดิต</button>' +
+      '    <button type="button" class="pts-btn pts-btn-primary w-full" data-charge-card>ชำระด้วยบัตรเครดิต</button>' +
       '  </div>' +
       '  <div class="pts-pay-modal__coupon">' +
       '    <label class="pts-pay-modal__coupon-label" for="pts-pay-coupon">คูปองโค้ด</label>' +
@@ -139,7 +143,7 @@
       createBtn.disabled = false;
       createBtn.textContent = 'สร้าง QR CODE';
     }
-    var cardBtn = $('[data-pay-card]', root);
+    var cardBtn = $('[data-charge-card]', root);
     if (cardBtn) {
       cardBtn.disabled = false;
       cardBtn.textContent = 'ชำระด้วยบัตรเครดิต';
@@ -264,9 +268,9 @@
       if (e.target === root) close();
     });
 
-    var card = root.querySelector('[data-pay-card]');
-    if (card) {
-      card.addEventListener('click', function (e) {
+    var panel = root.querySelector('[data-pay-panel]');
+    if (panel) {
+      panel.addEventListener('click', function (e) {
         e.stopPropagation();
       });
     }
@@ -348,9 +352,10 @@
       }
     });
 
-    $('[data-pay-card]', root).addEventListener('click', async function (e) {
+    var chargeBtn = $('[data-charge-card]', root);
+    if (chargeBtn) chargeBtn.addEventListener('click', async function (e) {
       e.stopPropagation();
-      var btn = $('[data-pay-card]', root);
+      var btn = chargeBtn;
       btn.disabled = true;
       btn.textContent = 'กำลังชำระ...';
       try {
@@ -429,12 +434,20 @@
     state.onSuccess = opts.onSuccess || null;
 
     var root = ensureDom();
+    if (!root.querySelector('[data-pay-sub]')) {
+      root.remove();
+      root = ensureDom();
+    }
     resetModalUi(root);
 
-    $('[data-pay-sub]', root).textContent = state.courseName
-      ? 'หลักสูตร: ' + state.courseName
-      : 'เลือกช่องทางชำระเงินด้านล่าง';
-    $('[data-pay-amount]', root).textContent = money(state.price);
+    var subEl = $('[data-pay-sub]', root);
+    if (subEl) {
+      subEl.textContent = state.courseName
+        ? 'หลักสูตร: ' + state.courseName
+        : 'เลือกช่องทางชำระเงินด้านล่าง';
+    }
+    var amountEl = $('[data-pay-amount]', root);
+    if (amountEl) amountEl.textContent = money(state.price);
 
     root.classList.add('is-open');
     document.body.classList.add('pts-pay-modal-open');
