@@ -59,8 +59,8 @@
     const lang = (window.PTSLang && window.PTSLang.get()) || 'th';
     return `
       <div class="pts-lang-toggle" role="group" aria-label="${escapeAttr(t('nav.lang', 'ภาษา'))}">
-        <button type="button" class="pts-lang-toggle__btn${lang === 'th' ? ' is-active' : ''}" data-pts-lang="th">${t('nav.lang.th', 'ไทย')}</button>
-        <button type="button" class="pts-lang-toggle__btn${lang === 'en' ? ' is-active' : ''}" data-pts-lang="en">${t('nav.lang.en', 'EN')}</button>
+        <button type="button" class="pts-lang-toggle__btn${lang === 'th' ? ' is-active' : ''}" data-pts-lang="th" data-i18n="nav.lang.th">${t('nav.lang.th', 'ไทย')}</button>
+        <button type="button" class="pts-lang-toggle__btn${lang === 'en' ? ' is-active' : ''}" data-pts-lang="en" data-i18n="nav.lang.en">${t('nav.lang.en', 'EN')}</button>
       </div>`;
   }
 
@@ -351,7 +351,7 @@
     return `
       <div class="pts-topnav__mega-wrap">
         <button type="button" class="pts-topnav__mega-btn" aria-haspopup="true">
-          ${t('nav.courses', 'หลักสูตร')} <span aria-hidden="true">▾</span>
+          <span data-i18n="nav.courses">${t('nav.courses', 'หลักสูตร')}</span> <span aria-hidden="true">▾</span>
         </button>
         <div class="pts-topnav__mega" role="menu">
           <div class="pts-topnav__mega-panel">
@@ -359,25 +359,25 @@
               <span class="pts-topnav__mega-icon">On</span>
               <span>
                 <p class="pts-topnav__mega-section_title">Online</p>
-                <p class="pts-topnav__mega-desc">${t('nav.mega.online', 'เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา')}</p>
+                <p class="pts-topnav__mega-desc" data-i18n="nav.mega.online">${t('nav.mega.online', 'เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา')}</p>
               </span>
             </button>
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="onsite">
               <span class="pts-topnav__mega-icon pts-topnav__mega-icon--onsite">Os</span>
               <span>
                 <p class="pts-topnav__mega-section_title">Onsite</p>
-                <p class="pts-topnav__mega-desc">${t('nav.mega.onsite', 'เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code')}</p>
+                <p class="pts-topnav__mega-desc" data-i18n="nav.mega.onsite">${t('nav.mega.onsite', 'เรียนที่ PTS Academy พร้อมเช็กอินผ่าน QR Code')}</p>
               </span>
             </button>
             <button type="button" class="pts-topnav__mega-item" data-mega-filter="hybrid">
               <span class="pts-topnav__mega-icon pts-topnav__mega-icon--hybrid">Hy</span>
               <span>
                 <p class="pts-topnav__mega-section_title">Hybrid</p>
-                <p class="pts-topnav__mega-desc">${t('nav.mega.hybrid', 'เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว')}</p>
+                <p class="pts-topnav__mega-desc" data-i18n="nav.mega.hybrid">${t('nav.mega.hybrid', 'เรียนทั้งออนไลน์และออนไซต์ในหลักสูตรเดียว')}</p>
               </span>
             </button>
             <div class="pts-topnav__mega-foot">
-              <a href="Courses.html">${t('nav.coursesAll', 'ดูหลักสูตรทั้งหมด')}</a>
+              <a href="Courses.html" data-i18n="nav.coursesAll">${t('nav.coursesAll', 'ดูหลักสูตรทั้งหมด')}</a>
             </div>
           </div>
         </div>
@@ -386,7 +386,7 @@
 
   function coursesMobileHtml() {
     return `
-      <a href="Courses.html">${t('nav.coursesAllShort', 'หลักสูตรทั้งหมด')}</a>
+      <a href="Courses.html" data-i18n="nav.coursesAllShort">${t('nav.coursesAllShort', 'หลักสูตรทั้งหมด')}</a>
       <a href="Courses.html?filter=online">· Online</a>
       <a href="Courses.html?filter=onsite">· Onsite</a>
       <a href="Courses.html?filter=hybrid">· Hybrid</a>`;
@@ -394,22 +394,22 @@
 
   function profileMenuHtml(name, roleLabel, avatar, isAdmin) {
     const studentLinks = `
-          <a href="DashbordU.html" role="menuitem">${t('nav.dashboard', 'แดชบอร์ด')}</a>
-          <a href="Forms.html" role="menuitem">${t('nav.forms', 'แบบฟอร์ม')}</a>
-          <a href="Certificates.html" role="menuitem">${t('nav.certificates', 'ใบประกาศ')}</a>
-          <a href="Favorites.html" role="menuitem">${t('nav.favorites', 'รายการโปรด')}</a>
-          <a href="Schedule.html" role="menuitem">${t('nav.schedule', 'ตารางเรียน / QR Onsite')}</a>
-          <a href="Settings.html" role="menuitem">${t('nav.settings', 'ตั้งค่า')}</a>`;
+          <a href="DashbordU.html" role="menuitem" data-i18n="nav.dashboard">${t('nav.dashboard', 'แดชบอร์ด')}</a>
+          <a href="Forms.html" role="menuitem" data-i18n="nav.forms">${t('nav.forms', 'แบบฟอร์ม')}</a>
+          <a href="Certificates.html" role="menuitem" data-i18n="nav.certificates">${t('nav.certificates', 'ใบประกาศ')}</a>
+          <a href="Favorites.html" role="menuitem" data-i18n="nav.favorites">${t('nav.favorites', 'รายการโปรด')}</a>
+          <a href="Schedule.html" role="menuitem" data-i18n="nav.schedule">${t('nav.schedule', 'ตารางเรียน / QR Onsite')}</a>
+          <a href="Settings.html" role="menuitem" data-i18n="nav.settings">${t('nav.settings', 'ตั้งค่า')}</a>`;
 
     const adminLinks = `
-          <a href="Admin.html#lessons" role="menuitem">${t('nav.admin.lessons', 'บทเรียน')}</a>
-          <a href="Admin.html#schedules" role="menuitem">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
-          <a href="Admin.html#forms" role="menuitem">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
-          <a href="Admin.html#banners" role="menuitem">${t('nav.admin.banners', 'แบนเนอร์')}</a>
-          <a href="Admin.html#users" role="menuitem">${t('nav.admin.users', 'ผู้ใช้')}</a>
-          <a href="Admin.html#posts" role="menuitem">${t('nav.admin.posts', 'โพสต์')}</a>
-          <a href="Admin.html#payments" role="menuitem">${t('nav.admin.payments', 'ชำระเงิน')}</a>
-          <a href="Admin.html#mail" role="menuitem">${t('nav.admin.mail', 'อีเมล OTP')}</a>`;
+          <a href="Admin.html#lessons" role="menuitem" data-i18n="nav.admin.lessons">${t('nav.admin.lessons', 'บทเรียน')}</a>
+          <a href="Admin.html#schedules" role="menuitem" data-i18n="nav.admin.schedules">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
+          <a href="Admin.html#forms" role="menuitem" data-i18n="nav.admin.forms">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
+          <a href="Admin.html#banners" role="menuitem" data-i18n="nav.admin.banners">${t('nav.admin.banners', 'แบนเนอร์')}</a>
+          <a href="Admin.html#users" role="menuitem" data-i18n="nav.admin.users">${t('nav.admin.users', 'ผู้ใช้')}</a>
+          <a href="Admin.html#posts" role="menuitem" data-i18n="nav.admin.posts">${t('nav.admin.posts', 'โพสต์')}</a>
+          <a href="Admin.html#payments" role="menuitem" data-i18n="nav.admin.payments">${t('nav.admin.payments', 'ชำระเงิน')}</a>
+          <a href="Admin.html#mail" role="menuitem" data-i18n="nav.admin.mail">${t('nav.admin.mail', 'อีเมล OTP')}</a>`;
 
     return `
       <div class="pts-topnav__user-wrap" data-pts-user-wrap>
@@ -431,7 +431,7 @@
           </div>
           <nav class="pts-topnav__drop-nav">
             ${isAdmin ? adminLinks : studentLinks}
-            <button type="button" class="pts-topnav__drop-logout" role="menuitem" onclick="logout()">${t('nav.logout', 'ออกจากระบบ')}</button>
+            <button type="button" class="pts-topnav__drop-logout" role="menuitem" onclick="logout()" data-i18n="nav.logout">${t('nav.logout', 'ออกจากระบบ')}</button>
           </nav>
         </div>
       </div>`;
@@ -496,30 +496,30 @@
 
   function renderGuest(container) {
     container.innerHTML = `
-      <nav class="pts-topnav" aria-label="${escapeAttr(t('nav.main', 'เมนูหลัก'))}">
+      <nav class="pts-topnav" data-i18n-aria-label="nav.main" aria-label="${escapeAttr(t('nav.main', 'เมนูหลัก'))}">
         <div class="pts-topnav__inner">
           <div class="pts-topnav__start">
             ${burgerHtml()}
             ${brandHtml()}
           </div>
           <div class="pts-topnav__links">
-            <a class="pts-topnav__link" href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
+            <a class="pts-topnav__link" href="Home.html" data-i18n="nav.home">${t('nav.home', 'หน้าแรก')}</a>
             ${coursesMegaHtml()}
-            <a class="pts-topnav__link" href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
+            <a class="pts-topnav__link" href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
           </div>
           <div class="pts-topnav__actions">
-            <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
-            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Login.html?tab=register">${t('nav.register', 'สมัครสมาชิก')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--ghost pts-topnav__btn--desktop" href="Login.html" data-i18n="nav.login">${t('nav.login', 'เข้าสู่ระบบ')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--primary pts-topnav__btn--desktop" href="Login.html?tab=register" data-i18n="nav.register">${t('nav.register', 'สมัครสมาชิก')}</a>
             ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>
         </div>
         <div class="pts-topnav__mobile" id="pts-mobile-nav" data-pts-mobile>
-          <a href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
+          <a href="Home.html" data-i18n="nav.home">${t('nav.home', 'หน้าแรก')}</a>
           ${coursesMobileHtml()}
-          <a href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
-          <a href="Login.html">${t('nav.login', 'เข้าสู่ระบบ')}</a>
-          <a href="Login.html?tab=register" style="color:#974258;font-weight:700">${t('nav.register', 'สมัครสมาชิก')}</a>
+          <a href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
+          <a href="Login.html" data-i18n="nav.login">${t('nav.login', 'เข้าสู่ระบบ')}</a>
+          <a href="Login.html?tab=register" style="color:#CA1156;font-weight:700" data-i18n="nav.register">${t('nav.register', 'สมัครสมาชิก')}</a>
         </div>
       </nav>`;
     bindToggles(container);
@@ -538,33 +538,60 @@
     const roleLabel = isAdmin ? 'Admin' : 'Student';
 
     container.innerHTML = `
-      <nav class="pts-topnav" aria-label="${escapeAttr(t('nav.main', 'เมนูหลัก'))}">
+      <nav class="pts-topnav" data-i18n-aria-label="nav.main" aria-label="${escapeAttr(t('nav.main', 'เมนูหลัก'))}">
         <div class="pts-topnav__inner">
           <div class="pts-topnav__start">
             ${burgerHtml()}
             ${brandHtml()}
           </div>
           <div class="pts-topnav__links">
-            <a class="pts-topnav__link" href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
+            <a class="pts-topnav__link" href="Home.html" data-i18n="nav.home">${t('nav.home', 'หน้าแรก')}</a>
             ${coursesMegaHtml()}
-            <a class="pts-topnav__link" href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
+            <a class="pts-topnav__link" href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
           </div>
           <div class="pts-topnav__actions">
-            <a href="Notifications.html" class="pts-topnav__icon" section_title="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}" aria-label="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}">🔔</a>
+            <a href="Notifications.html" class="pts-topnav__icon" data-i18n-section_title="nav.notifications" data-i18n-aria-label="nav.notifications" section_title="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}" aria-label="${escapeAttr(t('nav.notifications', 'การแจ้งเตือน'))}">🔔</a>
             ${profileMenuHtml(name, roleLabel, avatar, isAdmin)}
             ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>
         </div>
         <div class="pts-topnav__mobile" id="pts-mobile-nav" data-pts-mobile>
-          <a href="Home.html">${t('nav.home', 'หน้าแรก')}</a>
+          <a href="Home.html" data-i18n="nav.home">${t('nav.home', 'หน้าแรก')}</a>
           ${coursesMobileHtml()}
-          <a href="Community.html">${t('nav.community', 'คอมมูนิตี้')}</a>
+          <a href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
         </div>
       </nav>`;
     bindToggles(container);
     syncThemeToggle(container);
     syncLangToggle(container);
+  }
+
+  function refreshNavbarI18n() {
+    const container = document.getElementById('app-navbar');
+    if (!container || !container.querySelector('.pts-topnav')) {
+      checkUserAndRenderNavbar();
+      return;
+    }
+    const mobileOpen = container.querySelector('[data-pts-mobile]')?.classList.contains('is-open');
+    const profileOpen = container.querySelector('[data-pts-user-wrap]')?.classList.contains('is-open');
+    if (window.PTSLang && typeof window.PTSLang.apply === 'function') {
+      window.PTSLang.apply(container);
+    }
+    syncLangToggle(container);
+    syncThemeToggle(container);
+    const burger = container.querySelector('[data-pts-burger]');
+    if (burger) {
+      burger.setAttribute('aria-label', mobileOpen ? t('nav.closeMenu', 'ปิดเมนู') : t('nav.openMenu', 'เปิดเมนู'));
+    }
+    const userBtn = container.querySelector('[data-pts-user]');
+    if (userBtn) {
+      userBtn.setAttribute('aria-label', profileOpen ? t('nav.closeAccount', 'ปิดเมนูบัญชี') : t('nav.openAccount', 'เปิดเมนูบัญชี'));
+    }
+    container.querySelectorAll('[data-pts-lang]').forEach((btn) => {
+      const code = btn.getAttribute('data-pts-lang');
+      btn.classList.toggle('is-active', (window.PTSLang?.get() || 'th') === code);
+    });
   }
 
   async function checkUserAndRenderNavbar() {
@@ -636,7 +663,7 @@
   }
 
   document.addEventListener('pts-lang-change', () => {
-    checkUserAndRenderNavbar();
+    refreshNavbarI18n();
   });
 
   if (document.readyState === 'loading') {

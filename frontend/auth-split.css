@@ -89,9 +89,11 @@ body.pts-body.pts-login.pts-auth-duo {
   }
 
   .pts-auth-split__pane.is-dimmed {
-    opacity: 0.35;
-    filter: blur(1.5px) saturate(0.7);
-    transform: scale(0.985);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    filter: none;
+    transform: translateX(12px) scale(0.985);
   }
 
   .pts-auth-split[data-mode="login"] .pts-auth-split__pane--register.is-dimmed {
@@ -534,6 +536,29 @@ body.pts-body.pts-login.pts-auth-duo {
 
 .pts-auth-split.is-sliding .pts-auth-split__cover-face {
   transition-delay: 0s;
+}
+
+/* Prevent auth UI flicker while i18n swaps text */
+html.pts-i18n-swapping .pts-auth-split__cover-face,
+html.pts-i18n-swapping .pts-auth-split__pane,
+html.pts-i18n-swapping .pts-auth-split__tab {
+  transition: none !important;
+}
+
+html.pts-i18n-swapping .pts-auth-split__cover-face {
+  opacity: 0 !important;
+  visibility: hidden !important;
+}
+
+html.pts-i18n-swapping .pts-auth-split[data-mode="login"] .pts-auth-split__cover-face[data-cover-face="register"],
+html.pts-i18n-swapping .pts-auth-split[data-mode="register"] .pts-auth-split__cover-face[data-cover-face="login"] {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+html.pts-i18n-swapping .pts-auth-split__pane.is-dimmed {
+  opacity: 0 !important;
+  visibility: hidden !important;
 }
 
 .pts-auth-split__veil-kicker {

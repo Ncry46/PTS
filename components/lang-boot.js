@@ -34,6 +34,8 @@
 
   function apply(root) {
     var scope = root || document;
+    var rootEl = document.documentElement;
+    rootEl.classList.add('pts-i18n-swapping');
     scope.querySelectorAll('[data-i18n]').forEach(function (el) {
       var key = el.getAttribute('data-i18n');
       if (!key) return;
@@ -55,6 +57,9 @@
       var key = el.getAttribute('data-i18n-value');
       var val = t(key);
       if (val != null && val !== key) el.value = val;
+    });
+    requestAnimationFrame(function () {
+      rootEl.classList.remove('pts-i18n-swapping');
     });
   }
 

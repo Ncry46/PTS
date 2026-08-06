@@ -25,10 +25,12 @@
   function syncCoverLabel() {
     if (!cover) return;
     const target = coveredMode();
-    cover.setAttribute(
-      'aria-label',
-      target === 'register' ? 'สลับไปสมัครสมาชิก' : 'สลับไปเข้าสู่ระบบ'
-    );
+    const key = target === 'register' ? 'auth.cover.registerCta' : 'auth.cover.loginCta';
+    const fallback = target === 'register' ? 'สลับไปสมัครสมาชิก' : 'สลับไปเข้าสู่ระบบ';
+    const label = (window.PTSLang && typeof window.PTSLang.t === 'function')
+      ? window.PTSLang.t(key, fallback)
+      : fallback;
+    cover.setAttribute('aria-label', label);
   }
 
   function setMode(mode, { pushUrl = true, fromUser = false } = {}) {
@@ -152,6 +154,13 @@
   });
 
   setMode(modeFromUrl(), { pushUrl: true, fromUser: false });
+  document.addEventListener('pts-lang-change', () => {
+    syncCoverLabel();
+    const mode = currentMode();
+    document.title = mode === 'register'
+      ? ((window.PTSLang && window.PTSLang.t('page.register.section_title', 'สมัครสมาชิก')) + ' | PTS Learning')
+      : ((window.PTSLang && window.PTSLang.t('page.login.section_title', 'เข้าสู่ระบบ')) + ' | PTS Learning');
+  });
   window.ptsAuthSetMode = (mode) => {
     if (sliding) return;
     setMode(mode, { fromUser: true });
