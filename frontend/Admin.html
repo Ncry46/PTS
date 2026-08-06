@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<section_title>Admin | PTS Learning</section_title>
+<title>Admin | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -608,7 +608,7 @@ async function renderCourses() {
     <tr data-course-id="${c.course_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
+          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
           ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
         </div>
@@ -627,7 +627,7 @@ async function renderCourses() {
     <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
+          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
           <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
@@ -685,7 +685,7 @@ async function renderCourses() {
       <input id="c-hours" type="number" step="0.1" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง (total_hours)" value="4">
       <input id="c-price" type="number" step="0.01" class="border rounded-xl px-3 py-2" placeholder="ราคา (price)">
       <input id="c-cat" type="number" class="border rounded-xl px-3 py-2" placeholder="หมวดหมู่ (coursescat_id)">
-      <input id="c-start" type="date" class="border rounded-xl px-3 py-2" section_title="start_date">
+      <input id="c-start" type="date" class="border rounded-xl px-3 py-2" title="start_date">
       <input id="c-enrolled" type="number" class="border rounded-xl px-3 py-2" placeholder="จำนวนลงทะเบียน (total_enrolled)" value="0">
       <input id="c-flag" class="border rounded-xl px-3 py-2" placeholder="coursesFlag (เช่น Y)" value="Y">
       <input id="c-cover" class="border rounded-xl px-3 py-2" placeholder="URL รูปปก (cover_image_url)">
@@ -934,7 +934,7 @@ async function renderLessons() {
     document.getElementById('l-section_title').value = l?.section_title || '';
     document.getElementById('l-video').value = l?.video_url || '';
     document.getElementById('l-content').value = l?.content_html || '';
-    document.getElementById('l-sort').value = l?.flag_use != null ? Number(l.flag_use) : 1;
+    document.getElementById('l-sort').value = l?.sort_order != null ? Number(l.sort_order) : 1;
     document.getElementById('l-duration').value = l?.duration_minutes != null ? Number(l.duration_minutes) : 15;
   };
 
@@ -972,11 +972,11 @@ async function renderLessons() {
     <tr data-lesson-id="${l.lesson_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
+          <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
           <div class="adm-c-name">${escapeHtml(l.section_title)}</div>
         </div>
       </td>
-      <td>${Number(l.flag_use || 0)}</td>
+      <td>${Number(l.sort_order || 0)}</td>
       <td>${Number(l.duration_minutes || 0)} นาที</td>
       <td class="text-xs text-on-surface-variant">${l.video_url ? 'มีวิดีโอ' : '—'}</td>
       <td>${actionBtns(l)}</td>
@@ -986,10 +986,10 @@ async function renderLessons() {
     <article class="adm-c-card" data-lesson-id="${l.lesson_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
+          <span class="adm-c-id" title="รหัสบทเรียน">ID ${escapeHtml(l.lesson_id)}</span>
           <div class="adm-c-name">${escapeHtml(l.section_title)}</div>
         </div>
-        <span class="adm-c-badge">ลำดับ ${Number(l.flag_use || 0)}</span>
+        <span class="adm-c-badge">ลำดับ ${Number(l.sort_order || 0)}</span>
       </div>
       <div class="adm-c-card__meta">
         <span>${Number(l.duration_minutes || 0)} นาที</span>
@@ -1014,7 +1014,7 @@ async function renderLessons() {
       `id ${idStr}`,
       `#${idStr}`,
       l.section_title,
-      l.flag_use,
+      l.sort_order,
       l.duration_minutes,
       l.video_url,
       l.content_html
@@ -1109,7 +1109,7 @@ async function renderLessons() {
       section_title: document.getElementById('l-section_title').value,
       content_html: document.getElementById('l-content').value,
       video_url: document.getElementById('l-video').value,
-      flag_use: Number(document.getElementById('l-sort').value || 1),
+      sort_order: Number(document.getElementById('l-sort').value || 1),
       duration_minutes: Number(document.getElementById('l-duration').value || 15)
     };
     saveBtn.disabled = true;
@@ -1505,8 +1505,8 @@ async function renderBanners() {
              onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">`;
       return `
       <article class="ban-list-item" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
-        <div class="ban-list-handle" section_title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
-        <div class="ban-thumb" section_title="คลิกเพื่อพรีวิว">${thumb}</div>
+        <div class="ban-list-handle" title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
+        <div class="ban-thumb" title="คลิกเพื่อพรีวิว">${thumb}</div>
         <div class="min-w-0">
           <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}${i === 0 ? ' · ขึ้นก่อน' : ''} · ${kindLabel}</p>
           <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
@@ -1848,8 +1848,8 @@ async function renderForms() {
           if (i <= 0) return;
           const a = questions[i - 1];
           const b = questions[i];
-          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: b.flag_use }) });
-          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: a.flag_use }) });
+          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: b.sort_order }) });
+          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: a.sort_order }) });
           openEditor(formId);
         };
       });
@@ -1860,8 +1860,8 @@ async function renderForms() {
           if (i < 0 || i >= questions.length - 1) return;
           const a = questions[i];
           const b = questions[i + 1];
-          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: b.flag_use }) });
-          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ flag_use: a.flag_use }) });
+          await api('/api/admin/form-questions/' + a.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: b.sort_order }) });
+          await api('/api/admin/form-questions/' + b.question_id, { method: 'PUT', body: JSON.stringify({ sort_order: a.sort_order }) });
           openEditor(formId);
         };
       });
@@ -2075,7 +2075,7 @@ async function renderUsers() {
     <tr data-user-id="${u.user_id}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
+          <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
           <div class="adm-c-name">${escapeHtml(u.username || '—')}</div>
         </div>
       </td>
@@ -2090,7 +2090,7 @@ async function renderUsers() {
     <article class="adm-c-card" data-user-id="${u.user_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
+          <span class="adm-c-id" title="รหัสผู้ใช้">ID ${escapeHtml(u.user_id)}</span>
           <div class="adm-c-name">${escapeHtml(u.username || '—')}</div>
         </div>
         <span class="adm-c-badge${isAdminRole(u) ? ' is-on' : ''}">${escapeHtml(String(u.Role || u.role || 'student').toLowerCase())}</span>
@@ -2253,7 +2253,7 @@ async function renderPosts() {
     <tr data-post-id="${p.post_id}" class="${isVisible(p) ? '' : 'opacity-60'}">
       <td>
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
+          <span class="adm-c-id" title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
           <div class="adm-c-name" style="font-weight:600;white-space:pre-wrap;">${escapeHtml(snippet(p.content, 160))}</div>
         </div>
       </td>
@@ -2270,7 +2270,7 @@ async function renderPosts() {
     <article class="adm-c-card ${isVisible(p) ? '' : 'opacity-70'}" data-post-id="${p.post_id}">
       <div class="adm-c-card__top">
         <div class="adm-c-course">
-          <span class="adm-c-id" section_title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
+          <span class="adm-c-id" title="รหัสโพสต์">ID ${escapeHtml(p.post_id)}</span>
           <div class="adm-c-name" style="font-weight:600;white-space:pre-wrap;">${escapeHtml(snippet(p.content, 180))}</div>
         </div>
         <span class="adm-c-badge${isVisible(p) ? ' is-on' : ''}">${isVisible(p) ? 'แสดงอยู่' : 'ซ่อนแล้ว'}</span>
@@ -2398,9 +2398,9 @@ async function renderPayments() {
   const sourceBadge = (p) => {
     const src = String(p.source || 'direct_signup');
     if (src === 'access_code') {
-      return `<span class="adm-pay-src adm-pay-src--code" section_title="ใช้รหัสเข้าเรียน">🔑 ใช้รหัสเข้าเรียน</span>`;
+      return `<span class="adm-pay-src adm-pay-src--code" title="ใช้รหัสเข้าเรียน">🔑 ใช้รหัสเข้าเรียน</span>`;
     }
-    return `<span class="adm-pay-src adm-pay-src--direct" section_title="สมัครผ่านเว็บ">🏷️ สมัครผ่านเว็บ</span>`;
+    return `<span class="adm-pay-src adm-pay-src--direct" title="สมัครผ่านเว็บ">🏷️ สมัครผ่านเว็บ</span>`;
   };
 
   const statusBadge = (p) => {

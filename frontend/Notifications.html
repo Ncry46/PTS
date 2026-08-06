@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<section_title>การแจ้งเตือน | PTS Learning</section_title>
+<title>การแจ้งเตือน | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -100,7 +100,7 @@ async function load() {
       <div class="pts-notif__main">
         <div class="pts-notif__head">
           <h2 class="pts-notif__section_title">${escapeHtml(n.section_title)}</h2>
-          ${unreadItem ? '<span class="pts-notif__dot" section_title="ยังไม่อ่าน"></span>' : ''}
+          ${unreadItem ? '<span class="pts-notif__dot" title="ยังไม่อ่าน"></span>' : ''}
         </div>
         ${n.body ? `<p class="pts-notif__body">${escapeHtml(n.body)}</p>` : ''}
         <p class="pts-notif__time">${escapeHtml(relativeTime(n.created_at))}</p>

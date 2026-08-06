@@ -1,3 +1,4 @@
+const { flagActiveSql } = require('./db');
 const express = require('express');
 const sql = require('mssql');
 
@@ -52,7 +53,7 @@ function mapQuestion(row) {
         options: parseOptions(row.options_json),
         options_json: row.options_json || null,
         is_required: !!row.is_required,
-        flag_use: row.flag_use,
+        sort_order: row.sort_order,
         flag_use: row.flag_use == null ? 1 : Number(row.flag_use)
     };
 }
@@ -113,7 +114,7 @@ async function findRequiredCourseForm(pool, userId, courseId) {
                  WHERE r.form_id = f.form_id AND r.user_id = @userId
                  ORDER BY r.submitted_at DESC) AS my_response_id
             FROM dbo.custom_forms f
-            WHERE ISNULL(f.flag_use,1)=1
+            WHERE ${flagActiveSql('f.flag_use')}
               AND ISNULL(f.is_published,0)=1
               AND ISNULL(f.form_type,'general') = 'course'
               AND f.course_id = @courseId
@@ -122,7 +123,7 @@ async function findRequiredCourseForm(pool, userId, courseId) {
     const row = result.recordset[0];
     if (!row) return null;
     if (row.my_response_id) return null;
-    return { form_id: row.form_id, section_title: row.section_title };
+    return { form_id: row.form_id, section_title: row.section_title || row.title };
 }
 
 function createFormRouter({ poolPromise, requireLogin }) {
@@ -145,7 +146,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                         f.course_id,
                         c.course_name,
                         (SELECT COUNT(*) FROM dbo.custom_form_questions q
-                         WHERE q.form_id = f.form_id AND ISNULL(q.flag_use,1)=1) AS question_count,
+                         WHERE q.form_id = f.form_id AND ${flagActiveSql('q.flag_use')}) AS question_count,
                         (SELECT TOP 1 r.response_id
                          FROM dbo.custom_form_responses r
                          WHERE r.form_id = f.form_id AND r.user_id = @userId
@@ -163,8 +164,8 @@ function createFormRouter({ poolPromise, requireLogin }) {
                          WHERE r.form_id = f.form_id AND r.user_id = @userId
                          ORDER BY r.submitted_at DESC) AS my_result_label
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
-                    WHERE ISNULL(f.flag_use,1)=1 AND ISNULL(f.is_published,0)=1
+                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    WHERE ${flagActiveSql('f.flag_use')} AND ISNULL(f.is_published,0)=1
                       AND (@courseId IS NULL OR f.course_id = @courseId)
                     ORDER BY
                         CASE ISNULL(f.form_type,'general')
@@ -220,8 +221,8 @@ function createFormRouter({ poolPromise, requireLogin }) {
                            f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
                            f.course_id, c.course_name
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
-                    WHERE f.form_id = @formId AND ISNULL(f.flag_use,1)=1
+                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
                 `);
             const form = formRes.recordset[0];
             if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
@@ -233,10 +234,10 @@ function createFormRouter({ poolPromise, requireLogin }) {
                 .input('formId', sql.Int, formId)
                 .query(`
                     SELECT question_id, form_id, label, help_text, question_type, options_json,
-                           is_required, flag_use, flag_use
+                           is_required, sort_order, flag_use
                     FROM dbo.custom_form_questions
-                    WHERE form_id = @formId AND ISNULL(flag_use,1)=1
-                    ORDER BY flag_use ASC, question_id ASC
+                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
+                    ORDER BY sort_order ASC, question_id ASC
                 `);
 
             const mine = await pool.request()
@@ -301,7 +302,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                     FROM dbo.custom_form_answers a
                     LEFT JOIN dbo.custom_form_questions q ON q.question_id = a.question_id
                     WHERE a.response_id = @responseId
-                    ORDER BY ISNULL(q.flag_use, 999), a.question_id
+                    ORDER BY ISNULL(q.sort_order, 999), a.question_id
                 `);
             let resultJson = null;
             try { resultJson = row.result_json ? JSON.parse(row.result_json) : null; } catch (_) { /* ignore */ }
@@ -338,7 +339,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                     SELECT form_id, is_published, allow_resubmit, flag_use,
                            ISNULL(form_type,'general') AS form_type, course_id
                     FROM dbo.custom_forms
-                    WHERE form_id = @formId AND ISNULL(flag_use,1)=1
+                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
                 `);
             const form = formRes.recordset[0];
             if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
@@ -367,7 +368,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT question_id, label, question_type, options_json, is_required
                     FROM dbo.custom_form_questions
-                    WHERE form_id = @formId AND ISNULL(flag_use,1)=1
+                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
                 `);
             const questions = qRes.recordset || [];
             const byId = new Map(questions.map((q) => [Number(q.question_id), q]));
@@ -430,7 +431,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                         .input('code', sql.VarChar, discResult.result_code)
                         .input('label', sql.NVarChar, discResult.result_label)
                         .query(`
-                            UPDATE dbo.users
+                            UPDATE dbo.users_main
                             SET disc_code = @code, disc_label = @label, disc_updated_at = GETDATE()
                             WHERE user_id = @userId
                         `);
@@ -489,12 +490,12 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                     ISNULL(f.form_type,'general') AS form_type,
                     f.course_id, c.course_name,
                     (SELECT COUNT(*) FROM dbo.custom_form_questions q
-                     WHERE q.form_id = f.form_id AND ISNULL(q.flag_use,1)=1) AS question_count,
+                     WHERE q.form_id = f.form_id AND ${flagActiveSql('q.flag_use')}) AS question_count,
                     (SELECT COUNT(*) FROM dbo.custom_form_responses r
                      WHERE r.form_id = f.form_id) AS response_count
                 FROM dbo.custom_forms f
-                LEFT JOIN dbo.courses c ON c.course_id = f.course_id
-                WHERE ISNULL(f.flag_use,1)=1
+                LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                WHERE ${flagActiveSql('f.flag_use')}
                 ORDER BY f.updated_at DESC, f.form_id DESC
             `);
             res.json({ success: true, data: result.recordset || [], disc_animals: DISC_META });
@@ -506,7 +507,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
     router.post('/forms', async (req, res) => {
         const admin = requireAdmin(req, res);
         if (!admin) return;
-        const section_title = String(req.body?.section_title || '').trim();
+        const section_title = String(req.body?.section_title || req.body?.title || '').trim();
         if (!section_title) return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อแบบฟอร์ม' });
         const formType = normalizeFormType(req.body?.form_type);
         let courseId = req.body?.course_id != null && req.body?.course_id !== ''
@@ -521,7 +522,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             if (courseId) {
                 const c = await pool.request()
                     .input('courseId', sql.Int, courseId)
-                    .query(`SELECT course_id FROM dbo.courses WHERE course_id=@courseId`);
+                    .query(`SELECT course_id FROM dbo.courses_main WHERE course_id=@courseId`);
                 if (!c.recordset[0]) {
                     return res.status(400).json({ success: false, message: 'ไม่พบหลักสูตรที่เลือก' });
                 }
@@ -557,8 +558,8 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT f.*, ISNULL(f.form_type,'general') AS form_type, c.course_name
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
-                    WHERE f.form_id = @formId AND ISNULL(f.flag_use,1)=1
+                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
                 `);
             const form = formRes.recordset[0];
             if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
@@ -567,8 +568,8 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('formId', sql.Int, formId)
                 .query(`
                     SELECT * FROM dbo.custom_form_questions
-                    WHERE form_id = @formId AND ISNULL(flag_use,1)=1
-                    ORDER BY flag_use ASC, question_id ASC
+                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
+                    ORDER BY sort_order ASC, question_id ASC
                 `);
             res.json({
                 success: true,
@@ -595,7 +596,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const cur = await pool.request()
                 .input('formId', sql.Int, formId)
-                .query(`SELECT * FROM dbo.custom_forms WHERE form_id=@formId AND ISNULL(flag_use,1)=1`);
+                .query(`SELECT * FROM dbo.custom_forms WHERE form_id=@formId AND ${flagActiveSql('flag_use')}`);
             const row = cur.recordset[0];
             if (!row) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
 
@@ -615,7 +616,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
 
             const result = await pool.request()
                 .input('formId', sql.Int, formId)
-                .input('section_title', sql.NVarChar, body.section_title != null ? String(body.section_title).trim() : null)
+                .input('section_title', sql.NVarChar, body.section_title != null ? String(body.section_title).trim() : (body.title != null ? String(body.title).trim() : null))
                 .input('description', sql.NVarChar, body.description != null ? String(body.description).trim() : null)
                 .input('published', sql.Bit, body.is_published == null ? null : (body.is_published ? 1 : 0))
                 .input('resubmit', sql.Bit, body.allow_resubmit == null ? null : (body.allow_resubmit ? 1 : 0))
@@ -632,7 +633,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                         course_id = @courseId,
                         updated_at = GETDATE()
                     OUTPUT INSERTED.*
-                    WHERE form_id = @formId AND ISNULL(flag_use,1)=1
+                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
                 `);
             res.json({ success: true, data: result.recordset[0] });
         } catch (error) {
@@ -673,7 +674,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT form_id, ISNULL(form_type,'general') AS form_type
                     FROM dbo.custom_forms
-                    WHERE form_id=@formId AND ISNULL(flag_use,1)=1
+                    WHERE form_id=@formId AND ${flagActiveSql('flag_use')}
                 `);
             const form = formOk.recordset[0];
             if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
@@ -693,14 +694,14 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 }
             }
 
-            let sortOrder = Number(req.body?.flag_use);
+            let sortOrder = Number(req.body?.sort_order);
             if (!sortOrder) {
                 const max = await pool.request()
                     .input('formId', sql.Int, formId)
                     .query(`
-                        SELECT ISNULL(MAX(flag_use),0)+1 AS next_sort
+                        SELECT ISNULL(MAX(sort_order),0)+1 AS next_sort
                         FROM dbo.custom_form_questions
-                        WHERE form_id=@formId AND ISNULL(flag_use,1)=1
+                        WHERE form_id=@formId AND ${flagActiveSql('flag_use')}
                     `);
                 sortOrder = Number(max.recordset[0].next_sort) || 1;
             }
@@ -715,7 +716,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('sort', sql.Int, sortOrder)
                 .query(`
                     INSERT INTO dbo.custom_form_questions
-                        (form_id, label, help_text, question_type, options_json, is_required, flag_use, flag_use)
+                        (form_id, label, help_text, question_type, options_json, is_required, sort_order, flag_use)
                     OUTPUT INSERTED.*
                     VALUES (@formId, @label, @help, @qType, @opts, @req, @sort, 1)
                 `);
@@ -743,7 +744,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                     SELECT q.*, ISNULL(f.form_type,'general') AS form_type
                     FROM dbo.custom_form_questions q
                     INNER JOIN dbo.custom_forms f ON f.form_id = q.form_id
-                    WHERE q.question_id=@questionId AND ISNULL(q.flag_use,1)=1
+                    WHERE q.question_id=@questionId AND ${flagActiveSql('q.flag_use')}
                 `);
             const row = cur.recordset[0];
             if (!row) return res.status(404).json({ success: false, message: 'ไม่พบคำถาม' });
@@ -778,13 +779,13 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('qType', sql.VarChar, questionType)
                 .input('opts', sql.NVarChar, optionsJson)
                 .input('req', sql.Bit, body.is_required == null ? (row.is_required ? 1 : 0) : (body.is_required ? 1 : 0))
-                .input('sort', sql.Int, body.flag_use != null ? Number(body.flag_use) || row.flag_use : row.flag_use)
+                .input('sort', sql.Int, body.sort_order != null ? Number(body.sort_order) || row.sort_order : row.sort_order)
                 .query(`
                     UPDATE dbo.custom_form_questions
                     SET label=@label, help_text=@help, question_type=@qType,
-                        options_json=@opts, is_required=@req, flag_use=@sort
+                        options_json=@opts, is_required=@req, sort_order=@sort
                     OUTPUT INSERTED.*
-                    WHERE question_id=@questionId AND ISNULL(flag_use,1)=1
+                    WHERE question_id=@questionId AND ${flagActiveSql('flag_use')}
                 `);
 
             await pool.request()
@@ -833,9 +834,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                     SELECT
                         r.response_id, r.form_id, r.user_id, r.submitted_at,
                         r.result_code, r.result_label,
-                        u.username, u.email
+                        u.full_name, u.email
                     FROM dbo.custom_form_responses r
-                    LEFT JOIN dbo.users u ON u.user_id = r.user_id
+                    LEFT JOIN dbo.users_main u ON u.user_id = r.user_id
                     WHERE r.form_id = @formId
                     ORDER BY r.submitted_at DESC
                 `);
@@ -860,9 +861,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT r.response_id, r.form_id, r.user_id, r.submitted_at,
                            r.result_code, r.result_label, r.result_json,
-                           u.username, u.email
+                           u.full_name, u.email
                     FROM dbo.custom_form_responses r
-                    LEFT JOIN dbo.users u ON u.user_id = r.user_id
+                    LEFT JOIN dbo.users_main u ON u.user_id = r.user_id
                     WHERE r.response_id=@responseId AND r.form_id=@formId
                 `);
             const row = resp.recordset[0];
@@ -871,11 +872,11 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             const answers = await pool.request()
                 .input('responseId', sql.Int, responseId)
                 .query(`
-                    SELECT a.answer_id, a.question_id, a.answer_text, q.label, q.question_type, q.flag_use
+                    SELECT a.answer_id, a.question_id, a.answer_text, q.label, q.question_type, q.sort_order
                     FROM dbo.custom_form_answers a
                     LEFT JOIN dbo.custom_form_questions q ON q.question_id = a.question_id
                     WHERE a.response_id = @responseId
-                    ORDER BY ISNULL(q.flag_use,999), a.question_id
+                    ORDER BY ISNULL(q.sort_order,999), a.question_id
                 `);
             res.json({ success: true, data: { ...row, answers: answers.recordset || [] } });
         } catch (error) {

@@ -8,6 +8,7 @@ const { mapHeroSlidesImages } = require('./heroImages');
 const { markPaidAndEnroll } = require('./paymentActions');
 const { findRequiredCourseForm } = require('./formRoutes');
 const { tryUploadLocalFile } = require('./googleDrive');
+const { flagActiveSql, isFlagActive } = require('./db');
 
 const SLIP_DIR = path.join(__dirname, '..', 'uploads', 'slips');
 const SLIP_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -47,12 +48,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             .input('courseId', sql.Int, courseId)
             .query(`
                 SELECT
-                    (SELECT COUNT(*) FROM dbo.course_lessons WHERE course_id = @courseId AND flag_use = 1) AS total_lessons,
+                    (SELECT COUNT(*) FROM dbo.course_lessons WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}) AS total_lessons,
                     (
                         SELECT COUNT(*)
                         FROM dbo.lesson_progress lp
                         INNER JOIN dbo.course_lessons l ON lp.lesson_id = l.lesson_id
-                        WHERE lp.user_id = @userId AND l.course_id = @courseId AND lp.completed = 1 AND l.flag_use = 1
+                        WHERE lp.user_id = @userId AND l.course_id = @courseId AND lp.completed = 1 AND ${flagActiveSql('l.flag_use')}
                     ) AS completed_lessons
             `);
 
@@ -125,13 +126,15 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        l.lesson_id, l.course_id, l.section_title, l.video_url, l.flag_use, l.duration_minutes,
+                        l.lesson_id, l.course_id,
+                        COALESCE(NULLIF(LTRIM(RTRIM(CAST(l.lesson_title AS NVARCHAR(255)))), N''), l.section_title) AS title,
+                        l.section_title, l.lesson_title, l.video_url, l.sort_order, l.duration_minutes,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
                     LEFT JOIN dbo.lesson_progress lp
                         ON lp.lesson_id = l.lesson_id AND lp.user_id = @userId
-                    WHERE l.course_id = @courseId AND l.flag_use = 1
-                    ORDER BY l.flag_use ASC, l.lesson_id ASC
+                    WHERE l.course_id = @courseId AND ${flagActiveSql('l.flag_use')}
+                    ORDER BY ISNULL(l.sort_order, 999) ASC, l.lesson_id ASC
                 `);
 
             res.json({
@@ -161,14 +164,16 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .query(`
                     SELECT
-                        l.lesson_id, l.course_id, l.section_title, l.content_html, l.video_url,
-                        l.flag_use, l.duration_minutes, c.course_name,
+                        l.lesson_id, l.course_id,
+                        COALESCE(NULLIF(LTRIM(RTRIM(CAST(l.lesson_title AS NVARCHAR(255)))), N''), l.section_title) AS title,
+                        l.section_title, l.lesson_title, l.content_html, l.video_url,
+                        l.sort_order, l.duration_minutes, c.course_name,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
                     INNER JOIN dbo.courses c ON c.course_id = l.course_id
                     LEFT JOIN dbo.lesson_progress lp
                         ON lp.lesson_id = l.lesson_id AND lp.user_id = @userId
-                    WHERE l.lesson_id = @lessonId AND l.flag_use = 1
+                    WHERE l.lesson_id = @lessonId AND ${flagActiveSql('l.flag_use')}
                 `);
 
             if (!result.recordset.length) {
@@ -194,10 +199,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const siblings = await pool.request()
                 .input('courseId', sql.Int, lesson.course_id)
                 .query(`
-                    SELECT lesson_id, section_title, flag_use
+                    SELECT lesson_id,
+                           COALESCE(NULLIF(LTRIM(RTRIM(CAST(lesson_title AS NVARCHAR(255)))), N''), section_title) AS title,
+                           section_title, lesson_title, sort_order
                     FROM dbo.course_lessons
-                    WHERE course_id = @courseId AND flag_use = 1
-                    ORDER BY flag_use ASC, lesson_id ASC
+                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
+                    ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
                 `);
 
             res.json({ success: true, data: lesson, lessons: siblings.recordset });
@@ -218,7 +225,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const lesson = await pool.request()
                 .input('lessonId', sql.Int, lessonId)
-                .query(`SELECT lesson_id, course_id FROM dbo.course_lessons WHERE lesson_id = @lessonId AND flag_use = 1`);
+                .query(`SELECT lesson_id, course_id FROM dbo.course_lessons WHERE lesson_id = @lessonId AND ${flagActiveSql('flag_use')}`);
 
             if (!lesson.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบบทเรียน' });
@@ -266,7 +273,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                     FROM dbo.class_schedules s
                     LEFT JOIN dbo.courses c ON c.course_id = s.course_id
-                    WHERE s.flag_use = 1
+                    WHERE ${flagActiveSql('s.flag_use')}
                       AND s.course_id IS NOT NULL
                       AND EXISTS (
                             SELECT 1 FROM dbo.course_enrollments e
@@ -289,7 +296,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
-                WHERE s.flag_use = 1 AND s.start_at >= DATEADD(day, -1, GETDATE())
+                WHERE ${flagActiveSql('s.flag_use')} AND s.start_at >= DATEADD(day, -1, GETDATE())
                 ORDER BY s.start_at ASC
             `);
             res.json({ success: true, data: result.recordset });
@@ -324,7 +331,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         WHERE lp.user_id = cert.user_id
                           AND l.course_id = cert.course_id
                           AND lp.completed = 1
-                          AND l.flag_use = 1
+                          AND ${flagActiveSql('l.flag_use')}
                           AND lp.completed_at IS NOT NULL
                     ) prog
                     WHERE cert.user_id = @userId
@@ -736,7 +743,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 return res.status(404).json({ success: false, message: 'ไม่พบรหัสเข้าเรียน' });
             }
             const row = found.recordset[0];
-            if (!(row.flag_use === true || row.flag_use === 1)) {
+            if (!isFlagActive(row.flag_use)) {
                 return res.status(400).json({ success: false, message: 'รหัสนี้ถูกปิดใช้งานแล้ว' });
             }
             if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
@@ -818,12 +825,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    slide_id, flag_use, eyebrow, section_title, section_title_highlight, lead,
+                    slide_id, sort_order, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
-                    image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, theme_color
+                    image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, theme_color, flag_use
                 FROM dbo.hero_slides
-                WHERE flag_use = 1
-                ORDER BY flag_use ASC, slide_id ASC
+                WHERE ${flagActiveSql('flag_use')}
+                ORDER BY ISNULL(sort_order, 999) ASC, slide_id ASC
             `);
             res.json({ success: true, data: mapHeroSlidesImages(result.recordset) });
         } catch (error) {

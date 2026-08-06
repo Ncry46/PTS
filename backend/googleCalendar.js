@@ -10,6 +10,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const sql = require('mssql');
+const { flagActiveSql } = require('./db');
 const fetch = require('node-fetch');
 const { createNotification } = require('./ensureSchema');
 
@@ -597,7 +598,7 @@ async function listUserFutureSchedules(pool, userId, courseId) {
             s.meeting_url, s.delivery_mode, s.course_id, c.course_name
         FROM dbo.class_schedules s
         LEFT JOIN dbo.courses c ON c.course_id = s.course_id
-        WHERE s.flag_use = 1
+        WHERE ${flagActiveSql('s.flag_use')}
           AND s.course_id IS NOT NULL
           AND s.end_at >= DATEADD(day, -1, GETDATE())
           AND EXISTS (
@@ -634,8 +635,8 @@ async function getCourseNotifyPref(pool, userId, courseId) {
             .input('courseId', sql.Int, courseId)
             .query(`
                 SELECT
-                  SUM(CASE WHEN flag_use = 1 THEN 1 ELSE 0 END) AS total_count,
-                  SUM(CASE WHEN flag_use = 1 AND end_at >= DATEADD(day, -1, GETDATE()) THEN 1 ELSE 0 END) AS upcoming_count
+                  SUM(CASE WHEN ${flagActiveSql('flag_use')} THEN 1 ELSE 0 END) AS total_count,
+                  SUM(CASE WHEN ${flagActiveSql('flag_use')} AND end_at >= DATEADD(day, -1, GETDATE()) THEN 1 ELSE 0 END) AS upcoming_count
                 FROM dbo.class_schedules
                 WHERE course_id = @courseId
             `);
@@ -773,12 +774,12 @@ async function syncUserSchedules(pool, userId, options = {}) {
                       (SELECT COUNT(*) FROM dbo.course_enrollments
                         WHERE user_id = @userId AND course_id = @courseId) AS enrolled,
                       (SELECT COUNT(*) FROM dbo.class_schedules
-                        WHERE flag_use = 1 AND course_id = @courseId) AS course_schedule_count,
+                        WHERE ${flagActiveSql('flag_use')} AND course_id = @courseId) AS course_schedule_count,
                       (SELECT COUNT(*) FROM dbo.class_schedules
-                        WHERE flag_use = 1 AND course_id = @courseId
+                        WHERE ${flagActiveSql('flag_use')} AND course_id = @courseId
                           AND end_at >= DATEADD(day, -1, GETDATE())) AS upcoming_count,
                       (SELECT COUNT(*) FROM dbo.class_schedules
-                        WHERE flag_use = 1 AND course_id = @courseId
+                        WHERE ${flagActiveSql('flag_use')} AND course_id = @courseId
                           AND end_at < DATEADD(day, -1, GETDATE())) AS past_count
                 `);
             const h = courseHint.recordset[0] || {};
@@ -811,8 +812,8 @@ async function syncUserSchedules(pool, userId, options = {}) {
             .query(`
                 SELECT
                   (SELECT COUNT(*) FROM dbo.course_enrollments WHERE user_id = @userId) AS enroll_count,
-                  (SELECT COUNT(*) FROM dbo.class_schedules WHERE flag_use = 1 AND course_id IS NOT NULL AND end_at >= DATEADD(day,-1,GETDATE())) AS schedule_count,
-                  (SELECT COUNT(*) FROM dbo.class_schedules WHERE flag_use = 1 AND course_id IS NULL) AS unbound_count
+                  (SELECT COUNT(*) FROM dbo.class_schedules WHERE ${flagActiveSql('flag_use')} AND course_id IS NOT NULL AND end_at >= DATEADD(day,-1,GETDATE())) AS schedule_count,
+                  (SELECT COUNT(*) FROM dbo.class_schedules WHERE ${flagActiveSql('flag_use')} AND course_id IS NULL) AS unbound_count
             `);
         const h = hint.recordset[0] || {};
         let message = 'ยังไม่มีตารางเรียนที่จะซิงค์';
@@ -918,7 +919,7 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
                     s.meeting_url, s.delivery_mode, s.course_id, c.course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
-                WHERE s.schedule_id = @scheduleId AND s.flag_use = 1 AND s.course_id IS NOT NULL
+                WHERE s.schedule_id = @scheduleId AND ${flagActiveSql('s.flag_use')} AND s.course_id IS NOT NULL
             `);
         const schedule = scheduleResult.recordset[0];
         if (!schedule) return;

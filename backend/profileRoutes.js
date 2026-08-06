@@ -377,15 +377,67 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
-            const lessons = await pool.request()
-                .input('courseId', sql.Int, courseId)
-                .query(`
-                    SELECT lesson_id, section_title, flag_use, duration_minutes
-                    FROM dbo.course_lessons
-                    WHERE course_id = @courseId AND flag_use = 1
-                    ORDER BY flag_use ASC, lesson_id ASC
-                `);
-            res.json({ success: true, loggedIn: !!userId, data: result.recordset[0], lessons: lessons.recordset });
+            let lessons = [];
+            try {
+                const lessonsResult = await pool.request()
+                    .input('courseId', sql.Int, courseId)
+                    .query(`
+                        SELECT
+                            lesson_id,
+                            COALESCE(
+                                NULLIF(LTRIM(RTRIM(CAST(lesson_title AS NVARCHAR(255)))), N''),
+                                NULLIF(LTRIM(RTRIM(CAST(section_title AS NVARCHAR(255)))), N''),
+                                N'บทเรียน'
+                            ) AS title,
+                            section_title,
+                            lesson_title,
+                            sort_order,
+                            duration_minutes,
+                            flag_use
+                        FROM dbo.course_lessons
+                        WHERE course_id = @courseId
+                          AND (
+                            flag_use IS NULL
+                            OR TRY_CAST(flag_use AS INT) = 1
+                            OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+                          )
+                        ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
+                    `);
+                lessons = lessonsResult.recordset || [];
+            } catch (lessonErr) {
+                // Fallback for older schemas that still use title / bit flag_use
+                console.warn('⚠️ course lessons (primary):', lessonErr.message);
+                try {
+                    const legacy = await pool.request()
+                        .input('courseId', sql.Int, courseId)
+                        .query(`
+                            SELECT
+                                lesson_id,
+                                COALESCE(
+                                    NULLIF(LTRIM(RTRIM(CAST(title AS NVARCHAR(255)))), N''),
+                                    N'บทเรียน'
+                                ) AS title,
+                                title AS section_title,
+                                NULL AS lesson_title,
+                                sort_order,
+                                duration_minutes,
+                                flag_use
+                            FROM dbo.course_lessons
+                            WHERE course_id = @courseId
+                              AND (
+                                flag_use IS NULL
+                                OR TRY_CAST(flag_use AS INT) = 1
+                                OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+                              )
+                            ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
+                        `);
+                    lessons = legacy.recordset || [];
+                } catch (legacyErr) {
+                    console.warn('⚠️ course lessons (legacy):', legacyErr.message);
+                    lessons = [];
+                }
+            }
+            res.json({ success: true, loggedIn: !!userId, data: result.recordset[0], lessons });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

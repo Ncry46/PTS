@@ -1,4 +1,5 @@
 const express = require('express');
+const { flagActiveSql } = require('./db');
 const sql = require('mssql');
 
 async function ensureCourseReviewsTable(pool) {
@@ -68,12 +69,12 @@ async function refreshCourseRating(pool, courseId) {
                 average_rating = ISNULL((
                     SELECT CAST(AVG(CAST(rating AS DECIMAL(10,2))) AS DECIMAL(4,2))
                     FROM dbo.course_reviews
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
+                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
                 ), 0),
                 total_reviews = ISNULL((
                     SELECT COUNT(*)
                     FROM dbo.course_reviews
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
+                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
                 ), 0)
             WHERE course_id = @courseId
         `);
@@ -112,7 +113,7 @@ function createReviewRouter({ poolPromise, requireLogin }) {
                         r.created_at, r.updated_at, u.username, u.Url
                     FROM dbo.course_reviews r
                     INNER JOIN dbo.users u ON u.user_id = r.user_id
-                    WHERE r.course_id = @courseId AND ISNULL(r.flag_use, 1) = 1
+                    WHERE r.course_id = @courseId AND ${flagActiveSql('r.flag_use')}
                     ORDER BY r.updated_at DESC, r.review_id DESC
                 `);
 
@@ -123,7 +124,7 @@ function createReviewRouter({ poolPromise, requireLogin }) {
                         COUNT(*) AS total_reviews,
                         ISNULL(AVG(CAST(rating AS DECIMAL(10,2))), 0) AS average_rating
                     FROM dbo.course_reviews
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 1) = 1
+                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
                 `);
 
             let my_review = null;
@@ -142,7 +143,7 @@ function createReviewRouter({ poolPromise, requireLogin }) {
                             r.created_at, r.updated_at, u.username, u.Url
                         FROM dbo.course_reviews r
                         INNER JOIN dbo.users u ON u.user_id = r.user_id
-                        WHERE r.course_id = @courseId AND r.user_id = @userId AND ISNULL(r.flag_use, 1) = 1
+                        WHERE r.course_id = @courseId AND r.user_id = @userId AND ${flagActiveSql('r.flag_use')}
                     `);
                 if (mine.recordset[0]) my_review = mapReview(mine.recordset[0]);
             }
@@ -268,7 +269,7 @@ function createReviewRouter({ poolPromise, requireLogin }) {
                 .query(`
                     UPDATE dbo.course_reviews
                     SET flag_use = 0, updated_at = GETDATE()
-                    WHERE course_id = @courseId AND user_id = @userId AND ISNULL(flag_use, 1) = 1
+                    WHERE course_id = @courseId AND user_id = @userId AND ${flagActiveSql('flag_use')}
                 `);
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบรีวิวของคุณ' });

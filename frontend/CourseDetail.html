@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<section_title>รายละเอียดหลักสูตร | PTS Learning</section_title>
+<title>รายละเอียดหลักสูตร | PTS Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
@@ -305,11 +305,11 @@ async function mountCourseNotifyControls(hostEl) {
         </div>
         <div class="p-6 lg:p-8 flex flex-col">
           <div class="pts-course-card-head">
-            <a class="pts-course-icon-btn" href="Courses.html" aria-label="ย้อนกลับไปรายการหลักสูตร" section_title="ย้อนกลับ">
+            <a class="pts-course-icon-btn" href="Courses.html" aria-label="ย้อนกลับไปรายการหลักสูตร" title="ย้อนกลับ">
               <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
             </a>
             ${loggedIn ? `
-              <button type="button" id="fav" class="pts-course-icon-btn${isFavorited ? ' is-active' : ''}" aria-label="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" section_title="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}">
+              <button type="button" id="fav" class="pts-course-icon-btn${isFavorited ? ' is-active' : ''}" aria-label="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}">
                 <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
               </button>` : '<span></span>'}
           </div>
@@ -334,7 +334,7 @@ async function mountCourseNotifyControls(hostEl) {
           <div id="course-notify-host" hidden></div>
           <h2 class="font-bold mb-3">บทเรียนในหลักสูตร</h2>
           <ul class="space-y-2">${(data.lessons||[]).length
-            ? (data.lessons||[]).map((l,i)=>`<li class="text-sm border border-[var(--pts-border)] rounded-xl px-3 py-2.5 flex justify-between gap-3"><span>${i+1}. ${escapeHtml(l.section_title)}</span><span class="text-on-surface-variant shrink-0">${l.duration_minutes||0} นาที</span></li>`).join('')
+            ? (data.lessons||[]).map((l,i)=>`<li class="text-sm border border-[var(--pts-border)] rounded-xl px-3 py-2.5 flex justify-between gap-3"><span>${i+1}. ${escapeHtml(l.title || l.lesson_title || l.section_title || '')}</span><span class="text-on-surface-variant shrink-0">${l.duration_minutes||0} นาที</span></li>`).join('')
             : '<li class="text-sm text-on-surface-variant">ยังไม่มีบทเรียน — รอแอดมินเพิ่มเนื้อหา</li>'}</ul>
         </div>
       </div>
@@ -531,7 +531,7 @@ async function mountCourseNotifyControls(hostEl) {
       btn.classList.toggle('is-active', isFavorited);
       const label = isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด';
       btn.setAttribute('aria-label', label);
-      btn.setAttribute('section_title', label);
+      btn.setAttribute('title', label);
     } catch (err) {
       console.error(err.message || 'บันทึกโปรดไม่สำเร็จ');
     } finally {

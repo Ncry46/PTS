@@ -73,7 +73,7 @@
       tab.setAttribute('aria-selected', on ? 'true' : 'false');
     });
 
-    document.section_title = next === 'register'
+    document.title = next === 'register'
       ? 'สมัครสมาชิก | PTS Learning'
       : 'เข้าสู่ระบบ | PTS Learning';
 

@@ -35,7 +35,7 @@ BEGIN
     question_type     VARCHAR(32)    NOT NULL CONSTRAINT DF_custom_fq_type DEFAULT ('text'),
     options_json      NVARCHAR(MAX)  NULL,
     is_required       BIT            NOT NULL CONSTRAINT DF_custom_fq_req DEFAULT 1,
-    flag_use        INT            NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT 1,
+    sort_order        INT            NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT 1,
     flag_use          BIT            NOT NULL CONSTRAINT DF_custom_fq_flag DEFAULT 1,
     created_at        DATETIME       NOT NULL CONSTRAINT DF_custom_fq_created DEFAULT (GETDATE())
   );

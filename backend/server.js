@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
-const { ensureLearningSchema, createNotification } = require('./ensureSchema');
+const { ensureLearningSchema, ensureCompatColumns, createNotification } = require('./ensureSchema');
 const {
     sql,
     DB_NAME,
@@ -161,6 +161,11 @@ const poolPromise = connectPool()
             }
         } else {
             console.log('📚 DB connect-only — ใช้ตาราง users / courses ที่มีอยู่ (DB_AUTO_SCHEMA=false)');
+        }
+        try {
+            await ensureCompatColumns(pool);
+        } catch (compatErr) {
+            console.warn('⚠️ column compat:', compatErr.message);
         }
         try {
             await ensureCourseReviewsTable(pool);
@@ -506,7 +511,7 @@ app.get('/api/courses', async (req, res) => {
                         ) THEN 1 ELSE 0
                     END AS is_enrolled
                 FROM dbo.courses c
-                WHERE ISNULL(c.flag_use, 'Y') = 'Y'
+                WHERE ${flagActiveSql('c.flag_use')}
                 ORDER BY c.created_at DESC
             `);
 
@@ -557,7 +562,7 @@ app.get('/api/community', async (req, res) => {
             INNER JOIN 
                 users u ON p.user_id = u.user_id
             WHERE 
-                p.flag_use = 1
+                ${flagActiveSql('p.flag_use')}
             ORDER BY 
                 p.created_at DESC;
         `);
@@ -599,7 +604,7 @@ app.get('/api/my/liked-posts', async (req, res) => {
                 FROM dbo.post_likes pl
                 INNER JOIN dbo.community_posts p ON p.post_id = pl.post_id
                 INNER JOIN dbo.users u ON u.user_id = p.user_id
-                WHERE pl.user_id = @userId AND p.flag_use = 1
+                WHERE pl.user_id = @userId AND ${flagActiveSql('p.flag_use')}
                 ORDER BY p.created_at DESC
             `);
         res.json({ success: true, data: result.recordset });
@@ -631,7 +636,7 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                 LEFT JOIN dbo.course_enrollments e
                     ON e.course_id = c.course_id AND e.user_id = @userId
                 WHERE f.user_id = @userId
-                  AND ISNULL(c.flag_use, 1) = 1
+                  AND ${flagActiveSql('c.flag_use')}
                 ORDER BY f.created_at DESC
             `);
         res.json({ success: true, data: result.recordset });
@@ -973,7 +978,7 @@ app.get('/api/my/courses', async (req, res) => {
                 FROM dbo.course_enrollments e
                 INNER JOIN dbo.courses c ON e.course_id = c.course_id
                 WHERE e.user_id = @userId
-                  AND ISNULL(c.flag_use, 1) = 1
+                  AND ${flagActiveSql('c.flag_use')}
                 ORDER BY e.updated_at DESC
             `);
 

@@ -22,11 +22,13 @@ async function ensureLearningSchema(pool) {
             lesson_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
             course_id INT NOT NULL,
             section_title NVARCHAR(255) NOT NULL,
+            lesson_title NVARCHAR(255) NULL,
             content_html NVARCHAR(MAX) NULL,
             video_url NVARCHAR(500) NULL,
-            flag_use INT NOT NULL CONSTRAINT DF_course_lessons_sort DEFAULT (1),
+            file_url NVARCHAR(500) NULL,
+            sort_order INT NOT NULL CONSTRAINT DF_course_lessons_sort DEFAULT (1),
             duration_minutes INT NOT NULL CONSTRAINT DF_course_lessons_duration DEFAULT (15),
-            flag_use BIT NOT NULL CONSTRAINT DF_course_lessons_flag DEFAULT (1),
+            flag_use VARCHAR(1) NOT NULL CONSTRAINT DF_course_lessons_flag DEFAULT ('Y'),
             created_at DATETIME NOT NULL CONSTRAINT DF_course_lessons_created DEFAULT (GETDATE())
          )`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'lesson_progress')
@@ -233,7 +235,7 @@ async function ensureLearningSchema(pool) {
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'hero_slides')
          CREATE TABLE dbo.hero_slides (
             slide_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
-            flag_use INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
+            sort_order INT NOT NULL CONSTRAINT DF_hero_slides_sort DEFAULT (1),
             eyebrow NVARCHAR(100) NULL,
             section_title NVARCHAR(255) NOT NULL,
             section_title_highlight NVARCHAR(255) NULL,
@@ -249,7 +251,7 @@ async function ensureLearningSchema(pool) {
             badge_subsection_title NVARCHAR(255) NULL,
             theme NVARCHAR(32) NOT NULL CONSTRAINT DF_hero_slides_theme DEFAULT ('rose'),
             theme_color NVARCHAR(32) NULL,
-            flag_use BIT NOT NULL CONSTRAINT DF_hero_slides_flag DEFAULT (1),
+            flag_use VARCHAR(1) NOT NULL CONSTRAINT DF_hero_slides_flag DEFAULT ('Y'),
             created_at DATETIME NOT NULL CONSTRAINT DF_hero_slides_created DEFAULT (GETDATE()),
             updated_at DATETIME NOT NULL CONSTRAINT DF_hero_slides_updated DEFAULT (GETDATE())
          )`,
@@ -281,7 +283,7 @@ async function ensureLearningSchema(pool) {
             question_type VARCHAR(32) NOT NULL CONSTRAINT DF_custom_fq_type DEFAULT ('text'),
             options_json NVARCHAR(MAX) NULL,
             is_required BIT NOT NULL CONSTRAINT DF_custom_fq_req DEFAULT (1),
-            flag_use INT NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT (1),
+            sort_order INT NOT NULL CONSTRAINT DF_custom_fq_sort DEFAULT (1),
             flag_use BIT NOT NULL CONSTRAINT DF_custom_fq_flag DEFAULT (1),
             created_at DATETIME NOT NULL CONSTRAINT DF_custom_fq_created DEFAULT (GETDATE())
          )`,
@@ -382,10 +384,12 @@ async function ensureHeroSlideThemes(pool) {
     // Diversify existing slides that still use the default theme only when all are 'rose'
     try {
         const rows = await pool.request().query(`
-            SELECT slide_id, flag_use, theme
+            SELECT slide_id, sort_order, theme
             FROM dbo.hero_slides
-            WHERE flag_use = 1
-            ORDER BY flag_use ASC, slide_id ASC
+            WHERE flag_use IS NULL
+               OR TRY_CAST(flag_use AS INT) = 1
+               OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+            ORDER BY ISNULL(sort_order, 999) ASC, slide_id ASC
         `);
         const list = rows.recordset || [];
         if (list.length < 2) return;
@@ -407,7 +411,7 @@ async function seedHeroSlidesIfEmpty(pool) {
 
     const seeds = [
         {
-            flag_use: 1,
+            sort_order: 1,
             theme: 'rose',
             eyebrow: 'PTS Learning',
             section_title: 'ยกระดับทักษะ Personal Assistant สู่มาตรฐานมืออาชีพ',
@@ -424,7 +428,7 @@ async function seedHeroSlidesIfEmpty(pool) {
             badge_subsection_title: 'หลักสูตรรับรองวิชาชีพ'
         },
         {
-            flag_use: 2,
+            sort_order: 2,
             theme: 'sage',
             eyebrow: 'เรียนได้ทุกที่',
             section_title: 'เลือกสไตล์การเรียน Online · Onsite · Hybrid ได้ตามชีวิตคุณ',
@@ -441,7 +445,7 @@ async function seedHeroSlidesIfEmpty(pool) {
             badge_subsection_title: 'เรียนได้ตามตารางงานจริง'
         },
         {
-            flag_use: 3,
+            sort_order: 3,
             theme: 'gold',
             eyebrow: 'พร้อมใบประกาศ',
             section_title: 'จบหลักสูตรได้ ใบประกาศนียบัตร ที่นำไปใช้ต่อได้จริง',
@@ -461,7 +465,7 @@ async function seedHeroSlidesIfEmpty(pool) {
 
     for (const s of seeds) {
         await pool.request()
-            .input('flag_use', sql.Int, s.flag_use)
+            .input('sort_order', sql.Int, s.sort_order)
             .input('eyebrow', sql.NVarChar, s.eyebrow)
             .input('section_title', sql.NVarChar, s.section_title)
             .input('section_title_highlight', sql.NVarChar, s.section_title_highlight)
@@ -478,13 +482,13 @@ async function seedHeroSlidesIfEmpty(pool) {
             .input('theme', sql.NVarChar, s.theme || 'rose')
             .query(`
                 INSERT INTO dbo.hero_slides (
-                    flag_use, eyebrow, section_title, section_title_highlight, lead,
+                    sort_order, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, flag_use
                 ) VALUES (
-                    @flag_use, @eyebrow, @section_title, @section_title_highlight, @lead,
+                    @sort_order, @eyebrow, @section_title, @section_title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
-                    @image_url, @image_alt, @badge_icon, @badge_section_title, @badge_subsection_title, @theme, 1
+                    @image_url, @image_alt, @badge_icon, @badge_section_title, @badge_subsection_title, @theme, 'Y'
                 )
             `);
     }
@@ -498,7 +502,9 @@ async function seedSampleCourseIfEmpty(pool) {
         if (!exists.recordset[0] || !exists.recordset[0].oid) return;
 
         const count = await pool.request().query(`
-            SELECT COUNT(*) AS c FROM dbo.courses WHERE ISNULL(flag_use, 'Y') = 'Y'
+            SELECT COUNT(*) AS c FROM dbo.courses WHERE flag_use IS NULL
+               OR TRY_CAST(flag_use AS INT) = 1
+               OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
         `);
         if (Number(count.recordset[0].c || 0) > 0) return;
 
@@ -528,15 +534,30 @@ async function seedSampleCourseIfEmpty(pool) {
 }
 
 async function createNotification(pool, userId, section_title, body, linkUrl) {
-    await pool.request()
-        .input('userId', sql.Int, userId)
-        .input('section_title', sql.NVarChar, section_title)
-        .input('body', sql.NVarChar, body || null)
-        .input('link', sql.NVarChar, linkUrl || null)
-        .query(`
-            INSERT INTO dbo.notifications (user_id, section_title, body, link_url, is_read)
-            VALUES (@userId, @section_title, @body, @link, 0)
-        `);
+    const titleText = String(section_title || '').trim() || 'การแจ้งเตือน';
+    try {
+        await pool.request()
+            .input('userId', sql.Int, userId)
+            .input('section_title', sql.NVarChar, titleText)
+            .input('body', sql.NVarChar, body || null)
+            .input('link', sql.NVarChar, linkUrl || null)
+            .query(`
+                INSERT INTO dbo.notifications (user_id, section_title, body, link_url, is_read)
+                VALUES (@userId, @section_title, @body, @link, 0)
+            `);
+    } catch (err) {
+        // Older installs may still use column name "title"
+        if (!/Invalid column name ['"]section_title['"]/i.test(String(err.message || ''))) throw err;
+        await pool.request()
+            .input('userId', sql.Int, userId)
+            .input('title', sql.NVarChar, titleText)
+            .input('body', sql.NVarChar, body || null)
+            .input('link', sql.NVarChar, linkUrl || null)
+            .query(`
+                INSERT INTO dbo.notifications (user_id, title, body, link_url, is_read)
+                VALUES (@userId, @title, @body, @link, 0)
+            `);
+    }
 
     // Mirror to LINE OA when the user linked their account (best-effort)
     try {
@@ -624,7 +645,7 @@ async function seedSampleFormIfEmpty(pool) {
                 .input('sort', sql.Int, q.sort)
                 .query(`
                     INSERT INTO dbo.custom_form_questions
-                        (form_id, label, question_type, options_json, is_required, flag_use, flag_use)
+                        (form_id, label, question_type, options_json, is_required, sort_order, flag_use)
                     VALUES (@formId, @label, @qType, @opts, @req, @sort, 1)
                 `);
         }
@@ -633,4 +654,79 @@ async function seedSampleFormIfEmpty(pool) {
     }
 }
 
-module.exports = { ensureLearningSchema, createNotification };
+/**
+ * Safe, idempotent column compatibility for production DBs.
+ * Runs even when DB_AUTO_SCHEMA=false (does not create tables).
+ */
+async function ensureCompatColumns(pool) {
+    const statements = [
+        // course_lessons: title → section_title (if needed), add lesson/sort/file cols
+        `IF COL_LENGTH('dbo.course_lessons', 'section_title') IS NULL
+            AND COL_LENGTH('dbo.course_lessons', 'title') IS NOT NULL
+         EXEC sp_rename 'dbo.course_lessons.title', 'section_title', 'COLUMN'`,
+        `IF OBJECT_ID('dbo.course_lessons','U') IS NOT NULL
+            AND COL_LENGTH('dbo.course_lessons', 'section_title') IS NULL
+         ALTER TABLE dbo.course_lessons ADD section_title NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.course_lessons','U') IS NOT NULL
+            AND COL_LENGTH('dbo.course_lessons', 'lesson_title') IS NULL
+         ALTER TABLE dbo.course_lessons ADD lesson_title NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.course_lessons','U') IS NOT NULL
+            AND COL_LENGTH('dbo.course_lessons', 'file_url') IS NULL
+         ALTER TABLE dbo.course_lessons ADD file_url NVARCHAR(500) NULL`,
+        `IF OBJECT_ID('dbo.course_lessons','U') IS NOT NULL
+            AND COL_LENGTH('dbo.course_lessons', 'sort_order') IS NULL
+         ALTER TABLE dbo.course_lessons ADD sort_order INT NOT NULL
+            CONSTRAINT DF_course_lessons_sort_compat DEFAULT (1)`,
+
+        // class_schedules / notifications / custom_forms: title → section_title
+        `IF COL_LENGTH('dbo.class_schedules', 'section_title') IS NULL
+            AND COL_LENGTH('dbo.class_schedules', 'title') IS NOT NULL
+         EXEC sp_rename 'dbo.class_schedules.title', 'section_title', 'COLUMN'`,
+        `IF COL_LENGTH('dbo.notifications', 'section_title') IS NULL
+            AND COL_LENGTH('dbo.notifications', 'title') IS NOT NULL
+         EXEC sp_rename 'dbo.notifications.title', 'section_title', 'COLUMN'`,
+        `IF COL_LENGTH('dbo.custom_forms', 'section_title') IS NULL
+            AND COL_LENGTH('dbo.custom_forms', 'title') IS NOT NULL
+         EXEC sp_rename 'dbo.custom_forms.title', 'section_title', 'COLUMN'`,
+
+        // hero_slides
+        `IF COL_LENGTH('dbo.hero_slides', 'section_title') IS NULL
+            AND COL_LENGTH('dbo.hero_slides', 'title') IS NOT NULL
+         EXEC sp_rename 'dbo.hero_slides.title', 'section_title', 'COLUMN'`,
+        `IF COL_LENGTH('dbo.hero_slides', 'section_title_highlight') IS NULL
+            AND COL_LENGTH('dbo.hero_slides', 'title_highlight') IS NOT NULL
+         EXEC sp_rename 'dbo.hero_slides.title_highlight', 'section_title_highlight', 'COLUMN'`,
+        `IF COL_LENGTH('dbo.hero_slides', 'badge_section_title') IS NULL
+            AND COL_LENGTH('dbo.hero_slides', 'badge_title') IS NOT NULL
+         EXEC sp_rename 'dbo.hero_slides.badge_title', 'badge_section_title', 'COLUMN'`,
+        `IF COL_LENGTH('dbo.hero_slides', 'badge_subsection_title') IS NULL
+            AND COL_LENGTH('dbo.hero_slides', 'badge_subtitle') IS NOT NULL
+         EXEC sp_rename 'dbo.hero_slides.badge_subtitle', 'badge_subsection_title', 'COLUMN'`,
+        `IF OBJECT_ID('dbo.hero_slides','U') IS NOT NULL
+            AND COL_LENGTH('dbo.hero_slides', 'sort_order') IS NULL
+         ALTER TABLE dbo.hero_slides ADD sort_order INT NOT NULL
+            CONSTRAINT DF_hero_slides_sort_compat DEFAULT (1)`,
+
+        // custom_form_questions.sort_order
+        `IF OBJECT_ID('dbo.custom_form_questions','U') IS NOT NULL
+            AND COL_LENGTH('dbo.custom_form_questions', 'sort_order') IS NULL
+         ALTER TABLE dbo.custom_form_questions ADD sort_order INT NOT NULL
+            CONSTRAINT DF_custom_fq_sort_compat DEFAULT (1)`
+    ];
+
+    let ok = 0;
+    let skipped = 0;
+    for (const statement of statements) {
+        try {
+            await pool.request().query(statement);
+            ok += 1;
+        } catch (err) {
+            skipped += 1;
+            const preview = String(statement).replace(/\s+/g, ' ').trim().slice(0, 100);
+            console.warn(`[compat] skip: ${err.message} :: ${preview}`);
+        }
+    }
+    console.log(`🧩 Column compat checked (${ok} ok, ${skipped} skipped)`);
+}
+
+module.exports = { ensureLearningSchema, ensureCompatColumns, createNotification };

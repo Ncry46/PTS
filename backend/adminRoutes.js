@@ -1,3 +1,4 @@
+const { flagActiveSql, isFlagActive, normalizeFlagYn } = require('./db');
 const express = require('express');
 const sql = require('mssql');
 const path = require('path');
@@ -64,10 +65,11 @@ function normalizeHeroBody(body = {}) {
     }
     const isVisible = !(body.flag_use === false || body.flag_use === 0 || body.flag_use === '0' || body.flag_use === 'N');
     return {
+        sort_order: Math.max(1, parseInt(body.sort_order, 10) || 1),
         flag_use: isVisible ? 'Y' : 'N',
         eyebrow: String(body.eyebrow || '').trim() || null,
-        section_title: String(body.section_title || '').trim(),
-        section_title_highlight: String(body.section_title_highlight || '').trim() || null,
+        section_title: String(body.section_title || body.title || '').trim(),
+        section_title_highlight: String(body.section_title_highlight || body.title_highlight || '').trim() || null,
         lead: String(body.lead || '').trim() || null,
         cta_primary_label: String(body.cta_primary_label || '').trim() || null,
         cta_primary_href: String(body.cta_primary_href || '').trim() || null,
@@ -76,8 +78,8 @@ function normalizeHeroBody(body = {}) {
         image_url: String(body.image_url || '').trim() || null,
         image_alt: String(body.image_alt || '').trim() || null,
         badge_icon: HERO_ICONS.has(icon) ? icon : 'check_circle',
-        badge_section_title: String(body.badge_section_title || '').trim() || null,
-        badge_subsection_title: String(body.badge_subsection_title || '').trim() || null,
+        badge_section_title: String(body.badge_section_title || body.badge_title || '').trim() || null,
+        badge_subsection_title: String(body.badge_subsection_title || body.badge_subtitle || '').trim() || null,
         theme,
         theme_color: theme === 'custom' ? themeColor : (themeColor || null)
     };
@@ -85,6 +87,7 @@ function normalizeHeroBody(body = {}) {
 
 function bindHeroInputs(request, data) {
     return request
+        .input('sort_order', sql.Int, data.sort_order)
         .input('flag_use', sql.VarChar(1), data.flag_use)
         .input('eyebrow', sql.NVarChar(255), data.eyebrow)
         .input('section_title', sql.NVarChar(255), data.section_title)
@@ -125,7 +128,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     (SELECT COUNT(*) FROM dbo.users) AS users_count,
                     (SELECT COUNT(*) FROM dbo.courses) AS courses_count,
                     (SELECT COUNT(*) FROM dbo.course_enrollments) AS enrollments_count,
-                    (SELECT COUNT(*) FROM dbo.community_posts WHERE ISNULL(flag_use, 'Y') = 'Y' OR flag_use = '1') AS posts_count,
+                    (SELECT COUNT(*) FROM dbo.community_posts WHERE ${flagActiveSql('flag_use')}) AS posts_count,
                     (SELECT COUNT(*) FROM dbo.payments WHERE status = 'paid') AS paid_count,
                     (SELECT ISNULL(SUM(amount), 0) FROM dbo.payments WHERE status = 'paid') AS revenue
             `);
@@ -207,7 +210,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     start_date,
                     is_open_soon
                 FROM dbo.courses
-                WHERE ISNULL(flag_use, 'Y') = 'Y'
+                WHERE ${flagActiveSql('flag_use')}
                 ORDER BY created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -333,7 +336,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .query(`
                     UPDATE dbo.courses
                     SET flag_use = 'N'
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 'Y') = 'Y'
+                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
                 `);
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร หรือถูกลบไปแล้ว' });
@@ -348,16 +351,20 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!requireAdmin(req, res)) return;
         
         const courseId = parseInt(req.params.courseId, 10);
-        const { 
-            section_title, 
-            lesson_title, 
-            content_html, 
-            video_url, 
+        const {
+            section_title: rawSection,
+            lesson_title: rawLesson,
+            title: rawTitle,
+            content_html,
+            video_url,
             file_url,
-            duration_minutes, 
-            sort_order, 
-            flag_use 
+            duration_minutes,
+            sort_order,
+            flag_use
         } = req.body;
+
+        const section_title = String(rawSection || rawTitle || '').trim();
+        const lesson_title = String(rawLesson || section_title || '').trim();
 
         if (!courseId || (!section_title && !lesson_title)) {
             return res.status(400).json({ success: false, message: 'กรุณาระบุหลักสูตรและชื่อบทเรียน' });
@@ -428,10 +435,17 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT lesson_id, course_id, section_title, lesson_title, content_html, video_url, file_url, duration_minutes, sort_order, flag_use
+                    SELECT lesson_id, course_id, section_title, lesson_title,
+                           COALESCE(NULLIF(LTRIM(RTRIM(CAST(lesson_title AS NVARCHAR(255)))), N''), section_title) AS title,
+                           content_html, video_url, file_url, duration_minutes, sort_order, flag_use
                     FROM dbo.course_lessons
-                    WHERE course_id = @courseId AND ISNULL(flag_use, 'Y') = 'Y'
-                    ORDER BY sort_order ASC, lesson_id ASC
+                    WHERE course_id = @courseId
+                      AND (
+                        flag_use IS NULL
+                        OR TRY_CAST(flag_use AS INT) = 1
+                        OR UPPER(LTRIM(RTRIM(CAST(flag_use AS NVARCHAR(20))))) IN (N'Y', N'YES', N'1', N'TRUE', N'T')
+                      )
+                    ORDER BY ISNULL(sort_order, 999) ASC, lesson_id ASC
                 `);
             res.json({ success: true, data: result.recordset });
         } catch (error) {
@@ -444,7 +458,19 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const lessonId = parseInt(req.params.lessonId, 10);
         if (!lessonId) return res.status(400).json({ success: false, message: 'รหัสบทเรียนไม่ถูกต้อง' });
 
-        const { section_title, lesson_title, content_html, video_url, file_url, flag_use, sort_order, duration_minutes } = req.body;
+        const {
+            section_title: rawSection,
+            lesson_title: rawLesson,
+            title: rawTitle,
+            content_html,
+            video_url,
+            file_url,
+            flag_use,
+            sort_order,
+            duration_minutes
+        } = req.body;
+        const section_title = rawSection != null ? rawSection : rawTitle;
+        const lesson_title = rawLesson != null ? rawLesson : (rawTitle != null ? rawTitle : null);
 
         let flagValue = null;
         if (flag_use !== undefined && flag_use !== null) {
@@ -455,8 +481,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request()
                 .input('lessonId', sql.Int, lessonId)
-                .input('section_title', sql.NVarChar(255), section_title ? String(section_title) : null)
-                .input('lesson_title', sql.NVarChar(255), lesson_title ? String(lesson_title) : null)
+                .input('section_title', sql.NVarChar(255), section_title != null && section_title !== '' ? String(section_title) : null)
+                .input('lesson_title', sql.NVarChar(255), lesson_title != null && lesson_title !== '' ? String(lesson_title) : null)
                 .input('content', sql.NVarChar(sql.MAX), content_html != null ? String(content_html) : null)
                 .input('video', sql.NVarChar(500), video_url != null ? String(video_url) : null)
                 .input('fileUrl', sql.NVarChar(500), file_url != null ? String(file_url) : null)
@@ -474,7 +500,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         flag_use = COALESCE(@flagUse, flag_use),
                         sort_order = COALESCE(@sort, sort_order),
                         duration_minutes = COALESCE(@duration, duration_minutes)
-                    WHERE lesson_id = @lessonId AND ISNULL(flag_use, 'Y') = 'Y'
+                    WHERE lesson_id = @lessonId
                 `);
 
             if (!result.rowsAffected?.[0]) {
@@ -510,7 +536,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT s.*, c.course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
-                WHERE ISNULL(s.flag_use, 'Y') = 'Y' OR s.flag_use = '1'
+                WHERE ${flagActiveSql('s.flag_use')}
                 ORDER BY s.start_at DESC
             `);
             res.json({ success: true, data: result.recordset });
@@ -925,12 +951,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    slide_id, eyebrow, section_title, section_title_highlight, lead,
+                    slide_id, sort_order, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, theme_color,
                     flag_use, created_at, updated_at
                 FROM dbo.hero_slides
-                ORDER BY slide_id ASC
+                ORDER BY ISNULL(sort_order, 999) ASC, slide_id ASC
             `);
             res.json({ success: true, data: mapHeroSlidesImages(result.recordset) });
         } catch (error) {
@@ -948,13 +974,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await bindHeroInputs(pool.request(), data).query(`
                 INSERT INTO dbo.hero_slides (
-                    flag_use, eyebrow, section_title, section_title_highlight, lead,
+                    sort_order, flag_use, eyebrow, section_title, section_title_highlight, lead,
                     cta_primary_label, cta_primary_href, cta_secondary_label, cta_secondary_href,
                     image_url, image_alt, badge_icon, badge_section_title, badge_subsection_title, theme, theme_color
                 )
                 OUTPUT INSERTED.slide_id
                 VALUES (
-                    @flag_use, @eyebrow, @section_title, @section_title_highlight, @lead,
+                    @sort_order, @flag_use, @eyebrow, @section_title, @section_title_highlight, @lead,
                     @cta_primary_label, @cta_primary_href, @cta_secondary_label, @cta_secondary_href,
                     @image_url, @image_alt, @badge_icon, @badge_section_title, @badge_subsection_title, @theme, @theme_color
                 )
@@ -979,7 +1005,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('slideId', sql.Int, slideId)
                 .query(`
                     UPDATE dbo.hero_slides
-                    SET flag_use = @flag_use,
+                    SET sort_order = @sort_order,
+                        flag_use = @flag_use,
                         eyebrow = @eyebrow,
                         section_title = @section_title,
                         section_title_highlight = @section_title_highlight,
