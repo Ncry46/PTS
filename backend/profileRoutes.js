@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { flagActiveSql } = require('./db');
+const { localizeCourseRow, resolveLangFromReq } = require('./courseLang');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
 const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId, fetchDriveFile } = require('./googleDrive');
 
@@ -378,6 +379,8 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
+            const lang = resolveLangFromReq(req);
+            const course = localizeCourseRow(result.recordset[0], lang);
             let lessons = [];
             try {
                 const lessonsResult = await pool.request()
@@ -430,7 +433,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     lessons = [];
                 }
             }
-            res.json({ success: true, loggedIn: !!userId, data: result.recordset[0], lessons });
+            res.json({ success: true, loggedIn: !!userId, lang, data: course, lessons });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

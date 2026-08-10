@@ -222,6 +222,32 @@ async function ensureLearningSchema(pool) {
             CONSTRAINT DF_courses_created DEFAULT (GETDATE())`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name') IS NULL
          ALTER TABLE dbo.courses ADD course_name NVARCHAR(255) NULL`,
+        /* Bilingual course text (Thai-first; EN filled when available) */
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NULL
+         ALTER TABLE dbo.courses ADD course_name_th NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_en') IS NULL
+         ALTER TABLE dbo.courses ADD course_name_en NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NULL
+         ALTER TABLE dbo.courses ADD instructor_name_th NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_en') IS NULL
+         ALTER TABLE dbo.courses ADD instructor_name_en NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NULL
+         ALTER TABLE dbo.courses ADD description_th NVARCHAR(MAX) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_en') IS NULL
+         ALTER TABLE dbo.courses ADD description_en NVARCHAR(MAX) NULL`,
+        /* Backfill Thai columns from legacy monolingual fields */
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NOT NULL
+         UPDATE dbo.courses SET course_name_th = course_name
+         WHERE (course_name_th IS NULL OR LTRIM(RTRIM(course_name_th)) = N'')
+           AND course_name IS NOT NULL AND LTRIM(RTRIM(course_name)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NOT NULL
+         UPDATE dbo.courses SET instructor_name_th = instructor_name
+         WHERE (instructor_name_th IS NULL OR LTRIM(RTRIM(instructor_name_th)) = N'')
+           AND instructor_name IS NOT NULL AND LTRIM(RTRIM(instructor_name)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NOT NULL
+         UPDATE dbo.courses SET description_th = description
+         WHERE (description_th IS NULL OR LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) = N'')
+           AND description IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description))) <> N''`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
          CREATE TABLE dbo.attendance_logs (
             log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
@@ -515,14 +541,18 @@ async function seedSampleCourseIfEmpty(pool) {
             .input('desc', sql.NVarChar, 'หลักสูตรตัวอย่างสำหรับทดสอบระบบ — แก้ไขหรือลบได้จากหน้า Admin')
             .query(`
                 INSERT INTO dbo.courses
-                (course_name_th,course_name_en, instructor_name_th,instructor_name_en, delivery_mode, total_hours,
+                (course_name, course_name_th, course_name_en,
+                 instructor_name, instructor_name_th, instructor_name_en,
+                 delivery_mode, total_hours,
                  average_rating, total_reviews, cover_image_url, is_featured,
-                 coursesFlag, created_at, price, description_th,description_en, flag_use,
+                 coursesFlag, created_at, price, description, description_th, description_en, flag_use,
                  coursescat_id, total_enrolled, start_date, is_open_soon)
                 VALUES
-                (@name, @instructor, @mode, @hours,
+                (@name, @name, N'Sample PTS Course',
+                 @instructor, @instructor, N'PTS Instructor',
+                 @mode, @hours,
                  0, 0, NULL, 1,
-                 N'Y', GETDATE(), @price, @desc, 1,
+                 N'Y', GETDATE(), @price, @desc, @desc, N'Sample course for system testing — edit or delete from Admin', 1,
                  NULL, 0, CAST(GETDATE() AS DATE), 0)
             `);
         console.log('📚 Seeded sample course into courses');
@@ -614,9 +644,9 @@ async function seedSampleFormIfEmpty(pool) {
             .input('description', sql.NVarChar, 'ตอบคำถามเพื่อดูว่าคุณใกล้เคียงสไตล์ใด: D กระทิง · I อินทรี · S หนู · C หมี')
             .query(`
                 INSERT INTO dbo.custom_forms
-                    (section_title, description_th,description_en, is_published, allow_resubmit, flag_use, form_type)
+                    (section_title, description, is_published, allow_resubmit, flag_use, form_type)
                 OUTPUT INSERTED.form_id
-                VALUES (@section_title, @description_th,description_en, 1, 1, 1, 'disc')
+                VALUES (@section_title, @description, 1, 1, 1, 'disc')
             `);
         const formId = form.recordset[0].form_id;
         const discOpts = JSON.stringify([

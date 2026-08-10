@@ -141,10 +141,11 @@ function createFormRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT
-                        f.form_id, f.section_title, f.description_th,description_en, f.allow_resubmit, f.updated_at, f.created_at,
+                        f.form_id, f.section_title, f.description, f.allow_resubmit, f.updated_at, f.created_at,
                         ISNULL(f.form_type, 'general') AS form_type,
                         f.course_id,
-                        c.course_name_th,course_name_en,
+                        c.course_name_th, c.course_name_en,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
                         (SELECT COUNT(*) FROM dbo.custom_form_questions q
                          WHERE q.form_id = f.form_id AND ${flagActiveSql('q.flag_use')}) AS question_count,
                         (SELECT TOP 1 r.response_id
@@ -217,7 +218,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
             const formRes = await pool.request()
                 .input('formId', sql.Int, formId)
                 .query(`
-                    SELECT f.form_id, f.section_title, f.description_th,description_en, f.is_published, f.allow_resubmit,
+                    SELECT f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
                            f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
                            f.course_id, c.course_name
                     FROM dbo.custom_forms f
@@ -485,10 +486,11 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT
-                    f.form_id, f.section_title, f.description_th,description_en, f.is_published, f.allow_resubmit,
+                    f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
                     f.flag_use, f.created_by, f.created_at, f.updated_at,
                     ISNULL(f.form_type,'general') AS form_type,
-                    f.course_id, c.course_name_th,course_name_en,
+                    f.course_id, c.course_name_th, c.course_name_en,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
                     (SELECT COUNT(*) FROM dbo.custom_form_questions q
                      WHERE q.form_id = f.form_id AND ${flagActiveSql('q.flag_use')}) AS question_count,
                     (SELECT COUNT(*) FROM dbo.custom_form_responses r
@@ -537,9 +539,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     INSERT INTO dbo.custom_forms
-                        (section_title, description_th,description_en, is_published, allow_resubmit, flag_use, created_by, form_type, course_id)
+                        (section_title, description, is_published, allow_resubmit, flag_use, created_by, form_type, course_id)
                     OUTPUT INSERTED.*
-                    VALUES (@section_title, @description_th,description_en, @published, @resubmit, 1, @createdBy, @formType, @courseId)
+                    VALUES (@section_title, @description, @published, @resubmit, 1, @createdBy, @formType, @courseId)
                 `);
             res.json({ success: true, data: result.recordset[0], disc_option_labels: DISC_OPTION_LABELS });
         } catch (error) {

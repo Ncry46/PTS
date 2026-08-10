@@ -9,6 +9,7 @@
 <script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/course-i18n.js?v=20260810courselang"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -61,7 +62,10 @@ async function loadCourseLessons() {
   if (resOut.status === 401) return location.href = 'Login.html';
   if (!resOut.ok || !data.success) throw new Error(data.message || 'โหลดบทเรียนไม่สำเร็จ');
   if (!data.enrolled) {
-    document.getElementById('course-section_title').textContent = data.course.course_name;
+    window.__ptsLearnCourse = data.course;
+    document.getElementById('course-section_title').textContent = window.PTSCourseI18n
+      ? PTSCourseI18n.name(data.course)
+      : (data.course.course_name || '');
     document.getElementById('lesson-view').innerHTML = `<div class="pts-empty" style="border:none;padding:24px 0"><p class="mb-4">คุณยังไม่ได้สมัครหลักสูตรนี้</p><a class="pts-btn pts-btn-primary" href="Courses.html">ไปสมัครเรียน</a></div>`;
     return;
   }
@@ -70,7 +74,10 @@ async function loadCourseLessons() {
     location.href = `FormFill.html?id=${data.required_form.form_id}&next=${next}`;
     return;
   }
-  document.getElementById('course-section_title').textContent = data.course.course_name;
+  window.__ptsLearnCourse = data.course;
+  document.getElementById('course-section_title').textContent = window.PTSCourseI18n
+    ? PTSCourseI18n.name(data.course)
+    : (data.course.course_name || '');
   const list = document.getElementById('lesson-list');
   if (!data.data.length) {
     list.innerHTML = '<p class="text-sm text-on-surface-variant p-2">ยังไม่มีบทเรียนในหลักสูตรนี้</p>';

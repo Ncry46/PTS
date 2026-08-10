@@ -42,13 +42,26 @@
           }, timeoutMs);
         }
 
+        var headers = Object.assign(
+          { Accept: 'application/json' },
+          opts.headers || {}
+        );
+        try {
+          if (!headers['X-PTS-Lang'] && !headers['x-pts-lang']) {
+            var lang = 'th';
+            if (typeof global.PTSLang === 'object' && global.PTSLang && typeof global.PTSLang.get === 'function') {
+              lang = global.PTSLang.get() === 'en' ? 'en' : 'th';
+            } else if (typeof localStorage !== 'undefined') {
+              lang = localStorage.getItem('pts_lang_pref') === 'en' ? 'en' : 'th';
+            }
+            headers['X-PTS-Lang'] = lang;
+          }
+        } catch (_) { /* ignore */ }
+
         var init = Object.assign({}, opts, {
           credentials: opts.credentials || 'include',
           cache: opts.cache || 'no-store',
-          headers: Object.assign(
-            { Accept: 'application/json' },
-            opts.headers || {}
-          )
+          headers: headers
         });
         if (controller) init.signal = controller.signal;
         delete init.retries;

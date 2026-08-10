@@ -9,6 +9,7 @@
 <script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/course-i18n.js?v=20260810courselang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260727homecream">
@@ -75,6 +76,7 @@ function setTab(tab) {
 }
 
 function courseCard(c) {
+  c = window.PTSCourseI18n ? PTSCourseI18n.localize(c) : c;
   const image = c.cover_image_url || PLACEHOLDER;
   const mode = (c.delivery_mode || 'หลักสูตร').toString();
   const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '';
@@ -131,6 +133,7 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   } else if (!courseData.data.length) {
     courseBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีหลักสูตรโปรด<br><a class="text-primary font-bold" href="Courses.html">ไปเลือกหลักสูตร</a></div>`;
   } else {
+    window.__ptsFavCourses = courseData.data;
     courseBox.innerHTML = courseData.data.map(courseCard).join('');
   }
 
@@ -183,6 +186,11 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   });
 
   setTab(location.hash === '#posts' ? 'posts' : 'courses');
+  document.addEventListener('pts-lang-change', () => {
+    if (window.__ptsFavCourses && window.__ptsFavCourses.length) {
+      courseBox.innerHTML = window.__ptsFavCourses.map(courseCard).join('');
+    }
+  });
   } catch (err) {
     const box = document.getElementById('course-list');
     if (box) {

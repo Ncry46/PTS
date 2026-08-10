@@ -30,6 +30,11 @@ try {
 const { syncAfterEnroll } = googleCalendar;
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
+const {
+    courseBilingualSelect,
+    localizeCourseRows,
+    resolveLangFromReq
+} = require('./courseLang');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -531,16 +536,14 @@ app.get('/api/courses', async (req, res) => {
     try {
         const pool = await poolPromise;
         const userId = req.session?.user?.user_id || null;
+        const lang = resolveLangFromReq(req);
 
         const result = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
                 SELECT 
                     c.course_id, 
-                    c.course_name_th, 
-                    c.course_name_en, 
-                    c.instructor_name_th, 
-                    c.instructor_name_en, 
+                    ${courseBilingualSelect('c')},
                     c.delivery_mode, 
                     c.total_hours, 
                     c.average_rating, 
@@ -550,8 +553,6 @@ app.get('/api/courses', async (req, res) => {
                     c.coursesFlag,
                     c.created_at,
                     c.price,
-                    c.description_th,
-                    c.description_en,
                     c.flag_use,
                     c.coursescat_id,
                     c.total_enrolled,
@@ -579,7 +580,8 @@ app.get('/api/courses', async (req, res) => {
         res.json({
             success: true,
             loggedIn: !!userId,
-            data: result.recordset
+            lang,
+            data: localizeCourseRows(result.recordset, lang)
         });
 
     } catch (error) {
@@ -681,14 +683,17 @@ app.get('/api/my/favorite-courses', async (req, res) => {
 
     try {
         const pool = await poolPromise;
+        const lang = resolveLangFromReq(req);
         const result = await pool.request()
             .input('userId', sql.Int, user.user_id)
             .query(`
                 SELECT
-                    c.course_id, c.course_name_th,course_name_en, c.instructor_name_th,c.instructor_name_en, c.delivery_mode,
+                    c.course_id,
+                    ${courseBilingualSelect('c')},
+                    c.delivery_mode,
                     c.total_hours, c.average_rating, c.total_reviews,
                     c.cover_image_url, c.is_featured, c.coursesFlag, c.created_at,
-                    c.price, c.description_th,c.description_en, c.flag_use, c.coursescat_id,
+                    c.price, c.flag_use, c.coursescat_id,
                     c.total_enrolled, c.start_date, c.is_open_soon,
                     1 AS is_favorited,
                     CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
@@ -700,7 +705,7 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                   AND ${flagActiveSql('c.flag_use')}
                 ORDER BY f.created_at DESC
             `);
-        res.json({ success: true, data: result.recordset });
+        res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -1011,6 +1016,7 @@ app.get('/api/my/courses', async (req, res) => {
 
     try {
         const pool = await poolPromise;
+        const lang = resolveLangFromReq(req);
         const result = await pool.request()
             .input('userId', sql.Int, user.user_id)
             .query(`
@@ -1021,8 +1027,7 @@ app.get('/api/my/courses', async (req, res) => {
                     e.enrolled_at,
                     e.updated_at,
                     c.course_id,
-                    c.course_name_th,course_name_en,
-                    c.instructor_name_th,instructor_name_en,
+                    ${courseBilingualSelect('c')},
                     c.delivery_mode,
                     c.total_hours,
                     c.average_rating,
@@ -1032,7 +1037,6 @@ app.get('/api/my/courses', async (req, res) => {
                     c.coursesFlag,
                     c.created_at,
                     c.price,
-                    c.description_th,description_en,
                     c.flag_use,
                     c.coursescat_id,
                     c.total_enrolled,
@@ -1045,7 +1049,7 @@ app.get('/api/my/courses', async (req, res) => {
                 ORDER BY e.updated_at DESC
             `);
 
-        const courses = result.recordset;
+        const courses = localizeCourseRows(result.recordset, lang);
         const inProgress = courses.filter(c => c.status === 'in_progress');
         const completed = courses.filter(c => c.status === 'completed');
         const avgProgress = courses.length
@@ -1055,6 +1059,7 @@ app.get('/api/my/courses', async (req, res) => {
 
         res.json({
             success: true,
+            lang,
             data: courses,
             summary: {
                 total: courses.length,

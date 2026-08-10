@@ -9,6 +9,7 @@
 <script src="/comp/pts-api.js?v=20260806stable"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/course-i18n.js?v=20260810courselang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260727homecream">
@@ -279,6 +280,7 @@ function statusLabel(status) {
 }
 
 function courseCard(course, { emphasizeProgress = false } = {}) {
+  course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
   const progress = Math.max(0, Math.min(100, Number(course.progress_percent || 0)));
   const image = course.cover_image_url || PLACEHOLDER;
   const mode = (course.delivery_mode || 'หลักสูตร').toString();
@@ -395,6 +397,10 @@ document.querySelectorAll('.myc-filter').forEach((btn) => {
 
     renderInProgress();
     renderAll();
+    document.addEventListener('pts-lang-change', () => {
+      renderInProgress();
+      renderAll();
+    });
   } catch (err) {
     const msg = escapeHtml(err.message || 'เกิดข้อผิดพลาด');
     document.getElementById('list-in-progress').innerHTML = `<div class="pts-card p-5 text-error">${msg} <button type="button" class="pts-btn pts-btn-outline" onclick="location.reload()">ลองใหม่</button></div>`;
