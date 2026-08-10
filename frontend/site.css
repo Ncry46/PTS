@@ -1566,7 +1566,7 @@ input.pts-pw-input::-ms-clear {
   width: 100%;
   height: auto;
   max-height: calc(100dvh - var(--hb-nav-h) - 8px);
-  object-fit: contain;
+  object-fit: cover;
   object-position: center center;
   pointer-events: none;
   transform: none;
@@ -1587,11 +1587,11 @@ input.pts-pw-input::-ms-clear {
   filter: none;
   opacity: 1;
   animation: none;
-  object-fit: contain;
+  object-fit: cover;
 }
 video.pts-home-banner__media {
   background: #140c12;
-  object-fit: contain;
+  object-fit: cover;
 }
 
 .pts-home-banner__nav {
