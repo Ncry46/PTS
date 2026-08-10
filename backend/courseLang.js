@@ -118,7 +118,44 @@ function courseLegacySelect(alias = 'c') {
 
 function isMissingBilingualColumnError(err) {
     const msg = String((err && err.message) || err || '');
-    return /Invalid column name\s+'?(course_name_th|course_name_en|instructor_name_th|instructor_name_en|description_th|description_en)'?/i.test(msg);
+    return /Invalid column name/i.test(msg) &&
+        /(course_name_th|course_name_en|instructor_name_th|instructor_name_en|description_th|description_en|course_name|instructor_name|description)/i.test(msg);
+}
+
+let _courseTextModePromise = null;
+
+/** Detect once whether dbo.courses has bilingual columns. */
+async function resolveCourseTextMode(pool) {
+    if (!pool) return 'legacy';
+    if (!_courseTextModePromise) {
+        _courseTextModePromise = (async () => {
+            try {
+                const r = await pool.request().query(`
+                    SELECT
+                        COL_LENGTH('dbo.courses', 'course_name') AS has_name,
+                        COL_LENGTH('dbo.courses', 'course_name_th') AS has_th,
+                        COL_LENGTH('dbo.courses', 'instructor_name') AS has_instructor,
+                        COL_LENGTH('dbo.courses', 'instructor_name_th') AS has_instructor_th
+                `);
+                const row = r.recordset[0] || {};
+                if (row.has_th != null && row.has_instructor_th != null) return 'bilingual';
+                return 'legacy';
+            } catch (_) {
+                return 'legacy';
+            }
+        })();
+    }
+    return _courseTextModePromise;
+}
+
+function courseTextSelect(alias = 'c', lang = 'th', mode = 'bilingual') {
+    return mode === 'bilingual'
+        ? courseBilingualSelect(alias, lang)
+        : courseLegacySelect(alias);
+}
+
+function resetCourseTextModeCache() {
+    _courseTextModePromise = null;
 }
 
 /** Short name-only select (joins / messages). */
@@ -173,6 +210,9 @@ module.exports = {
     localizeCourseRows,
     courseBilingualSelect,
     courseLegacySelect,
+    courseTextSelect,
+    resolveCourseTextMode,
+    resetCourseTextModeCache,
     isMissingBilingualColumnError,
     courseNameSelect,
     normalizeCourseBody

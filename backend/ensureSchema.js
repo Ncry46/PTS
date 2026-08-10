@@ -751,7 +751,51 @@ async function ensureCompatColumns(pool) {
         `IF OBJECT_ID('dbo.custom_form_questions','U') IS NOT NULL
             AND COL_LENGTH('dbo.custom_form_questions', 'sort_order') IS NULL
          ALTER TABLE dbo.custom_form_questions ADD sort_order INT NOT NULL
-            CONSTRAINT DF_custom_fq_sort_compat DEFAULT (1)`
+            CONSTRAINT DF_custom_fq_sort_compat DEFAULT (1)`,
+
+        /* Course bilingual text — always ensure (even when DB_AUTO_SCHEMA=false) */
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NULL
+         ALTER TABLE dbo.courses ADD course_name_th NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_en') IS NULL
+         ALTER TABLE dbo.courses ADD course_name_en NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NULL
+         ALTER TABLE dbo.courses ADD instructor_name_th NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_en') IS NULL
+         ALTER TABLE dbo.courses ADD instructor_name_en NVARCHAR(255) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NULL
+         ALTER TABLE dbo.courses ADD description_th NVARCHAR(MAX) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_en') IS NULL
+         ALTER TABLE dbo.courses ADD description_en NVARCHAR(MAX) NULL`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NOT NULL
+            AND COL_LENGTH('dbo.courses', 'course_name') IS NOT NULL
+         UPDATE dbo.courses SET course_name_th = course_name
+         WHERE (course_name_th IS NULL OR LTRIM(RTRIM(course_name_th)) = N'')
+           AND course_name IS NOT NULL AND LTRIM(RTRIM(course_name)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NOT NULL
+            AND COL_LENGTH('dbo.courses', 'course_name') IS NOT NULL
+         UPDATE dbo.courses SET course_name = course_name_th
+         WHERE (course_name IS NULL OR LTRIM(RTRIM(course_name)) = N'')
+           AND course_name_th IS NOT NULL AND LTRIM(RTRIM(course_name_th)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NOT NULL
+            AND COL_LENGTH('dbo.courses', 'instructor_name') IS NOT NULL
+         UPDATE dbo.courses SET instructor_name_th = instructor_name
+         WHERE (instructor_name_th IS NULL OR LTRIM(RTRIM(instructor_name_th)) = N'')
+           AND instructor_name IS NOT NULL AND LTRIM(RTRIM(instructor_name)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NOT NULL
+            AND COL_LENGTH('dbo.courses', 'instructor_name') IS NOT NULL
+         UPDATE dbo.courses SET instructor_name = instructor_name_th
+         WHERE (instructor_name IS NULL OR LTRIM(RTRIM(instructor_name)) = N'')
+           AND instructor_name_th IS NOT NULL AND LTRIM(RTRIM(instructor_name_th)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NOT NULL
+            AND COL_LENGTH('dbo.courses', 'description') IS NOT NULL
+         UPDATE dbo.courses SET description_th = description
+         WHERE (description_th IS NULL OR LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) = N'')
+           AND description IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description))) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NOT NULL
+            AND COL_LENGTH('dbo.courses', 'description') IS NOT NULL
+         UPDATE dbo.courses SET description = description_th
+         WHERE (description IS NULL OR LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description))) = N'')
+           AND description_th IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) <> N''`
     ];
 
     let ok = 0;

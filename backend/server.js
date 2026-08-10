@@ -14,6 +14,7 @@ const {
     verifyCoreTables,
     flagActiveSql
 } = require('./db');
+const { resetCourseTextModeCache } = require('./courseLang');
 const { createLearningRouter } = require('./learningRoutes');
 const { createAdminRouter } = require('./adminRoutes');
 const { createFormRouter, createAdminFormRouter } = require('./formRoutes');
@@ -33,6 +34,8 @@ const { writeSecretsFile } = require('./mailSecrets');
 const {
     courseBilingualSelect,
     courseLegacySelect,
+    courseTextSelect,
+    resolveCourseTextMode,
     isMissingBilingualColumnError,
     localizeCourseRows,
     resolveLangFromReq
@@ -205,6 +208,7 @@ async function preparePool(pool) {
     }
     try {
         await ensureCompatColumns(pool);
+        resetCourseTextModeCache();
     } catch (compatErr) {
         console.warn('⚠️ column compat:', compatErr.message);
     }
@@ -579,12 +583,13 @@ app.get('/api/courses', async (req, res) => {
 
         let result;
         try {
+            const mode = await resolveCourseTextMode(pool);
             result = await pool.request()
                 .input('userId', sql.Int, userId)
-                .query(buildCoursesSql(courseBilingualSelect('c', lang)));
+                .query(buildCoursesSql(courseTextSelect('c', lang, mode)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
-            console.warn('⚠️ courses bilingual cols missing — fallback to legacy names:', colErr.message);
+            console.warn('⚠️ courses text cols missing — fallback to legacy names:', colErr.message);
             result = await pool.request()
                 .input('userId', sql.Int, userId)
                 .query(buildCoursesSql(courseLegacySelect('c')));
@@ -718,9 +723,10 @@ app.get('/api/my/favorite-courses', async (req, res) => {
             `;
         let result;
         try {
+            const mode = await resolveCourseTextMode(pool);
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildFavSql(courseBilingualSelect('c', lang)));
+                .query(buildFavSql(courseTextSelect('c', lang, mode)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()
@@ -1070,9 +1076,10 @@ app.get('/api/my/courses', async (req, res) => {
             `;
         let result;
         try {
+            const mode = await resolveCourseTextMode(pool);
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildMySql(courseBilingualSelect('c', lang)));
+                .query(buildMySql(courseTextSelect('c', lang, mode)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()

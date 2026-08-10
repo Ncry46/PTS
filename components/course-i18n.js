@@ -31,12 +31,27 @@
     return String(value).trim();
   }
 
+  function getField(row, key) {
+    if (!row) return '';
+    var direct = norm(row[key]);
+    if (direct) return direct;
+    var want = String(key).toLowerCase();
+    for (var k in row) {
+      if (!Object.prototype.hasOwnProperty.call(row, k)) continue;
+      if (String(k).toLowerCase() === want) {
+        var v = norm(row[k]);
+        if (v) return v;
+      }
+    }
+    return '';
+  }
+
   function pick(row, base) {
     if (!row) return '';
     var lang = currentLang();
-    var th = norm(row[base + '_th']);
-    var en = norm(row[base + '_en']);
-    var legacy = norm(row[base]);
+    var th = getField(row, base + '_th');
+    var en = getField(row, base + '_en');
+    var legacy = getField(row, base);
     if (lang === 'en') return en || th || legacy || '';
     return th || legacy || en || '';
   }

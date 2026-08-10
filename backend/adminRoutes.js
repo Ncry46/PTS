@@ -18,6 +18,8 @@ const { markPaidAndEnroll } = require('./paymentActions');
 const {
     courseBilingualSelect,
     courseLegacySelect,
+    courseTextSelect,
+    resolveCourseTextMode,
     isMissingBilingualColumnError,
     localizeCourseRows,
     normalizeCourseBody,
@@ -223,7 +225,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             `;
             let result;
             try {
-                result = await pool.request().query(buildSql(courseBilingualSelect('', lang)));
+                const mode = await resolveCourseTextMode(pool);
+                result = await pool.request().query(buildSql(courseTextSelect('', lang, mode)));
             } catch (colErr) {
                 if (!isMissingBilingualColumnError(colErr)) throw colErr;
                 console.warn('⚠️ admin courses bilingual cols missing — fallback:', colErr.message);
@@ -251,6 +254,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         try {
             const pool = await poolPromise;
+            const mode = await resolveCourseTextMode(pool);
             const insertReq = pool.request()
                 .input('name', sql.NVarChar(255), text.course_name_th)
                 .input('nameEn', sql.NVarChar(255), text.course_name_en)
@@ -269,7 +273,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('startDate', sql.Date, start_date || null)
                 .input('openSoon', sql.Bit, is_open_soon ? 1 : 0);
             await bindFlagInput(pool, insertReq, 'flagUse', 'courses', true);
-            const result = await insertReq.query(`
+
+            const bilingualInsert = `
                     INSERT INTO dbo.courses
                     (course_name, course_name_th, course_name_en,
                      instructor_name, instructor_name_th, instructor_name_en,
@@ -277,7 +282,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                      average_rating, total_reviews, cover_image_url, is_featured,
                      coursesFlag, created_at, price, description, description_th, description_en, flag_use,
                      coursescat_id, total_enrolled, start_date, is_open_soon)
-                    OUTPUT INSERTED.course_id, INSERTED.course_name, INSERTED.course_name_th, INSERTED.course_name_en
+                    OUTPUT INSERTED.course_id, INSERTED.course_name
                     VALUES (
                         @name, @name, @nameEn,
                         @instructor, @instructor, @instructorEn,
@@ -286,7 +291,29 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         @coursesFlag, GETDATE(), @price, @description, @description, @descriptionEn, @flagUse,
                         @catId, @enrolled, @startDate, @openSoon
                     )
-                `);
+                `;
+            const legacyInsert = `
+                    INSERT INTO dbo.courses
+                    (course_name, instructor_name, delivery_mode, total_hours,
+                     average_rating, total_reviews, cover_image_url, is_featured,
+                     coursesFlag, created_at, price, description, flag_use,
+                     coursescat_id, total_enrolled, start_date, is_open_soon)
+                    OUTPUT INSERTED.course_id, INSERTED.course_name
+                    VALUES (
+                        @name, @instructor, @mode, @hours,
+                        0, 0, @cover, @featured,
+                        @coursesFlag, GETDATE(), @price, @description, @flagUse,
+                        @catId, @enrolled, @startDate, @openSoon
+                    )
+                `;
+
+            let result;
+            try {
+                result = await insertReq.query(mode === 'bilingual' ? bilingualInsert : legacyInsert);
+            } catch (insErr) {
+                if (!isMissingBilingualColumnError(insErr)) throw insErr;
+                result = await insertReq.query(legacyInsert);
+            }
 
             const created = result.recordset[0];
             res.json({ success: true, message: 'สร้างหลักสูตรสำเร็จ', data: created });

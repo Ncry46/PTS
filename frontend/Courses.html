@@ -7,10 +7,10 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <script src="/comp/theme-boot.js"></script>
-<script src="/comp/pts-api.js?v=20260810th-en"></script>
+<script src="/comp/pts-api.js?v=20260810namefix"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810th-en"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260727cardicons">
@@ -114,6 +114,8 @@ function renderAuthChrome() {
 
 function makeCourseCard(course) {
   course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
+  const courseName = course.course_name || course.course_name_th || course.course_name_en || '';
+  const instructor = course.instructor_name || course.instructor_name_th || course.instructor_name_en || '-';
   const mode = (course.delivery_mode || '').toLowerCase();
   const badge = getBadge(mode);
   const favorited = Number(course.is_favorited) === 1;
@@ -124,7 +126,7 @@ function makeCourseCard(course) {
   return `
     <article data-type="${mode}" class="pts-course-card">
       <div class="pts-course-card__media">
-        <img src="${img}" alt="${escapeHtml(course.course_name || '')}" loading="lazy">
+        <img src="${img}" alt="${escapeHtml(courseName)}" loading="lazy">
         <span class="pts-course-card__badge" style="background:${badgeBg}">${badge.label}${course.is_featured ? ' · ยอดนิยม' : ''}</span>
         ${currentUser ? `
           <button type="button" class="fav-btn" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด" style="position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.95);border:none;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;${favorited ? 'color:#ca1156' : 'color:#544245'}">
@@ -134,10 +136,10 @@ function makeCourseCard(course) {
       <div class="pts-course-card__body">
         <div class="pts-course-card__copy">
           <p class="pts-course-card__meta">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
-          <h3 class="pts-course-card__section_title">${escapeHtml(formatText(course.course_name))}</h3>
-          <div class="pts-course-card__meta-row" title="${escapeHtml(formatText(course.instructor_name))}">
+          <h3 class="pts-course-card__section_title">${escapeHtml(formatText(courseName))}</h3>
+          <div class="pts-course-card__meta-row" title="${escapeHtml(formatText(instructor))}">
             <span class="material-symbols-outlined" aria-hidden="true">person</span>
-            <span>${escapeHtml(formatText(course.instructor_name))}</span>
+            <span>${escapeHtml(formatText(instructor))}</span>
           </div>
           <div class="pts-course-card__meta-row">
             <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
