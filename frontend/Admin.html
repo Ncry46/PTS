@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810courselang"></script>
+<script src="/comp/course-i18n.js?v=20260810coursenamefix"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:wght@200;300;400;500;600;700;800;900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -610,7 +610,7 @@ async function renderCourses() {
       <td>
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(c.course_name_th || c.course_name || '')}${c.course_name_en ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
+          <div class="adm-c-name">${escapeHtml(c.course_name || c.course_name_th || c.course_name_en || '')}${c.course_name_en && (c.course_name || c.course_name_th) && c.course_name_en !== (c.course_name || c.course_name_th) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
           ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
         </div>
       </td>
@@ -629,7 +629,7 @@ async function renderCourses() {
       <div class="adm-c-card__top">
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(c.course_name_th || c.course_name || '')}${c.course_name_en ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
+          <div class="adm-c-name">${escapeHtml(c.course_name || c.course_name_th || c.course_name_en || '')}${c.course_name_en && (c.course_name || c.course_name_th) && c.course_name_en !== (c.course_name || c.course_name_th) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
       </div>

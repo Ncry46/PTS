@@ -1,6 +1,6 @@
 /**
  * Course text i18n — Thai first; English only when PTSLang is "en".
- * Expects API rows with *_th / *_en (and optional legacy monolingual fields).
+ * Empty *_th / *_en never blank out a real legacy course_name value.
  */
 (function (global) {
   'use strict';
@@ -18,15 +18,26 @@
     return 'th';
   }
 
+  function norm(value) {
+    if (value == null) return '';
+    if (Array.isArray(value)) {
+      for (var i = value.length - 1; i >= 0; i -= 1) {
+        var s = norm(value[i]);
+        if (s) return s;
+      }
+      return '';
+    }
+    return String(value).trim();
+  }
+
   function pick(row, base) {
     if (!row) return '';
     var lang = currentLang();
-    var th = row[base + '_th'] != null ? row[base + '_th'] : row[base];
-    var en = row[base + '_en'];
-    var thStr = th != null ? String(th).trim() : '';
-    var enStr = en != null ? String(en).trim() : '';
-    if (lang === 'en') return enStr || thStr || '';
-    return thStr || enStr || '';
+    var th = norm(row[base + '_th']);
+    var en = norm(row[base + '_en']);
+    var legacy = norm(row[base]);
+    if (lang === 'en') return en || th || legacy || '';
+    return th || legacy || en || '';
   }
 
   function localize(row) {

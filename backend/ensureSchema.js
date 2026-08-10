@@ -235,19 +235,31 @@ async function ensureLearningSchema(pool) {
          ALTER TABLE dbo.courses ADD description_th NVARCHAR(MAX) NULL`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_en') IS NULL
          ALTER TABLE dbo.courses ADD description_en NVARCHAR(MAX) NULL`,
-        /* Backfill Thai columns from legacy monolingual fields */
+        /* Backfill Thai columns from legacy monolingual fields (and reverse) */
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NOT NULL
          UPDATE dbo.courses SET course_name_th = course_name
          WHERE (course_name_th IS NULL OR LTRIM(RTRIM(course_name_th)) = N'')
            AND course_name IS NOT NULL AND LTRIM(RTRIM(course_name)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'course_name_th') IS NOT NULL
+         UPDATE dbo.courses SET course_name = course_name_th
+         WHERE (course_name IS NULL OR LTRIM(RTRIM(course_name)) = N'')
+           AND course_name_th IS NOT NULL AND LTRIM(RTRIM(course_name_th)) <> N''`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NOT NULL
          UPDATE dbo.courses SET instructor_name_th = instructor_name
          WHERE (instructor_name_th IS NULL OR LTRIM(RTRIM(instructor_name_th)) = N'')
            AND instructor_name IS NOT NULL AND LTRIM(RTRIM(instructor_name)) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'instructor_name_th') IS NOT NULL
+         UPDATE dbo.courses SET instructor_name = instructor_name_th
+         WHERE (instructor_name IS NULL OR LTRIM(RTRIM(instructor_name)) = N'')
+           AND instructor_name_th IS NOT NULL AND LTRIM(RTRIM(instructor_name_th)) <> N''`,
         `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NOT NULL
          UPDATE dbo.courses SET description_th = description
          WHERE (description_th IS NULL OR LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) = N'')
            AND description IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description))) <> N''`,
+        `IF OBJECT_ID('dbo.courses', 'U') IS NOT NULL AND COL_LENGTH('dbo.courses', 'description_th') IS NOT NULL
+         UPDATE dbo.courses SET description = description_th
+         WHERE (description IS NULL OR LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description))) = N'')
+           AND description_th IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) <> N''`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'attendance_logs')
          CREATE TABLE dbo.attendance_logs (
             log_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

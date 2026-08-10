@@ -17,6 +17,8 @@ const {
 const { markPaidAndEnroll } = require('./paymentActions');
 const {
     courseBilingualSelect,
+    courseLegacySelect,
+    isMissingBilingualColumnError,
     localizeCourseRows,
     normalizeCourseBody,
     resolveLangFromReq
@@ -197,10 +199,10 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const lang = resolveLangFromReq(req);
-            const result = await pool.request().query(`
+            const buildSql = (textSelect) => `
                 SELECT
                     course_id,
-                    ${courseBilingualSelect('')},
+                    ${textSelect},
                     delivery_mode,
                     total_hours,
                     average_rating,
@@ -218,7 +220,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 FROM dbo.courses
                 WHERE ${flagActiveSql('flag_use')}
                 ORDER BY created_at DESC
-            `);
+            `;
+            let result;
+            try {
+                result = await pool.request().query(buildSql(courseBilingualSelect('')));
+            } catch (colErr) {
+                if (!isMissingBilingualColumnError(colErr)) throw colErr;
+                console.warn('⚠️ admin courses bilingual cols missing — fallback:', colErr.message);
+                result = await pool.request().query(buildSql(courseLegacySelect('')));
+            }
             res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

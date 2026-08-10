@@ -16,15 +16,31 @@ function resolveLangFromReq(req) {
     return resolveLang(q || header || 'th');
 }
 
+/** Normalize DB/driver values (null, '', arrays from duplicate cols). */
+function normText(value) {
+    if (value == null) return '';
+    if (Array.isArray(value)) {
+        for (let i = value.length - 1; i >= 0; i -= 1) {
+            const s = normText(value[i]);
+            if (s) return s;
+        }
+        return '';
+    }
+    return String(value).trim();
+}
+
+/**
+ * Pick localized course text.
+ * Empty *_th / *_en never blank out a real legacy value.
+ */
 function pickText(row, base, lang) {
     if (!row) return '';
     const l = resolveLang(lang);
-    const th = row[`${base}_th`] != null ? row[`${base}_th`] : row[base];
-    const en = row[`${base}_en`];
-    const thStr = th != null ? String(th).trim() : '';
-    const enStr = en != null ? String(en).trim() : '';
-    if (l === 'en') return enStr || thStr || '';
-    return thStr || enStr || '';
+    const th = normText(row[`${base}_th`]);
+    const en = normText(row[`${base}_en`]);
+    const legacy = normText(row[base]);
+    if (l === 'en') return en || th || legacy || '';
+    return th || legacy || en || '';
 }
 
 /** Apply Thai-first localization onto convenience fields. */
@@ -46,7 +62,7 @@ function localizeCourseRows(rows, lang) {
 
 /**
  * SQL select list for bilingual course text + Thai-default convenience aliases.
- * Keeps legacy course_name / instructor_name / description as Thai fallbacks.
+ * Prefer th → legacy → en so names never go blank when only legacy is filled.
  * @param {string} [alias='c'] table alias ('' for no alias)
  */
 function courseBilingualSelect(alias = 'c') {
@@ -58,10 +74,31 @@ function courseBilingualSelect(alias = 'c') {
         `${a}instructor_name_en`,
         `${a}description_th`,
         `${a}description_en`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}course_name_th)), N''), ${a}course_name) AS course_name`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}instructor_name_th)), N''), ${a}instructor_name) AS instructor_name`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}description_th)), N''), ${a}description) AS description`
+        `COALESCE(NULLIF(LTRIM(RTRIM(${a}course_name_th)), N''), NULLIF(LTRIM(RTRIM(${a}course_name)), N''), NULLIF(LTRIM(RTRIM(${a}course_name_en)), N'')) AS course_name`,
+        `COALESCE(NULLIF(LTRIM(RTRIM(${a}instructor_name_th)), N''), NULLIF(LTRIM(RTRIM(${a}instructor_name)), N''), NULLIF(LTRIM(RTRIM(${a}instructor_name_en)), N'')) AS instructor_name`,
+        `COALESCE(NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_th))), N''), NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description))), N''), NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_en))), N'')) AS description`
     ].join(',\n                    ');
+}
+
+/** Legacy-only select when bilingual columns are not available yet. */
+function courseLegacySelect(alias = 'c') {
+    const a = alias ? `${alias}.` : '';
+    return [
+        `${a}course_name AS course_name_th`,
+        `CAST(NULL AS NVARCHAR(255)) AS course_name_en`,
+        `${a}instructor_name AS instructor_name_th`,
+        `CAST(NULL AS NVARCHAR(255)) AS instructor_name_en`,
+        `${a}description AS description_th`,
+        `CAST(NULL AS NVARCHAR(MAX)) AS description_en`,
+        `${a}course_name`,
+        `${a}instructor_name`,
+        `${a}description`
+    ].join(',\n                    ');
+}
+
+function isMissingBilingualColumnError(err) {
+    const msg = String((err && err.message) || err || '');
+    return /Invalid column name\s+'?(course_name_th|course_name_en|instructor_name_th|instructor_name_en|description_th|description_en)'?/i.test(msg);
 }
 
 /** Short name-only select (joins / messages). */
@@ -70,7 +107,7 @@ function courseNameSelect(alias = 'c') {
     return [
         `${a}course_name_th`,
         `${a}course_name_en`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}course_name_th)), N''), ${a}course_name) AS course_name`
+        `COALESCE(NULLIF(LTRIM(RTRIM(${a}course_name_th)), N''), NULLIF(LTRIM(RTRIM(${a}course_name)), N''), NULLIF(LTRIM(RTRIM(${a}course_name_en)), N'')) AS course_name`
     ].join(', ');
 }
 
@@ -110,10 +147,13 @@ function firstNonEmpty(...vals) {
 module.exports = {
     resolveLang,
     resolveLangFromReq,
+    normText,
     pickText,
     localizeCourseRow,
     localizeCourseRows,
     courseBilingualSelect,
+    courseLegacySelect,
+    isMissingBilingualColumnError,
     courseNameSelect,
     normalizeCourseBody
 };

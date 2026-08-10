@@ -32,6 +32,8 @@ const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 const {
     courseBilingualSelect,
+    courseLegacySelect,
+    isMissingBilingualColumnError,
     localizeCourseRows,
     resolveLangFromReq
 } = require('./courseLang');
@@ -538,12 +540,10 @@ app.get('/api/courses', async (req, res) => {
         const userId = req.session?.user?.user_id || null;
         const lang = resolveLangFromReq(req);
 
-        const result = await pool.request()
-            .input('userId', sql.Int, userId)
-            .query(`
+        const buildCoursesSql = (textSelect) => `
                 SELECT 
                     c.course_id, 
-                    ${courseBilingualSelect('c')},
+                    ${textSelect},
                     c.delivery_mode, 
                     c.total_hours, 
                     c.average_rating, 
@@ -575,7 +575,20 @@ app.get('/api/courses', async (req, res) => {
                 FROM dbo.courses c
                 WHERE ${flagActiveSql('c.flag_use')}
                 ORDER BY c.created_at DESC
-            `);
+            `;
+
+        let result;
+        try {
+            result = await pool.request()
+                .input('userId', sql.Int, userId)
+                .query(buildCoursesSql(courseBilingualSelect('c')));
+        } catch (colErr) {
+            if (!isMissingBilingualColumnError(colErr)) throw colErr;
+            console.warn('⚠️ courses bilingual cols missing — fallback to legacy names:', colErr.message);
+            result = await pool.request()
+                .input('userId', sql.Int, userId)
+                .query(buildCoursesSql(courseLegacySelect('c')));
+        }
 
         res.json({
             success: true,
@@ -684,12 +697,10 @@ app.get('/api/my/favorite-courses', async (req, res) => {
     try {
         const pool = await poolPromise;
         const lang = resolveLangFromReq(req);
-        const result = await pool.request()
-            .input('userId', sql.Int, user.user_id)
-            .query(`
+        const buildFavSql = (textSelect) => `
                 SELECT
                     c.course_id,
-                    ${courseBilingualSelect('c')},
+                    ${textSelect},
                     c.delivery_mode,
                     c.total_hours, c.average_rating, c.total_reviews,
                     c.cover_image_url, c.is_featured, c.coursesFlag, c.created_at,
@@ -704,7 +715,18 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                 WHERE f.user_id = @userId
                   AND ${flagActiveSql('c.flag_use')}
                 ORDER BY f.created_at DESC
-            `);
+            `;
+        let result;
+        try {
+            result = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .query(buildFavSql(courseBilingualSelect('c')));
+        } catch (colErr) {
+            if (!isMissingBilingualColumnError(colErr)) throw colErr;
+            result = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .query(buildFavSql(courseLegacySelect('c')));
+        }
         res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -1017,9 +1039,7 @@ app.get('/api/my/courses', async (req, res) => {
     try {
         const pool = await poolPromise;
         const lang = resolveLangFromReq(req);
-        const result = await pool.request()
-            .input('userId', sql.Int, user.user_id)
-            .query(`
+        const buildMySql = (textSelect) => `
                 SELECT
                     e.enrollment_id,
                     e.progress_percent,
@@ -1027,7 +1047,7 @@ app.get('/api/my/courses', async (req, res) => {
                     e.enrolled_at,
                     e.updated_at,
                     c.course_id,
-                    ${courseBilingualSelect('c')},
+                    ${textSelect},
                     c.delivery_mode,
                     c.total_hours,
                     c.average_rating,
@@ -1047,7 +1067,18 @@ app.get('/api/my/courses', async (req, res) => {
                 WHERE e.user_id = @userId
                   AND ${flagActiveSql('c.flag_use')}
                 ORDER BY e.updated_at DESC
-            `);
+            `;
+        let result;
+        try {
+            result = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .query(buildMySql(courseBilingualSelect('c')));
+        } catch (colErr) {
+            if (!isMissingBilingualColumnError(colErr)) throw colErr;
+            result = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .query(buildMySql(courseLegacySelect('c')));
+        }
 
         const courses = localizeCourseRows(result.recordset, lang);
         const inProgress = courses.filter(c => c.status === 'in_progress');
