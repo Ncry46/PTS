@@ -114,7 +114,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT course_id, course_name_th, course_name_en,
-                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), course_name) AS course_name
+                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), NULLIF(LTRIM(RTRIM(course_name_en)), N'')) AS course_name
                     FROM dbo.courses WHERE course_id = @courseId
                 `);
             if (!course.recordset.length) {
@@ -175,7 +175,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         COALESCE(NULLIF(LTRIM(RTRIM(CAST(l.lesson_title AS NVARCHAR(255)))), N''), l.section_title) AS title,
                         l.section_title, l.lesson_title, l.content_html, l.video_url,
                         l.sort_order, l.duration_minutes, c.course_name_th, c.course_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                         ISNULL(lp.completed, 0) AS completed
                     FROM dbo.course_lessons l
                     INNER JOIN dbo.courses c ON c.course_id = l.course_id
@@ -326,8 +326,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     SELECT
                         cert.certificate_id, cert.certificate_code, cert.issued_at,
                         c.course_id, c.course_name_th, c.course_name_en, c.instructor_name_th, c.instructor_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.instructor_name_th)), N''), c.instructor_name) AS instructor_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.instructor_name_th)), N''), NULLIF(LTRIM(RTRIM(c.instructor_name_en)), N'')) AS instructor_name,
                         c.cover_image_url,
                         c.delivery_mode,
                         COALESCE(prog.last_completed_at, CASE WHEN e.status = 'completed' THEN e.updated_at END, cert.issued_at) AS completed_at
@@ -386,7 +386,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                         p.reference_code, p.paid_at, p.created_at, p.slip_image_url, p.transfer_at,
                         p.reject_reason,
                         c.course_id, c.course_name_th, c.course_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                         c.cover_image_url
                     FROM dbo.payments p
                     INNER JOIN dbo.courses c ON c.course_id = p.course_id
@@ -456,7 +456,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT course_id, course_name_th, course_name_en,
-                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), course_name) AS course_name,
+                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), NULLIF(LTRIM(RTRIM(course_name_en)), N'')) AS course_name,
                            ISNULL(price, 0) AS price
                     FROM dbo.courses
                     WHERE course_id = @courseId
@@ -539,7 +539,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`SELECT course_id, course_name_th, course_name_en,
-                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), course_name) AS course_name,
+                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), NULLIF(LTRIM(RTRIM(course_name_en)), N'')) AS course_name,
                            ISNULL(price, 0) AS price FROM dbo.courses WHERE course_id = @courseId`);
             if (!course.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
@@ -837,7 +837,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     SELECT TOP 1
                         a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                         a.expires_at, a.flag_use, c.course_name_th, c.course_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                         ISNULL(c.price, 0) AS price
                     FROM dbo.access_codes a
                     INNER JOIN dbo.courses c ON c.course_id = a.course_id

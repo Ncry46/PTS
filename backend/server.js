@@ -1014,7 +1014,13 @@ app.post('/api/courses/:courseId/enroll', async (req, res) => {
 
         const courseCheck = await pool.request()
             .input('courseId', sql.Int, courseId)
-            .query('SELECT course_id, course_name FROM dbo.courses WHERE course_id = @courseId');
+            .query(`
+                SELECT course_id,
+                       course_name_th, course_name_en,
+                       COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), NULLIF(LTRIM(RTRIM(course_name_en)), N'')) AS course_name
+                FROM dbo.courses
+                WHERE course_id = @courseId
+            `);
 
         if (courseCheck.recordset.length === 0) {
             return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตรนี้ในระบบ' });

@@ -145,7 +145,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                         ISNULL(f.form_type, 'general') AS form_type,
                         f.course_id,
                         c.course_name_th, c.course_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                         (SELECT COUNT(*) FROM dbo.custom_form_questions q
                          WHERE q.form_id = f.form_id AND ${flagActiveSql('q.flag_use')}) AS question_count,
                         (SELECT TOP 1 r.response_id
@@ -165,7 +165,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                          WHERE r.form_id = f.form_id AND r.user_id = @userId
                          ORDER BY r.submitted_at DESC) AS my_result_label
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE ${flagActiveSql('f.flag_use')} AND ISNULL(f.is_published,0)=1
                       AND (@courseId IS NULL OR f.course_id = @courseId)
                     ORDER BY
@@ -222,7 +222,7 @@ function createFormRouter({ poolPromise, requireLogin }) {
                            f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
                            f.course_id, c.course_name
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
                 `);
             const form = formRes.recordset[0];
@@ -490,13 +490,13 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                     f.flag_use, f.created_by, f.created_at, f.updated_at,
                     ISNULL(f.form_type,'general') AS form_type,
                     f.course_id, c.course_name_th, c.course_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                     (SELECT COUNT(*) FROM dbo.custom_form_questions q
                      WHERE q.form_id = f.form_id AND ${flagActiveSql('q.flag_use')}) AS question_count,
                     (SELECT COUNT(*) FROM dbo.custom_form_responses r
                      WHERE r.form_id = f.form_id) AS response_count
                 FROM dbo.custom_forms f
-                LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                 WHERE ${flagActiveSql('f.flag_use')}
                 ORDER BY f.updated_at DESC, f.form_id DESC
             `);
@@ -524,7 +524,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             if (courseId) {
                 const c = await pool.request()
                     .input('courseId', sql.Int, courseId)
-                    .query(`SELECT course_id FROM dbo.courses_main WHERE course_id=@courseId`);
+                    .query(`SELECT course_id FROM dbo.courses WHERE course_id=@courseId`);
                 if (!c.recordset[0]) {
                     return res.status(400).json({ success: false, message: 'ไม่พบหลักสูตรที่เลือก' });
                 }
@@ -560,7 +560,7 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT f.*, ISNULL(f.form_type,'general') AS form_type, c.course_name
                     FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses_main c ON c.course_id = f.course_id
+                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
                 `);
             const form = formRes.recordset[0];

@@ -553,18 +553,18 @@ async function seedSampleCourseIfEmpty(pool) {
             .input('desc', sql.NVarChar, 'หลักสูตรตัวอย่างสำหรับทดสอบระบบ — แก้ไขหรือลบได้จากหน้า Admin')
             .query(`
                 INSERT INTO dbo.courses
-                (course_name, course_name_th, course_name_en,
-                 instructor_name, instructor_name_th, instructor_name_en,
+                (course_name_th, course_name_en,
+                 instructor_name_th, instructor_name_en,
                  delivery_mode, total_hours,
                  average_rating, total_reviews, cover_image_url, is_featured,
-                 coursesFlag, created_at, price, description, description_th, description_en, flag_use,
+                 coursesFlag, created_at, price, description_th, description_en, flag_use,
                  coursescat_id, total_enrolled, start_date, is_open_soon)
                 VALUES
-                (@name, @name, N'Sample PTS Course',
-                 @instructor, @instructor, N'PTS Instructor',
+                (@name, N'Sample PTS Course',
+                 @instructor, N'PTS Instructor',
                  @mode, @hours,
                  0, 0, NULL, 1,
-                 N'Y', GETDATE(), @price, @desc, @desc, N'Sample course for system testing — edit or delete from Admin', 1,
+                 N'Y', GETDATE(), @price, @desc, N'Sample course for system testing — edit or delete from Admin', 1,
                  NULL, 0, CAST(GETDATE() AS DATE), 0)
             `);
         console.log('📚 Seeded sample course into courses');
