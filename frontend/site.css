@@ -1501,7 +1501,7 @@ input.pts-pw-input::-ms-clear {
   .pts-nav__hide-mobile { display: none !important; }
 }
 
-/* —— Home banner: full-width, viewport-fit, no zoom —— */
+/* —— Home banner: full-width image, no zoom —— */
 .pts-home-banner {
   --hb-rose: #ca1156;
   --hb-blush: #ffb1c1;
@@ -1512,192 +1512,86 @@ input.pts-pw-input::-ms-clear {
   position: relative;
   width: 100%;
   max-width: 100%;
-  /* Keep 1920×1000 art ratio, but never taller than the visible viewport */
-  aspect-ratio: 1920 / 1000;
   height: auto;
-  max-height: calc(100dvh - var(--hb-nav-h) - 12px);
-  min-height: 160px;
+  min-height: 0;
   margin: 0;
   padding: 0;
-  background:
-    radial-gradient(120% 90% at 12% 0%, rgba(151,66,88,.35), transparent 55%),
-    radial-gradient(90% 80% at 92% 100%, rgba(196,164,106,.22), transparent 50%),
-    linear-gradient(160deg, #1a1016 0%, #0f0a0e 48%, #181016 100%);
+  background: #140c12;
   overflow: hidden;
   isolation: isolate;
   user-select: none;
   touch-action: pan-y;
-  box-shadow:
-    0 1px 0 rgba(255,255,255,.06) inset,
-    0 28px 64px rgba(20,12,18,.22);
 }
 @media (max-width: 719px) {
   .pts-home-banner {
-    aspect-ratio: 16 / 10;
-    max-height: calc(100dvh - var(--hb-nav-h) - 8px);
-    min-height: 140px;
+    min-height: 0;
   }
 }
 
-/* Soft wash behind artwork (no scale motion) */
-.pts-home-banner__wash {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(closest-side at 18% 30%, rgba(255,177,193,.28), transparent 70%),
-    radial-gradient(closest-side at 82% 70%, rgba(196,164,106,.2), transparent 72%),
-    radial-gradient(closest-side at 50% 110%, rgba(151,66,88,.22), transparent 65%);
-  filter: blur(8px);
+.pts-home-banner__wash,
+.pts-home-banner__sheen,
+.pts-home-banner__blur,
+.pts-home-banner__fade,
+.pts-home-banner__accent,
+.pts-home-banner__veil {
+  display: none;
 }
 
 .pts-home-banner__track {
-  position: absolute;
-  inset: 0;
+  position: relative;
   z-index: 1;
   display: flex;
   width: 100%;
-  height: 100%;
-  transition: transform 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+  height: auto;
+  transition: transform 0.55s ease;
   will-change: transform;
 }
 .pts-home-banner.is-dragging .pts-home-banner__track { transition: none; }
 .pts-home-banner.is-entering .pts-home-banner__track {
-  animation: pts-hb-enter .55s ease-out both;
-}
-@keyframes pts-hb-enter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  animation: none;
 }
 
 .pts-home-banner__slide {
   position: relative;
   flex: 0 0 100%;
   width: 100%;
-  height: 100%;
+  height: auto;
   overflow: hidden;
   background: transparent;
 }
 
-/* Fit image to banner frame — no ken-burns / scale zoom */
 .pts-home-banner__media {
-  position: absolute;
-  inset: 0;
+  position: static;
   display: block;
   width: 100%;
-  height: 100%;
+  height: auto;
+  max-height: calc(100dvh - var(--hb-nav-h) - 8px);
   object-fit: contain;
   object-position: center center;
   pointer-events: none;
   transform: none;
-  opacity: .92;
+  opacity: 1;
   filter: none;
-  transition: opacity .45s ease;
+  animation: none;
+  transition: none;
 }
 .pts-home-banner__slide.is-active .pts-home-banner__media {
   opacity: 1;
   animation: none;
+  transform: none;
 }
-.pts-home-banner__slide.is-motion .pts-home-banner__media {
+.pts-home-banner__slide.is-motion .pts-home-banner__media,
+.pts-home-banner__slide.is-motion.is-active .pts-home-banner__media,
+.pts-home-banner__slide.is-fit-contain .pts-home-banner__media {
   transform: none;
   filter: none;
   opacity: 1;
-}
-.pts-home-banner__slide.is-motion.is-active .pts-home-banner__media {
   animation: none;
+  object-fit: contain;
 }
 video.pts-home-banner__media {
   background: #140c12;
   object-fit: contain;
-}
-
-/* When natural image ratio differs, JS adds .is-fit-contain */
-.pts-home-banner__slide.is-fit-contain .pts-home-banner__media {
-  object-fit: contain;
-  background: transparent;
-}
-.pts-home-banner__slide.is-fit-contain .pts-home-banner__blur {
-  display: block;
-}
-
-/* Blurred extender only when contain mode needs atmosphere */
-.pts-home-banner__blur {
-  display: none;
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: blur(36px) saturate(1.15) brightness(.55);
-  transform: none;
-  pointer-events: none;
-  z-index: 0;
-}
-.pts-home-banner__slide.is-fit-contain .pts-home-banner__media {
-  z-index: 1;
-}
-
-.pts-home-banner__veil {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  background:
-    linear-gradient(180deg, rgba(20,12,18,.18) 0%, transparent 24%, transparent 68%, rgba(20,12,18,.42) 100%),
-    linear-gradient(90deg, rgba(20,12,18,.16) 0%, transparent 16%, transparent 84%, rgba(20,12,18,.16) 100%);
-}
-
-/* Elegant light sweep on change */
-.pts-home-banner__sheen {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
-  pointer-events: none;
-  background: linear-gradient(
-    105deg,
-    transparent 38%,
-    rgba(255,255,255,.1) 47%,
-    rgba(255,255,255,.28) 50%,
-    rgba(255,177,193,.12) 54%,
-    transparent 62%
-  );
-  transform: translateX(-120%) skewX(-12deg);
-  opacity: 0;
-}
-.pts-home-banner.is-sheening .pts-home-banner__sheen {
-  animation: pts-hb-sheen 1.05s cubic-bezier(.22,1,.36,1) forwards;
-}
-@keyframes pts-hb-sheen {
-  0% { transform: translateX(-120%) skewX(-12deg); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateX(130%) skewX(-12deg); opacity: 0; }
-}
-
-/* Hairline prestige accent */
-.pts-home-banner__accent {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 2px;
-  z-index: 8;
-  pointer-events: none;
-  background: linear-gradient(90deg, transparent, #ffb1c1 18%, #c4a46a 50%, #ffb1c1 82%, transparent);
-  opacity: .9;
-}
-.pts-home-banner__accent::after {
-  content: '';
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 28%;
-  background: linear-gradient(90deg, transparent, #fff, transparent);
-  animation: pts-hb-accent 4.8s ease-in-out infinite;
-  opacity: .7;
-}
-@keyframes pts-hb-accent {
-  0% { transform: translateX(-30%); }
-  100% { transform: translateX(380%); }
 }
 
 .pts-home-banner__nav {
