@@ -1501,21 +1501,22 @@ input.pts-pw-input::-ms-clear {
   .pts-nav__hide-mobile { display: none !important; }
 }
 
-/* —— Home banner: national-grade cinematic strip (true aspect, no crop) —— */
+/* —— Home banner: full-width, viewport-fit, no zoom —— */
 .pts-home-banner {
   --hb-rose: #ca1156;
   --hb-blush: #ffb1c1;
   --hb-gold: #c4a46a;
   --hb-ink: #140c12;
   --hb-interval: 6200ms;
+  --hb-nav-h: var(--pts-nav-h, 68px);
   position: relative;
   width: 100%;
-  max-width: none;
-  /* Match recommended banner art 1920×1000 → image fills completely, never clipped */
+  max-width: 100%;
+  /* Keep 1920×1000 art ratio, but never taller than the visible viewport */
   aspect-ratio: 1920 / 1000;
   height: auto;
-  max-height: none;
-  min-height: 200px;
+  max-height: calc(100dvh - var(--hb-nav-h) - 12px);
+  min-height: 160px;
   margin: 0;
   padding: 0;
   background:
@@ -1532,28 +1533,23 @@ input.pts-pw-input::-ms-clear {
 }
 @media (max-width: 719px) {
   .pts-home-banner {
-    /* Slightly taller on phones for presence, still no forced crop of 1920×1000 art via contain fallback */
     aspect-ratio: 16 / 10;
-    min-height: 180px;
+    max-height: calc(100dvh - var(--hb-nav-h) - 8px);
+    min-height: 140px;
   }
 }
 
-/* Soft living wash behind artwork */
+/* Soft wash behind artwork (no scale motion) */
 .pts-home-banner__wash {
   position: absolute;
-  inset: -20%;
+  inset: 0;
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(closest-side at 18% 30%, rgba(255,177,193,.38), transparent 70%),
-    radial-gradient(closest-side at 82% 70%, rgba(196,164,106,.28), transparent 72%),
-    radial-gradient(closest-side at 50% 110%, rgba(151,66,88,.3), transparent 65%);
-  animation: pts-hb-wash 14s ease-in-out infinite alternate;
+    radial-gradient(closest-side at 18% 30%, rgba(255,177,193,.28), transparent 70%),
+    radial-gradient(closest-side at 82% 70%, rgba(196,164,106,.2), transparent 72%),
+    radial-gradient(closest-side at 50% 110%, rgba(151,66,88,.22), transparent 65%);
   filter: blur(8px);
-}
-@keyframes pts-hb-wash {
-  0% { transform: translate3d(-2%, 0, 0) scale(1); opacity: .75; }
-  100% { transform: translate3d(3%, -2%, 0) scale(1.08); opacity: 1; }
 }
 
 .pts-home-banner__track {
@@ -1568,11 +1564,11 @@ input.pts-pw-input::-ms-clear {
 }
 .pts-home-banner.is-dragging .pts-home-banner__track { transition: none; }
 .pts-home-banner.is-entering .pts-home-banner__track {
-  animation: pts-hb-enter 1.15s cubic-bezier(.16,1,.3,1) both;
+  animation: pts-hb-enter .55s ease-out both;
 }
 @keyframes pts-hb-enter {
-  from { opacity: 0; transform: scale(1.04); filter: blur(6px); }
-  to { opacity: 1; transform: scale(1); filter: blur(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .pts-home-banner__slide {
@@ -1584,26 +1580,24 @@ input.pts-pw-input::-ms-clear {
   background: transparent;
 }
 
-/* Full-bleed artwork: stage ratio matches banner art → no crop */
+/* Fit image to banner frame — no ken-burns / scale zoom */
 .pts-home-banner__media {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center center;
   pointer-events: none;
-  transform: scale(1.02);
-  opacity: .88;
-  filter: saturate(1.04) contrast(1.02);
-  transition: opacity .7s ease, transform 1.1s cubic-bezier(.16,1,.3,1), filter .7s ease;
+  transform: none;
+  opacity: .92;
+  filter: none;
+  transition: opacity .45s ease;
 }
 .pts-home-banner__slide.is-active .pts-home-banner__media {
   opacity: 1;
-}
-.pts-home-banner__slide.is-active:not(.is-motion) .pts-home-banner__media {
-  animation: pts-hb-kenburns 9s ease-out forwards;
+  animation: none;
 }
 .pts-home-banner__slide.is-motion .pts-home-banner__media {
   transform: none;
@@ -1615,10 +1609,7 @@ input.pts-pw-input::-ms-clear {
 }
 video.pts-home-banner__media {
   background: #140c12;
-}
-@keyframes pts-hb-kenburns {
-  0% { transform: scale(1.02); }
-  100% { transform: scale(1.08); }
+  object-fit: contain;
 }
 
 /* When natural image ratio differs, JS adds .is-fit-contain */
@@ -1634,18 +1625,17 @@ video.pts-home-banner__media {
 .pts-home-banner__blur {
   display: none;
   position: absolute;
-  inset: -6%;
-  width: 112%;
-  height: 112%;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  filter: blur(36px) saturate(1.2) brightness(.55);
-  transform: scale(1.12);
+  filter: blur(36px) saturate(1.15) brightness(.55);
+  transform: none;
   pointer-events: none;
   z-index: 0;
 }
 .pts-home-banner__slide.is-fit-contain .pts-home-banner__media {
   z-index: 1;
-  filter: drop-shadow(0 18px 40px rgba(0,0,0,.35));
 }
 
 .pts-home-banner__veil {
@@ -1844,6 +1834,9 @@ video.pts-home-banner__media {
   .pts-home-banner__slide.is-active .pts-home-banner__media {
     animation: none !important;
     transform: none;
+  }
+  .pts-home-banner.is-entering .pts-home-banner__track {
+    animation: none !important;
   }
   .pts-home-banner__progress > span.is-running { animation: none; width: 100%; }
 }

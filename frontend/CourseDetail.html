@@ -561,24 +561,48 @@ async function mountCourseNotifyControls(hostEl) {
     });
   }
 
-  document.getElementById('calendar-course')?.addEventListener('click', () => {
-    const msg = document.getElementById('course-toolbar-msg');
-    if (!msg) return;
-    msg.hidden = false;
-
+  document.getElementById('calendar-course')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
     if (!enrolled) {
-      msg.textContent = 'สมัครเรียนก่อน แล้วจึงเพิ่มคอร์สนี้เข้าปฏิทินได้';
-      msg.className = 'pts-msg pts-msg--err';
+      showToolbarMsg('สมัครเรียนก่อน แล้วจึงเพิ่มคอร์สนี้เข้าปฏิทินได้', false);
       return;
     }
 
-    const host = document.getElementById('course-notify-host');
-    if (host) {
-      host.hidden = false;
-      host.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (btn) btn.disabled = true;
+    showToolbarMsg('กำลังเพิ่มเข้าปฏิทิน...', true);
+    try {
+      const res = await fetch('/api/google/course-notify', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ courseId: Number(courseId), enabled: true })
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'เพิ่มเข้าปฏิทินไม่สำเร็จ');
+      }
+
+      const host = document.getElementById('course-notify-host');
+      if (host) await mountCourseNotifyControls(host);
+
+      if (data.connected === false) {
+        showToolbarMsg(
+          data.message || 'บันทึกคอร์สนี้แล้ว — ไปตั้งค่าเพื่อเชื่อม Google Calendar แล้วระบบจะส่งตารางเข้าปฏิทิน',
+          true
+        );
+      } else {
+        const synced = Number(data.synced || 0);
+        const ok = synced > 0 || !data.pending;
+        showToolbarMsg(
+          data.message || (synced > 0 ? `เพิ่ม ${synced} รายการเข้าปฏิทินแล้ว` : 'เปิดรับแล้ว'),
+          ok
+        );
+      }
+    } catch (err) {
+      showToolbarMsg(err.message || 'เพิ่มเข้าปฏิทินไม่สำเร็จ', false);
+    } finally {
+      if (btn) btn.disabled = false;
     }
-    msg.textContent = 'เลื่อนลงไปที่ส่วนรับการแจ้งเตือน แล้วกดเพิ่มเข้าปฏิทินได้เลย';
-    msg.className = 'pts-msg pts-msg--ok';
   });
 
   document.getElementById('fav')?.addEventListener('click', async (e) => {
