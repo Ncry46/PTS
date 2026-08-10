@@ -235,6 +235,31 @@ async function preparePool(pool) {
     }
 
     if (!schemaReadyPool) {
+        console.log(`🏷️ course apiVersion = ${COURSE_API_VERSION}`);
+        try {
+            const sample = await pool.request().query(`
+                SELECT TOP 3
+                    course_id,
+                    CONVERT(NVARCHAR(255), course_name_th) AS course_name_th,
+                    CONVERT(NVARCHAR(255), instructor_name_th) AS instructor_name_th
+                FROM dbo.courses
+                ORDER BY course_id DESC
+            `);
+            for (const row of sample.recordset || []) {
+                console.log(
+                    `📚 sample course #${row.course_id}:`,
+                    row.course_name_th || '(ไม่มี course_name_th)',
+                    '/',
+                    row.instructor_name_th || '(ไม่มี instructor_name_th)'
+                );
+            }
+            if (!(sample.recordset || []).length) {
+                console.warn('⚠️ dbo.courses ไม่มีแถวข้อมูล');
+            }
+        } catch (sampleErr) {
+            console.warn('⚠️ อ่าน sample course_name_th ไม่ได้:', sampleErr.message);
+        }
+
         const mail = getMailStatus();
         const localPath = path.join(__dirname, 'mail.local.js');
         console.log('📁 mail.local.js =', localPath, fs.existsSync(localPath) ? '(มีไฟล์)' : '(ไม่พบ)');

@@ -113,8 +113,15 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             const course = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT course_id, course_name_th, course_name_en,
-                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), NULLIF(LTRIM(RTRIM(course_name_en)), N'')) AS course_name
+                    SELECT course_id,
+                           CONVERT(NVARCHAR(255), course_name_th) AS course_name_th,
+                           CONVERT(NVARCHAR(255), course_name_en) AS course_name_en,
+                           CONVERT(NVARCHAR(255), instructor_name_th) AS instructor_name_th,
+                           CONVERT(NVARCHAR(255), instructor_name_en) AS instructor_name_en,
+                           COALESCE(
+                             NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), course_name_th))), N''),
+                             NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), course_name_en))), N'')
+                           ) AS course_name
                     FROM dbo.courses WHERE course_id = @courseId
                 `);
             if (!course.recordset.length) {
