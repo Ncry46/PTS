@@ -7,6 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:wght@200;300;400;500;600;700;800;900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -609,7 +610,7 @@ async function renderCourses() {
       <td>
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
+          <div class="adm-c-name">${escapeHtml(c.course_name || c.course_name_th || c.course_name_en || '')}${c.course_name_en && (c.course_name || c.course_name_th) && c.course_name_en !== (c.course_name || c.course_name_th) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
           ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
         </div>
       </td>
@@ -628,7 +629,7 @@ async function renderCourses() {
       <div class="adm-c-card__top">
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(c.course_name)}</div>
+          <div class="adm-c-name">${escapeHtml(c.course_name || c.course_name_th || c.course_name_en || '')}${c.course_name_en && (c.course_name || c.course_name_th) && c.course_name_en !== (c.course_name || c.course_name_th) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
       </div>
@@ -681,8 +682,10 @@ async function renderCourses() {
   document.getElementById('panel').innerHTML = `
     <h2 id="course-form-section_title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร *">
-      <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
+      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร (ไทย) * — แสดงเมื่อภาษาไทย">
+      <input id="c-name-en" class="border rounded-xl px-3 py-2" placeholder="Course name (EN) — shown when user switches to English">
+      <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร (ไทย)">
+      <input id="c-instructor-en" class="border rounded-xl px-3 py-2" placeholder="Instructor (EN)">
       <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
       <input id="c-hours" type="number" step="0.1" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง (total_hours)" value="4">
       <input id="c-price" type="number" step="0.01" class="border rounded-xl px-3 py-2" placeholder="ราคา (price)">
@@ -694,7 +697,8 @@ async function renderCourses() {
         <option value="N">ปิดใช้งาน (N)</option>
       </select>
       <input id="c-cover" class="border rounded-xl px-3 py-2" placeholder="URL รูปปก (cover_image_url)">
-      <textarea id="c-desc" class="border rounded-xl px-3 py-2 md:col-span-2" rows="3" placeholder="คำอธิบายหลักสูตร (description)"></textarea>
+      <textarea id="c-desc" class="border rounded-xl px-3 py-2" rows="3" placeholder="คำอธิบายหลักสูตร (ไทย)"></textarea>
+      <textarea id="c-desc-en" class="border rounded-xl px-3 py-2" rows="3" placeholder="Course description (EN)"></textarea>
       <label class="text-sm flex items-center gap-2"><input type="checkbox" id="c-featured"> แนะนำ (is_featured)</label>
       <label class="text-sm flex items-center gap-2"><input type="checkbox" id="c-open-soon"> เปิดเร็วๆ นี้ (is_open_soon)</label>
     </div>
@@ -726,8 +730,16 @@ async function renderCourses() {
   const listArea = document.getElementById('course-list-area');
 
   const fillForm = (c) => {
-    document.getElementById('c-name').value = c?.course_name || '';
-    document.getElementById('c-instructor').value = c?.instructor_name || '';
+    const nameTh = c?.course_name_th || c?.course_name || '';
+    const nameEn = c?.course_name_en || '';
+    const instTh = c?.instructor_name_th || c?.instructor_name || '';
+    const instEn = c?.instructor_name_en || '';
+    const descTh = c?.description_th || c?.description || '';
+    const descEn = c?.description_en || '';
+    document.getElementById('c-name').value = nameTh;
+    document.getElementById('c-name-en').value = nameEn;
+    document.getElementById('c-instructor').value = instTh;
+    document.getElementById('c-instructor-en').value = instEn;
     document.getElementById('c-mode').value = c?.delivery_mode || 'online';
     document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : 4;
     document.getElementById('c-price').value = c?.price != null ? Number(c.price) : '';
@@ -739,7 +751,8 @@ async function renderCourses() {
     document.getElementById('c-flag').value = (c?.coursesFlag === 'N' || c?.flag_use === 'N') ? 'N' : 'Y';
     
     document.getElementById('c-cover').value = c?.cover_image_url || '';
-    document.getElementById('c-desc').value = c?.description || '';
+    document.getElementById('c-desc').value = descTh;
+    document.getElementById('c-desc-en').value = descEn;
     
     // ✅ แมปค่าเป็น boolean จากตัวเลข 1/0
     document.getElementById('c-featured').checked = Number(c?.is_featured) === 1;
@@ -851,7 +864,11 @@ async function renderCourses() {
 
   createBtn.onclick = async () => {
     const payload = {
+      course_name_th: document.getElementById('c-name').value,
+      course_name_en: document.getElementById('c-name-en').value,
       course_name: document.getElementById('c-name').value,
+      instructor_name_th: document.getElementById('c-instructor').value,
+      instructor_name_en: document.getElementById('c-instructor-en').value,
       instructor_name: document.getElementById('c-instructor').value,
       delivery_mode: document.getElementById('c-mode').value,
       total_hours: Number(document.getElementById('c-hours').value || 1),
@@ -864,6 +881,8 @@ async function renderCourses() {
       coursesFlag: document.getElementById('c-flag').value || 'Y',
       
       cover_image_url: document.getElementById('c-cover').value,
+      description_th: document.getElementById('c-desc').value,
+      description_en: document.getElementById('c-desc-en').value,
       description: document.getElementById('c-desc').value,
       
       // ✅ ส่งค่าเป็นตัวเลข 1 หรือ 0
@@ -892,216 +911,10 @@ async function renderCourses() {
     }
   };
 
+
   searchInput.addEventListener('input', () => renderList(searchInput.value));
   renderList();
 }
-  document.getElementById('panel').innerHTML = `
-    <h2 id="course-form-section_title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร *">
-      <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร">
-      <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
-      <input id="c-hours" type="number" step="0.1" class="border rounded-xl px-3 py-2" placeholder="ชั่วโมง (total_hours)" value="4">
-      <input id="c-price" type="number" step="0.01" class="border rounded-xl px-3 py-2" placeholder="ราคา (price)">
-      <input id="c-cat" type="number" class="border rounded-xl px-3 py-2" placeholder="หมวดหมู่ (coursescat_id)">
-      <input id="c-start" type="date" class="border rounded-xl px-3 py-2" section_title="start_date">
-      <input id="c-enrolled" type="number" class="border rounded-xl px-3 py-2" placeholder="จำนวนลงทะเบียน (total_enrolled)" value="0">
-      <select id="c-flag" class="border rounded-xl px-3 py-2">
-  <option value="Y">เปิดใช้งาน (Y)</option>
-  <option value="N">ปิดใช้งาน (N)</option>
-</select>
-      <input id="c-cover" class="border rounded-xl px-3 py-2" placeholder="URL รูปปก (cover_image_url)">
-      <textarea id="c-desc" class="border rounded-xl px-3 py-2 md:col-span-2" rows="3" placeholder="คำอธิบายหลักสูตร (description)"></textarea>
-      <label class="text-sm flex items-center gap-2"><input type="checkbox" id="c-featured"> แนะนำ (is_featured)</label>
-      <label class="text-sm flex items-center gap-2"><input type="checkbox" id="c-open-soon"> เปิดเร็วๆ นี้ (is_open_soon)</label>
-    </div>
-    <div class="flex flex-wrap gap-2 mb-6">
-      <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold">สร้างหลักสูตร</button>
-      <button id="cancel-edit-course" type="button" class="pts-btn pts-btn-ghost hidden">ยกเลิกแก้ไข</button>
-    </div>
-    <p id="course-form-msg" class="pts-msg mb-4"></p>
-
-    <div class="adm-c-head">
-      <div>
-        <h3>รายการหลักสูตร</h3>
-        <p>เชื่อมตาราง courses · แสดงประมาณ 10 รายการต่อหน้าจอ</p>
-      </div>
-    </div>
-    <div class="adm-c-tools">
-      <input id="course-search" class="adm-c-search" type="search" placeholder="ค้นหาชื่อ / ID / วิทยากร / รูปแบบ..." autocomplete="off">
-      <span class="adm-c-count" id="course-count">0 หลักสูตร</span>
-    </div>
-    <div id="course-list-area"></div>
-  `;
-
-  const formMsg = document.getElementById('course-form-msg');
-  const formsection_title = document.getElementById('course-form-section_title');
-  const createBtn = document.getElementById('create-course');
-  const cancelBtn = document.getElementById('cancel-edit-course');
-  const searchInput = document.getElementById('course-search');
-  const countEl = document.getElementById('course-count');
-  const listArea = document.getElementById('course-list-area');
-
-  const fillForm = (c) => {
-    document.getElementById('c-name').value = c?.course_name || '';
-    document.getElementById('c-instructor').value = c?.instructor_name || '';
-    document.getElementById('c-mode').value = c?.delivery_mode || 'online';
-    document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : 4;
-    document.getElementById('c-price').value = c?.price != null ? Number(c.price) : '';
-    document.getElementById('c-cat').value = c?.coursescat_id != null ? Number(c.coursescat_id) : '';
-    document.getElementById('c-start').value = toDateInput(c?.start_date);
-    document.getElementById('c-enrolled').value = c?.total_enrolled != null ? Number(c.total_enrolled) : 0;
-    document.getElementById('c-flag').value = (c?.coursesFlag === 'N' || c?.flag_use === 'N') ? 'N' : 'Y';
-    document.getElementById('c-cover').value = c?.cover_image_url || '';
-    document.getElementById('c-desc').value = c?.description || '';
-    document.getElementById('c-featured').checked = !!c?.is_featured;
-    document.getElementById('c-open-soon').checked = !!c?.is_open_soon;
-  };
-
-  const setEditMode = (course) => {
-    editingId = course ? course.course_id : null;
-    document.querySelectorAll('[data-course-id].is-editing').forEach((el) => {
-      el.classList.remove('is-editing');
-    });
-    if (course) {
-      fillForm(course);
-      formsection_title.textContent = 'แก้ไขหลักสูตร';
-      createBtn.textContent = 'บันทึกการแก้ไข';
-      cancelBtn.classList.remove('hidden');
-      formMsg.textContent = `กำลังแก้ไข ID ${course.course_id}`;
-      formMsg.className = 'pts-msg mb-4';
-      document.querySelectorAll(`[data-course-id="${course.course_id}"]`).forEach((el) => {
-        el.classList.add('is-editing');
-      });
-      document.getElementById('c-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
-    } else {
-      fillForm(null);
-      formsection_title.textContent = 'สร้างหลักสูตรใหม่';
-      createBtn.textContent = 'สร้างหลักสูตร';
-      cancelBtn.classList.add('hidden');
-      formMsg.textContent = '';
-      formMsg.className = 'pts-msg mb-4';
-    }
-  };
-
-  const bindListActions = () => {
-    document.querySelectorAll('.edit-course').forEach((btn) => {
-      btn.onclick = () => {
-        const course = coursesCache.find((c) => String(c.course_id) === String(btn.dataset.id));
-        if (course) setEditMode(course);
-      };
-    });
-    document.querySelectorAll('.feature-btn').forEach((btn) => {
-      btn.onclick = async () => {
-        await api(`/api/admin/courses/${btn.dataset.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({ is_featured: btn.dataset.featured === '1' })
-        });
-        renderCourses();
-      };
-    });
-    document.querySelectorAll('.del-course').forEach((btn) => {
-      btn.onclick = async () => {
-        const ok = window.confirm('ลบหลักสูตรนี้ใช่หรือไม่? (จะซ่อนจากรายการหลักสูตร)');
-        if (!ok) return;
-        try {
-          await api(`/api/admin/courses/${btn.dataset.id}`, { method: 'DELETE' });
-          await renderCourses();
-        } catch (e) {
-          alert(e.message || 'ลบไม่สำเร็จ');
-        }
-      };
-    });
-  };
-
-  const renderList = (query = '') => {
-    const q = String(query || '').trim().toLowerCase();
-    const filtered = coursesCache.filter((c) => matchesQuery(c, q));
-    countEl.textContent = q
-      ? `${filtered.length} / ${coursesCache.length} หลักสูตร`
-      : `${coursesCache.length} หลักสูตร`;
-
-    if (!coursesCache.length) {
-      listArea.innerHTML = '<div class="adm-c-empty">ยังไม่มีหลักสูตร</div>';
-      return;
-    }
-    if (!filtered.length) {
-      listArea.innerHTML = '<div class="adm-c-empty">ไม่พบหลักสูตรที่ตรงกับคำค้นหา</div>';
-      return;
-    }
-
-    listArea.innerHTML = `
-      <div class="adm-c-table-wrap">
-        <table class="adm-c-table">
-          <thead>
-            <tr>
-              <th>หลักสูตร</th>
-              <th>วิทยากร</th>
-              <th>รูปแบบ</th>
-              <th>ชั่วโมง</th>
-              <th>ราคา</th>
-              <th>ลงทะเบียน</th>
-              <th>สถานะ</th>
-              <th>วันเริ่ม/สร้าง</th>
-              <th>จัดการ</th>
-            </tr>
-          </thead>
-          <tbody>${filtered.map(rowHtml).join('')}</tbody>
-        </table>
-      </div>
-      <div class="adm-c-cards">${filtered.map(cardHtml).join('')}</div>
-    `;
-    bindListActions();
-    if (editingId) {
-      document.querySelectorAll(`[data-course-id="${editingId}"]`).forEach((el) => {
-        el.classList.add('is-editing');
-      });
-    }
-  };
-
-  cancelBtn.onclick = () => setEditMode(null);
-
-  createBtn.onclick = async () => {
-    const payload = {
-      course_name: document.getElementById('c-name').value,
-      instructor_name: document.getElementById('c-instructor').value,
-      delivery_mode: document.getElementById('c-mode').value,
-      total_hours: Number(document.getElementById('c-hours').value || 1),
-      price: document.getElementById('c-price').value === '' ? null : Number(document.getElementById('c-price').value),
-      coursescat_id: document.getElementById('c-cat').value === '' ? null : Number(document.getElementById('c-cat').value),
-      start_date: document.getElementById('c-start').value || null,
-      total_enrolled: Number(document.getElementById('c-enrolled').value || 0),
-      coursesFlag: document.getElementById('c-flag').value || 'Y',
-      cover_image_url: document.getElementById('c-cover').value,
-      description: document.getElementById('c-desc').value,
-      is_featured: document.getElementById('c-featured').checked ? 1 : 0,
-      is_open_soon: document.getElementById('c-open-soon').checked ? 1 : 0
-    };
-    createBtn.disabled = true;
-    try {
-      if (editingId) {
-        await api(`/api/admin/courses/${editingId}`, {
-          method: 'PUT',
-          body: JSON.stringify(payload)
-        });
-      } else {
-        await api('/api/admin/courses', {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
-      }
-      await renderCourses();
-    } catch (e) {
-      formMsg.textContent = e.message || 'บันทึกไม่สำเร็จ';
-      formMsg.className = 'pts-msg pts-msg--err mb-4';
-    } finally {
-      createBtn.disabled = false;
-    }
-  };
-
-  searchInput.addEventListener('input', () => renderList(searchInput.value));
-  renderList();
-
 
 async function renderLessons() {
   if (!coursesCache.length) {

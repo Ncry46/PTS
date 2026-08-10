@@ -7,9 +7,10 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <script src="/comp/theme-boot.js"></script>
-<script src="/comp/pts-api.js?v=20260806stable"></script>
+<script src="/comp/pts-api.js?v=20260810namefix"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link rel="stylesheet" href="site.css?v=20260806brand">
 <link rel="stylesheet" href="payments.css?v=20260727enrollpay">
 <link rel="stylesheet" href="pay-modal.css?v=20260806payfix">
@@ -305,7 +306,12 @@ async function mountCourseNotifyControls(hostEl) {
       showLoadError(data.message || 'โหลดไม่สำเร็จ');
       return;
     }
-  const c = data.data;
+  const cRaw = data.data;
+  const c = window.PTSCourseI18n ? PTSCourseI18n.localize(cRaw) : cRaw;
+  if (!c.course_name) c.course_name = c.course_name_th || c.course_name_en || cRaw.course_name || '';
+  if (!c.instructor_name) c.instructor_name = c.instructor_name_th || c.instructor_name_en || cRaw.instructor_name || '-';
+  if (!c.description) c.description = c.description_th || c.description_en || cRaw.description || '';
+  window.__ptsCourseRaw = cRaw;
   const price = Number(c.price || 0);
   const enrolled = Number(c.is_enrolled) === 1;
   const loggedIn = !!me.loggedIn;
@@ -329,12 +335,12 @@ async function mountCourseNotifyControls(hostEl) {
           </div>
           <span class="pts-chip mb-3 w-fit">${escapeHtml(c.delivery_mode || 'course')}</span>
           <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
-          <h1 class="text-3xl font-bold text-primary mb-2 pts-display">${escapeHtml(c.course_name)}</h1>
-          <p class="text-sm text-on-surface-variant mb-4">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
+          <h1 class="text-3xl font-bold text-primary mb-2 pts-display" data-course-field="name">${escapeHtml(c.course_name)}</h1>
+          <p class="text-sm text-on-surface-variant mb-4" data-course-field="meta">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
           <p class="text-sm text-on-surface-variant mb-4" id="course-rating-line">
             ${Number(c.average_rating || 0).toFixed(1)} ★ · ${Number(c.total_reviews || 0)} รีวิว
           </p>
-          <p class="text-on-surface-variant mb-5 leading-relaxed">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
+          <p class="text-on-surface-variant mb-5 leading-relaxed" data-course-field="description">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
           <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
           <div class="pts-course-cta-row">
             ${!loggedIn
@@ -532,7 +538,7 @@ async function mountCourseNotifyControls(hostEl) {
     }
     const opened = window.PTSPayModal.open({
       courseId: c.course_id,
-      courseName: c.course_name_th,course_name_en,
+      courseName: (window.PTSCourseI18n ? PTSCourseI18n.name(c) : (c.course_name || c.course_name_th || '')),
       price: price,
       onSuccess: () => showToolbarMsg('ชำระเงินสำเร็จ — กำลังเปิดหลักสูตร', true)
     });
@@ -622,6 +628,20 @@ async function mountCourseNotifyControls(hostEl) {
     } finally {
       btn.disabled = false;
     }
+  });
+
+  document.addEventListener('pts-lang-change', () => {
+    const raw = window.__ptsCourseRaw;
+    if (!raw || !window.PTSCourseI18n) return;
+    const loc = PTSCourseI18n.localize(raw);
+    const nameEl = document.querySelector('[data-course-field="name"]');
+    const metaEl = document.querySelector('[data-course-field="meta"]');
+    const descEl = document.querySelector('[data-course-field="description"]');
+    if (nameEl) nameEl.textContent = loc.course_name || '';
+    if (metaEl) {
+      metaEl.textContent = `โดย ${loc.instructor_name || '-'} · ${Number(loc.total_hours||0)} ชม. · ${loc.delivery_mode || '-'}${loc.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${loc.start_date ? ' · เริ่ม ' + String(loc.start_date).slice(0,10) : ''}`;
+    }
+    if (descEl) descEl.textContent = loc.description || 'ยังไม่มีคำอธิบายหลักสูตร';
   });
 
   if (loggedIn && enrolled) {

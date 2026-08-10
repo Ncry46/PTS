@@ -5,6 +5,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
@@ -782,6 +783,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
     }
 
     function dashCourseCard(course) {
+        course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
         const progress = Math.max(0, Math.min(100, Number(course.progress_percent || 0)));
         const image = course.cover_image_url || PLACEHOLDER;
         const mode = (course.delivery_mode || 'หลักสูตร').toString();
@@ -847,6 +849,8 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         if (completedEl) completedEl.textContent = `${summary.completed || 0} หลักสูตร`;
 
         const courses = payload.data || [];
+        window.__ptsDashCourses = courses;
+        window.__ptsDashCoursesEl = myCoursesEl;
         // API already ORDER BY updated_at DESC — show only 5 most recent
         const recent = courses.slice(0, 5);
         if (!courses.length) {
@@ -898,6 +902,14 @@ const myCoursesEl = document.getElementById('dash-my-courses');
             btn.disabled = false;
         }
     });
+});
+
+document.addEventListener('pts-lang-change', () => {
+    const list = window.__ptsDashCourses;
+    const el = window.__ptsDashCoursesEl;
+    if (!list || !list.length || !el || typeof dashCourseCard !== 'function') return;
+    const recent = list.slice(0, 5);
+    el.innerHTML = recent.map(dashCourseCard).join('');
 });
 </script>
 </body></html>

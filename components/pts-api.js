@@ -1,6 +1,7 @@
 /**
  * Stable API helper for PTS pages.
  * - always credentials + no-store (กัน cache ค้างหลังรีเฟรช)
+ * - sends current UI language (default Thai) via X-PTS-Lang + ?lang=
  * - retry ครั้งเดียวเมื่อเน็ต/DB หลุดชั่วคราว
  * - parse JSON อย่างปลอดภัย
  */
@@ -19,9 +20,29 @@
     return status === 408 || status === 429 || status === 502 || status === 503 || status === 504;
   }
 
+  function currentLang() {
+    try {
+      if (typeof global.PTSLang === 'object' && global.PTSLang && typeof global.PTSLang.get === 'function') {
+        return global.PTSLang.get() === 'en' ? 'en' : 'th';
+      }
+    } catch (_) { /* ignore */ }
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('pts_lang_pref') === 'en') return 'en';
+    } catch (_) { /* ignore */ }
+    return 'th';
+  }
+
+  /** Append ?lang=th|en for course/content APIs (default Thai). */
+  function withLang(url, lang) {
+    var l = lang === 'en' ? 'en' : 'th';
+    var s = String(url || '');
+    if (!s || /[?&]lang=/i.test(s)) return s;
+    return s + (s.indexOf('?') >= 0 ? '&' : '?') + 'lang=' + encodeURIComponent(l);
+  }
+
   /**
    * @param {string} url
-   * @param {RequestInit & { retries?: number, retryDelayMs?: number, timeoutMs?: number }} [options]
+   * @param {RequestInit & { retries?: number, retryDelayMs?: number, timeoutMs?: number, lang?: string }} [options]
    */
   async function ptsFetch(url, options) {
     var opts = options || {};
@@ -30,6 +51,7 @@
     var timeoutMs = opts.timeoutMs == null ? 20000 : Number(opts.timeoutMs);
     var attempt = 0;
     var lastErr = null;
+    var lang = opts.lang === 'en' || opts.lang === 'th' ? opts.lang : currentLang();
 
     while (attempt <= retries) {
       attempt += 1;
@@ -42,20 +64,26 @@
           }, timeoutMs);
         }
 
+        var headers = Object.assign(
+          { Accept: 'application/json' },
+          opts.headers || {}
+        );
+        if (!headers['X-PTS-Lang'] && !headers['x-pts-lang']) {
+          headers['X-PTS-Lang'] = lang;
+        }
+
         var init = Object.assign({}, opts, {
           credentials: opts.credentials || 'include',
           cache: opts.cache || 'no-store',
-          headers: Object.assign(
-            { Accept: 'application/json' },
-            opts.headers || {}
-          )
+          headers: headers
         });
         if (controller) init.signal = controller.signal;
         delete init.retries;
         delete init.retryDelayMs;
         delete init.timeoutMs;
+        delete init.lang;
 
-        var res = await fetch(url, init);
+        var res = await fetch(withLang(url, lang), init);
         var text = await res.text();
         var data = null;
         if (text) {
@@ -105,4 +133,6 @@
 
   global.ptsFetch = ptsFetch;
   global.ptsJson = ptsJson;
+  global.ptsLang = currentLang;
+  global.ptsWithLang = withLang;
 })(typeof window !== 'undefined' ? window : globalThis);

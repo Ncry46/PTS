@@ -15,6 +15,18 @@ const {
     listCertAssets
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
+const {
+    courseBilingualSelect,
+    courseLegacySelect,
+    courseTextSelect,
+    courseTextSelectFromCols,
+    getCourseColumnSet,
+    resolveCourseTextMode,
+    isMissingBilingualColumnError,
+    localizeCourseRows,
+    normalizeCourseBody,
+    resolveLangFromReq
+} = require('./courseLang');
 
 const HERO_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
 const BANNER_MIME = new Set([
@@ -190,11 +202,11 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!requireAdmin(req, res)) return;
         try {
             const pool = await poolPromise;
-            const result = await pool.request().query(`
+            const lang = resolveLangFromReq(req);
+            const buildSql = (textSelect) => `
                 SELECT
                     course_id,
-                    course_name_th,course_name_en,
-                    instructor_name_th,instructor_name_en,
+                    ${textSelect},
                     delivery_mode,
                     total_hours,
                     average_rating,
@@ -204,7 +216,6 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     coursesFlag,
                     created_at,
                     price,
-                    description_th,description_en,
                     flag_use,
                     coursescat_id,
                     total_enrolled,
@@ -213,8 +224,18 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 FROM dbo.courses
                 WHERE ${flagActiveSql('flag_use')}
                 ORDER BY created_at DESC
-            `);
-            res.json({ success: true, data: result.recordset });
+            `;
+            let result;
+            try {
+                const cols = await getCourseColumnSet(pool);
+                const textSelect = courseTextSelectFromCols('', cols, lang);
+                result = await pool.request().query(buildSql(textSelect));
+            } catch (colErr) {
+                if (!isMissingBilingualColumnError(colErr)) throw colErr;
+                console.warn('⚠️ admin courses bilingual cols missing — fallback:', colErr.message);
+                result = await pool.request().query(buildSql(courseLegacySelect('')));
+            }
+            res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -222,48 +243,80 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
     router.post('/courses', async (req, res) => {
         if (!requireAdmin(req, res)) return;
+        const body = req.body || {};
+        const text = normalizeCourseBody(body);
         const {
-            course_name_th,course_name_en, instructor_name_th,instructor_name_en, delivery_mode,
-            total_hours, cover_image_url, is_featured,
-            coursesFlag, price, description_th,description_en, coursescat_id,
+            delivery_mode, total_hours, cover_image_url, is_featured,
+            coursesFlag, price, coursescat_id,
             total_enrolled, start_date, is_open_soon
-        } = req.body;
+        } = body;
 
-        if (!course_name) {
-            return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อหลักสูตร' });
+        if (!text.course_name_th) {
+            return res.status(400).json({ success: false, message: 'กรุณาระบุชื่อหลักสูตร (ไทย)' });
         }
 
         try {
             const pool = await poolPromise;
+            const mode = await resolveCourseTextMode(pool);
             const insertReq = pool.request()
-                .input('name', sql.NVarChar(255), course_name)
-                .input('instructor', sql.NVarChar(255), instructor_name || 'PTS Instructor')
+                .input('name', sql.NVarChar(255), text.course_name_th)
+                .input('nameEn', sql.NVarChar(255), text.course_name_en)
+                .input('instructor', sql.NVarChar(255), text.instructor_name_th || 'PTS Instructor')
+                .input('instructorEn', sql.NVarChar(255), text.instructor_name_en)
                 .input('mode', sql.VarChar(20), delivery_mode || 'online')
                 .input('hours', sql.Decimal(10, 2), Number(total_hours || 1))
                 .input('cover', sql.NVarChar(500), cover_image_url || null)
                 .input('featured', sql.Bit, is_featured ? 1 : 0)
                 .input('coursesFlag', sql.NVarChar(50), coursesFlag != null && coursesFlag !== '' ? String(coursesFlag) : 'Y')
                 .input('price', sql.Decimal(10, 2), price != null && price !== '' ? Number(price) : null)
-                .input('description', sql.NVarChar(sql.MAX), description || null)
+                .input('description', sql.NVarChar(sql.MAX), text.description_th)
+                .input('descriptionEn', sql.NVarChar(sql.MAX), text.description_en)
                 .input('catId', sql.Int, coursescat_id != null && coursescat_id !== '' ? Number(coursescat_id) : null)
                 .input('enrolled', sql.Int, total_enrolled != null && total_enrolled !== '' ? Number(total_enrolled) : 0)
                 .input('startDate', sql.Date, start_date || null)
                 .input('openSoon', sql.Bit, is_open_soon ? 1 : 0);
             await bindFlagInput(pool, insertReq, 'flagUse', 'courses', true);
-            const result = await insertReq.query(`
+
+            const bilingualInsert = `
                     INSERT INTO dbo.courses
-                    (course_name_th,course_name_en, instructor_name_th,instructor_name_en, delivery_mode, total_hours,
+                    (course_name, course_name_th, course_name_en,
+                     instructor_name, instructor_name_th, instructor_name_en,
+                     delivery_mode, total_hours,
                      average_rating, total_reviews, cover_image_url, is_featured,
-                     coursesFlag, created_at, price, description_th,description_en, flag_use,
+                     coursesFlag, created_at, price, description, description_th, description_en, flag_use,
+                     coursescat_id, total_enrolled, start_date, is_open_soon)
+                    OUTPUT INSERTED.course_id, INSERTED.course_name
+                    VALUES (
+                        @name, @name, @nameEn,
+                        @instructor, @instructor, @instructorEn,
+                        @mode, @hours,
+                        0, 0, @cover, @featured,
+                        @coursesFlag, GETDATE(), @price, @description, @description, @descriptionEn, @flagUse,
+                        @catId, @enrolled, @startDate, @openSoon
+                    )
+                `;
+            const legacyInsert = `
+                    INSERT INTO dbo.courses
+                    (course_name, instructor_name, delivery_mode, total_hours,
+                     average_rating, total_reviews, cover_image_url, is_featured,
+                     coursesFlag, created_at, price, description, flag_use,
                      coursescat_id, total_enrolled, start_date, is_open_soon)
                     OUTPUT INSERTED.course_id, INSERTED.course_name
                     VALUES (
                         @name, @instructor, @mode, @hours,
                         0, 0, @cover, @featured,
-                        @coursesFlag, GETDATE(), @price, @description_th,description_en, @flagUse,
+                        @coursesFlag, GETDATE(), @price, @description, @flagUse,
                         @catId, @enrolled, @startDate, @openSoon
                     )
-                `);
+                `;
+
+            let result;
+            try {
+                result = await insertReq.query(mode === 'bilingual' ? bilingualInsert : legacyInsert);
+            } catch (insErr) {
+                if (!isMissingBilingualColumnError(insErr)) throw insErr;
+                result = await insertReq.query(legacyInsert);
+            }
 
             const created = result.recordset[0];
             res.json({ success: true, message: 'สร้างหลักสูตรสำเร็จ', data: created });
@@ -278,13 +331,21 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!courseId) return res.status(400).json({ success: false, message: 'รหัสหลักสูตรไม่ถูกต้อง' });
 
         const body = req.body || {};
+        const text = normalizeCourseBody(body);
+        const hasName = body.course_name != null || body.course_name_th != null || body.course_name_en != null;
+        const hasInstructor = body.instructor_name != null || body.instructor_name_th != null || body.instructor_name_en != null;
+        const hasDesc = body.description !== undefined || body.description_th !== undefined || body.description_en !== undefined;
 
         try {
             const pool = await poolPromise;
             await pool.request()
                 .input('courseId', sql.Int, courseId)
-                .input('name', sql.NVarChar(255), body.course_name != null ? String(body.course_name) : null)
-                .input('instructor', sql.NVarChar(255), body.instructor_name != null ? String(body.instructor_name) : null)
+                .input('name', sql.NVarChar(255), text.course_name_th)
+                .input('nameEn', sql.NVarChar(255), text.course_name_en)
+                .input('hasName', sql.Bit, hasName ? 1 : 0)
+                .input('instructor', sql.NVarChar(255), text.instructor_name_th)
+                .input('instructorEn', sql.NVarChar(255), text.instructor_name_en)
+                .input('hasInstructor', sql.Bit, hasInstructor ? 1 : 0)
                 .input('mode', sql.VarChar(20), body.delivery_mode != null ? String(body.delivery_mode) : null)
                 .input('hours', sql.Decimal(10, 2), body.total_hours != null && body.total_hours !== '' ? Number(body.total_hours) : null)
                 .input('cover', sql.NVarChar(500), body.cover_image_url !== undefined ? (body.cover_image_url || null) : null)
@@ -294,8 +355,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('hasFlag', sql.Bit, body.coursesFlag !== undefined ? 1 : 0)
                 .input('price', sql.Decimal(10, 2), body.price !== undefined && body.price !== '' && body.price != null ? Number(body.price) : null)
                 .input('hasPrice', sql.Bit, body.price !== undefined ? 1 : 0)
-                .input('description', sql.NVarChar(sql.MAX), body.description !== undefined ? (body.description || null) : null)
-                .input('hasDesc', sql.Bit, body.description !== undefined ? 1 : 0)
+                .input('description', sql.NVarChar(sql.MAX), text.description_th)
+                .input('descriptionEn', sql.NVarChar(sql.MAX), text.description_en)
+                .input('hasDesc', sql.Bit, hasDesc ? 1 : 0)
                 .input('catId', sql.Int, body.coursescat_id !== undefined && body.coursescat_id !== '' && body.coursescat_id != null ? Number(body.coursescat_id) : null)
                 .input('hasCat', sql.Bit, body.coursescat_id !== undefined ? 1 : 0)
                 .input('enrolled', sql.Int, body.total_enrolled !== undefined && body.total_enrolled !== '' ? Number(body.total_enrolled) : null)
@@ -305,8 +367,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .query(`
                     UPDATE dbo.courses
                     SET
-                        course_name = COALESCE(@name, course_name),
-                        instructor_name = COALESCE(@instructor, instructor_name),
+                        course_name = CASE WHEN @hasName = 1 THEN COALESCE(@name, course_name) ELSE course_name END,
+                        course_name_th = CASE WHEN @hasName = 1 THEN COALESCE(@name, course_name_th) ELSE course_name_th END,
+                        course_name_en = CASE WHEN @hasName = 1 THEN @nameEn ELSE course_name_en END,
+                        instructor_name = CASE WHEN @hasInstructor = 1 THEN COALESCE(@instructor, instructor_name) ELSE instructor_name END,
+                        instructor_name_th = CASE WHEN @hasInstructor = 1 THEN COALESCE(@instructor, instructor_name_th) ELSE instructor_name_th END,
+                        instructor_name_en = CASE WHEN @hasInstructor = 1 THEN @instructorEn ELSE instructor_name_en END,
                         delivery_mode = COALESCE(@mode, delivery_mode),
                         total_hours = COALESCE(@hours, total_hours),
                         cover_image_url = CASE WHEN @hasCover = 1 THEN @cover ELSE cover_image_url END,
@@ -314,6 +380,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         coursesFlag = CASE WHEN @hasFlag = 1 THEN @coursesFlag ELSE coursesFlag END,
                         price = CASE WHEN @hasPrice = 1 THEN @price ELSE price END,
                         description = CASE WHEN @hasDesc = 1 THEN @description ELSE description END,
+                        description_th = CASE WHEN @hasDesc = 1 THEN @description ELSE description_th END,
+                        description_en = CASE WHEN @hasDesc = 1 THEN @descriptionEn ELSE description_en END,
                         coursescat_id = CASE WHEN @hasCat = 1 THEN @catId ELSE coursescat_id END,
                         total_enrolled = COALESCE(@enrolled, total_enrolled),
                         start_date = CASE WHEN @hasStart = 1 THEN @startDate ELSE start_date END,
@@ -693,7 +761,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     p.slip_image_url, p.transfer_at, p.reviewed_by, p.reviewed_at, p.reject_reason,
                     p.access_code_id,
                     u.username, u.email,
-                    c.course_name_th,course_name_en,
+                    c.course_name_th, c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name,
                     reviewer.username AS reviewer_name,
                     ac.code AS access_code
                 FROM dbo.payments p
@@ -838,7 +907,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT TOP 200
                     a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                     a.expires_at, a.note, a.flag_use, a.created_at, a.created_by,
-                    c.course_name_th,course_name_en, u.username AS created_by_name
+                    c.course_name_th, c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), c.course_name) AS course_name, u.username AS created_by_name
                 FROM dbo.access_codes a
                 INNER JOIN dbo.courses c ON c.course_id = a.course_id
                 LEFT JOIN dbo.users u ON u.user_id = a.created_by

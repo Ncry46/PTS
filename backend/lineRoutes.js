@@ -367,7 +367,11 @@ async function handleEvent(poolPromise, event) {
                 const pool = await poolPromise;
                 const result = await pool.request().query(`
                     SELECT TOP 8
-                        course_id, course_name_th,course_name_en, instructor_name_th,instructor_name_en, total_hours, price,
+                        course_id, course_name_th, course_name_en,
+                        COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), course_name) AS course_name,
+                        instructor_name_th, instructor_name_en,
+                        COALESCE(NULLIF(LTRIM(RTRIM(instructor_name_th)), N''), instructor_name) AS instructor_name,
+                        total_hours, price,
                         delivery_mode, cover_image_url, is_featured
                     FROM dbo.courses
                     WHERE (
