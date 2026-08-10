@@ -1,7 +1,7 @@
 /**
- * Course bilingual helpers (Thai-first).
- * Columns: course_name_th/en, instructor_name_th/en, description_th/en
- * Legacy monolingual columns stay as Thai mirror for older queries.
+ * Course bilingual helpers.
+ * Reads: course_name_th/en, instructor_name_th/en, description_th/en
+ * Default display language = Thai; English when UI lang is en.
  */
 
 function resolveLang(input) {
@@ -16,7 +16,6 @@ function resolveLangFromReq(req) {
     return resolveLang(q || header || 'th');
 }
 
-/** Normalize DB/driver values (null, '', arrays from duplicate cols). */
 function normText(value) {
     if (value == null) return '';
     if (Array.isArray(value)) {
@@ -26,31 +25,65 @@ function normText(value) {
         }
         return '';
     }
+    if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(value)) {
+        return value.toString('utf8').trim();
+    }
     return String(value).trim();
 }
 
-/**
- * Pick localized course text.
- * Empty *_th / *_en never blank out a real legacy value.
- */
+/** Lower-case key map so MSSQL driver casing never hides *_th / *_en. */
+function rowKeyMap(row) {
+    const map = Object.create(null);
+    if (!row || typeof row !== 'object') return map;
+    for (const key of Object.keys(row)) {
+        map[String(key).toLowerCase()] = row[key];
+    }
+    return map;
+}
+
+function fieldFromRow(row, name) {
+    if (!row) return '';
+    const want = String(name).toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(row, name)) {
+        const direct = normText(row[name]);
+        if (direct) return direct;
+    }
+    const map = rowKeyMap(row);
+    return normText(map[want]);
+}
+
 function pickText(row, base, lang) {
     if (!row) return '';
     const l = resolveLang(lang);
-    const th = normText(row[`${base}_th`]);
-    const en = normText(row[`${base}_en`]);
-    const legacy = normText(row[base]);
+    const th = fieldFromRow(row, `${base}_th`);
+    const en = fieldFromRow(row, `${base}_en`);
+    const legacy = fieldFromRow(row, base);
     if (l === 'en') return en || th || legacy || '';
     return th || legacy || en || '';
 }
 
-/** Apply Thai-first localization onto convenience fields. */
+/** Keep raw bilingual fields + set convenience course_name / instructor_name / description. */
 function localizeCourseRow(row, lang) {
     if (!row || typeof row !== 'object') return row;
     const l = resolveLang(lang);
     const out = { ...row };
-    out.course_name = pickText(row, 'course_name', l);
-    out.instructor_name = pickText(row, 'instructor_name', l);
-    out.description = pickText(row, 'description', l);
+
+    // Normalize explicit bilingual fields onto canonical keys
+    out.course_name_th = fieldFromRow(row, 'course_name_th') || null;
+    out.course_name_en = fieldFromRow(row, 'course_name_en') || null;
+    out.instructor_name_th = fieldFromRow(row, 'instructor_name_th') || null;
+    out.instructor_name_en = fieldFromRow(row, 'instructor_name_en') || null;
+    out.description_th = fieldFromRow(row, 'description_th') || null;
+    out.description_en = fieldFromRow(row, 'description_en') || null;
+
+    // If DB only has legacy columns, mirror into *_th so Admin/UI still see them
+    if (!out.course_name_th) out.course_name_th = fieldFromRow(row, 'course_name') || null;
+    if (!out.instructor_name_th) out.instructor_name_th = fieldFromRow(row, 'instructor_name') || null;
+    if (!out.description_th) out.description_th = fieldFromRow(row, 'description') || null;
+
+    out.course_name = pickText(out, 'course_name', l);
+    out.instructor_name = pickText(out, 'instructor_name', l);
+    out.description = pickText(out, 'description', l);
     out._lang = l;
     return out;
 }
@@ -61,42 +94,21 @@ function localizeCourseRows(rows, lang) {
 }
 
 /**
- * SQL select list for bilingual course text + localized convenience aliases.
- * lang=th → Thai first; lang=en → English first (fallback the other way).
- * @param {string} [alias='c'] table alias ('' for no alias)
- * @param {string} [lang='th']
+ * Plain SELECT of bilingual + legacy columns (no SQL COALESCE overwrite).
+ * Localization is done in JS via localizeCourseRow.
  */
-function courseBilingualSelect(alias = 'c', lang = 'th') {
+function courseBilingualSelect(alias = 'c', _lang = 'th') {
     const a = alias ? `${alias}.` : '';
-    const enFirst = resolveLang(lang) === 'en';
-    const nameTh = `NULLIF(LTRIM(RTRIM(${a}course_name_th)), N'')`;
-    const nameEn = `NULLIF(LTRIM(RTRIM(${a}course_name_en)), N'')`;
-    const nameLegacy = `NULLIF(LTRIM(RTRIM(${a}course_name)), N'')`;
-    const instTh = `NULLIF(LTRIM(RTRIM(${a}instructor_name_th)), N'')`;
-    const instEn = `NULLIF(LTRIM(RTRIM(${a}instructor_name_en)), N'')`;
-    const instLegacy = `NULLIF(LTRIM(RTRIM(${a}instructor_name)), N'')`;
-    const descTh = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_th))), N'')`;
-    const descEn = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_en))), N'')`;
-    const descLegacy = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description))), N'')`;
-    const nameExpr = enFirst
-        ? `COALESCE(${nameEn}, ${nameTh}, ${nameLegacy}) AS course_name`
-        : `COALESCE(${nameTh}, ${nameLegacy}, ${nameEn}) AS course_name`;
-    const instExpr = enFirst
-        ? `COALESCE(${instEn}, ${instTh}, ${instLegacy}) AS instructor_name`
-        : `COALESCE(${instTh}, ${instLegacy}, ${instEn}) AS instructor_name`;
-    const descExpr = enFirst
-        ? `COALESCE(${descEn}, ${descTh}, ${descLegacy}) AS description`
-        : `COALESCE(${descTh}, ${descLegacy}, ${descEn}) AS description`;
     return [
-        `${a}course_name_th`,
-        `${a}course_name_en`,
-        `${a}instructor_name_th`,
-        `${a}instructor_name_en`,
-        `${a}description_th`,
-        `${a}description_en`,
-        nameExpr,
-        instExpr,
-        descExpr
+        `${a}[course_name_th] AS course_name_th`,
+        `${a}[course_name_en] AS course_name_en`,
+        `${a}[instructor_name_th] AS instructor_name_th`,
+        `${a}[instructor_name_en] AS instructor_name_en`,
+        `${a}[description_th] AS description_th`,
+        `${a}[description_en] AS description_en`,
+        `${a}[course_name] AS course_name`,
+        `${a}[instructor_name] AS instructor_name`,
+        `${a}[description] AS description`
     ].join(',\n                    ');
 }
 
@@ -104,27 +116,26 @@ function courseBilingualSelect(alias = 'c', lang = 'th') {
 function courseLegacySelect(alias = 'c') {
     const a = alias ? `${alias}.` : '';
     return [
-        `${a}course_name AS course_name_th`,
+        `${a}[course_name] AS course_name_th`,
         `CAST(NULL AS NVARCHAR(255)) AS course_name_en`,
-        `${a}instructor_name AS instructor_name_th`,
+        `${a}[instructor_name] AS instructor_name_th`,
         `CAST(NULL AS NVARCHAR(255)) AS instructor_name_en`,
-        `${a}description AS description_th`,
+        `${a}[description] AS description_th`,
         `CAST(NULL AS NVARCHAR(MAX)) AS description_en`,
-        `${a}course_name`,
-        `${a}instructor_name`,
-        `${a}description`
+        `${a}[course_name] AS course_name`,
+        `${a}[instructor_name] AS instructor_name`,
+        `${a}[description] AS description`
     ].join(',\n                    ');
 }
 
 function isMissingBilingualColumnError(err) {
     const msg = String((err && err.message) || err || '');
-    return /Invalid column name/i.test(msg) &&
-        /(course_name_th|course_name_en|instructor_name_th|instructor_name_en|description_th|description_en|course_name|instructor_name|description)/i.test(msg);
+    return /Invalid column name/i.test(msg);
 }
 
 let _courseTextModePromise = null;
 
-/** Detect once whether dbo.courses has bilingual columns. */
+/** Detect whether dbo.courses has bilingual columns. */
 async function resolveCourseTextMode(pool) {
     if (!pool) return 'legacy';
     if (!_courseTextModePromise) {
@@ -132,13 +143,17 @@ async function resolveCourseTextMode(pool) {
             try {
                 const r = await pool.request().query(`
                     SELECT
-                        COL_LENGTH('dbo.courses', 'course_name') AS has_name,
-                        COL_LENGTH('dbo.courses', 'course_name_th') AS has_th,
-                        COL_LENGTH('dbo.courses', 'instructor_name') AS has_instructor,
-                        COL_LENGTH('dbo.courses', 'instructor_name_th') AS has_instructor_th
+                        CASE WHEN COL_LENGTH('dbo.courses', 'course_name_th') IS NULL THEN 0 ELSE 1 END AS has_th,
+                        CASE WHEN COL_LENGTH('dbo.courses', 'course_name_en') IS NULL THEN 0 ELSE 1 END AS has_en,
+                        CASE WHEN COL_LENGTH('dbo.courses', 'instructor_name_th') IS NULL THEN 0 ELSE 1 END AS has_inst_th,
+                        CASE WHEN COL_LENGTH('dbo.courses', 'description_th') IS NULL THEN 0 ELSE 1 END AS has_desc_th
                 `);
                 const row = r.recordset[0] || {};
-                if (row.has_th != null && row.has_instructor_th != null) return 'bilingual';
+                // Any bilingual column means we should read the bilingual set
+                if (Number(row.has_th) === 1 || Number(row.has_en) === 1
+                    || Number(row.has_inst_th) === 1 || Number(row.has_desc_th) === 1) {
+                    return 'bilingual';
+                }
                 return 'legacy';
             } catch (_) {
                 return 'legacy';
@@ -158,17 +173,15 @@ function resetCourseTextModeCache() {
     _courseTextModePromise = null;
 }
 
-/** Short name-only select (joins / messages). */
 function courseNameSelect(alias = 'c') {
     const a = alias ? `${alias}.` : '';
     return [
-        `${a}course_name_th`,
-        `${a}course_name_en`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}course_name_th)), N''), NULLIF(LTRIM(RTRIM(${a}course_name)), N''), NULLIF(LTRIM(RTRIM(${a}course_name_en)), N'')) AS course_name`
+        `${a}[course_name_th] AS course_name_th`,
+        `${a}[course_name_en] AS course_name_en`,
+        `${a}[course_name] AS course_name`
     ].join(', ');
 }
 
-/** Normalize admin body into th/en (+ legacy Thai mirrors). */
 function normalizeCourseBody(body) {
     const b = body || {};
     const nameTh = firstNonEmpty(b.course_name_th, b.course_name);
@@ -184,7 +197,6 @@ function normalizeCourseBody(body) {
         instructor_name_en: instructorEn,
         description_th: descTh,
         description_en: descEn,
-        // legacy mirrors (Thai-first)
         course_name: nameTh,
         instructor_name: instructorTh,
         description: descTh
@@ -196,7 +208,6 @@ function firstNonEmpty(...vals) {
         if (v === undefined || v === null) continue;
         const s = String(v);
         if (s.trim() !== '') return s;
-        if (v === '') return '';
     }
     return null;
 }
@@ -205,6 +216,7 @@ module.exports = {
     resolveLang,
     resolveLangFromReq,
     normText,
+    fieldFromRow,
     pickText,
     localizeCourseRow,
     localizeCourseRows,

@@ -1,7 +1,7 @@
 /**
  * Course text i18n
- * - Default / ภาษาไทย → ใช้ *_th (fallback legacy / en)
- * - เมื่อกดเปลี่ยนเป็น English → ใช้ *_en (fallback th / legacy)
+ * - Default Thai → course_name_th / instructor_name_th / description_th
+ * - English UI → course_name_en / instructor_name_en / description_en
  */
 (function (global) {
   'use strict';
@@ -13,8 +13,7 @@
       }
     } catch (_) { /* ignore */ }
     try {
-      var saved = localStorage.getItem('pts_lang_pref');
-      if (saved === 'en') return 'en';
+      if (localStorage.getItem('pts_lang_pref') === 'en') return 'en';
     } catch (_) { /* ignore */ }
     return 'th';
   }
@@ -33,8 +32,10 @@
 
   function getField(row, key) {
     if (!row) return '';
-    var direct = norm(row[key]);
-    if (direct) return direct;
+    if (Object.prototype.hasOwnProperty.call(row, key)) {
+      var direct = norm(row[key]);
+      if (direct) return direct;
+    }
     var want = String(key).toLowerCase();
     for (var k in row) {
       if (!Object.prototype.hasOwnProperty.call(row, k)) continue;
@@ -59,9 +60,15 @@
   function localize(row) {
     if (!row || typeof row !== 'object') return row;
     var out = Object.assign({}, row);
-    out.course_name = pick(row, 'course_name');
-    out.instructor_name = pick(row, 'instructor_name');
-    out.description = pick(row, 'description');
+    out.course_name_th = getField(row, 'course_name_th') || getField(row, 'course_name') || null;
+    out.course_name_en = getField(row, 'course_name_en') || null;
+    out.instructor_name_th = getField(row, 'instructor_name_th') || getField(row, 'instructor_name') || null;
+    out.instructor_name_en = getField(row, 'instructor_name_en') || null;
+    out.description_th = getField(row, 'description_th') || getField(row, 'description') || null;
+    out.description_en = getField(row, 'description_en') || null;
+    out.course_name = pick(out, 'course_name');
+    out.instructor_name = pick(out, 'instructor_name');
+    out.description = pick(out, 'description');
     return out;
   }
 

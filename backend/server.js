@@ -583,10 +583,9 @@ app.get('/api/courses', async (req, res) => {
 
         let result;
         try {
-            const mode = await resolveCourseTextMode(pool);
             result = await pool.request()
                 .input('userId', sql.Int, userId)
-                .query(buildCoursesSql(courseTextSelect('c', lang, mode)));
+                .query(buildCoursesSql(courseBilingualSelect('c', lang)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             console.warn('⚠️ courses text cols missing — fallback to legacy names:', colErr.message);
@@ -723,10 +722,9 @@ app.get('/api/my/favorite-courses', async (req, res) => {
             `;
         let result;
         try {
-            const mode = await resolveCourseTextMode(pool);
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildFavSql(courseTextSelect('c', lang, mode)));
+                .query(buildFavSql(courseBilingualSelect('c', lang)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()
@@ -1076,10 +1074,9 @@ app.get('/api/my/courses', async (req, res) => {
             `;
         let result;
         try {
-            const mode = await resolveCourseTextMode(pool);
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildMySql(courseTextSelect('c', lang, mode)));
+                .query(buildMySql(courseBilingualSelect('c', lang)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()
