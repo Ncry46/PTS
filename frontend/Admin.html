@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810thenonly"></script>
+<script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:wght@200;300;400;500;600;700;800;900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -553,7 +553,11 @@ let adminCalViewMonth = new Date().getMonth();
 let adminCalSelectedDay = null;
 
 async function api(url, options = {}) {
-  const res = await fetch(url, { credentials: 'include', headers: { 'Content-Type': 'application/json' }, ...options });
+  const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+  const headers = { 'Content-Type': 'application/json', 'X-PTS-Lang': lang, ...(options.headers || {}) };
+  const sep = url.includes('?') ? '&' : '?';
+  const withLang = /[?&]lang=/i.test(url) ? url : `${url}${sep}lang=${lang}`;
+  const res = await fetch(withLang, { credentials: 'include', ...options, headers });
   const data = await res.json().catch(() => ({}));
   if (res.status === 401) { location.href = 'Login.html'; throw new Error('unauthorized'); }
   if (res.status === 403) { console.error(data.message || 'ไม่มีสิทธิ์แอดมิน'); location.href = 'Home.html'; throw new Error('forbidden'); }
@@ -563,8 +567,25 @@ async function api(url, options = {}) {
 
 async function renderCourses() {
   const { data } = await api('/api/admin/courses');
-  coursesCache = data;
+  coursesCache = (Array.isArray(data) ? data : []).map((c) => (
+    window.PTSCourseI18n ? PTSCourseI18n.localize(c) : c
+  ));
   let editingId = null;
+
+  const courseTitle = (c) => {
+    if (window.PTSCourseI18n) {
+      const n = PTSCourseI18n.name(c);
+      if (n) return n;
+    }
+    return (c.course_name || c.course_name_th || c.course_name_en || '').toString().trim();
+  };
+  const courseInstructor = (c) => {
+    if (window.PTSCourseI18n) {
+      const n = PTSCourseI18n.instructor(c);
+      if (n) return n;
+    }
+    return (c.instructor_name || c.instructor_name_th || c.instructor_name_en || '').toString().trim() || '—';
+  };
 
   const modeClass = (mode) => {
     const m = String(mode || '').toLowerCase();
@@ -610,11 +631,11 @@ async function renderCourses() {
       <td>
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(c.course_name || c.course_name_th || c.course_name_en || '')}${c.course_name_en && (c.course_name || c.course_name_th) && c.course_name_en !== (c.course_name || c.course_name_th) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
+          <div class="adm-c-name">${escapeHtml(courseTitle(c))}${c.course_name_en && courseTitle(c) && c.course_name_en !== courseTitle(c) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
           ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
         </div>
       </td>
-      <td>${escapeHtml(c.instructor_name || '—')}</td>
+      <td>${escapeHtml(courseInstructor(c))}</td>
       <td><span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span></td>
       <td>${Number(c.total_hours || 0)} ชม.</td>
       <td>${fmtPrice(c.price)}</td>
@@ -629,12 +650,12 @@ async function renderCourses() {
       <div class="adm-c-card__top">
         <div class="adm-c-course">
           <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(c.course_name || c.course_name_th || c.course_name_en || '')}${c.course_name_en && (c.course_name || c.course_name_th) && c.course_name_en !== (c.course_name || c.course_name_th) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
+          <div class="adm-c-name">${escapeHtml(courseTitle(c))}${c.course_name_en && courseTitle(c) && c.course_name_en !== courseTitle(c) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
       </div>
       <div class="adm-c-card__meta">
-        <span>${escapeHtml(c.instructor_name || '—')}</span>
+        <span>${escapeHtml(courseInstructor(c))}</span>
         <span>${Number(c.total_hours || 0)} ชม.</span>
         <span>${fmtPrice(c.price)}</span>
         <span>ลงทะเบียน ${Number(c.total_enrolled || 0)}</span>

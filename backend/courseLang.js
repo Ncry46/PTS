@@ -82,6 +82,7 @@ function localizeCourseRow(row, lang) {
     const l = resolveLang(lang);
     const out = { ...row };
 
+    // Prefer exact keys; also accept driver casing quirks via fieldFromRow
     out.course_name_th = fieldFromRow(row, 'course_name_th') || null;
     out.course_name_en = fieldFromRow(row, 'course_name_en') || null;
     out.instructor_name_th = fieldFromRow(row, 'instructor_name_th') || null;

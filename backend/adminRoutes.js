@@ -16,12 +16,6 @@ const {
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
 const {
-    courseBilingualSelect,
-    courseLegacySelect,
-    courseTextSelect,
-    courseTextSelectFromCols,
-    getCourseColumnSet,
-    resolveCourseTextMode,
     isMissingBilingualColumnError,
     localizeCourseRows,
     normalizeCourseBody,
@@ -203,39 +197,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const lang = resolveLangFromReq(req);
-            const buildSql = (textSelect) => `
-                SELECT
-                    course_id,
-                    ${textSelect},
-                    delivery_mode,
-                    total_hours,
-                    average_rating,
-                    total_reviews,
-                    cover_image_url,
-                    is_featured,
-                    coursesFlag,
-                    created_at,
-                    price,
-                    flag_use,
-                    coursescat_id,
-                    total_enrolled,
-                    start_date,
-                    is_open_soon
+            const result = await pool.request().query(`
+                SELECT *
                 FROM dbo.courses
                 WHERE ${flagActiveSql('flag_use')}
                 ORDER BY created_at DESC
-            `;
-            let result;
-            try {
-                const cols = await getCourseColumnSet(pool);
-                const textSelect = courseTextSelectFromCols('', cols, lang);
-                result = await pool.request().query(buildSql(textSelect));
-            } catch (colErr) {
-                if (!isMissingBilingualColumnError(colErr)) throw colErr;
-                console.warn('⚠️ admin courses bilingual cols missing — fallback:', colErr.message);
-                result = await pool.request().query(buildSql(courseLegacySelect('')));
-            }
-            res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
+            `);
+            res.json({ success: true, lang, data: localizeCourseRows(result.recordset || [], lang) });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

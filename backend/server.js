@@ -32,15 +32,7 @@ const { syncAfterEnroll } = googleCalendar;
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 const {
-    courseBilingualSelect,
-    courseLegacySelect,
-    courseTextSelect,
-    courseTextSelectFromCols,
-    getCourseColumnSet,
-    resolveCourseTextMode,
-    isMissingBilingualColumnError,
     localizeCourseRows,
-    localizeCourseRow,
     resolveLangFromReq
 } = require('./courseLang');
 
@@ -547,24 +539,13 @@ app.get('/api/courses', async (req, res) => {
         const userId = req.session?.user?.user_id || null;
         const lang = resolveLangFromReq(req);
 
-        const buildCoursesSql = (textSelect) => `
-                SELECT 
-                    c.course_id, 
-                    ${textSelect},
-                    c.delivery_mode, 
-                    c.total_hours, 
-                    c.average_rating, 
-                    c.total_reviews, 
-                    c.cover_image_url,
-                    c.is_featured,
-                    c.coursesFlag,
-                    c.created_at,
-                    c.price,
-                    c.flag_use,
-                    c.coursescat_id,
-                    c.total_enrolled,
-                    c.start_date,
-                    c.is_open_soon,
+        // SELECT c.* so every physical column (course_name_th/en, …) is returned as-is.
+        // Display aliases are filled in JS via localizeCourseRows (Thai-first / EN on lang=en).
+        const result = await pool.request()
+            .input('userId', sql.Int, userId)
+            .query(`
+                SELECT
+                    c.*,
                     CASE
                         WHEN @userId IS NULL THEN 0
                         WHEN EXISTS (
@@ -582,46 +563,26 @@ app.get('/api/courses', async (req, res) => {
                 FROM dbo.courses c
                 WHERE ${flagActiveSql('c.flag_use')}
                 ORDER BY c.created_at DESC
-            `;
+            `);
 
-        let result;
-        try {
-            const cols = await getCourseColumnSet(pool);
-            // Prefer column-aware COALESCE select so course_name is never blank when *_th has data
-            const textSelect = courseTextSelectFromCols('c', cols, lang);
-            result = await pool.request()
-                .input('userId', sql.Int, userId)
-                .query(buildCoursesSql(textSelect));
-
-            const first = result.recordset && result.recordset[0];
-            if (first) {
-                const sample = localizeCourseRow(first, lang);
-                if (!sample.course_name) {
-                    console.warn('⚠️ /api/courses blank course_name. keys=', Object.keys(first).join(','));
-                    console.warn('⚠️ name fields=', JSON.stringify({
-                        course_name: first.course_name,
-                        course_name_th: first.course_name_th,
-                        course_name_en: first.course_name_en,
-                        instructor_name: first.instructor_name,
-                        instructor_name_th: first.instructor_name_th,
-                        instructor_name_en: first.instructor_name_en
-                    }));
-                    console.warn('⚠️ courses text cols=', [...cols].filter((c) => /name|desc/i.test(c)).join(','));
-                }
-            }
-        } catch (colErr) {
-            if (!isMissingBilingualColumnError(colErr)) throw colErr;
-            console.warn('⚠️ courses text cols missing — fallback to legacy names:', colErr.message);
-            result = await pool.request()
-                .input('userId', sql.Int, userId)
-                .query(buildCoursesSql(courseLegacySelect('c')));
+        const rows = localizeCourseRows(result.recordset || [], lang);
+        const first = rows[0];
+        if (first && !first.course_name) {
+            const raw = (result.recordset || [])[0] || {};
+            console.warn('⚠️ /api/courses blank course_name after localize. rawKeys=', Object.keys(raw).join(','));
+            console.warn('⚠️ raw name fields=', JSON.stringify({
+                course_name_th: raw.course_name_th,
+                course_name_en: raw.course_name_en,
+                instructor_name_th: raw.instructor_name_th,
+                instructor_name_en: raw.instructor_name_en
+            }));
         }
 
         res.json({
             success: true,
             loggedIn: !!userId,
             lang,
-            data: localizeCourseRows(result.recordset, lang)
+            data: rows
         });
 
     } catch (error) {
@@ -724,15 +685,11 @@ app.get('/api/my/favorite-courses', async (req, res) => {
     try {
         const pool = await poolPromise;
         const lang = resolveLangFromReq(req);
-        const buildFavSql = (textSelect) => `
+        const result = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .query(`
                 SELECT
-                    c.course_id,
-                    ${textSelect},
-                    c.delivery_mode,
-                    c.total_hours, c.average_rating, c.total_reviews,
-                    c.cover_image_url, c.is_featured, c.coursesFlag, c.created_at,
-                    c.price, c.flag_use, c.coursescat_id,
-                    c.total_enrolled, c.start_date, c.is_open_soon,
+                    c.*,
                     1 AS is_favorited,
                     CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
                 FROM dbo.course_favorites f
@@ -742,20 +699,7 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                 WHERE f.user_id = @userId
                   AND ${flagActiveSql('c.flag_use')}
                 ORDER BY f.created_at DESC
-            `;
-        let result;
-        try {
-            const cols = await getCourseColumnSet(pool);
-            const textSelect = courseTextSelectFromCols('c', cols, lang);
-            result = await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .query(buildFavSql(textSelect));
-        } catch (colErr) {
-            if (!isMissingBilingualColumnError(colErr)) throw colErr;
-            result = await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .query(buildFavSql(courseLegacySelect('c')));
-        }
+            `);
         res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -1074,48 +1018,22 @@ app.get('/api/my/courses', async (req, res) => {
     try {
         const pool = await poolPromise;
         const lang = resolveLangFromReq(req);
-        const buildMySql = (textSelect) => `
+        const result = await pool.request()
+            .input('userId', sql.Int, user.user_id)
+            .query(`
                 SELECT
                     e.enrollment_id,
                     e.progress_percent,
                     e.status,
                     e.enrolled_at,
                     e.updated_at,
-                    c.course_id,
-                    ${textSelect},
-                    c.delivery_mode,
-                    c.total_hours,
-                    c.average_rating,
-                    c.total_reviews,
-                    c.cover_image_url,
-                    c.is_featured,
-                    c.coursesFlag,
-                    c.created_at,
-                    c.price,
-                    c.flag_use,
-                    c.coursescat_id,
-                    c.total_enrolled,
-                    c.start_date,
-                    c.is_open_soon
+                    c.*
                 FROM dbo.course_enrollments e
                 INNER JOIN dbo.courses c ON e.course_id = c.course_id
                 WHERE e.user_id = @userId
                   AND ${flagActiveSql('c.flag_use')}
                 ORDER BY e.updated_at DESC
-            `;
-        let result;
-        try {
-            const cols = await getCourseColumnSet(pool);
-            const textSelect = courseTextSelectFromCols('c', cols, lang);
-            result = await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .query(buildMySql(textSelect));
-        } catch (colErr) {
-            if (!isMissingBilingualColumnError(colErr)) throw colErr;
-            result = await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .query(buildMySql(courseLegacySelect('c')));
-        }
+            `);
 
         const courses = localizeCourseRows(result.recordset, lang);
         const inProgress = courses.filter(c => c.status === 'in_progress');
