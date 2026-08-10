@@ -312,8 +312,12 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     WHERE user_id = @userId
                     ORDER BY created_at DESC
                 `);
-            const unread = result.recordset.filter(n => !n.is_read).length;
-            res.json({ success: true, unread, data: result.recordset });
+            const data = result.recordset.map((row) => {
+                const isRead = row.is_read === true || row.is_read === 1 || row.is_read === '1';
+                return { ...row, is_read: isRead };
+            });
+            const unread = data.filter((n) => !n.is_read).length;
+            res.json({ success: true, unread, data });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

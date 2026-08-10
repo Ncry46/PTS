@@ -55,6 +55,10 @@ function relativeTime(value) {
   return d.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
+function isUnread(n) {
+  return !(n.is_read === true || n.is_read === 1 || n.is_read === '1');
+}
+
 async function load() {
   const me = await fetch('/api/users/me', { credentials:'include' }).then(r=>r.json());
   if (!me.loggedIn) return location.href = 'Login.html';
@@ -71,7 +75,7 @@ async function load() {
   }
 
   const rows = Array.isArray(data.data) ? data.data : [];
-  const unread = rows.filter((n) => !n.is_read).length;
+  const unread = typeof data.unread === 'number' ? data.unread : rows.filter(isUnread).length;
   if (unread > 0) {
     countEl.hidden = false;
     countEl.textContent = `ยังไม่อ่าน ${unread} รายการ`;
@@ -90,7 +94,7 @@ async function load() {
   }
 
   box.innerHTML = rows.map((n) => {
-    const unreadItem = !n.is_read;
+    const unreadItem = isUnread(n);
     const icon = notifIcon(n.section_title, n.body);
     return `
     <article class="pts-notif ${unreadItem ? 'pts-notif--unread' : 'pts-notif--read'}">
