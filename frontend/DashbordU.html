@@ -3,8 +3,8 @@
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title>PTS Learning Dashboard</title>
 <script src="/comp/theme-boot.js"></script>
-<script src="/comp/i18n-dict.js?v=20260725lang"></script>
-<script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/i18n-dict.js?v=20260810btni18n"></script>
+<script src="/comp/lang-boot.js?v=20260810btni18n"></script>
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -557,7 +557,7 @@
 <div>
 <div class="dash-section-head">
 <h3 class="font-headline-sm text-headline-sm">เรียนล่าสุด</h3>
-<a class="font-label-md text-label-md hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>
+<a class="font-label-md text-label-md hover:underline" href="MyCourses.html" data-i18n="dash.viewAllMyc">ดูทั้งหมดในหลักสูตรของฉัน</a>
 </div>
 <div id="dash-my-courses" class="dash-myc-list">
 <div class="dash-myc-empty">กำลังโหลดหลักสูตร...</div>
@@ -567,7 +567,7 @@
 <div>
 <div class="dash-section-head">
 <h3 class="font-headline-sm text-headline-sm">ตารางเรียนที่กำลังจะมาถึง</h3>
-<a class="font-label-md text-label-md hover:underline" href="Schedule.html">ดูทั้งหมด</a>
+<a class="font-label-md text-label-md hover:underline" href="Schedule.html" data-i18n="common.viewAll">ดูทั้งหมด</a>
 </div>
 <div id="dash-schedule" class="space-y-sm">
 <div class="bg-surface-container-lowest p-md rounded-20px soft-shadow text-on-surface-variant">กำลังโหลดตารางเรียน...</div>
@@ -686,6 +686,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
+    const tt = (key, fallback) => (window.PTSLang && typeof PTSLang.t === 'function' ? PTSLang.t(key, fallback) : (fallback || key));
 
     try {
         const response = await fetch('/api/users/me', { credentials: 'include' });
@@ -777,9 +778,9 @@ const myCoursesEl = document.getElementById('dash-my-courses');
     const PLACEHOLDER = 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course';
 
     function statusLabel(status) {
-        if (status === 'completed') return { text: 'เรียนจบแล้ว', cls: 'myc-status--done' };
-        if (status === 'in_progress') return { text: 'กำลังเรียน', cls: 'myc-status--progress' };
-        return { text: status || 'สมัครแล้ว', cls: 'myc-status--other' };
+        if (status === 'completed') return { text: tt('myc.done', 'เรียนจบแล้ว'), cls: 'myc-status--done' };
+        if (status === 'in_progress') return { text: tt('myc.inProgress', 'กำลังเรียน'), cls: 'myc-status--progress' };
+        return { text: status || tt('myc.enrolled', 'สมัครแล้ว'), cls: 'myc-status--other' };
     }
 
     function dashCourseCard(course) {
@@ -788,11 +789,11 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         const image = course.cover_image_url || PLACEHOLDER;
         const mode = (course.delivery_mode || 'หลักสูตร').toString();
         const st = statusLabel(course.status);
-        const hours = course.total_hours != null ? `${Number(course.total_hours)} ชม.` : '';
+        const hours = course.total_hours != null ? `${Number(course.total_hours)} ${tt('common.hours', 'ชม.')}` : '';
         const primaryHref = course.status === 'completed'
             ? 'Certificates.html'
             : `Learn.html?courseId=${course.course_id}`;
-        const primaryLabel = course.status === 'completed' ? 'ดูใบประกาศ' : 'เข้าเรียนต่อ';
+        const primaryLabel = course.status === 'completed' ? tt('myc.viewCert', 'ดูใบประกาศ') : tt('myc.continue', 'เข้าเรียนต่อ');
 
         return `
         <article class="myc-card">
@@ -803,28 +804,29 @@ const myCoursesEl = document.getElementById('dash-my-courses');
           <div class="myc-card__body">
             <div class="myc-card__info">
               <div class="myc-card__top">
-                <span class="myc-status ${st.cls}">${st.text}</span>
+                <span class="myc-status ${st.cls}">${escapeHtml(st.text)}</span>
                 ${hours ? `<span class="myc-card__meta">${escapeHtml(hours)}</span>` : ''}
               </div>
               <h3 class="myc-card__section_title">${escapeHtml(course.course_name)}</h3>
-              <p class="myc-card__meta">โดย ${escapeHtml(course.instructor_name || '-')}</p>
+              <p class="myc-card__meta">${escapeHtml(tt('courses.by', 'โดย'))} ${escapeHtml(course.instructor_name || '-')}</p>
             </div>
             <div class="myc-card__foot">
               <div>
                 <div class="myc-progress-row">
-                  <span>ความคืบหน้า</span>
+                  <span>${escapeHtml(tt('myc.avg', 'ความคืบหน้า'))}</span>
                   <strong>${progress}%</strong>
                 </div>
                 <div class="myc-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
               </div>
               <div class="myc-actions">
-                <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
-                <a class="myc-actions__link" href="CourseDetail.html?courseId=${course.course_id}">รายละเอียด</a>
+                <a class="pts-btn pts-btn-primary" href="${primaryHref}">${escapeHtml(primaryLabel)}</a>
+                <a class="myc-actions__link" href="CourseDetail.html?courseId=${course.course_id}">${escapeHtml(tt('myc.details', 'รายละเอียด'))}</a>
               </div>
             </div>
           </div>
         </article>`;
     }
+    window.dashCourseCard = dashCourseCard;
 
     try {
         const response = await fetch('/api/my/courses', { credentials: 'include' });
@@ -862,8 +864,8 @@ const myCoursesEl = document.getElementById('dash-my-courses');
                     <p class="dash-myc-empty__section_title">ยังไม่มีหลักสูตรที่เรียน</p>
                     <p class="dash-myc-empty__text">เริ่มต้นด้วยการเลือกหลักสูตรที่สนใจ<br>เมื่อสมัครแล้ว คอร์สล่าสุดจะโชว์ที่นี่</p>
                     <div class="dash-myc-empty__actions">
-                      <a href="Courses.html" class="pts-btn pts-btn-primary">เลือกหลักสูตร</a>
-                      <a href="MyCourses.html" class="pts-btn pts-btn-outline">ไปหลักสูตรของฉัน</a>
+                      <a href="Courses.html" class="pts-btn pts-btn-primary">${escapeHtml(tt('dash.pickCourse', 'เลือกหลักสูตร'))}</a>
+                      <a href="MyCourses.html" class="pts-btn pts-btn-outline">${escapeHtml(tt('dash.goMyCourses', 'ไปหลักสูตรของฉัน'))}</a>
                     </div>
                 </div>`;
         } else {
@@ -872,7 +874,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
                 const note = document.createElement('p');
                 note.className = 'text-sm text-on-surface-variant mt-3';
                 note.style.gridColumn = '1 / -1';
-                note.innerHTML = `แสดง ${recent.length} จาก ${courses.length} หลักสูตรล่าสุด · <a class="text-primary font-bold hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>`;
+                note.innerHTML = `แสดง ${recent.length} จาก ${courses.length} หลักสูตรล่าสุด · <a class="text-primary font-bold hover:underline" href="MyCourses.html">${escapeHtml(tt('dash.viewAllMyc', 'ดูทั้งหมดในหลักสูตรของฉัน'))}</a>`;
                 myCoursesEl.appendChild(note);
             }
         }
@@ -905,6 +907,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
 });
 
 document.addEventListener('pts-lang-change', () => {
+    if (window.PTSLang && typeof PTSLang.apply === 'function') PTSLang.apply(document);
     const list = window.__ptsDashCourses;
     const el = window.__ptsDashCoursesEl;
     if (!list || !list.length || !el || typeof dashCourseCard !== 'function') return;

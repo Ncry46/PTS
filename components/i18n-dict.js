@@ -270,6 +270,10 @@ window.PTSLangDict = {
   'myc.details': { th: 'รายละเอียด', en: 'Details' },
   'myc.goCourses': { th: 'ไปเลือกหลักสูตร', en: 'Browse courses' },
   'myc.enrolled': { th: 'สมัครแล้ว', en: 'Enrolled' },
+  'dash.viewAllMyc': { th: 'ดูทั้งหมดในหลักสูตรของฉัน', en: 'View all my courses' },
+  'dash.browseCta': { th: 'ไปดูหลักสูตร', en: 'Browse courses' },
+  'dash.goMyCourses': { th: 'ไปหลักสูตรของฉัน', en: 'Go to my courses' },
+  'dash.pickCourse': { th: 'เลือกหลักสูตร', en: 'Choose a course' },
 
   /* —— Community —— */
   'community.newPost': { th: 'สร้างโพสต์', en: 'New post' },
