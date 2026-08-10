@@ -910,9 +910,9 @@ document.addEventListener('pts-lang-change', () => {
     if (window.PTSLang && typeof PTSLang.apply === 'function') PTSLang.apply(document);
     const list = window.__ptsDashCourses;
     const el = window.__ptsDashCoursesEl;
-    if (!list || !list.length || !el || typeof dashCourseCard !== 'function') return;
+    if (!list || !list.length || !el || typeof window.dashCourseCard !== 'function') return;
     const recent = list.slice(0, 5);
-    el.innerHTML = recent.map(dashCourseCard).join('');
+    el.innerHTML = recent.map(window.dashCourseCard).join('');
 });
 </script>
 </body></html>
