@@ -223,7 +223,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             `;
             let result;
             try {
-                result = await pool.request().query(buildSql(courseBilingualSelect('')));
+                result = await pool.request().query(buildSql(courseBilingualSelect('', lang)));
             } catch (colErr) {
                 if (!isMissingBilingualColumnError(colErr)) throw colErr;
                 console.warn('⚠️ admin courses bilingual cols missing — fallback:', colErr.message);

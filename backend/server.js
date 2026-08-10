@@ -581,7 +581,7 @@ app.get('/api/courses', async (req, res) => {
         try {
             result = await pool.request()
                 .input('userId', sql.Int, userId)
-                .query(buildCoursesSql(courseBilingualSelect('c')));
+                .query(buildCoursesSql(courseBilingualSelect('c', lang)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             console.warn('⚠️ courses bilingual cols missing — fallback to legacy names:', colErr.message);
@@ -720,7 +720,7 @@ app.get('/api/my/favorite-courses', async (req, res) => {
         try {
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildFavSql(courseBilingualSelect('c')));
+                .query(buildFavSql(courseBilingualSelect('c', lang)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()
@@ -1072,7 +1072,7 @@ app.get('/api/my/courses', async (req, res) => {
         try {
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildMySql(courseBilingualSelect('c')));
+                .query(buildMySql(courseBilingualSelect('c', lang)));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()

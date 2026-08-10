@@ -61,12 +61,32 @@ function localizeCourseRows(rows, lang) {
 }
 
 /**
- * SQL select list for bilingual course text + Thai-default convenience aliases.
- * Prefer th → legacy → en so names never go blank when only legacy is filled.
+ * SQL select list for bilingual course text + localized convenience aliases.
+ * lang=th → Thai first; lang=en → English first (fallback the other way).
  * @param {string} [alias='c'] table alias ('' for no alias)
+ * @param {string} [lang='th']
  */
-function courseBilingualSelect(alias = 'c') {
+function courseBilingualSelect(alias = 'c', lang = 'th') {
     const a = alias ? `${alias}.` : '';
+    const enFirst = resolveLang(lang) === 'en';
+    const nameTh = `NULLIF(LTRIM(RTRIM(${a}course_name_th)), N'')`;
+    const nameEn = `NULLIF(LTRIM(RTRIM(${a}course_name_en)), N'')`;
+    const nameLegacy = `NULLIF(LTRIM(RTRIM(${a}course_name)), N'')`;
+    const instTh = `NULLIF(LTRIM(RTRIM(${a}instructor_name_th)), N'')`;
+    const instEn = `NULLIF(LTRIM(RTRIM(${a}instructor_name_en)), N'')`;
+    const instLegacy = `NULLIF(LTRIM(RTRIM(${a}instructor_name)), N'')`;
+    const descTh = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_th))), N'')`;
+    const descEn = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_en))), N'')`;
+    const descLegacy = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description))), N'')`;
+    const nameExpr = enFirst
+        ? `COALESCE(${nameEn}, ${nameTh}, ${nameLegacy}) AS course_name`
+        : `COALESCE(${nameTh}, ${nameLegacy}, ${nameEn}) AS course_name`;
+    const instExpr = enFirst
+        ? `COALESCE(${instEn}, ${instTh}, ${instLegacy}) AS instructor_name`
+        : `COALESCE(${instTh}, ${instLegacy}, ${instEn}) AS instructor_name`;
+    const descExpr = enFirst
+        ? `COALESCE(${descEn}, ${descTh}, ${descLegacy}) AS description`
+        : `COALESCE(${descTh}, ${descLegacy}, ${descEn}) AS description`;
     return [
         `${a}course_name_th`,
         `${a}course_name_en`,
@@ -74,9 +94,9 @@ function courseBilingualSelect(alias = 'c') {
         `${a}instructor_name_en`,
         `${a}description_th`,
         `${a}description_en`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}course_name_th)), N''), NULLIF(LTRIM(RTRIM(${a}course_name)), N''), NULLIF(LTRIM(RTRIM(${a}course_name_en)), N'')) AS course_name`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(${a}instructor_name_th)), N''), NULLIF(LTRIM(RTRIM(${a}instructor_name)), N''), NULLIF(LTRIM(RTRIM(${a}instructor_name_en)), N'')) AS instructor_name`,
-        `COALESCE(NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_th))), N''), NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description))), N''), NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}description_en))), N'')) AS description`
+        nameExpr,
+        instExpr,
+        descExpr
     ].join(',\n                    ');
 }
 

@@ -1,6 +1,7 @@
 /**
- * Course text i18n — Thai first; English only when PTSLang is "en".
- * Empty *_th / *_en never blank out a real legacy course_name value.
+ * Course text i18n
+ * - Default / ภาษาไทย → ใช้ *_th (fallback legacy / en)
+ * - เมื่อกดเปลี่ยนเป็น English → ใช้ *_en (fallback th / legacy)
  */
 (function (global) {
   'use strict';

@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810coursenamefix"></script>
+<script src="/comp/course-i18n.js?v=20260810th-en"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:wght@200;300;400;500;600;700;800;900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
@@ -682,8 +682,8 @@ async function renderCourses() {
   document.getElementById('panel').innerHTML = `
     <h2 id="course-form-section_title" class="font-bold text-lg mb-3">สร้างหลักสูตรใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร (ไทย) *">
-      <input id="c-name-en" class="border rounded-xl px-3 py-2" placeholder="Course name (EN)">
+      <input id="c-name" class="border rounded-xl px-3 py-2" placeholder="ชื่อหลักสูตร (ไทย) * — แสดงเมื่อภาษาไทย">
+      <input id="c-name-en" class="border rounded-xl px-3 py-2" placeholder="Course name (EN) — shown when user switches to English">
       <input id="c-instructor" class="border rounded-xl px-3 py-2" placeholder="วิทยากร (ไทย)">
       <input id="c-instructor-en" class="border rounded-xl px-3 py-2" placeholder="Instructor (EN)">
       <select id="c-mode" class="border rounded-xl px-3 py-2"><option value="online">online</option><option value="onsite">onsite</option><option value="hybrid">hybrid</option></select>
