@@ -1,6 +1,6 @@
 # Render Blueprint — ขึ้นออนไลน์จาก GitHub ได้ทันที
 # เอกสาร: https://render.com/docs/blueprint-spec
-# วิธีใช้: Dashboard → New → Blueprint → เลือก repo นี้ → branch cursor/go-online-eb8c
+# วิธีใช้: Dashboard → New → Blueprint → เลือก repo นี้ → branch main
 
 services:
   - type: web
@@ -8,6 +8,7 @@ services:
     runtime: docker
     plan: free
     region: singapore
+    branch: main
     healthCheckPath: /api/health
     dockerContext: .
     dockerfilePath: ./Dockerfile

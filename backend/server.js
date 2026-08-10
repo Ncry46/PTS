@@ -32,7 +32,10 @@ const { syncAfterEnroll } = googleCalendar;
 const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 const {
+    COURSE_API_VERSION,
     localizeCourseRows,
+    courseListTextSql,
+    courseMetaSelectSql,
     resolveLangFromReq
 } = require('./courseLang');
 
@@ -140,20 +143,37 @@ app.get('/api/health', async (req, res) => {
         const pool = await connectPool();
         await pool.request().query('SELECT 1 AS ok');
         const check = pool._ptsDbCheck || await verifyCoreTables(pool);
+        let sample = null;
+        try {
+            const r = await pool.request().query(`
+                SELECT TOP 1
+                    course_id,
+                    CONVERT(NVARCHAR(255), course_name_th) AS course_name_th,
+                    CONVERT(NVARCHAR(255), instructor_name_th) AS instructor_name_th
+                FROM dbo.courses
+                ORDER BY course_id DESC
+            `);
+            sample = r.recordset[0] || null;
+        } catch (e) {
+            sample = { error: e.message };
+        }
         res.json({
             ok: true,
             db: true,
             service: 'pts-learning',
+            apiVersion: COURSE_API_VERSION,
             database: DB_NAME,
             users: check.users_ok ? check.users_count : null,
             courses: check.courses_ok ? check.courses_count : null,
-            tables_ok: check.users_ok && check.courses_ok
+            tables_ok: check.users_ok && check.courses_ok,
+            sample_course: sample
         });
     } catch (error) {
         res.status(503).json({
             ok: false,
             db: false,
             service: 'pts-learning',
+            apiVersion: COURSE_API_VERSION,
             message: error.message || 'database unavailable'
         });
     }
@@ -539,13 +559,12 @@ app.get('/api/courses', async (req, res) => {
         const userId = req.session?.user?.user_id || null;
         const lang = resolveLangFromReq(req);
 
-        // SELECT c.* so every physical column (course_name_th/en, …) is returned as-is.
-        // Display aliases are filled in JS via localizeCourseRows (Thai-first / EN on lang=en).
         const result = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
                 SELECT
-                    c.*,
+                    ${courseMetaSelectSql('c')},
+                    ${courseListTextSql('c', lang)},
                     CASE
                         WHEN @userId IS NULL THEN 0
                         WHEN EXISTS (
@@ -566,20 +585,23 @@ app.get('/api/courses', async (req, res) => {
             `);
 
         const rows = localizeCourseRows(result.recordset || [], lang);
-        const first = rows[0];
-        if (first && !first.course_name) {
+        const blank = rows.filter((r) => !r.course_name).length;
+        if (blank > 0) {
             const raw = (result.recordset || [])[0] || {};
-            console.warn('⚠️ /api/courses blank course_name after localize. rawKeys=', Object.keys(raw).join(','));
-            console.warn('⚠️ raw name fields=', JSON.stringify({
+            console.warn(`⚠️ /api/courses ${blank}/${rows.length} rows missing course_name. keys=`, Object.keys(raw).join(','));
+            console.warn('⚠️ sample raw=', JSON.stringify({
+                course_id: raw.course_id,
                 course_name_th: raw.course_name_th,
                 course_name_en: raw.course_name_en,
+                course_name: raw.course_name,
                 instructor_name_th: raw.instructor_name_th,
-                instructor_name_en: raw.instructor_name_en
+                instructor_name: raw.instructor_name
             }));
         }
 
         res.json({
             success: true,
+            apiVersion: COURSE_API_VERSION,
             loggedIn: !!userId,
             lang,
             data: rows
@@ -589,7 +611,8 @@ app.get('/api/courses', async (req, res) => {
         console.error("❌ ดึงข้อมูลหลักสูตรล้มเหลว:", error.message);
         res.status(500).json({ 
             success: false, 
-            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลหลักสูตรจากฐานข้อมูล' 
+            message: 'เกิดข้อผิดพลาดในการดึงข้อมูลหลักสูตรจากฐานข้อมูล',
+            detail: error.message
         });
     }
 });
@@ -689,7 +712,8 @@ app.get('/api/my/favorite-courses', async (req, res) => {
             .input('userId', sql.Int, user.user_id)
             .query(`
                 SELECT
-                    c.*,
+                    ${courseMetaSelectSql('c')},
+                    ${courseListTextSql('c', lang)},
                     1 AS is_favorited,
                     CASE WHEN e.enrollment_id IS NULL THEN 0 ELSE 1 END AS is_enrolled
                 FROM dbo.course_favorites f
@@ -700,7 +724,7 @@ app.get('/api/my/favorite-courses', async (req, res) => {
                   AND ${flagActiveSql('c.flag_use')}
                 ORDER BY f.created_at DESC
             `);
-        res.json({ success: true, lang, data: localizeCourseRows(result.recordset, lang) });
+        res.json({ success: true, apiVersion: COURSE_API_VERSION, lang, data: localizeCourseRows(result.recordset, lang) });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
     }
@@ -1027,7 +1051,8 @@ app.get('/api/my/courses', async (req, res) => {
                     e.status,
                     e.enrolled_at,
                     e.updated_at,
-                    c.*
+                    ${courseMetaSelectSql('c')},
+                    ${courseListTextSql('c', lang)}
                 FROM dbo.course_enrollments e
                 INNER JOIN dbo.courses c ON e.course_id = c.course_id
                 WHERE e.user_id = @userId

@@ -16,8 +16,11 @@ const {
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
 const {
+    COURSE_API_VERSION,
     isMissingBilingualColumnError,
     localizeCourseRows,
+    courseListTextSql,
+    courseMetaSelectSql,
     normalizeCourseBody,
     resolveLangFromReq
 } = require('./courseLang');
@@ -198,12 +201,19 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const lang = resolveLangFromReq(req);
             const result = await pool.request().query(`
-                SELECT *
+                SELECT
+                    ${courseMetaSelectSql('')},
+                    ${courseListTextSql('', lang)}
                 FROM dbo.courses
                 WHERE ${flagActiveSql('flag_use')}
                 ORDER BY created_at DESC
             `);
-            res.json({ success: true, lang, data: localizeCourseRows(result.recordset || [], lang) });
+            res.json({
+                success: true,
+                apiVersion: COURSE_API_VERSION,
+                lang,
+                data: localizeCourseRows(result.recordset || [], lang)
+            });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

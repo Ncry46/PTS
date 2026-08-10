@@ -151,9 +151,17 @@ function renderAuthChrome() {
 }
 
 function makeCourseCard(course) {
-  course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
-  const courseName = pickCourseField(course, 'course_name');
-  const instructor = pickCourseField(course, 'instructor_name') || '-';
+  const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+  const nameTh = String(course.course_name_th || '').trim();
+  const nameEn = String(course.course_name_en || '').trim();
+  const instTh = String(course.instructor_name_th || '').trim();
+  const instEn = String(course.instructor_name_en || '').trim();
+  const courseName = (lang === 'en'
+    ? (nameEn || nameTh || course.course_name || '')
+    : (nameTh || nameEn || course.course_name || '')).toString().trim();
+  const instructor = (lang === 'en'
+    ? (instEn || instTh || course.instructor_name || '')
+    : (instTh || instEn || course.instructor_name || '')).toString().trim() || '-';
   const mode = (course.delivery_mode || '').toLowerCase();
   const badge = getBadge(mode);
   const favorited = Number(course.is_favorited) === 1;
@@ -174,10 +182,10 @@ function makeCourseCard(course) {
       <div class="pts-course-card__body">
         <div class="pts-course-card__copy">
           <p class="pts-course-card__meta">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
-          <h3 class="pts-course-card__section_title">${escapeHtml(formatText(courseName))}</h3>
-          <div class="pts-course-card__meta-row" title="${escapeHtml(formatText(instructor))}">
+          <h3 class="pts-course-card__section_title">${escapeHtml(courseName || '-')}</h3>
+          <div class="pts-course-card__meta-row" title="${escapeHtml(instructor)}">
             <span class="material-symbols-outlined" aria-hidden="true">person</span>
-            <span>${escapeHtml(formatText(instructor))}</span>
+            <span>${escapeHtml(instructor)}</span>
           </div>
           <div class="pts-course-card__meta-row">
             <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
@@ -200,9 +208,13 @@ function makeCourseCard(course) {
 }
 
 function openCourseModal(course) {
-  course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
-  const modalName = pickCourseField(course, 'course_name');
-  const modalInstructor = pickCourseField(course, 'instructor_name') || '-';
+  const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+  const modalName = (lang === 'en'
+    ? (course.course_name_en || course.course_name_th || course.course_name || '')
+    : (course.course_name_th || course.course_name_en || course.course_name || '')).toString().trim();
+  const modalInstructor = (lang === 'en'
+    ? (course.instructor_name_en || course.instructor_name_th || course.instructor_name || '')
+    : (course.instructor_name_th || course.instructor_name_en || course.instructor_name || '')).toString().trim() || '-';
   document.getElementById('course-modal')?.remove();
   const badge = getBadge((course.delivery_mode || '').toLowerCase());
   const enrolled = Number(course.is_enrolled) === 1;
@@ -214,8 +226,8 @@ function openCourseModal(course) {
       <button type="button" id="close-course-modal" class="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"><span class="material-symbols-outlined">close</span></button>
       <img src="${course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" class="w-full h-40 object-cover rounded-2xl mb-4" alt="">
       <span class="inline-block px-3 py-1 rounded-full text-[12px] font-bold mb-2 ${badge.classes}">${badge.label}</span>
-      <h3 class="text-xl font-bold mb-1">${escapeHtml(formatText(modalName))}</h3>
-      <p class="text-sm text-on-surface-variant mb-2">โดย ${escapeHtml(formatText(modalInstructor))}</p>
+      <h3 class="text-xl font-bold mb-1">${escapeHtml(modalName || '-')}</h3>
+      <p class="text-sm text-on-surface-variant mb-2">โดย ${escapeHtml(modalInstructor)}</p>
       <p class="text-sm text-on-surface-variant mb-4">${Number(course.total_hours || 0).toFixed(1).replace('.0','')} ชั่วโมง · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}${course.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${course.price != null ? ' · ' + Number(course.price).toLocaleString('th-TH') + ' บาท' : ''}</p>
       ${course.description ? `<p class="text-sm text-on-surface-variant mb-4">${escapeHtml(String(course.description).slice(0, 280))}</p>` : ''}
       ${currentUser ? `
@@ -327,6 +339,21 @@ document.getElementById('courses-grid').addEventListener('click', async (e) => {
     currentUser = me.loggedIn ? me.user : null;
     renderAuthChrome();
     const data = await ptsJson('/api/courses');
+    console.info('[PTS courses]', data.apiVersion || '(no apiVersion — old server)', 'lang=', data.lang, 'count=', (data.data || []).length);
+    if ((data.data || [])[0]) {
+      const s = data.data[0];
+      console.info('[PTS courses sample]', {
+        id: s.course_id,
+        course_name: s.course_name,
+        course_name_th: s.course_name_th,
+        course_name_en: s.course_name_en,
+        instructor_name: s.instructor_name,
+        instructor_name_th: s.instructor_name_th
+      });
+      if (!s.course_name && !s.course_name_th && !s.course_name_en) {
+        console.warn('[PTS courses] names empty from API — restart server with latest main');
+      }
+    }
     renderCourses(data.data || []);
     const urlFilter = new URLSearchParams(location.search).get('filter');
     if (urlFilter) {

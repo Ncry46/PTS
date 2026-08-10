@@ -1,15 +1,16 @@
 /**
  * Course bilingual helpers for BD_PTS.dbo.courses
  *
- * Physical columns: course_name_th/en, instructor_name_th/en, description_th/en
- * (no legacy course_name / instructor_name / description)
+ * Physical columns ONLY:
+ *   course_name_th / course_name_en
+ *   instructor_name_th / instructor_name_en
+ *   description_th / description_en
  *
- * Default UI lang = Thai → prefer *_th
- * English UI → prefer *_en (fallback to Thai if empty)
- *
- * Always also emit convenience aliases course_name / instructor_name / description
- * for older frontend that reads those keys.
+ * Default = Thai (*_th). English UI = *_en (fallback Thai).
+ * Always also sets course_name / instructor_name / description for older UI.
  */
+
+const COURSE_API_VERSION = '2026-08-10-names-v4';
 
 function resolveLang(input) {
     const raw = String(input || '').trim().toLowerCase();
@@ -33,9 +34,22 @@ function normText(value) {
         return '';
     }
     if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(value)) {
-        return value.toString('utf8').trim();
+        const utf8 = value.toString('utf8').replace(/\u0000/g, '').trim();
+        if (utf8) return utf8;
+        const utf16 = value.toString('utf16le').replace(/\u0000/g, '').trim();
+        return utf16;
     }
-    return String(value).trim();
+    if (typeof value === 'object') {
+        // mssql sometimes wraps; pull common shapes
+        if (typeof value.valueOf === 'function') {
+            const v = value.valueOf();
+            if (v !== value) return normText(v);
+        }
+        if (Object.prototype.hasOwnProperty.call(value, 'value')) {
+            return normText(value.value);
+        }
+    }
+    return String(value).replace(/\u0000/g, '').trim();
 }
 
 function rowKeyMap(row) {
@@ -49,12 +63,14 @@ function rowKeyMap(row) {
 
 function fieldFromRow(row, name) {
     if (!row) return '';
-    if (Object.prototype.hasOwnProperty.call(row, name)) {
-        const direct = normText(row[name]);
-        if (direct) return direct;
+    const want = String(name).toLowerCase();
+    for (const key of Object.keys(row)) {
+        if (String(key).toLowerCase() === want) {
+            const v = normText(row[key]);
+            if (v) return v;
+        }
     }
-    const map = rowKeyMap(row);
-    return normText(map[String(name).toLowerCase()]);
+    return '';
 }
 
 function pickText(row, base, lang) {
@@ -62,7 +78,6 @@ function pickText(row, base, lang) {
     const l = resolveLang(lang);
     const th = fieldFromRow(row, `${base}_th`);
     const en = fieldFromRow(row, `${base}_en`);
-    // legacy alias only as last resort (older API rows / SELECT *)
     const legacy = fieldFromRow(row, base);
     if (l === 'en') return en || th || legacy || '';
     return th || en || legacy || '';
@@ -71,24 +86,46 @@ function pickText(row, base, lang) {
 function firstNonEmpty(...vals) {
     for (const v of vals) {
         if (v === undefined || v === null) continue;
-        const s = String(v);
-        if (s.trim() !== '') return s;
+        const s = normText(v);
+        if (s) return s;
     }
     return null;
+}
+
+/** Flatten mssql row into a plain JSON-safe object. */
+function plainRow(row) {
+    if (!row || typeof row !== 'object') return {};
+    const out = {};
+    for (const key of Object.keys(row)) {
+        const v = row[key];
+        if (v == null) {
+            out[key] = null;
+        } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer && Buffer.isBuffer(v)) {
+            out[key] = normText(v) || null;
+        } else if (v instanceof Date) {
+            out[key] = v.toISOString();
+        } else if (typeof v === 'object' && typeof v.toISOString === 'function') {
+            try { out[key] = v.toISOString(); } catch (_) { out[key] = normText(v) || null; }
+        } else if (typeof v === 'bigint') {
+            out[key] = Number(v);
+        } else {
+            out[key] = v;
+        }
+    }
+    return out;
 }
 
 function localizeCourseRow(row, lang) {
     if (!row || typeof row !== 'object') return row;
     const l = resolveLang(lang);
-    const out = { ...row };
+    const out = plainRow(row);
 
-    // Prefer exact keys; also accept driver casing quirks via fieldFromRow
-    out.course_name_th = fieldFromRow(row, 'course_name_th') || null;
-    out.course_name_en = fieldFromRow(row, 'course_name_en') || null;
-    out.instructor_name_th = fieldFromRow(row, 'instructor_name_th') || null;
-    out.instructor_name_en = fieldFromRow(row, 'instructor_name_en') || null;
-    out.description_th = fieldFromRow(row, 'description_th') || null;
-    out.description_en = fieldFromRow(row, 'description_en') || null;
+    out.course_name_th = fieldFromRow(out, 'course_name_th') || null;
+    out.course_name_en = fieldFromRow(out, 'course_name_en') || null;
+    out.instructor_name_th = fieldFromRow(out, 'instructor_name_th') || null;
+    out.instructor_name_en = fieldFromRow(out, 'instructor_name_en') || null;
+    out.description_th = fieldFromRow(out, 'description_th') || null;
+    out.description_en = fieldFromRow(out, 'description_en') || null;
 
     out.course_name = pickText(out, 'course_name', l);
     out.instructor_name = pickText(out, 'instructor_name', l);
@@ -102,153 +139,55 @@ function localizeCourseRows(rows, lang) {
     return rows.map((r) => localizeCourseRow(r, lang));
 }
 
-/** Physical bilingual columns on dbo.courses (current BD_PTS schema). */
-const BILINGUAL_COLS = [
-    'course_name_th',
-    'course_name_en',
-    'instructor_name_th',
-    'instructor_name_en',
-    'description_th',
-    'description_en'
-];
-
-/** Optional legacy monolingual columns (older DBs only). */
-const LEGACY_COLS = ['course_name', 'instructor_name', 'description'];
-
-const TEXT_COLS = [...BILINGUAL_COLS, ...LEGACY_COLS];
-
-let _courseColsPromise = null;
-
-function sqlNz(expr, isMax = false) {
-    if (isMax) {
-        return `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${expr}))), N'')`;
-    }
-    return `NULLIF(LTRIM(RTRIM(${expr})), N'')`;
-}
-
 /**
- * SQL expression for display value from *_th / *_en only (never touches missing legacy cols).
- * th: COALESCE(th, en)   en: COALESCE(en, th)
+ * Explicit SELECT for BD_PTS.dbo.courses bilingual schema.
+ * Forces NVARCHAR conversion + COALESCE display aliases.
  */
-function displayExpr(alias, base, lang) {
+function courseListTextSql(alias = 'c', lang = 'th') {
     const a = alias ? `${alias}.` : '';
-    const isMax = base === 'description';
-    const th = sqlNz(`${a}[${base}_th]`, isMax);
-    const en = sqlNz(`${a}[${base}_en]`, isMax);
-    if (resolveLang(lang) === 'en') return `COALESCE(${en}, ${th})`;
-    return `COALESCE(${th}, ${en})`;
+    const l = resolveLang(lang);
+    const nameTh = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), ${a}[course_name_th]))), N'')`;
+    const nameEn = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), ${a}[course_name_en]))), N'')`;
+    const instTh = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), ${a}[instructor_name_th]))), N'')`;
+    const instEn = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), ${a}[instructor_name_en]))), N'')`;
+    const descTh = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}[description_th]))), N'')`;
+    const descEn = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), ${a}[description_en]))), N'')`;
+    const name = l === 'en' ? `COALESCE(${nameEn}, ${nameTh})` : `COALESCE(${nameTh}, ${nameEn})`;
+    const inst = l === 'en' ? `COALESCE(${instEn}, ${instTh})` : `COALESCE(${instTh}, ${instEn})`;
+    const desc = l === 'en' ? `COALESCE(${descEn}, ${descTh})` : `COALESCE(${descTh}, ${descEn})`;
+
+    return `
+                    CONVERT(NVARCHAR(255), ${a}[course_name_th]) AS [course_name_th],
+                    CONVERT(NVARCHAR(255), ${a}[course_name_en]) AS [course_name_en],
+                    CONVERT(NVARCHAR(255), ${a}[instructor_name_th]) AS [instructor_name_th],
+                    CONVERT(NVARCHAR(255), ${a}[instructor_name_en]) AS [instructor_name_en],
+                    CONVERT(NVARCHAR(MAX), ${a}[description_th]) AS [description_th],
+                    CONVERT(NVARCHAR(MAX), ${a}[description_en]) AS [description_en],
+                    ${name} AS [course_name],
+                    ${inst} AS [instructor_name],
+                    ${desc} AS [description]
+    `.trim();
 }
 
-/** Convenience: "… AS course_name" for ad-hoc queries. */
-function courseDisplaySelect(alias = 'c', lang = 'th') {
-    return [
-        `${displayExpr(alias, 'course_name', lang)} AS [course_name]`,
-        `${displayExpr(alias, 'instructor_name', lang)} AS [instructor_name]`,
-        `${displayExpr(alias, 'description', lang)} AS [description]`
-    ].join(', ');
-}
-
-async function getCourseColumnSet(pool) {
-    if (!pool) return new Set();
-    if (!_courseColsPromise) {
-        _courseColsPromise = (async () => {
-            const set = new Set();
-            try {
-                const probes = TEXT_COLS.map(
-                    (col, i) => `CASE WHEN COL_LENGTH('dbo.courses', '${col}') IS NOT NULL THEN 1 ELSE 0 END AS c${i}`
-                ).join(', ');
-                const r = await pool.request().query(`SELECT ${probes}`);
-                const row = (r.recordset && r.recordset[0]) || {};
-                TEXT_COLS.forEach((col, i) => {
-                    if (Number(row[`c${i}`]) === 1) set.add(col);
-                });
-            } catch (err) {
-                console.warn('⚠️ getCourseColumnSet:', err.message);
-            }
-            // Current production schema is bilingual-only — default to those cols if probe empty
-            if (![...set].some((c) => c.endsWith('_th') || c.endsWith('_en'))) {
-                BILINGUAL_COLS.forEach((c) => set.add(c));
-            }
-            return set;
-        })();
-    }
-    return _courseColsPromise;
-}
-
-/**
- * SELECT list for course text.
- * Always selects physical *_th/*_en and aliases course_name/instructor_name/description
- * via COALESCE for the active language — never references missing legacy columns.
- */
-function courseTextSelectFromCols(alias = 'c', cols, lang = 'th') {
+function courseMetaSelectSql(alias = 'c') {
     const a = alias ? `${alias}.` : '';
-    const set = cols instanceof Set ? cols : new Set(cols || []);
-    const hasBilingual = !set.size
-        || set.has('course_name_th')
-        || set.has('course_name_en')
-        || set.has('instructor_name_th');
-
-    if (!hasBilingual && (set.has('course_name') || set.has('instructor_name'))) {
-        return courseLegacySelect(alias);
-    }
-
-    const parts = BILINGUAL_COLS.map((col) => `${a}[${col}] AS [${col}]`);
-    parts.push(`${displayExpr(alias, 'course_name', lang)} AS [course_name]`);
-    parts.push(`${displayExpr(alias, 'instructor_name', lang)} AS [instructor_name]`);
-    parts.push(`${displayExpr(alias, 'description', lang)} AS [description]`);
-    return parts.join(',\n                    ');
-}
-
-function courseBilingualSelect(alias = 'c', lang = 'th') {
-    return courseTextSelectFromCols(alias, new Set(BILINGUAL_COLS), lang);
-}
-
-function courseLegacySelect(alias = 'c') {
-    const a = alias ? `${alias}.` : '';
-    return [
-        `${a}[course_name] AS [course_name_th]`,
-        `CAST(NULL AS NVARCHAR(255)) AS [course_name_en]`,
-        `${a}[instructor_name] AS [instructor_name_th]`,
-        `CAST(NULL AS NVARCHAR(255)) AS [instructor_name_en]`,
-        `${a}[description] AS [description_th]`,
-        `CAST(NULL AS NVARCHAR(MAX)) AS [description_en]`,
-        `${a}[course_name] AS [course_name]`,
-        `${a}[instructor_name] AS [instructor_name]`,
-        `${a}[description] AS [description]`
-    ].join(',\n                    ');
-}
-
-function isMissingBilingualColumnError(err) {
-    const msg = String((err && err.message) || err || '');
-    return /Invalid column name/i.test(msg);
-}
-
-async function resolveCourseTextMode(pool) {
-    const cols = await getCourseColumnSet(pool);
-    if (cols.has('course_name_th') || cols.has('course_name_en')
-        || cols.has('instructor_name_th') || cols.has('description_th')) {
-        return 'bilingual';
-    }
-    return 'legacy';
-}
-
-function courseTextSelect(alias = 'c', lang = 'th', mode = 'bilingual') {
-    return mode === 'bilingual'
-        ? courseBilingualSelect(alias, lang)
-        : courseLegacySelect(alias);
-}
-
-function resetCourseTextModeCache() {
-    _courseColsPromise = null;
-}
-
-function courseNameSelect(alias = 'c', lang = 'th') {
-    const a = alias ? `${alias}.` : '';
-    return [
-        `${a}[course_name_th] AS [course_name_th]`,
-        `${a}[course_name_en] AS [course_name_en]`,
-        `${displayExpr(alias, 'course_name', lang)} AS [course_name]`
-    ].join(', ');
+    return `
+                    ${a}[course_id] AS [course_id],
+                    ${a}[coursescat_id] AS [coursescat_id],
+                    ${a}[delivery_mode] AS [delivery_mode],
+                    ${a}[total_hours] AS [total_hours],
+                    ${a}[price] AS [price],
+                    ${a}[cover_image_url] AS [cover_image_url],
+                    ${a}[average_rating] AS [average_rating],
+                    ${a}[total_reviews] AS [total_reviews],
+                    ${a}[total_enrolled] AS [total_enrolled],
+                    ${a}[is_featured] AS [is_featured],
+                    ${a}[is_open_soon] AS [is_open_soon],
+                    ${a}[coursesFlag] AS [coursesFlag],
+                    ${a}[flag_use] AS [flag_use],
+                    ${a}[start_date] AS [start_date],
+                    ${a}[created_at] AS [created_at]
+    `.trim();
 }
 
 function normalizeCourseBody(body) {
@@ -266,33 +205,84 @@ function normalizeCourseBody(body) {
         instructor_name_en: instructorEn,
         description_th: descTh,
         description_en: descEn,
-        // convenience mirrors for older callers (not physical DB cols)
         course_name: nameTh,
         instructor_name: instructorTh,
         description: descTh
     };
 }
 
+function isMissingBilingualColumnError(err) {
+    const msg = String((err && err.message) || err || '');
+    return /Invalid column name/i.test(msg);
+}
+
 module.exports = {
+    COURSE_API_VERSION,
     resolveLang,
     resolveLangFromReq,
     normText,
     fieldFromRow,
     pickText,
+    plainRow,
     localizeCourseRow,
     localizeCourseRows,
-    TEXT_COLS,
-    BILINGUAL_COLS,
-    getCourseColumnSet,
-    courseTextSelectFromCols,
-    courseBilingualSelect,
-    courseLegacySelect,
-    courseTextSelect,
-    courseDisplaySelect,
-    displayExpr,
-    resolveCourseTextMode,
-    resetCourseTextModeCache,
+    courseListTextSql,
+    courseMetaSelectSql,
+    normalizeCourseBody,
     isMissingBilingualColumnError,
-    courseNameSelect,
-    normalizeCourseBody
+    // back-compat exports used elsewhere
+    displayExpr: (alias, base, lang) => {
+        const a = alias ? `${alias}.` : '';
+        const isMax = base === 'description';
+        const typ = isMax ? 'NVARCHAR(MAX)' : 'NVARCHAR(255)';
+        const th = `NULLIF(LTRIM(RTRIM(CONVERT(${typ}, ${a}[${base}_th]))), N'')`;
+        const en = `NULLIF(LTRIM(RTRIM(CONVERT(${typ}, ${a}[${base}_en]))), N'')`;
+        return resolveLang(lang) === 'en' ? `COALESCE(${en}, ${th})` : `COALESCE(${th}, ${en})`;
+    },
+    courseNameSelect: (alias = 'c', lang = 'th') => {
+        const a = alias ? `${alias}.` : '';
+        const l = resolveLang(lang);
+        const nameTh = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), ${a}[course_name_th]))), N'')`;
+        const nameEn = `NULLIF(LTRIM(RTRIM(CONVERT(NVARCHAR(255), ${a}[course_name_en]))), N'')`;
+        const name = l === 'en' ? `COALESCE(${nameEn}, ${nameTh})` : `COALESCE(${nameTh}, ${nameEn})`;
+        return [
+            `CONVERT(NVARCHAR(255), ${a}[course_name_th]) AS [course_name_th]`,
+            `CONVERT(NVARCHAR(255), ${a}[course_name_en]) AS [course_name_en]`,
+            `${name} AS [course_name]`
+        ].join(', ');
+    },
+    courseBilingualSelect: (alias = 'c', lang = 'th') => courseListTextSql(alias, lang),
+    courseTextSelectFromCols: (alias = 'c', _cols, lang = 'th') => courseListTextSql(alias, lang),
+    courseLegacySelect: (alias = 'c') => {
+        const a = alias ? `${alias}.` : '';
+        return [
+            `${a}[course_name] AS [course_name_th]`,
+            `CAST(NULL AS NVARCHAR(255)) AS [course_name_en]`,
+            `${a}[instructor_name] AS [instructor_name_th]`,
+            `CAST(NULL AS NVARCHAR(255)) AS [instructor_name_en]`,
+            `${a}[description] AS [description_th]`,
+            `CAST(NULL AS NVARCHAR(MAX)) AS [description_en]`,
+            `${a}[course_name] AS [course_name]`,
+            `${a}[instructor_name] AS [instructor_name]`,
+            `${a}[description] AS [description]`
+        ].join(',\n                    ');
+    },
+    courseTextSelect: (alias = 'c', lang = 'th') => courseListTextSql(alias, lang),
+    getCourseColumnSet: async () => new Set([
+        'course_name_th', 'course_name_en',
+        'instructor_name_th', 'instructor_name_en',
+        'description_th', 'description_en'
+    ]),
+    resolveCourseTextMode: async () => 'bilingual',
+    resetCourseTextModeCache: () => {},
+    TEXT_COLS: [
+        'course_name_th', 'course_name_en',
+        'instructor_name_th', 'instructor_name_en',
+        'description_th', 'description_en'
+    ],
+    BILINGUAL_COLS: [
+        'course_name_th', 'course_name_en',
+        'instructor_name_th', 'instructor_name_en',
+        'description_th', 'description_en'
+    ]
 };

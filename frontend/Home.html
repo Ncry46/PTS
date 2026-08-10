@@ -759,11 +759,14 @@ document.addEventListener('DOMContentLoaded', async () => {
       const price = Number(c.price || 0).toLocaleString('th-TH');
       const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
       const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00ca01';
-      const loc = window.PTSCourseI18n ? PTSCourseI18n.localize(c) : c;
-      const courseName = (loc.course_name || loc.course_name_th || loc.course_name_en
-        || c.course_name || c.course_name_th || c.course_name_en || '').toString().trim();
-      const instructor = (loc.instructor_name || loc.instructor_name_th || loc.instructor_name_en
-        || c.instructor_name || c.instructor_name_th || c.instructor_name_en || '-').toString().trim() || '-';
+      const loc = c;
+      const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+      const courseName = (lang === 'en'
+        ? (c.course_name_en || c.course_name_th || c.course_name || '')
+        : (c.course_name_th || c.course_name_en || c.course_name || '')).toString().trim();
+      const instructor = (lang === 'en'
+        ? (c.instructor_name_en || c.instructor_name_th || c.instructor_name || '')
+        : (c.instructor_name_th || c.instructor_name_en || c.instructor_name || '')).toString().trim() || '-';
       return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
         <div class="pts-course-card__media">
           <img alt="" src="${img}" loading="lazy">

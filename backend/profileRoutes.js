@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { flagActiveSql } = require('./db');
-const { localizeCourseRow, resolveLangFromReq } = require('./courseLang');
+const { localizeCourseRow, resolveLangFromReq, courseListTextSql, courseMetaSelectSql, COURSE_API_VERSION } = require('./courseLang');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
 const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId, fetchDriveFile } = require('./googleDrive');
 
@@ -360,12 +360,14 @@ function createProfileRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const userId = req.session?.user?.user_id || null;
+            const lang = resolveLangFromReq(req);
             const result = await pool.request()
                 .input('courseId', sql.Int, courseId)
                 .input('userId', sql.Int, userId)
                 .query(`
                     SELECT
-                        c.*,
+                        ${courseMetaSelectSql('c')},
+                        ${courseListTextSql('c', lang)},
                         CASE WHEN @userId IS NULL THEN 0
                              WHEN EXISTS (SELECT 1 FROM dbo.course_favorites f WHERE f.user_id=@userId AND f.course_id=c.course_id) THEN 1 ELSE 0 END AS is_favorited,
                         CASE WHEN @userId IS NULL THEN 0
@@ -379,7 +381,6 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
             }
-            const lang = resolveLangFromReq(req);
             const course = localizeCourseRow(result.recordset[0], lang);
             let lessons = [];
             try {
