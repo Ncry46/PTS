@@ -171,40 +171,49 @@ function makeCourseCard(course) {
   const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : mode === 'online' ? '#00ca01' : '#ca1156';
   return `
     <article data-type="${mode}" class="pts-course-card">
-      <div class="pts-course-card__media">
-        <img src="${img}" alt="${escapeHtml(courseName)}" loading="lazy">
-        <span class="pts-course-card__badge" style="background:${badgeBg}">${badge.label}${course.is_featured ? ' · ยอดนิยม' : ''}</span>
-        ${currentUser ? `
-          <button type="button" class="fav-btn" data-course-id="${course.course_id}" title="บันทึกหลักสูตรโปรด" style="position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.95);border:none;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;${favorited ? 'color:#ca1156' : 'color:#544245'}">
-            <span class="material-symbols-outlined" style="font-size:18px">favorite</span>
-          </button>` : ''}
+  <div class="pts-course-card__media">
+    <img src="${img}" alt="${escapeHtml(courseName)}" loading="lazy">
+    <span class="pts-course-card__badge" style="background:${badgeBg}">
+      ${badge.label}${course.is_featured ? ` · ${PTSLang.t('common.popular') || 'ยอดนิยม'}` : ''}
+    </span>
+    ${currentUser ? `
+      <button type="button" class="fav-btn" data-course-id="${course.course_id}" title="${PTSLang.t('common.favorite') || 'บันทึกหลักสูตรโปรด'}" style="position:absolute;top:10px;right:10px;z-index:2;width:32px;height:32px;border-radius:999px;background:rgba(255,255,255,.95);border:none;box-shadow:0 2px 8px rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;${favorited ? 'color:#ca1156' : 'color:#544245'}">
+        <span class="material-symbols-outlined" style="font-size:18px">favorite</span>
+      </button>` : ''}
+  </div>
+  <div class="pts-course-card__body">
+    <div class="pts-course-card__copy">
+      <p class="pts-course-card__meta">
+        ${Number(course.average_rating || 0).toFixed(1)} ★ · ${course.total_reviews || 0} ${PTSLang.t('common.reviews')}
+      </p>
+      <h3 class="pts-course-card__section_title">${escapeHtml(courseName || '-')}</h3>
+      <div class="pts-course-card__meta-row" title="${escapeHtml(instructor)}">
+        <span class="material-symbols-outlined" aria-hidden="true">person</span>
+        <span>${escapeHtml(instructor)}</span>
       </div>
-      <div class="pts-course-card__body">
-        <div class="pts-course-card__copy">
-          <p class="pts-course-card__meta">${Number(course.average_rating || 0).toFixed(1)} · ${course.total_reviews || 0} รีวิว</p>
-          <h3 class="pts-course-card__section_title">${escapeHtml(courseName || '-')}</h3>
-          <div class="pts-course-card__meta-row" title="${escapeHtml(instructor)}">
-            <span class="material-symbols-outlined" aria-hidden="true">person</span>
-            <span>${escapeHtml(instructor)}</span>
-          </div>
-          <div class="pts-course-card__meta-row">
-            <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
-            <span>${hours} ชม. · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}${course.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}</span>
-          </div>
-          ${course.price != null ? `
-            <p class="pts-course-card__meta flex items-center justify-between" style="margin-top:4px">
-              <span>ลงทะเบียน ${Number(course.total_enrolled || 0)}</span>
-              <span class="text-base font-bold text-primary">${Number(course.price).toLocaleString('th-TH')} บาท</span>
-            </p>
-          ` : ''}
-        </div>
-        <div class="pts-course-card__actions">
-          <a href="${enrolled ? `Learn.html?courseId=${course.course_id}` : `CourseDetail.html?courseId=${course.course_id}`}" class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}">
-            ${enrolled ? 'เข้าเรียน' : 'ดูรายละเอียด'}
-          </a>
-        </div>
+      <div class="pts-course-card__meta-row">
+        <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+        <span>
+          ${hours} ${PTSLang.t('common.hours')} · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}
+          ${course.is_open_soon ? ` · ${PTSLang.t('course.open_soon')}` : ''}
+        </span>
       </div>
-    </article>`;
+      ${course.price != null ? `
+        <p class="pts-course-card__meta flex items-center justify-between" style="margin-top:4px">
+          <span>${PTSLang.t('common.enrolled')} ${Number(course.total_enrolled || 0)}</span>
+          <span class="text-base font-bold text-primary">${Number(course.price).toLocaleString('th-TH')} ${PTSLang.t('common.baht')}</span>
+        </p>
+      ` : ''}
+    </div>
+    <div class="pts-course-card__actions">
+      <a href="${enrolled ? `Learn.html?courseId=${course.course_id}` : `CourseDetail.html?courseId=${course.course_id}`}" 
+        class="pts-btn ${enrolled ? 'pts-btn-outline' : 'pts-btn-primary'}"
+        data-i18n="${enrolled ? 'btn.learn' : 'btn.details'}">
+        ${enrolled ? PTSLang.t('btn.learn') : PTSLang.t('btn.details')}
+      </a>
+    </div>
+  </div>
+</article>`;
 }
 
 function openCourseModal(course) {

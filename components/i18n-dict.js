@@ -11,6 +11,11 @@ window.PTSLangDict = {
   'common.search': { th: 'ค้นหา', en: 'Search' },
   'common.all': { th: 'ทั้งหมด', en: 'All' },
   'common.hours': { th: 'ชม.', en: 'hrs' },
+  'common.days': { th: 'วัน', en: 'days' },
+  'common.weeks': { th: 'สัปดาห์', en: 'weeks' },
+  'common.months': { th: 'เดือน', en: 'months' },
+  'common.enrolled': { th: 'ลงทะเบียน', en: 'Enrolled' },
+  'common.reviews': { th: 'รีวิว', en: 'Reviews' },
   'common.minutes': { th: 'นาที', en: 'min' },
   'common.baht': { th: 'บาท', en: 'THB' },
   'common.error': { th: 'เกิดข้อผิดพลาด', en: 'Something went wrong' },
@@ -23,6 +28,11 @@ window.PTSLangDict = {
   'common.member': { th: 'สมาชิก PTS', en: 'PTS Member' },
   'common.contactPrice': { th: 'ติดต่อสอบถามราคา', en: 'Contact for pricing' },
   'common.footer': { th: '© PTS Learning', en: '© PTS Learning' },
+  'common.popular': { th: 'ยอดนิยม', en: 'Popular' },
+  'common.recommended': { th: 'แนะนำ', en: 'Recommended' },
+  'common.new': { th: 'ใหม่', en: 'New' },
+  'common.comingSoon': { th: 'เปิดเร็วๆ นี้', en: 'Coming Soon' },
+
 
   /* —— Nav —— */
   'nav.main': { th: 'เมนูหลัก', en: 'Main menu' },
@@ -138,6 +148,9 @@ window.PTSLangDict = {
   'home.whysection_title': { th: 'ทำไมต้องเลือก PTS Learning', en: 'Why choose PTS Learning' },
   'home.why1': { th: 'รองรับ Online, Onsite และ Hybrid', en: 'Supports Online, Onsite, and Hybrid' },
   'home.why2': { th: 'เรียนผ่านระบบเดียว', en: 'Learn in one platform' },
+  'home.why3': { th: 'ติดตามความก้าวหน้าการเรียน', en: 'Track your learning progress' },
+  'home.why4': { th: 'ออกใบประกาศอัตโนมัติ', en: 'Automatic certificate issuance' },
+  'home.courses': { th: 'หลักสูตรแนะนำ', en: 'Recommended courses' },
   'home.ctaExplore': { th: 'ดูหลักสูตร', en: 'Explore courses' },
   'home.ctaRegister': { th: 'สมัครสมาชิก', en: 'Sign up' },
   'home.ctaLogin': { th: 'เข้าสู่ระบบ', en: 'Log in' },
@@ -209,11 +222,17 @@ window.PTSLangDict = {
   'schedule.gcalShortcutBtn': { th: 'ไปตั้งค่าปฏิทิน', en: 'Go to calendar settings' },
 
   /* —— Courses / detail —— */
+  'courses.button': { th: 'รายละเอียด', en: 'Details' },
   'courses.enrollLogin': { th: 'เข้าสู่ระบบเพื่อสมัครเรียน', en: 'Log in to enroll' },
   'courses.enroll': { th: 'สมัครเรียน', en: 'Enroll' },
   'courses.continue': { th: 'เข้าเรียน', en: 'Continue learning' },
   'courses.by': { th: 'โดย', en: 'by' },
   'courses.noDesc': { th: 'ยังไม่มีคำอธิบายหลักสูตร', en: 'No course description yet' },
+  'course.price_unit': { th: 'บาท', en: 'THB' },
+  'course.lessons_title': { th: 'บทเรียนในหลักสูตร', en: 'Course Lessons' },
+  'course.no_lessons': { th: 'ยังไม่มีบทเรียน — รอแอดมินเพิ่มเนื้อหา', en: 'No lessons available yet — Awaiting admin update' },
+  'course.open_soon': { th: 'เปิดเร็วๆ นี้', en: 'Coming Soon' },
+  'course.starts': { th: 'เริ่ม', en: 'Starts' },
 
   /* —— Dashboard —— */
   'dash.recent': { th: 'หลักสูตรล่าสุด', en: 'Recent courses' },
@@ -232,5 +251,14 @@ window.PTSLangDict = {
 
   /* —— Notifications —— */
   'notif.markAll': { th: 'อ่านทั้งหมด', en: 'Mark all read' },
-  'notif.empty': { th: 'ยังไม่มีการแจ้งเตือน', en: 'No notifications yet' }
+  'notif.empty': { th: 'ยังไม่มีการแจ้งเตือน', en: 'No notifications yet' },
+
+  /* —— Buttons & Actions (เพิ่มคีย์รองรับหน้า CourseDetail) —— */
+  'button.save': { th: 'บันทึก', en: 'Save' },
+  'button.cancel': { th: 'ยกเลิก', en: 'Cancel' },
+  'btn.learn': { th: 'เข้าเรียน', en: 'Start Learning' },
+  'btn.details': { th: 'ดูรายละเอียด', en: 'View Details' },
+  'btn.enroll': { th: 'สมัครเรียน', en: 'Enroll Now' },
+  'btn.add_calendar': { th: 'เพิ่มปฏิทิน', en: 'Add to Calendar' },
+
 };
