@@ -1702,17 +1702,7 @@ video.pts-home-banner__media {
   to { width: 100%; }
 }
 
-/* Bottom blend into next section */
-.pts-home-banner__fade {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 48px;
-  z-index: 5;
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent, rgba(255,255,255,.04));
-}
+/* Bottom blend removed — keep banner image unstyled */
 
 @media (prefers-reduced-motion: reduce) {
   .pts-home-banner__track,
