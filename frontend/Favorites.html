@@ -9,7 +9,7 @@
 <script src="/comp/pts-api.js?v=20260810namefix"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810thenecols"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260727homecream">
@@ -85,6 +85,10 @@ function courseCard(c) {
     ? `Learn.html?courseId=${c.course_id}`
     : `CourseDetail.html?courseId=${c.course_id}`;
   const primaryLabel = enrolled ? 'เข้าเรียน' : 'ดูรายละเอียด';
+  const courseName = (window.PTSCourseI18n ? PTSCourseI18n.name(c) : '')
+    || c.course_name || c.course_name_th || c.course_name_en || '-';
+  const instructor = (window.PTSCourseI18n ? PTSCourseI18n.instructor(c) : '')
+    || c.instructor_name || c.instructor_name_th || c.instructor_name_en || '-';
 
   return `
     <article class="pts-course-card" data-course-id="${c.course_id}">
@@ -94,10 +98,10 @@ function courseCard(c) {
       </div>
       <div class="pts-course-card__body">
         <div class="pts-course-card__copy">
-          <h3 class="pts-course-card__section_title">${escapeHtml(c.course_name)}</h3>
-          <div class="pts-course-card__meta-row" title="${escapeHtml(c.instructor_name || '-')}">
+          <h3 class="pts-course-card__section_title">${escapeHtml(courseName)}</h3>
+          <div class="pts-course-card__meta-row" title="${escapeHtml(instructor)}">
             <span class="material-symbols-outlined" aria-hidden="true">person</span>
-            <span>${escapeHtml(c.instructor_name || '-')}</span>
+            <span>${escapeHtml(instructor)}</span>
           </div>
           ${hours ? `<div class="pts-course-card__meta-row"><span class="material-symbols-outlined" aria-hidden="true">schedule</span><span>${escapeHtml(hours)}</span></div>` : ''}
         </div>

@@ -3,7 +3,7 @@
         <script src="/comp/theme-boot.js"></script>
         <script src="/comp/i18n-dict.js?v=20260725lang"></script>
         <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810thenecols"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
         <link rel="stylesheet" href="site.css?v=20260810bannerfix3">
@@ -759,8 +759,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       const price = Number(c.price || 0).toLocaleString('th-TH');
       const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
       const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00ca01';
-      const courseName = (window.PTSCourseI18n ? PTSCourseI18n.name(c) : '') || c.course_name || c.course_name_th || c.course_name_en || '';
-      const instructor = (window.PTSCourseI18n ? PTSCourseI18n.instructor(c) : '') || c.instructor_name || c.instructor_name_th || c.instructor_name_en || '-';
+      const loc = window.PTSCourseI18n ? PTSCourseI18n.localize(c) : c;
+      const courseName = (loc.course_name || loc.course_name_th || loc.course_name_en
+        || c.course_name || c.course_name_th || c.course_name_en || '').toString().trim();
+      const instructor = (loc.instructor_name || loc.instructor_name_th || loc.instructor_name_en
+        || c.instructor_name || c.instructor_name_th || c.instructor_name_en || '-').toString().trim() || '-';
       return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
         <div class="pts-course-card__media">
           <img alt="" src="${img}" loading="lazy">
@@ -776,7 +779,7 @@ document.addEventListener('DOMContentLoaded', async () => {
               <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
               <span>${escapeHtml(hours)}</span>
             </div>
-            <h3 class="pts-course-card__section_title">${escapeHtml(courseName)}</h3>
+            <h3 class="pts-course-card__section_title">${escapeHtml(courseName || '-')}</h3>
           </div>
           <div class="pts-course-card__foot">
             <span class="pts-course-card__price">฿${price}</span>

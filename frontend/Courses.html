@@ -10,7 +10,7 @@
 <script src="/comp/pts-api.js?v=20260810namefix"></script>
 <script src="/comp/i18n-dict.js?v=20260725lang"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
-<script src="/comp/course-i18n.js?v=20260810thenecols"></script>
+<script src="/comp/course-i18n.js?v=20260810namefix"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
 <link rel="stylesheet" href="site.css?v=20260727cardicons">
@@ -84,7 +84,45 @@ tailwind.config = {
 let currentUser = null;
 let allCourses = [];
 const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const formatText = (v) => v || '-';
+const formatText = (v) => {
+  const s = v == null ? '' : String(v).trim();
+  return s || '-';
+};
+
+function pickCourseField(course, base) {
+  if (!course) return '';
+  if (window.PTSCourseI18n) {
+    const via = base === 'course_name' ? PTSCourseI18n.name(course)
+      : base === 'instructor_name' ? PTSCourseI18n.instructor(course)
+      : PTSCourseI18n.description(course);
+    if (via) return via;
+  }
+  const keys = Object.keys(course);
+  const want = [
+    base + '_th', base + '_en', base,
+    base.replace('_', '') + '_th', base.replace('_', '') + '_en'
+  ].map((k) => k.toLowerCase());
+  for (const key of keys) {
+    const lk = String(key).toLowerCase();
+    if (want.includes(lk) || lk === base + '_th' || lk === base + '_en' || lk === base) {
+      const val = course[key] == null ? '' : String(course[key]).trim();
+      if (val) return val;
+    }
+  }
+  // last resort: any key containing name_th / name_en for course
+  for (const key of keys) {
+    const lk = String(key).toLowerCase();
+    if (base === 'course_name' && /(course)?_?name_?th$/.test(lk)) {
+      const val = course[key] == null ? '' : String(course[key]).trim();
+      if (val) return val;
+    }
+    if (base === 'instructor_name' && /instructor.*th$/.test(lk)) {
+      const val = course[key] == null ? '' : String(course[key]).trim();
+      if (val) return val;
+    }
+  }
+  return '';
+}
 const sentenceCase = (t) => t ? t.charAt(0).toUpperCase() + t.slice(1) : '-';
 const getBadge = (mode) => {
   if (mode === 'online') return { label: 'Online', classes: 'bg-emerald-50 text-emerald-700' };
@@ -114,8 +152,8 @@ function renderAuthChrome() {
 
 function makeCourseCard(course) {
   course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
-  const courseName = course.course_name || course.course_name_th || course.course_name_en || '';
-  const instructor = course.instructor_name || course.instructor_name_th || course.instructor_name_en || '-';
+  const courseName = pickCourseField(course, 'course_name');
+  const instructor = pickCourseField(course, 'instructor_name') || '-';
   const mode = (course.delivery_mode || '').toLowerCase();
   const badge = getBadge(mode);
   const favorited = Number(course.is_favorited) === 1;
@@ -163,6 +201,8 @@ function makeCourseCard(course) {
 
 function openCourseModal(course) {
   course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
+  const modalName = pickCourseField(course, 'course_name');
+  const modalInstructor = pickCourseField(course, 'instructor_name') || '-';
   document.getElementById('course-modal')?.remove();
   const badge = getBadge((course.delivery_mode || '').toLowerCase());
   const enrolled = Number(course.is_enrolled) === 1;
@@ -174,8 +214,8 @@ function openCourseModal(course) {
       <button type="button" id="close-course-modal" class="absolute top-3 right-3 p-2 rounded-full hover:bg-gray-100"><span class="material-symbols-outlined">close</span></button>
       <img src="${course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course'}" class="w-full h-40 object-cover rounded-2xl mb-4" alt="">
       <span class="inline-block px-3 py-1 rounded-full text-[12px] font-bold mb-2 ${badge.classes}">${badge.label}</span>
-      <h3 class="text-xl font-bold mb-1">${escapeHtml(formatText(course.course_name))}</h3>
-      <p class="text-sm text-on-surface-variant mb-2">โดย ${escapeHtml(formatText(course.instructor_name))}</p>
+      <h3 class="text-xl font-bold mb-1">${escapeHtml(formatText(modalName))}</h3>
+      <p class="text-sm text-on-surface-variant mb-2">โดย ${escapeHtml(formatText(modalInstructor))}</p>
       <p class="text-sm text-on-surface-variant mb-4">${Number(course.total_hours || 0).toFixed(1).replace('.0','')} ชั่วโมง · ${escapeHtml(sentenceCase(course.delivery_mode) || '-')}${course.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${course.price != null ? ' · ' + Number(course.price).toLocaleString('th-TH') + ' บาท' : ''}</p>
       ${course.description ? `<p class="text-sm text-on-surface-variant mb-4">${escapeHtml(String(course.description).slice(0, 280))}</p>` : ''}
       ${currentUser ? `

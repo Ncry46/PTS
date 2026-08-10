@@ -19,6 +19,8 @@ const {
     courseBilingualSelect,
     courseLegacySelect,
     courseTextSelect,
+    courseTextSelectFromCols,
+    getCourseColumnSet,
     resolveCourseTextMode,
     isMissingBilingualColumnError,
     localizeCourseRows,
@@ -225,7 +227,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             `;
             let result;
             try {
-                result = await pool.request().query(buildSql(courseBilingualSelect('', lang)));
+                const cols = await getCourseColumnSet(pool);
+                const textSelect = courseTextSelectFromCols('', cols, lang);
+                result = await pool.request().query(buildSql(textSelect));
             } catch (colErr) {
                 if (!isMissingBilingualColumnError(colErr)) throw colErr;
                 console.warn('⚠️ admin courses bilingual cols missing — fallback:', colErr.message);

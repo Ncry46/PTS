@@ -35,9 +35,12 @@ const {
     courseBilingualSelect,
     courseLegacySelect,
     courseTextSelect,
+    courseTextSelectFromCols,
+    getCourseColumnSet,
     resolveCourseTextMode,
     isMissingBilingualColumnError,
     localizeCourseRows,
+    localizeCourseRow,
     resolveLangFromReq
 } = require('./courseLang');
 
@@ -583,9 +586,29 @@ app.get('/api/courses', async (req, res) => {
 
         let result;
         try {
+            const cols = await getCourseColumnSet(pool);
+            // Prefer column-aware COALESCE select so course_name is never blank when *_th has data
+            const textSelect = courseTextSelectFromCols('c', cols, lang);
             result = await pool.request()
                 .input('userId', sql.Int, userId)
-                .query(buildCoursesSql(courseBilingualSelect('c', lang)));
+                .query(buildCoursesSql(textSelect));
+
+            const first = result.recordset && result.recordset[0];
+            if (first) {
+                const sample = localizeCourseRow(first, lang);
+                if (!sample.course_name) {
+                    console.warn('⚠️ /api/courses blank course_name. keys=', Object.keys(first).join(','));
+                    console.warn('⚠️ name fields=', JSON.stringify({
+                        course_name: first.course_name,
+                        course_name_th: first.course_name_th,
+                        course_name_en: first.course_name_en,
+                        instructor_name: first.instructor_name,
+                        instructor_name_th: first.instructor_name_th,
+                        instructor_name_en: first.instructor_name_en
+                    }));
+                    console.warn('⚠️ courses text cols=', [...cols].filter((c) => /name|desc/i.test(c)).join(','));
+                }
+            }
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             console.warn('⚠️ courses text cols missing — fallback to legacy names:', colErr.message);
@@ -722,9 +745,11 @@ app.get('/api/my/favorite-courses', async (req, res) => {
             `;
         let result;
         try {
+            const cols = await getCourseColumnSet(pool);
+            const textSelect = courseTextSelectFromCols('c', cols, lang);
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildFavSql(courseBilingualSelect('c', lang)));
+                .query(buildFavSql(textSelect));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()
@@ -1074,9 +1099,11 @@ app.get('/api/my/courses', async (req, res) => {
             `;
         let result;
         try {
+            const cols = await getCourseColumnSet(pool);
+            const textSelect = courseTextSelectFromCols('c', cols, lang);
             result = await pool.request()
                 .input('userId', sql.Int, user.user_id)
-                .query(buildMySql(courseBilingualSelect('c', lang)));
+                .query(buildMySql(textSelect));
         } catch (colErr) {
             if (!isMissingBilingualColumnError(colErr)) throw colErr;
             result = await pool.request()

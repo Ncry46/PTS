@@ -2,6 +2,7 @@
  * Course text i18n
  * - Default Thai → course_name_th / instructor_name_th / description_th
  * - English UI → course_name_en / instructor_name_en / description_en
+ * Always fills course_name / instructor_name so cards never show "-" when *_th has data.
  */
 (function (global) {
   'use strict';
@@ -66,9 +67,9 @@
     out.instructor_name_en = getField(row, 'instructor_name_en') || null;
     out.description_th = getField(row, 'description_th') || getField(row, 'description') || null;
     out.description_en = getField(row, 'description_en') || null;
-    out.course_name = pick(out, 'course_name');
-    out.instructor_name = pick(out, 'instructor_name');
-    out.description = pick(out, 'description');
+    out.course_name = pick(out, 'course_name') || out.course_name_th || out.course_name_en || '';
+    out.instructor_name = pick(out, 'instructor_name') || out.instructor_name_th || out.instructor_name_en || '';
+    out.description = pick(out, 'description') || out.description_th || out.description_en || '';
     return out;
   }
 
