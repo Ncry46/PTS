@@ -903,5 +903,13 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         }
     });
 });
+
+document.addEventListener('pts-lang-change', () => {
+    const list = window.__ptsDashCourses;
+    const el = window.__ptsDashCoursesEl;
+    if (!list || !list.length || !el || typeof dashCourseCard !== 'function') return;
+    const recent = list.slice(0, 5);
+    el.innerHTML = recent.map(dashCourseCard).join('');
+});
 </script>
 </body></html>
