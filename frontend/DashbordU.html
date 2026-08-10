@@ -783,6 +783,7 @@ const myCoursesEl = document.getElementById('dash-my-courses');
     }
 
     function dashCourseCard(course) {
+        course = window.PTSCourseI18n ? PTSCourseI18n.localize(course) : course;
         const progress = Math.max(0, Math.min(100, Number(course.progress_percent || 0)));
         const image = course.cover_image_url || PLACEHOLDER;
         const mode = (course.delivery_mode || 'หลักสูตร').toString();
@@ -848,6 +849,8 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         if (completedEl) completedEl.textContent = `${summary.completed || 0} หลักสูตร`;
 
         const courses = payload.data || [];
+        window.__ptsDashCourses = courses;
+        window.__ptsDashCoursesEl = myCoursesEl;
         // API already ORDER BY updated_at DESC — show only 5 most recent
         const recent = courses.slice(0, 5);
         if (!courses.length) {
