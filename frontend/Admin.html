@@ -730,10 +730,16 @@ async function renderCourses() {
   const listArea = document.getElementById('course-list-area');
 
   const fillForm = (c) => {
-    document.getElementById('c-name').value = c?.course_name_th || c?.course_name || '';
-    document.getElementById('c-name-en').value = c?.course_name_en || '';
-    document.getElementById('c-instructor').value = c?.instructor_name_th || c?.instructor_name || '';
-    document.getElementById('c-instructor-en').value = c?.instructor_name_en || '';
+    const nameTh = c?.course_name_th || c?.course_name || '';
+    const nameEn = c?.course_name_en || '';
+    const instTh = c?.instructor_name_th || c?.instructor_name || '';
+    const instEn = c?.instructor_name_en || '';
+    const descTh = c?.description_th || c?.description || '';
+    const descEn = c?.description_en || '';
+    document.getElementById('c-name').value = nameTh;
+    document.getElementById('c-name-en').value = nameEn;
+    document.getElementById('c-instructor').value = instTh;
+    document.getElementById('c-instructor-en').value = instEn;
     document.getElementById('c-mode').value = c?.delivery_mode || 'online';
     document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : 4;
     document.getElementById('c-price').value = c?.price != null ? Number(c.price) : '';
@@ -745,8 +751,8 @@ async function renderCourses() {
     document.getElementById('c-flag').value = (c?.coursesFlag === 'N' || c?.flag_use === 'N') ? 'N' : 'Y';
     
     document.getElementById('c-cover').value = c?.cover_image_url || '';
-    document.getElementById('c-desc').value = c?.description_th || c?.description || '';
-    document.getElementById('c-desc-en').value = c?.description_en || '';
+    document.getElementById('c-desc').value = descTh;
+    document.getElementById('c-desc-en').value = descEn;
     
     // ✅ แมปค่าเป็น boolean จากตัวเลข 1/0
     document.getElementById('c-featured').checked = Number(c?.is_featured) === 1;
