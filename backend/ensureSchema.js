@@ -515,9 +515,9 @@ async function seedSampleCourseIfEmpty(pool) {
             .input('desc', sql.NVarChar, 'หลักสูตรตัวอย่างสำหรับทดสอบระบบ — แก้ไขหรือลบได้จากหน้า Admin')
             .query(`
                 INSERT INTO dbo.courses
-                (course_name, instructor_name, delivery_mode, total_hours,
+                (course_name_th,course_name_en, instructor_name_th,instructor_name_en, delivery_mode, total_hours,
                  average_rating, total_reviews, cover_image_url, is_featured,
-                 coursesFlag, created_at, price, description, flag_use,
+                 coursesFlag, created_at, price, description_th,description_en, flag_use,
                  coursescat_id, total_enrolled, start_date, is_open_soon)
                 VALUES
                 (@name, @instructor, @mode, @hours,
@@ -614,9 +614,9 @@ async function seedSampleFormIfEmpty(pool) {
             .input('description', sql.NVarChar, 'ตอบคำถามเพื่อดูว่าคุณใกล้เคียงสไตล์ใด: D กระทิง · I อินทรี · S หนู · C หมี')
             .query(`
                 INSERT INTO dbo.custom_forms
-                    (section_title, description, is_published, allow_resubmit, flag_use, form_type)
+                    (section_title, description_th,description_en, is_published, allow_resubmit, flag_use, form_type)
                 OUTPUT INSERTED.form_id
-                VALUES (@section_title, @description, 1, 1, 1, 'disc')
+                VALUES (@section_title, @description_th,description_en, 1, 1, 1, 'disc')
             `);
         const formId = form.recordset[0].form_id;
         const discOpts = JSON.stringify([

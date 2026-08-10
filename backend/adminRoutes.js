@@ -193,8 +193,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const result = await pool.request().query(`
                 SELECT
                     course_id,
-                    course_name,
-                    instructor_name,
+                    course_name_th,course_name_en,
+                    instructor_name_th,instructor_name_en,
                     delivery_mode,
                     total_hours,
                     average_rating,
@@ -204,7 +204,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     coursesFlag,
                     created_at,
                     price,
-                    description,
+                    description_th,description_en,
                     flag_use,
                     coursescat_id,
                     total_enrolled,
@@ -223,9 +223,9 @@ function createAdminRouter({ poolPromise, requireLogin }) {
     router.post('/courses', async (req, res) => {
         if (!requireAdmin(req, res)) return;
         const {
-            course_name, instructor_name, delivery_mode,
+            course_name_th,course_name_en, instructor_name_th,instructor_name_en, delivery_mode,
             total_hours, cover_image_url, is_featured,
-            coursesFlag, price, description, coursescat_id,
+            coursesFlag, price, description_th,description_en, coursescat_id,
             total_enrolled, start_date, is_open_soon
         } = req.body;
 
@@ -252,15 +252,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             await bindFlagInput(pool, insertReq, 'flagUse', 'courses', true);
             const result = await insertReq.query(`
                     INSERT INTO dbo.courses
-                    (course_name, instructor_name, delivery_mode, total_hours,
+                    (course_name_th,course_name_en, instructor_name_th,instructor_name_en, delivery_mode, total_hours,
                      average_rating, total_reviews, cover_image_url, is_featured,
-                     coursesFlag, created_at, price, description, flag_use,
+                     coursesFlag, created_at, price, description_th,description_en, flag_use,
                      coursescat_id, total_enrolled, start_date, is_open_soon)
                     OUTPUT INSERTED.course_id, INSERTED.course_name
                     VALUES (
                         @name, @instructor, @mode, @hours,
                         0, 0, @cover, @featured,
-                        @coursesFlag, GETDATE(), @price, @description, @flagUse,
+                        @coursesFlag, GETDATE(), @price, @description_th,description_en, @flagUse,
                         @catId, @enrolled, @startDate, @openSoon
                     )
                 `);
@@ -693,7 +693,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     p.slip_image_url, p.transfer_at, p.reviewed_by, p.reviewed_at, p.reject_reason,
                     p.access_code_id,
                     u.username, u.email,
-                    c.course_name,
+                    c.course_name_th,course_name_en,
                     reviewer.username AS reviewer_name,
                     ac.code AS access_code
                 FROM dbo.payments p
@@ -838,7 +838,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 SELECT TOP 200
                     a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
                     a.expires_at, a.note, a.flag_use, a.created_at, a.created_by,
-                    c.course_name, u.username AS created_by_name
+                    c.course_name_th,course_name_en, u.username AS created_by_name
                 FROM dbo.access_codes a
                 INNER JOIN dbo.courses c ON c.course_id = a.course_id
                 LEFT JOIN dbo.users u ON u.user_id = a.created_by

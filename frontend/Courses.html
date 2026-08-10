@@ -118,7 +118,7 @@ function makeCourseCard(course) {
   const enrolled = Number(course.is_enrolled) === 1;
   const hours = Number(course.total_hours || 0).toFixed(1).replace('.0', '');
   const img = course.cover_image_url || 'https://via.placeholder.com/640x400?text=PTS+Course';
-  const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : mode === 'online' ? '#00e001' : '#ca1156';
+  const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : mode === 'online' ? '#00ca01' : '#ca1156';
   return `
     <article data-type="${mode}" class="pts-course-card">
       <div class="pts-course-card__media">

@@ -756,7 +756,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
       const price = Number(c.price || 0).toLocaleString('th-TH');
       const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
-      const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00e001';
+      const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00ca01';
       return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
         <div class="pts-course-card__media">
           <img alt="" src="${img}" loading="lazy">

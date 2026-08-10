@@ -312,7 +312,7 @@ function openCert(cert) {
   const root = document.getElementById('cert-print-root');
   root.innerHTML = certificateHtml({
     userName,
-    courseName: cert.course_name,
+    courseName: cert.course_name_th,course_name_en,
     completedAt: certCompletionDate(cert)
   });
   const modal = document.getElementById('cert-modal');
@@ -378,7 +378,7 @@ function render() {
       : '-';
     const preview = certificateHtml({
       userName,
-      courseName: c.course_name,
+      courseName: c.course_name_th,course_name_en,
       completedAt: doneAt
     });
     return `
