@@ -7,8 +7,8 @@
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/pts-api.js?v=20260810namefix"></script>
-<script src="/comp/i18n-dict.js?v=20260725lang"></script>
-<script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/i18n-dict.js?v=20260810btni18n"></script>
+<script src="/comp/lang-boot.js?v=20260810btni18n"></script>
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
@@ -268,15 +268,16 @@
 
 <script>
 const escapeHtml = (t) => String(t || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const tt = (key, fallback) => (window.PTSLang && typeof PTSLang.t === 'function' ? PTSLang.t(key, fallback) : (fallback || key));
 const PLACEHOLDER = 'https://placehold.co/640x400/f8e8ec/974258?text=PTS+Course';
 
 let allCourses = [];
 let filterMode = 'all';
 
 function statusLabel(status) {
-  if (status === 'completed') return { text: 'เรียนจบแล้ว', cls: 'myc-status--done' };
-  if (status === 'in_progress') return { text: 'กำลังเรียน', cls: 'myc-status--progress' };
-  return { text: status || 'สมัครแล้ว', cls: 'myc-status--other' };
+  if (status === 'completed') return { text: tt('myc.done', 'เรียนจบแล้ว'), cls: 'myc-status--done' };
+  if (status === 'in_progress') return { text: tt('myc.inProgress', 'กำลังเรียน'), cls: 'myc-status--progress' };
+  return { text: status || tt('myc.enrolled', 'สมัครแล้ว'), cls: 'myc-status--other' };
 }
 
 function courseCard(course, { emphasizeProgress = false } = {}) {
@@ -285,11 +286,11 @@ function courseCard(course, { emphasizeProgress = false } = {}) {
   const image = course.cover_image_url || PLACEHOLDER;
   const mode = (course.delivery_mode || 'หลักสูตร').toString();
   const st = statusLabel(course.status);
-  const hours = course.total_hours != null ? `${Number(course.total_hours)} ชม.` : '';
+  const hours = course.total_hours != null ? `${Number(course.total_hours)} ${tt('common.hours', 'ชม.')}` : '';
   const primaryHref = course.status === 'completed'
     ? `Certificates.html`
     : `Learn.html?courseId=${course.course_id}`;
-  const primaryLabel = course.status === 'completed' ? 'ดูใบประกาศ' : 'เข้าเรียนต่อ';
+  const primaryLabel = course.status === 'completed' ? tt('myc.viewCert', 'ดูใบประกาศ') : tt('myc.continue', 'เข้าเรียนต่อ');
 
   return `
     <article class="myc-card">
@@ -300,23 +301,23 @@ function courseCard(course, { emphasizeProgress = false } = {}) {
       <div class="myc-card__body">
         <div class="myc-card__info">
           <div class="myc-card__top">
-            <span class="myc-status ${st.cls}">${st.text}</span>
+            <span class="myc-status ${st.cls}">${escapeHtml(st.text)}</span>
             ${hours ? `<span class="myc-card__meta">${escapeHtml(hours)}</span>` : ''}
           </div>
           <h3 class="myc-card__section_title">${escapeHtml(course.course_name)}</h3>
-          <p class="myc-card__meta">โดย ${escapeHtml(course.instructor_name || '-')}</p>
+          <p class="myc-card__meta">${escapeHtml(tt('courses.by', 'โดย'))} ${escapeHtml(course.instructor_name || '-')}</p>
         </div>
         <div class="myc-card__foot">
           <div>
             <div class="myc-progress-row">
-              <span>ความคืบหน้า</span>
+              <span>${escapeHtml(tt('myc.avg', 'ความคืบหน้า'))}</span>
               <strong>${progress}%</strong>
             </div>
             <div class="myc-bar" aria-hidden="true"><span style="width:${progress}%"></span></div>
           </div>
           <div class="myc-actions">
-            <a class="pts-btn pts-btn-primary" href="${primaryHref}">${primaryLabel}</a>
-            <a class="myc-actions__link" href="CourseDetail.html?courseId=${course.course_id}">รายละเอียด</a>
+            <a class="pts-btn pts-btn-primary" href="${primaryHref}">${escapeHtml(primaryLabel)}</a>
+            <a class="myc-actions__link" href="CourseDetail.html?courseId=${course.course_id}">${escapeHtml(tt('myc.details', 'รายละเอียด'))}</a>
           </div>
         </div>
       </div>
@@ -340,7 +341,7 @@ function renderInProgress() {
     list.length ? `${list.length} หลักสูตรที่ยังเรียนไม่จบ` : 'ยังไม่มีหลักสูตรที่กำลังเรียน';
 
   if (!list.length) {
-    box.innerHTML = emptyState('ยังไม่มีหลักสูตรที่กำลังเรียนอยู่', 'Courses.html', 'ไปเลือกหลักสูตร');
+    box.innerHTML = emptyState(tt('myc.sectionProgressHint', 'ยังไม่มีหลักสูตรที่กำลังเรียนอยู่'), 'Courses.html', tt('myc.goCourses', 'ไปเลือกหลักสูตร'));
     return;
   }
   box.innerHTML = list.map((c) => courseCard(c, { emphasizeProgress: true })).join('');
@@ -356,7 +357,7 @@ function renderAll() {
   }
 
   if (!allCourses.length) {
-    box.innerHTML = emptyState('คุณยังไม่ได้สมัครหลักสูตรใดๆ', 'Courses.html', 'ไปเลือกหลักสูตร');
+    box.innerHTML = emptyState(tt('dash.empty', 'คุณยังไม่ได้สมัครหลักสูตรใดๆ'), 'Courses.html', tt('myc.goCourses', 'ไปเลือกหลักสูตร'));
     return;
   }
   if (!list.length) {
@@ -398,12 +399,13 @@ document.querySelectorAll('.myc-filter').forEach((btn) => {
     renderInProgress();
     renderAll();
     document.addEventListener('pts-lang-change', () => {
+      if (window.PTSLang && typeof PTSLang.apply === 'function') PTSLang.apply(document);
       renderInProgress();
       renderAll();
     });
   } catch (err) {
     const msg = escapeHtml(err.message || 'เกิดข้อผิดพลาด');
-    document.getElementById('list-in-progress').innerHTML = `<div class="pts-card p-5 text-error">${msg} <button type="button" class="pts-btn pts-btn-outline" onclick="location.reload()">ลองใหม่</button></div>`;
+    document.getElementById('list-in-progress').innerHTML = `<div class="pts-card p-5 text-error">${msg} <button type="button" class="pts-btn pts-btn-outline" onclick="location.reload()">${escapeHtml(tt('courses.retry', 'ลองใหม่'))}</button></div>`;
     document.getElementById('list-all').innerHTML = `<div class="pts-card p-5 text-error">${msg}</div>`;
   }
 })();

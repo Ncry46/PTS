@@ -8,8 +8,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/pts-api.js?v=20260810namefix"></script>
-<script src="/comp/i18n-dict.js?v=20260725lang"></script>
-<script src="/comp/lang-boot.js?v=20260725lang"></script>
+<script src="/comp/i18n-dict.js?v=20260810btni18n"></script>
+<script src="/comp/lang-boot.js?v=20260810btni18n"></script>
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link rel="stylesheet" href="site.css?v=20260806brand">
 <link rel="stylesheet" href="payments.css?v=20260727enrollpay">
@@ -162,6 +162,7 @@
 <script>
 const courseId = new URLSearchParams(location.search).get('courseId');
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const tt = (key, fallback) => (window.PTSLang && typeof PTSLang.t === 'function' ? PTSLang.t(key, fallback) : (fallback || key));
 
 async function mountCourseNotifyControls(hostEl) {
   if (!hostEl || !courseId) return;
@@ -325,30 +326,30 @@ async function mountCourseNotifyControls(hostEl) {
         </div>
         <div class="p-6 lg:p-8 flex flex-col">
           <div class="pts-course-card-head">
-            <a class="pts-course-icon-btn" href="Courses.html" aria-label="ย้อนกลับไปรายการหลักสูตร" title="ย้อนกลับ">
+            <a class="pts-course-icon-btn" href="Courses.html" aria-label="${escapeHtml(tt('courses.backAria', 'ย้อนกลับไปรายการหลักสูตร'))}" title="${escapeHtml(tt('common.back', 'กลับ'))}">
               <span class="material-symbols-outlined" aria-hidden="true">arrow_back</span>
             </a>
             ${loggedIn ? `
-              <button type="button" id="fav" class="pts-course-icon-btn${isFavorited ? ' is-active' : ''}" aria-label="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}" title="${isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด'}">
+              <button type="button" id="fav" class="pts-course-icon-btn${isFavorited ? ' is-active' : ''}" aria-label="${escapeHtml(isFavorited ? tt('courses.favRemove', 'นำออกจากรายการโปรด') : tt('courses.favAdd', 'บันทึกรายการโปรด'))}" title="${escapeHtml(isFavorited ? tt('courses.favRemove', 'นำออกจากรายการโปรด') : tt('courses.favAdd', 'บันทึกรายการโปรด'))}">
                 <span class="material-symbols-outlined" aria-hidden="true">favorite</span>
               </button>` : '<span></span>'}
           </div>
           <span class="pts-chip mb-3 w-fit">${escapeHtml(c.delivery_mode || 'course')}</span>
           <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
           <h1 class="text-3xl font-bold text-primary mb-2 pts-display" data-course-field="name">${escapeHtml(c.course_name)}</h1>
-          <p class="text-sm text-on-surface-variant mb-4" data-course-field="meta">โดย ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ชม. · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
+          <p class="text-sm text-on-surface-variant mb-4" data-course-field="meta">${escapeHtml(tt('courses.by', 'โดย'))} ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ${escapeHtml(tt('common.hours', 'ชม.'))} · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · ' + escapeHtml(tt('courses.openSoon', 'เปิดเร็วๆ นี้')) : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
           <p class="text-sm text-on-surface-variant mb-4" id="course-rating-line">
-            ${Number(c.average_rating || 0).toFixed(1)} ★ · ${Number(c.total_reviews || 0)} รีวิว
+            ${Number(c.average_rating || 0).toFixed(1)} ★ · ${Number(c.total_reviews || 0)} ${escapeHtml(tt('courses.reviews', 'รีวิว'))}
           </p>
-          <p class="text-on-surface-variant mb-5 leading-relaxed" data-course-field="description">${escapeHtml(c.description || 'ยังไม่มีคำอธิบายหลักสูตร')}</p>
-          <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString('th-TH') + ' บาท' : 'ติดต่อสอบถามราคา'}</p>
-          <div class="pts-course-cta-row">
+          <p class="text-on-surface-variant mb-5 leading-relaxed" data-course-field="description">${escapeHtml(c.description || tt('courses.noDesc', 'ยังไม่มีคำอธิบายหลักสูตร'))}</p>
+          <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString((window.PTSLang && PTSLang.get() === 'en') ? 'en-US' : 'th-TH') + ' ' + escapeHtml(tt('common.baht', 'บาท')) : escapeHtml(tt('common.contactPrice', 'ติดต่อสอบถามราคา'))}</p>
+          <div class="pts-course-cta-row" id="course-cta-row">
             ${!loggedIn
-              ? `<a class="pts-btn pts-btn-primary" href="Login.html">เข้าสู่ระบบเพื่อสมัครเรียน</a>`
+              ? `<a class="pts-btn pts-btn-primary" href="Login.html" data-cta="enroll-login">${escapeHtml(tt('courses.enrollLogin', 'เข้าสู่ระบบเพื่อสมัครเรียน'))}</a>`
               : enrolled
-                ? `<a class="pts-btn pts-btn-primary" id="go-learn" href="Learn.html?courseId=${c.course_id}">เข้าเรียน</a>`
-                : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary">สมัครเรียน</button>`}
-            ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline"><span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;line-height:1">calendar_month</span>เพิ่มปฏิทิน</button>` : ''}
+                ? `<a class="pts-btn pts-btn-primary" id="go-learn" href="Learn.html?courseId=${c.course_id}" data-cta="continue">${escapeHtml(tt('courses.continue', 'เข้าเรียน'))}</a>`
+                : `<button type="button" id="pay-course" class="pts-btn pts-btn-primary" data-cta="enroll">${escapeHtml(tt('courses.enroll', 'สมัครเรียน'))}</button>`}
+            ${loggedIn ? `<button type="button" id="calendar-course" class="pts-btn pts-btn-outline" data-cta="calendar"><span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;line-height:1">calendar_month</span>${escapeHtml(tt('courses.addCalendar', 'เพิ่มปฏิทิน'))}</button>` : ''}
           </div>
           <p id="course-toolbar-msg" class="pts-msg" style="margin:0 0 14px;" hidden></p>
           <div id="course-notify-host" hidden></div>
@@ -620,7 +621,7 @@ async function mountCourseNotifyControls(hostEl) {
       if (!r.ok || j.success === false) throw new Error(j.message || 'บันทึกโปรดไม่สำเร็จ');
       isFavorited = typeof j.favorited !== 'undefined' ? !!j.favorited : !isFavorited;
       btn.classList.toggle('is-active', isFavorited);
-      const label = isFavorited ? 'นำออกจากรายการโปรด' : 'บันทึกรายการโปรด';
+      const label = isFavorited ? tt('courses.favRemove', 'นำออกจากรายการโปรด') : tt('courses.favAdd', 'บันทึกรายการโปรด');
       btn.setAttribute('aria-label', label);
       btn.setAttribute('title', label);
     } catch (err) {
@@ -639,9 +640,26 @@ async function mountCourseNotifyControls(hostEl) {
     const descEl = document.querySelector('[data-course-field="description"]');
     if (nameEl) nameEl.textContent = loc.course_name || '';
     if (metaEl) {
-      metaEl.textContent = `โดย ${loc.instructor_name || '-'} · ${Number(loc.total_hours||0)} ชม. · ${loc.delivery_mode || '-'}${loc.is_open_soon ? ' · เปิดเร็วๆ นี้' : ''}${loc.start_date ? ' · เริ่ม ' + String(loc.start_date).slice(0,10) : ''}`;
+      metaEl.textContent = `${tt('courses.by', 'โดย')} ${loc.instructor_name || '-'} · ${Number(loc.total_hours||0)} ${tt('common.hours', 'ชม.')} · ${loc.delivery_mode || '-'}${loc.is_open_soon ? ' · ' + tt('courses.openSoon', 'เปิดเร็วๆ นี้') : ''}${loc.start_date ? ' · เริ่ม ' + String(loc.start_date).slice(0,10) : ''}`;
     }
-    if (descEl) descEl.textContent = loc.description || 'ยังไม่มีคำอธิบายหลักสูตร';
+    if (descEl) descEl.textContent = loc.description || tt('courses.noDesc', 'ยังไม่มีคำอธิบายหลักสูตร');
+    const enrollLogin = document.querySelector('[data-cta="enroll-login"]');
+    if (enrollLogin) enrollLogin.textContent = tt('courses.enrollLogin', 'เข้าสู่ระบบเพื่อสมัครเรียน');
+    const cont = document.querySelector('[data-cta="continue"]');
+    if (cont) cont.textContent = tt('courses.continue', 'เข้าเรียน');
+    const enroll = document.querySelector('[data-cta="enroll"]');
+    if (enroll) enroll.textContent = tt('courses.enroll', 'สมัครเรียน');
+    const cal = document.querySelector('[data-cta="calendar"]');
+    if (cal) {
+      cal.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;line-height:1">calendar_month</span>${escapeHtml(tt('courses.addCalendar', 'เพิ่มปฏิทิน'))}`;
+    }
+    const favBtn = document.getElementById('fav');
+    if (favBtn) {
+      const on = favBtn.classList.contains('is-active');
+      const label = on ? tt('courses.favRemove', 'นำออกจากรายการโปรด') : tt('courses.favAdd', 'บันทึกรายการโปรด');
+      favBtn.setAttribute('aria-label', label);
+      favBtn.setAttribute('title', label);
+    }
   });
 
   if (loggedIn && enrolled) {
