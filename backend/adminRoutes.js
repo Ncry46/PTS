@@ -1187,6 +1187,45 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    router.delete('/coupons/:id', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ success: false, message: 'รหัสคูปองไม่ถูกต้อง' });
+
+        try {
+            const pool = await poolPromise;
+            const existing = await pool.request()
+                .input('id', sql.Int, id)
+                .query(`SELECT coupon_id, code FROM dbo.coupons WHERE coupon_id = @id`);
+            if (!existing.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบคูปอง' });
+            }
+
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query(`DELETE FROM dbo.coupon_redemptions WHERE coupon_id = @id`);
+
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query(`
+                    UPDATE dbo.payments
+                    SET coupon_id = NULL
+                    WHERE coupon_id = @id
+                `);
+
+            await pool.request()
+                .input('id', sql.Int, id)
+                .query(`DELETE FROM dbo.coupons WHERE coupon_id = @id`);
+
+            res.json({
+                success: true,
+                message: `ลบคูปอง ${existing.recordset[0].code} แล้ว`
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message || 'ลบคูปองไม่สำเร็จ' });
+        }
+    });
+
     router.post('/coupons/:id/send-email', async (req, res) => {
         if (!requireAdmin(req, res)) return;
         const id = parseInt(req.params.id, 10);

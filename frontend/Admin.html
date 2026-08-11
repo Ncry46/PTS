@@ -3267,6 +3267,7 @@ async function renderCoupons() {
                   <button type="button" class="pts-btn pts-btn-outline cp-toggle" data-id="${c.coupon_id}" data-flag="${active ? 0 : 1}">
                     ${active ? 'ปิดใช้' : 'เปิดใช้'}
                   </button>
+                  <button type="button" class="pts-btn pts-btn-outline cp-delete" data-id="${c.coupon_id}" data-code="${escapeHtml(c.code)}" style="color:#a12626;border-color:rgba(161,38,38,.35)">ลบ</button>
                 </div>
               </div>
               <div class="cp-mail" data-mail="${c.coupon_id}"></div>
@@ -3352,6 +3353,24 @@ async function renderCoupons() {
           paint();
         } catch (e) {
           alert(e.message || 'อัปเดตไม่สำเร็จ');
+        }
+      };
+    });
+
+    document.querySelectorAll('.cp-delete').forEach((btn) => {
+      btn.onclick = async () => {
+        const code = btn.dataset.code || '';
+        if (!confirm('ลบคูปอง "' + code + '" ถาวร?\nการลบจะเอาออกจากระบบ และกู้คืนไม่ได้')) return;
+        btn.disabled = true;
+        try {
+          await api('/api/admin/coupons/' + btn.dataset.id, { method: 'DELETE', body: '{}' });
+          const fresh = await api('/api/admin/coupons');
+          coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          mailBound.clear();
+          paint();
+        } catch (e) {
+          alert(e.message || 'ลบไม่สำเร็จ');
+          btn.disabled = false;
         }
       };
     });
