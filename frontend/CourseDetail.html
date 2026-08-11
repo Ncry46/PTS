@@ -736,9 +736,38 @@ async function mountCourseNotifyControls(hostEl) {
 </script>
 <script src="/comp/navbar.js?v=20260727paymodal"></script>
 <script>
-document.querySelectorAll('#app-navbar a[href="Login.html"], #app-navbar a[href^="Login.html?"]').forEach((a) => {
-  if (courseId) a.setAttribute('href', loginNextHref());
-});
+(function () {
+  function applyCourseLoginNext() {
+    if (!courseId) return;
+    const target = loginNextHref();
+    document.querySelectorAll('#app-navbar a[href="Login.html"], #app-navbar a[href^="Login.html?next="]').forEach((a) => {
+      a.setAttribute('href', target);
+    });
+  }
+
+  applyCourseLoginNext();
+
+  const origCheck = window.checkUserAndRenderNavbar;
+  if (typeof origCheck === 'function') {
+    window.checkUserAndRenderNavbar = async function () {
+      await origCheck.apply(this, arguments);
+      applyCourseLoginNext();
+    };
+  }
+
+  const navBox = document.getElementById('app-navbar');
+  if (navBox && courseId) {
+    let pending = false;
+    new MutationObserver(() => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => {
+        pending = false;
+        applyCourseLoginNext();
+      });
+    }).observe(navBox, { childList: true, subtree: true });
+  }
+})();
 </script>
 </body>
 </html>

@@ -43,8 +43,13 @@
       if (!status.configured) {
         throw new Error('ยังไม่ได้ตั้งค่า Google OAuth — ใส่ Client ID/Secret ใน backend/google.local.js หรือไฟล์ .env');
       }
-      // เด้งไป Google (เซิร์ฟเวอร์จะ redirect ต่อ)
-      window.location.href = '/api/auth/google/start';
+      const next = new URLSearchParams(location.search).get('next') || '';
+      const safeNext = next && /^[A-Za-z0-9._\-/?#%=]+$/.test(next) && !next.includes('://')
+        ? next
+        : '';
+      window.location.href = safeNext
+        ? '/api/auth/google/start?next=' + encodeURIComponent(safeNext)
+        : '/api/auth/google/start';
     } catch (err) {
       if (loginMsg) {
         loginMsg.textContent = err.message || 'เปิด Gmail Login ไม่สำเร็จ';
