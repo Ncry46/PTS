@@ -78,6 +78,16 @@ function normalizeFlagYn(value, defaultOn = true) {
 /** Cache: 'numeric' (bit/int) | 'string' (varchar Y/N) */
 const flagStorageKindCache = new Map();
 
+function clearFlagStorageKindCache(tableName, column = 'flag_use') {
+    if (!tableName) {
+        flagStorageKindCache.clear();
+        return;
+    }
+    const table = String(tableName || '').replace(/^dbo\./i, '').trim();
+    const col = String(column || 'flag_use').trim();
+    flagStorageKindCache.delete(`${table}.${col}`.toLowerCase());
+}
+
 /**
  * Detect how flag_use is stored on a table (bit/int vs varchar).
  * @returns {Promise<'numeric'|'string'>}
@@ -296,6 +306,7 @@ module.exports = {
     withDb,
     isTransientDbError,
     getFlagStorageKind,
+    clearFlagStorageKindCache,
     bindFlagInput,
     flagSqlLiteral,
     setFlagUse,

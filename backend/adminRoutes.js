@@ -729,6 +729,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const statusFilter = String(req.query.status || '').trim().toLowerCase();
             const sourceFilter = String(req.query.source || '').trim().toLowerCase();
+            const couponFilter = String(req.query.coupon || '').trim().toLowerCase();
             const request = pool.request();
             let where = 'WHERE 1=1';
             if (statusFilter === 'pending' || statusFilter === 'pending_review') {
@@ -740,9 +741,14 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             } else if (statusFilter === 'open') {
                 where += ` AND p.status IN ('pending', 'pending_review')`;
             }
-            if (sourceFilter === 'direct_signup' || sourceFilter === 'access_code') {
+            if (sourceFilter === 'direct_signup' || sourceFilter === 'access_code' || sourceFilter === 'coupon') {
                 request.input('source', sql.VarChar(50), sourceFilter);
                 where += ' AND ISNULL(p.source, \'direct_signup\') = @source';
+            }
+            if (couponFilter === 'yes') {
+                where += ' AND p.coupon_id IS NOT NULL';
+            } else if (couponFilter === 'no') {
+                where += ' AND p.coupon_id IS NULL';
             }
             const result = await request.query(`
                 SELECT TOP 300
@@ -750,23 +756,27 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     ISNULL(p.source, 'direct_signup') AS source,
                     p.reference_code, p.paid_at, p.created_at,
                     p.slip_image_url, p.transfer_at, p.reviewed_by, p.reviewed_at, p.reject_reason,
-                    p.access_code_id,
+                    p.access_code_id, p.coupon_id,
                     u.username, u.email,
                     c.course_name_th, c.course_name_en,
                     COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                     reviewer.username AS reviewer_name,
-                    ac.code AS access_code
+                    ac.code AS access_code,
+                    cp.code AS coupon_code,
+                    cp.discount_amount AS coupon_discount
                 FROM dbo.payments p
                 INNER JOIN dbo.users u ON u.user_id = p.user_id
                 INNER JOIN dbo.courses c ON c.course_id = p.course_id
                 LEFT JOIN dbo.users reviewer ON reviewer.user_id = p.reviewed_by
                 LEFT JOIN dbo.access_codes ac ON ac.access_code_id = p.access_code_id
+                LEFT JOIN dbo.coupons cp ON cp.coupon_id = p.coupon_id
                 ${where}
                 ORDER BY
                     CASE WHEN p.status = 'pending_review' THEN 0
                          WHEN p.status = 'pending' THEN 1
                          WHEN p.status = 'rejected' THEN 2
                          ELSE 3 END,
+                    CASE WHEN p.status = 'pending_review' THEN COALESCE(p.transfer_at, p.created_at) END ASC,
                     COALESCE(p.transfer_at, p.created_at) DESC
             `);
 
@@ -779,6 +789,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 if (status === 'pending_review') workflow = 'pending_review';
                 else if (status === 'paid' && isGateway) workflow = 'auto_approved';
                 else if (status === 'paid' && String(p.source) === 'access_code') workflow = 'access_code';
+                else if (status === 'paid' && String(p.source) === 'coupon') workflow = 'coupon';
                 else if (status === 'paid' && isManual && p.reviewed_by) workflow = 'manual_approved';
                 else if (status === 'paid') workflow = 'paid';
                 else if (status === 'rejected') workflow = 'rejected';
@@ -1272,7 +1283,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(404).json({ success: false, message: 'ไม่พบคูปอง' });
             }
             const coupon = couponRes.recordset[0];
-            if (!coupon.flag_use) {
+            if (!isFlagActive(coupon.flag_use)) {
                 return res.status(400).json({ success: false, message: 'คูปองถูกปิดใช้งานแล้ว' });
             }
 

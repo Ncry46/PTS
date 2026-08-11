@@ -1,4 +1,5 @@
 const sql = require('mssql');
+const { isFlagActive } = require('./db');
 
 const USAGE_RULES = new Set(['once', 'max_uses', 'once_per_user']);
 
@@ -120,7 +121,7 @@ async function loadValidCoupon(pool, { code, courseId, userId = null }) {
     }
 
     const row = result.recordset[0];
-    if (!row.flag_use) {
+    if (!isFlagActive(row.flag_use)) {
         return { ok: false, status: 400, message: 'คูปองนี้ถูกปิดใช้งานแล้ว' };
     }
     if (isCouponExpired(row.expires_at)) {

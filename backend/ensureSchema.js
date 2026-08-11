@@ -116,7 +116,7 @@ async function ensureLearningSchema(pool) {
             used_count INT NOT NULL CONSTRAINT DF_coupons_used DEFAULT (0),
             expires_at DATETIME NULL,
             note NVARCHAR(255) NULL,
-            flag_use BIT NOT NULL CONSTRAINT DF_coupons_flag DEFAULT (1),
+            flag_use VARCHAR(1) NOT NULL CONSTRAINT DF_coupons_flag DEFAULT ('Y'),
             created_by INT NULL,
             created_at DATETIME NOT NULL CONSTRAINT DF_coupons_created DEFAULT (GETDATE()),
             CONSTRAINT UQ_coupons_code UNIQUE (code)
@@ -401,6 +401,7 @@ async function ensureLearningSchema(pool) {
     }
 
     await migrateGcalNotifyOptIn(pool);
+    await migrateCouponsFlagUseToYn(pool);
     await seedHeroSlidesIfEmpty(pool);
     await ensureHeroSlideThemes(pool);
     await seedSampleCourseIfEmpty(pool);
@@ -409,6 +410,81 @@ async function ensureLearningSchema(pool) {
         const { repairHeroSlideImages } = require('./heroImages');
         await repairHeroSlideImages(pool);
     } catch (_) { /* ignore */ }
+}
+
+async function migrateCouponsFlagUseToYn(pool) {
+    // coupons.flag_use: BIT 1/0 → VARCHAR(1) Y/N (matches users / coursesFlag style)
+    try {
+        const exists = await pool.request().query(`
+            SELECT OBJECT_ID(N'dbo.coupons', N'U') AS oid
+        `);
+        if (!exists.recordset[0]?.oid) return;
+
+        const typeRes = await pool.request().query(`
+            SELECT TYPE_NAME(c.user_type_id) AS type_name, c.max_length
+            FROM sys.columns c
+            WHERE c.object_id = OBJECT_ID(N'dbo.coupons')
+              AND c.name = N'flag_use'
+        `);
+        const typeName = String(typeRes.recordset[0]?.type_name || '').toLowerCase();
+        if (!typeName) return;
+
+        if (['bit', 'int', 'tinyint', 'smallint', 'bigint'].includes(typeName)) {
+            const df = await pool.request().query(`
+                SELECT dc.name AS constraint_name
+                FROM sys.default_constraints dc
+                INNER JOIN sys.columns c ON c.default_object_id = dc.object_id
+                WHERE dc.parent_object_id = OBJECT_ID(N'dbo.coupons')
+                  AND c.name = N'flag_use'
+            `);
+            const dfName = df.recordset[0]?.constraint_name;
+            if (dfName) {
+                await pool.request().query(`ALTER TABLE dbo.coupons DROP CONSTRAINT [${dfName}]`);
+            }
+            await pool.request().query(`
+                ALTER TABLE dbo.coupons ALTER COLUMN flag_use VARCHAR(1) NOT NULL
+            `);
+            await pool.request().query(`
+                UPDATE dbo.coupons
+                SET flag_use = CASE
+                    WHEN UPPER(LTRIM(RTRIM(flag_use))) IN (N'1', N'Y', N'YES', N'TRUE', N'T') THEN 'Y'
+                    ELSE 'N'
+                END
+            `);
+            const hasDf = await pool.request().query(`
+                SELECT 1 AS ok
+                FROM sys.default_constraints
+                WHERE parent_object_id = OBJECT_ID(N'dbo.coupons')
+                  AND name = N'DF_coupons_flag'
+            `);
+            if (!hasDf.recordset.length) {
+                await pool.request().query(`
+                    ALTER TABLE dbo.coupons
+                    ADD CONSTRAINT DF_coupons_flag DEFAULT ('Y') FOR flag_use
+                `);
+            }
+            console.log('[schema] coupons.flag_use migrated to VARCHAR Y/N');
+        } else {
+            await pool.request().query(`
+                UPDATE dbo.coupons
+                SET flag_use = CASE
+                    WHEN UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), flag_use))))
+                         IN (N'1', N'Y', N'YES', N'TRUE', N'T') THEN 'Y'
+                    ELSE 'N'
+                END
+                WHERE flag_use IS NULL
+                   OR UPPER(LTRIM(RTRIM(CONVERT(NVARCHAR(20), flag_use))))
+                      NOT IN (N'Y', N'N')
+            `);
+        }
+
+        try {
+            const { clearFlagStorageKindCache } = require('./db');
+            clearFlagStorageKindCache('coupons', 'flag_use');
+        } catch (_) { /* ignore */ }
+    } catch (err) {
+        console.warn('[schema] migrateCouponsFlagUseToYn:', err.message);
+    }
 }
 
 async function migrateGcalNotifyOptIn(pool) {
@@ -839,6 +915,7 @@ async function ensureCompatColumns(pool) {
         }
     }
     console.log(`🧩 Column compat checked (${ok} ok, ${skipped} skipped)`);
+    await migrateCouponsFlagUseToYn(pool);
 }
 
-module.exports = { ensureLearningSchema, ensureCompatColumns, createNotification };
+module.exports = { ensureLearningSchema, ensureCompatColumns, createNotification, migrateCouponsFlagUseToYn };

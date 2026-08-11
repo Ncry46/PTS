@@ -2630,6 +2630,7 @@ async function renderPayments() {
   let payments = Array.isArray(payRes.data) ? payRes.data.slice() : [];
   let accessCodes = Array.isArray(codeRes.data) ? codeRes.data.slice() : [];
   let filter = 'pending_review';
+  let couponFilter = 'all';
 
   const fmtMoney = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -2638,7 +2639,18 @@ async function renderPayments() {
     if (src === 'access_code') {
       return `<span class="adm-pay-src adm-pay-src--code" title="ใช้รหัสเข้าเรียน">🔑 ใช้รหัสเข้าเรียน</span>`;
     }
+    if (src === 'coupon' || p.coupon_id) {
+      return `<span class="adm-pay-src adm-pay-src--direct" title="ใช้คูปองส่วนลด">🎟️ มีคูปอง</span>`;
+    }
     return `<span class="adm-pay-src adm-pay-src--direct" title="สมัครผ่านเว็บ">🏷️ สมัครผ่านเว็บ</span>`;
+  };
+
+  const couponCell = (p) => {
+    const code = String(p.coupon_code || '').trim();
+    if (!code && !p.coupon_id) return '<span class="adm-pay-meta">—</span>';
+    const disc = p.coupon_discount != null ? Number(p.coupon_discount) : null;
+    return `<div class="adm-c-name">${escapeHtml(code || ('#' + p.coupon_id))}</div>
+      ${Number.isFinite(disc) ? `<div class="adm-pay-meta">ลด ฿${fmtMoney(disc)}</div>` : ''}`;
   };
 
   const statusBadge = (p) => {
@@ -2662,6 +2674,7 @@ async function renderPayments() {
     const m = String(p.method || '').toLowerCase();
     if (m === 'card') return 'บัตรเครดิต (Gateway)';
     if (m === 'access_code') return 'รหัสเข้าเรียน';
+    if (m === 'coupon') return 'คูปองส่วนลด';
     if (m === 'promptpay' || m === 'bank_transfer') return 'โอนเงิน / PromptPay + สลิป';
     return m || '—';
   };
@@ -2674,10 +2687,20 @@ async function renderPayments() {
   });
 
   const filteredRows = () => {
-    if (filter === 'pending_review') return payments.filter((p) => p.status === 'pending_review');
-    if (filter === 'paid') return payments.filter((p) => p.status === 'paid');
-    if (filter === 'rejected') return payments.filter((p) => p.status === 'rejected');
-    return payments;
+    let rows = payments;
+    if (filter === 'pending_review') rows = rows.filter((p) => p.status === 'pending_review');
+    else if (filter === 'paid') rows = rows.filter((p) => p.status === 'paid');
+    else if (filter === 'rejected') rows = rows.filter((p) => p.status === 'rejected');
+    if (couponFilter === 'yes') rows = rows.filter((p) => p.coupon_id != null && p.coupon_id !== '');
+    else if (couponFilter === 'no') rows = rows.filter((p) => p.coupon_id == null || p.coupon_id === '');
+    return rows;
+  };
+
+  const applyLocalStatus = (paymentId, patch) => {
+    const id = Number(paymentId);
+    const idx = payments.findIndex((p) => Number(p.payment_id) === id);
+    if (idx < 0) return;
+    payments[idx] = { ...payments[idx], ...patch };
   };
 
   const rowActions = (p) => {
@@ -2716,6 +2739,11 @@ async function renderPayments() {
           ทั้งหมด<span class="adm-pay-tab__n">${c.all}</span>
         </button>
       </div>
+      <div class="adm-pay-tabs" role="tablist" aria-label="กรองคูปอง" style="margin-top:8px">
+        <button type="button" class="adm-pay-tab ${couponFilter === 'all' ? 'is-active' : ''}" data-coupon="all">คูปองทั้งหมด</button>
+        <button type="button" class="adm-pay-tab ${couponFilter === 'yes' ? 'is-active' : ''}" data-coupon="yes">มีคูปอง</button>
+        <button type="button" class="adm-pay-tab ${couponFilter === 'no' ? 'is-active' : ''}" data-coupon="no">ไม่มีคูปอง</button>
+      </div>
 
       <div class="adm-c-table-wrap">
         <table class="adm-c-table">
@@ -2724,6 +2752,7 @@ async function renderPayments() {
               <th>นักเรียน</th>
               <th>หลักสูตร</th>
               <th>ที่มา</th>
+              <th>คูปอง</th>
               <th>ช่องทาง</th>
               <th>ยอด / เวลาโอน</th>
               <th>สลิป</th>
@@ -2740,6 +2769,7 @@ async function renderPayments() {
                 </td>
                 <td>${escapeHtml(getCourseName(p) || '—')}</td>
                 <td>${sourceBadge(p)}</td>
+                <td>${couponCell(p)}</td>
                 <td><span class="adm-pay-meta">${escapeHtml(methodLabel(p))}</span></td>
                 <td>
                   <div class="adm-c-name">฿${fmtMoney(p.amount)}</div>
@@ -2758,7 +2788,7 @@ async function renderPayments() {
                   ${p.reject_reason ? `<div class="adm-pay-meta mt-1">${escapeHtml(p.reject_reason)}</div>` : ''}
                 </td>
                 <td>${rowActions(p)}</td>
-              </tr>`).join('') || '<tr><td colspan="8" class="adm-c-empty" style="border:0">ไม่มีรายการในแท็บนี้</td></tr>'}
+              </tr>`).join('') || '<tr><td colspan="9" class="adm-c-empty" style="border:0">ไม่มีรายการในแท็บนี้</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2782,6 +2812,11 @@ async function renderPayments() {
               ${sourceBadge(p)}
               <span class="adm-pay-meta">${escapeHtml(methodLabel(p))}</span>
             </div>
+            <div class="adm-pay-meta" style="margin-bottom:8px">คูปอง: ${
+              p.coupon_code
+                ? `${escapeHtml(p.coupon_code)}${p.coupon_discount != null ? ' · ลด ฿' + fmtMoney(p.coupon_discount) : ''}`
+                : '—'
+            }</div>
             ${p.slip_image_url
               ? `<a href="${escapeHtml(p.slip_image_url)}" target="_blank" rel="noopener"><img class="adm-pay-slip" src="${escapeHtml(p.slip_image_url)}" alt="สลิป"></a>`
               : ''}
@@ -2834,8 +2869,12 @@ async function renderPayments() {
       </div>
     `;
 
-    document.querySelectorAll('.adm-pay-tab').forEach((btn) => {
+    document.querySelectorAll('.adm-pay-tab[data-filter]').forEach((btn) => {
       btn.onclick = () => { filter = btn.dataset.filter; paint(); };
+    });
+
+    document.querySelectorAll('.adm-pay-tab[data-coupon]').forEach((btn) => {
+      btn.onclick = () => { couponFilter = btn.dataset.coupon; paint(); };
     });
 
     document.querySelectorAll('.pay-approve').forEach((btn) => {
@@ -2844,8 +2883,12 @@ async function renderPayments() {
         btn.disabled = true;
         try {
           await api(`/api/admin/payments/${btn.dataset.id}/approve`, { method: 'POST', body: '{}' });
-          const fresh = await api('/api/admin/payments');
-          payments = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          applyLocalStatus(btn.dataset.id, {
+            status: 'paid',
+            workflow: 'manual_approved',
+            paid_at: new Date().toISOString(),
+            reviewed_at: new Date().toISOString()
+          });
           paint();
         } catch (e) {
           alert(e.message || 'อนุมัติไม่สำเร็จ');
@@ -2864,8 +2907,12 @@ async function renderPayments() {
             method: 'POST',
             body: JSON.stringify({ reason })
           });
-          const fresh = await api('/api/admin/payments');
-          payments = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          applyLocalStatus(btn.dataset.id, {
+            status: 'rejected',
+            workflow: 'rejected',
+            reject_reason: String(reason || '').trim(),
+            reviewed_at: new Date().toISOString()
+          });
           paint();
         } catch (e) {
           alert(e.message || 'ปฏิเสธไม่สำเร็จ');
@@ -3247,7 +3294,8 @@ async function renderCoupons() {
           </div>
           ${coupons.map((c) => {
             const left = Math.max(0, Number(c.course_price || 0) - Number(c.discount_amount || 0));
-            const active = !!c.flag_use;
+            const flag = String(c.flag_use ?? 'Y').trim().toUpperCase();
+            const active = flag === 'Y' || flag === '1' || flag === 'TRUE' || c.flag_use === true || c.flag_use === 1;
             return `
             <article class="cp-card${!active ? ' is-disabled' : ''}" data-card="${c.coupon_id}">
               <div class="cp-card__top">
@@ -3264,7 +3312,7 @@ async function renderCoupons() {
                 </div>
                 <div class="cp-card__actions">
                   <button type="button" class="pts-btn pts-btn-primary cp-open-mail" data-id="${c.coupon_id}">ส่งอีเมล</button>
-                  <button type="button" class="pts-btn pts-btn-outline cp-toggle" data-id="${c.coupon_id}" data-flag="${active ? 0 : 1}">
+                  <button type="button" class="pts-btn pts-btn-outline cp-toggle" data-id="${c.coupon_id}" data-flag="${active ? 'N' : 'Y'}">
                     ${active ? 'ปิดใช้' : 'เปิดใช้'}
                   </button>
                   <button type="button" class="pts-btn pts-btn-outline cp-delete" data-id="${c.coupon_id}" data-code="${escapeHtml(c.code)}" style="color:#a12626;border-color:rgba(161,38,38,.35)">ลบ</button>
@@ -3345,7 +3393,7 @@ async function renderCoupons() {
         try {
           await api('/api/admin/coupons/' + btn.dataset.id, {
             method: 'PATCH',
-            body: JSON.stringify({ flag_use: Number(btn.dataset.flag) })
+            body: JSON.stringify({ flag_use: btn.dataset.flag === 'N' ? 'N' : 'Y' })
           });
           const fresh = await api('/api/admin/coupons');
           coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
