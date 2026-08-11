@@ -220,7 +220,9 @@ function createFormRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
                            f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
-                           f.course_id, c.course_name
+                           f.course_id,
+                           c.course_name_th, c.course_name_en,
+                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                     FROM dbo.custom_forms f
                     LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
@@ -558,7 +560,9 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
             const formRes = await pool.request()
                 .input('formId', sql.Int, formId)
                 .query(`
-                    SELECT f.*, ISNULL(f.form_type,'general') AS form_type, c.course_name
+                    SELECT f.*, ISNULL(f.form_type,'general') AS form_type,
+                           c.course_name_th, c.course_name_en,
+                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                     FROM dbo.custom_forms f
                     LEFT JOIN dbo.courses c ON c.course_id = f.course_id
                     WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}

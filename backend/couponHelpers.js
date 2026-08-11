@@ -13,6 +13,78 @@ function parseDiscountAmount(raw) {
 }
 
 /**
+ * Parse admin datetime-local (YYYY-MM-DDTHH:mm) as Thailand wall-clock.
+ * mssql/tedious treats DATETIME as UTC, so we store wall-clock in UTC fields.
+ * If time is 00:00, treat as end of that day (23:59:59) to avoid "expired at midnight".
+ */
+function parseCouponExpiresAt(raw) {
+    const s = String(raw || '').trim();
+    if (!s) return { ok: true, value: null };
+
+    const m = s.match(/^(\d{4})-(\d{2})-(\d{2})(?:[T\s](\d{2}):(\d{2})(?::(\d{2}))?)?/);
+    if (!m) {
+        const d = new Date(s);
+        if (Number.isNaN(d.getTime())) {
+            return { ok: false, message: 'วันหมดอายุไม่ถูกต้อง' };
+        }
+        return { ok: true, value: d };
+    }
+
+    const year = Number(m[1]);
+    const month = Number(m[2]);
+    const day = Number(m[3]);
+    let hour = m[4] != null ? Number(m[4]) : 23;
+    let minute = m[5] != null ? Number(m[5]) : 59;
+    let second = m[6] != null ? Number(m[6]) : 59;
+
+    // datetime-local default time is often 00:00 → would expire immediately that morning
+    if (m[4] != null && hour === 0 && minute === 0 && (m[6] == null || second === 0)) {
+        hour = 23;
+        minute = 59;
+        second = 59;
+    }
+    if (m[4] == null) {
+        hour = 23;
+        minute = 59;
+        second = 59;
+    }
+
+    const value = new Date(Date.UTC(year, month - 1, day, hour, minute, second));
+    if (Number.isNaN(value.getTime())) {
+        return { ok: false, message: 'วันหมดอายุไม่ถูกต้อง' };
+    }
+    return { ok: true, value };
+}
+
+/**
+ * Compare SQL DATETIME expiry with "now" using wall-clock UTC parts
+ * (matches how mssql/tedious round-trips DATETIME without timezone).
+ */
+function isCouponExpired(expiresAt, now = new Date()) {
+    if (!expiresAt) return false;
+    const d = expiresAt instanceof Date ? expiresAt : new Date(expiresAt);
+    if (Number.isNaN(d.getTime())) return false;
+
+    const expMs = Date.UTC(
+        d.getUTCFullYear(),
+        d.getUTCMonth(),
+        d.getUTCDate(),
+        d.getUTCHours(),
+        d.getUTCMinutes(),
+        d.getUTCSeconds()
+    );
+    const nowMs = Date.UTC(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        now.getHours(),
+        now.getMinutes(),
+        now.getSeconds()
+    );
+    return expMs < nowMs;
+}
+
+/**
  * Load coupon + course price and validate eligibility for a user (optional).
  * Does not mutate used_count.
  */
@@ -36,7 +108,8 @@ async function loadValidCoupon(pool, { code, courseId, userId = null }) {
                 COALESCE(
                     NULLIF(LTRIM(RTRIM(co.course_name_th)), N''),
                     NULLIF(LTRIM(RTRIM(co.course_name_en)), N'')
-                ) AS course_name
+                ) AS course_name,
+                co.course_name_th, co.course_name_en
             FROM dbo.coupons c
             INNER JOIN dbo.courses co ON co.course_id = c.course_id
             WHERE c.code = @code AND c.course_id = @courseId
@@ -50,7 +123,7 @@ async function loadValidCoupon(pool, { code, courseId, userId = null }) {
     if (!row.flag_use) {
         return { ok: false, status: 400, message: 'คูปองนี้ถูกปิดใช้งานแล้ว' };
     }
-    if (row.expires_at && new Date(row.expires_at).getTime() < Date.now()) {
+    if (isCouponExpired(row.expires_at)) {
         return { ok: false, status: 400, message: 'คูปองหมดอายุแล้ว' };
     }
 
@@ -131,6 +204,8 @@ module.exports = {
     USAGE_RULES,
     normalizeCouponCode,
     parseDiscountAmount,
+    parseCouponExpiresAt,
+    isCouponExpired,
     loadValidCoupon,
     recordRedemption
 };

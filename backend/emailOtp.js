@@ -256,20 +256,24 @@ async function sendHtmlEmail(to, subject, text, html) {
     throw err;
 }
 
-async function sendCouponEmail(to, { fullName, courseName, code, discountAmount, finalHint }) {
+async function sendCouponEmail(to, { fullName, courseName, courseNameEn, code, discountAmount, finalHint }) {
     const name = String(fullName || '').trim() || 'ผู้เรียน';
-    const course = String(courseName || '').trim() || 'หลักสูตร';
+    const courseTh = String(courseName || '').trim() || 'หลักสูตร';
+    const courseEn = String(courseNameEn || '').trim();
+    const courseLine = courseEn && courseEn !== courseTh
+        ? `${courseTh} / ${courseEn}`
+        : courseTh;
     const couponCode = String(code || '').trim();
     const discount = Number(discountAmount) || 0;
     const hint = String(finalHint || '').trim();
-    const subject = `คูปองส่วนลดหลักสูตร — ${course} | PA`;
-    const text = `สวัสดีคุณ ${name}\n\nคุณได้รับคูปองส่วนลดสำหรับหลักสูตร "${course}"\nรหัสคูปอง: ${couponCode}\nส่วนลด: ${discount.toLocaleString('th-TH')} บาท${hint ? `\n${hint}` : ''}\n\nวิธีใช้: เข้าสู่ระบบ → เปิดหลักสูตร → ชำระเงิน → กรอกรหัสคูปองแล้วกดใช้คูปอง\n\n— PA`;
+    const subject = `คูปองส่วนลดหลักสูตร — ${courseTh} | PA`;
+    const text = `สวัสดีคุณ ${name}\n\nคุณได้รับคูปองส่วนลดสำหรับหลักสูตร "${courseLine}"\nรหัสคูปอง: ${couponCode}\nส่วนลด: ${discount.toLocaleString('th-TH')} บาท${hint ? `\n${hint}` : ''}\n\nวิธีใช้: เข้าสู่ระบบ → เปิดหลักสูตร → ชำระเงิน → กรอกรหัสคูปองแล้วกดใช้คูปอง\n\n— PA`;
     const html = `
       <div style="font-family:'Segoe UI',Tahoma,sans-serif;max-width:520px;margin:0 auto;padding:28px;color:#1c1520;background:#fff;border:1px solid #f0e4e7;border-radius:16px">
         <div style="font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#ca1156;margin-bottom:12px">PA</div>
         <h2 style="margin:0 0 12px;font-size:22px;color:#1c1520">คูปองส่วนลดหลักสูตร</h2>
         <p style="margin:0 0 12px;color:#5c4f55;line-height:1.55">สวัสดีคุณ <strong>${name.replace(/</g, '')}</strong></p>
-        <p style="margin:0 0 12px;color:#5c4f55;line-height:1.55">คุณได้รับคูปองสำหรับหลักสูตร <strong>${course.replace(/</g, '')}</strong></p>
+        <p style="margin:0 0 12px;color:#5c4f55;line-height:1.55">คุณได้รับคูปองสำหรับหลักสูตร <strong>${courseLine.replace(/</g, '')}</strong></p>
         <div style="margin:16px 0;padding:16px;background:#faf5f7;border-radius:12px;text-align:center">
           <div style="font-size:12px;color:#8a7a80;margin-bottom:6px">รหัสคูปอง</div>
           <div style="font-size:22px;font-weight:800;letter-spacing:.12em;font-family:Consolas,monospace;color:#1c1520">${couponCode.replace(/</g, '')}</div>

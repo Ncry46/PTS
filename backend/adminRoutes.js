@@ -18,7 +18,8 @@ const { markPaidAndEnroll } = require('./paymentActions');
 const {
     USAGE_RULES,
     normalizeCouponCode,
-    parseDiscountAmount
+    parseDiscountAmount,
+    parseCouponExpiresAt
 } = require('./couponHelpers');
 const {
     COURSE_API_VERSION,
@@ -27,7 +28,8 @@ const {
     courseListTextSql,
     courseMetaSelectSql,
     normalizeCourseBody,
-    resolveLangFromReq
+    resolveLangFromReq,
+    pickText
 } = require('./courseLang');
 
 const HERO_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -585,13 +587,23 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await pool.request().query(`
-                SELECT s.*, c.course_name
+                SELECT s.*,
+                       c.course_name_th, c.course_name_en,
+                       COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE ${flagActiveSql('s.flag_use')}
                 ORDER BY s.start_at DESC
             `);
-            res.json({ success: true, data: result.recordset });
+            const lang = resolveLangFromReq(req);
+            res.json({
+                success: true,
+                lang,
+                data: (result.recordset || []).map((row) => ({
+                    ...row,
+                    course_name: pickText(row, 'course_name', lang) || row.course_name || null
+                }))
+            });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -1014,6 +1026,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     cp.max_uses, cp.used_count, cp.expires_at, cp.note, cp.flag_use,
                     cp.created_at, cp.created_by,
                     ISNULL(c.price, 0) AS course_price,
+                    c.course_name_th, c.course_name_en,
                     COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                     u.username AS created_by_name
                 FROM dbo.coupons cp
@@ -1021,7 +1034,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 LEFT JOIN dbo.users u ON u.user_id = cp.created_by
                 ORDER BY cp.created_at DESC
             `);
-            res.json({ success: true, data: result.recordset });
+            const lang = resolveLangFromReq(req);
+            res.json({
+                success: true,
+                lang,
+                data: (result.recordset || []).map((row) => ({
+                    ...row,
+                    course_name: pickText(row, 'course_name', lang) || row.course_name || null
+                }))
+            });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -1072,11 +1093,11 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
         let expiresAt = null;
         if (expiresRaw) {
-            const d = new Date(expiresRaw);
-            if (Number.isNaN(d.getTime())) {
-                return res.status(400).json({ success: false, message: 'วันหมดอายุไม่ถูกต้อง' });
+            const parsed = parseCouponExpiresAt(expiresRaw);
+            if (!parsed.ok) {
+                return res.status(400).json({ success: false, message: parsed.message });
             }
-            expiresAt = d;
+            expiresAt = parsed.value;
         }
 
         try {
@@ -1185,6 +1206,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     SELECT
                         cp.coupon_id, cp.code, cp.discount_amount, cp.flag_use,
                         ISNULL(c.price, 0) AS course_price,
+                        c.course_name_th, c.course_name_en,
                         COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                     FROM dbo.coupons cp
                     INNER JOIN dbo.courses c ON c.course_id = cp.course_id
@@ -1222,7 +1244,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
             await sendCouponEmail(email, {
                 fullName,
-                courseName: coupon.course_name,
+                courseName: pickText(coupon, 'course_name', 'th') || coupon.course_name,
+                courseNameEn: pickText(coupon, 'course_name', 'en') || '',
                 code: coupon.code,
                 discountAmount: discount,
                 finalHint

@@ -93,7 +93,8 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
                 .input('courseId', sql.Int, courseId)
                 .query(`
                     SELECT u.username, u.email,
-                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N''), c.course_name) AS course_name
+                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
+                           c.course_name_th, c.course_name_en
                     FROM dbo.users u
                     CROSS JOIN dbo.courses c
                     WHERE u.user_id = @userId AND c.course_id = @courseId

@@ -528,6 +528,34 @@
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 let coursesCache = [];
 const pad2 = (n) => String(n).padStart(2, '0');
+const fmtDt = (v) => {
+  if (!v) return '—';
+  try { return new Date(v).toLocaleString('th-TH'); } catch (_) { return '—'; }
+};
+const courseTitle = (c) => {
+  if (!c) return '';
+  if (window.PTSCourseI18n) {
+    const n = PTSCourseI18n.name(c);
+    if (n) return n;
+  }
+  const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+  const th = String(c.course_name_th || '').trim();
+  const en = String(c.course_name_en || '').trim();
+  if (lang === 'en') return en || th || String(c.course_name || '').trim();
+  return th || en || String(c.course_name || '').trim();
+};
+const courseInstructor = (c) => {
+  if (!c) return '—';
+  if (window.PTSCourseI18n) {
+    const n = PTSCourseI18n.instructor(c);
+    if (n) return n;
+  }
+  const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+  const th = String(c.instructor_name_th || '').trim();
+  const en = String(c.instructor_name_en || '').trim();
+  if (lang === 'en') return en || th || String(c.instructor_name || '').trim() || '—';
+  return th || en || String(c.instructor_name || '').trim() || '—';
+};
 function toDateKey(value) {
   if (value == null) return '';
   if (typeof value === 'string') {
@@ -572,21 +600,6 @@ async function renderCourses() {
     window.PTSCourseI18n ? PTSCourseI18n.localize(c) : c
   ));
   let editingId = null;
-
-  const courseTitle = (c) => {
-    if (window.PTSCourseI18n) {
-      const n = PTSCourseI18n.name(c);
-      if (n) return n;
-    }
-    return (c.course_name || c.course_name_th || c.course_name_en || '').toString().trim();
-  };
-  const courseInstructor = (c) => {
-    if (window.PTSCourseI18n) {
-      const n = PTSCourseI18n.instructor(c);
-      if (n) return n;
-    }
-    return (c.instructor_name || c.instructor_name_th || c.instructor_name_en || '').toString().trim() || '—';
-  };
 
   const modeClass = (mode) => {
     const m = String(mode || '').toLowerCase();
@@ -2448,10 +2461,6 @@ async function renderPayments() {
   let filter = 'pending_review';
 
   const fmtMoney = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
-  const fmtDt = (v) => {
-    if (!v) return '—';
-    try { return new Date(v).toLocaleString('th-TH'); } catch (_) { return '—'; }
-  };
 
   const sourceBadge = (p) => {
     const src = String(p.source || 'direct_signup');
@@ -2962,7 +2971,7 @@ async function renderCoupons() {
           <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
             <select id="cp-course" class="mt-1 w-full border rounded-xl px-3 py-2">
               <option value="">-- เลือก --</option>
-              ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(c.course_name || c.course_name_th || '')} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
+              ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(courseTitle(c))} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
             </select>
           </label>
           <label class="text-sm font-semibold text-on-surface-variant">รหัสคูปอง (ตัวอักษร/ตัวเลข, ว่าง = สุ่ม)
@@ -2981,8 +2990,9 @@ async function renderCoupons() {
           <label class="text-sm font-semibold text-on-surface-variant" id="cp-max-wrap">จำนวนครั้งใช้ได้
             <input id="cp-max" type="number" min="1" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 50" value="50">
           </label>
-          <label class="text-sm font-semibold text-on-surface-variant">หมดอายุ (ถ้ามี)
+          <label class="text-sm font-semibold text-on-surface-variant">หมดอายุ (ว่าง = ไม่หมดอายุ)
             <input id="cp-exp" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2">
+            <span class="adm-pay-meta font-normal">ถ้าเลือกเวลา 00:00 ระบบจะถือเป็นสิ้นวันนั้น (23:59)</span>
           </label>
           <label class="text-sm font-semibold text-on-surface-variant md:col-span-2">หมายเหตุ
             <input id="cp-note" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น โปรโมชันเดือน ส.ค.">
@@ -2999,7 +3009,7 @@ async function renderCoupons() {
             <div class="flex flex-wrap justify-between gap-2 items-start">
               <div>
                 <p class="font-bold font-mono tracking-wide text-lg">${escapeHtml(c.code)}</p>
-                <p class="adm-pay-meta">${escapeHtml(c.course_name || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}</p>
+                <p class="adm-pay-meta">${escapeHtml(courseTitle(c) || c.course_name || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}</p>
                 <p class="adm-pay-meta">ลด ฿${Number(c.discount_amount || 0).toLocaleString('th-TH')}
                   → เหลือ ฿${Math.max(0, Number(c.course_price || 0) - Number(c.discount_amount || 0)).toLocaleString('th-TH')}
                   · ${usageLabel(c.usage_rule)}
