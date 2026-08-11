@@ -336,11 +336,11 @@ async function mountCourseNotifyControls(hostEl) {
           </div>
           <span class="pts-chip mb-3 w-fit">${escapeHtml(c.delivery_mode || 'course')}</span>
           <p class="text-xs font-bold tracking-[0.14em] text-primary mb-2">PTS LEARNING</p>
-          <h1 class="text-3xl font-bold text-primary mb-2 pts-display" data-course-field="name">${escapeHtml(c.course_name)}</h1>
-          <p class="text-sm text-on-surface-variant mb-4" data-course-field="meta">${escapeHtml(tt('courses.by', 'โดย'))} ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ${escapeHtml(tt('common.hours', 'ชม.'))} · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · ' + escapeHtml(tt('courses.openSoon', 'เปิดเร็วๆ นี้')) : ''}${c.start_date ? ' · เริ่ม ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
+          <h1 class="text-3xl font-bold text-primary mb-2 pts-display" data-course-field="name">${escapeHtml(courseTitle)}</h1>
+          <p class="text-sm text-on-surface-variant mb-4" data-course-field="meta">${tt('common.by', 'โดย')} ${escapeHtml(c.instructor_name || '-')} · ${Number(c.total_hours||0)} ${tt('common.hours', 'ชม.')} · ${escapeHtml(c.delivery_mode || '-')}${c.is_open_soon ? ' · ' + tt('common.comingSoon', 'เปิดเร็วๆ นี้') : ''}${c.start_date ? ' · ' + tt('common.starts', 'เริ่ม') + ' ' + escapeHtml(String(c.start_date).slice(0,10)) : ''}</p>
           <p class="text-sm text-on-surface-variant mb-4" id="course-rating-line">
-            ${Number(c.average_rating || 0).toFixed(1)} ★ · ${Number(c.total_reviews || 0)} ${escapeHtml(tt('courses.reviews', 'รีวิว'))}
-          </p>
+          ${Number(c.average_rating || 0).toFixed(1)} ★ · ${Number(c.total_reviews || 0)} ${PTSLang.t('common.reviews')}
+        </p>
           <p class="text-on-surface-variant mb-5 leading-relaxed" data-course-field="description">${escapeHtml(c.description || tt('courses.noDesc', 'ยังไม่มีคำอธิบายหลักสูตร'))}</p>
           <p class="text-2xl font-bold pts-display mb-5">${price ? price.toLocaleString((window.PTSLang && PTSLang.get() === 'en') ? 'en-US' : 'th-TH') + ' ' + escapeHtml(tt('common.baht', 'บาท')) : escapeHtml(tt('common.contactPrice', 'ติดต่อสอบถามราคา'))}</p>
           <div class="pts-course-cta-row" id="course-cta-row">
@@ -393,10 +393,12 @@ async function mountCourseNotifyControls(hostEl) {
 
       const avg = Number(j.summary?.average_rating || 0).toFixed(1);
       const total = Number(j.summary?.total_reviews || 0);
-      const reviewText = window.PTSLang?.t('common.reviews') || 'รีวิว';
-  summaryEl.innerHTML = `${starsHtml(avg)} <strong>${avg}</strong> · ${total} ${reviewText}`;
-  const ratingLine = document.getElementById('course-rating-line');
-  if (ratingLine) ratingLine.textContent = `${avg} ★ · ${total} ${reviewText}`;
+      // ✅ ใช้ tt() ให้เหมือนกับจุดอื่นในโปรเจกต์
+      const reviewText = tt('common.reviews', 'รีวิว');
+      summaryEl.innerHTML = `${starsHtml(avg)} <strong>${avg}</strong> · ${total} ${reviewText}`;
+      
+      const ratingLine = document.getElementById('course-rating-line');
+      if (ratingLine) ratingLine.textContent = `${avg} ★ · ${total} ${reviewText}`;
 
       if (!loggedIn) {
         formHost.innerHTML = `<p class="pts-review-gate">เข้าสู่ระบบ และสมัครเรียน+ชำระเงินแล้ว จึงจะรีวิวได้ · <a class="text-primary font-bold" href="Login.html">เข้าสู่ระบบ</a></p>`;
@@ -636,24 +638,55 @@ async function mountCourseNotifyControls(hostEl) {
     const raw = window.__ptsCourseRaw;
     if (!raw || !window.PTSCourseI18n) return;
     const loc = PTSCourseI18n.localize(raw);
+
     const nameEl = document.querySelector('[data-course-field="name"]');
     const metaEl = document.querySelector('[data-course-field="meta"]');
     const descEl = document.querySelector('[data-course-field="description"]');
+
     if (nameEl) nameEl.textContent = loc.course_name || '';
+
+    // 1. Meta (โดย / ชม. / เริ่ม)
     if (metaEl) {
-      metaEl.textContent = `${tt('courses.by', 'โดย')} ${loc.instructor_name || '-'} · ${Number(loc.total_hours||0)} ${tt('common.hours', 'ชม.')} · ${loc.delivery_mode || '-'}${loc.is_open_soon ? ' · ' + tt('courses.openSoon', 'เปิดเร็วๆ นี้') : ''}${loc.start_date ? ' · เริ่ม ' + String(loc.start_date).slice(0,10) : ''}`;
+      const startDateText = loc.start_date 
+        ? ` · ${tt('common.starts', 'เริ่ม')} ${String(loc.start_date).slice(0, 10)}` 
+        : '';
+
+      metaEl.textContent = `${tt('common.by', 'โดย')} ${loc.instructor_name || '-'} · ${Number(loc.total_hours||0)} ${tt('common.hours', 'ชม.')} · ${loc.delivery_mode || '-'}${loc.is_open_soon ? ' · ' + tt('common.comingSoon', 'เปิดเร็วๆ นี้') : ''}${startDateText}`;
     }
+
     if (descEl) descEl.textContent = loc.description || tt('courses.noDesc', 'ยังไม่มีคำอธิบายหลักสูตร');
+
+    // 2. ⚡ อัปเดตบรรทัด Rating + "รีวิว / Reviews" (เพิ่มจุดนี้)
+    const ratingLine = document.getElementById('course-rating-line');
+    if (ratingLine) {
+      ratingLine.textContent = `${Number(loc.average_rating || 0).toFixed(1)} ★ · ${Number(loc.total_reviews || 0)} ${tt('common.reviews', 'รีวิว')}`;
+    }
+
+    // 3. ⚡ อัปเดตบรรทัด ราคา + "บาท / THB" (เพิ่มจุดนี้)
+    const priceEl = document.querySelector('.text-2xl.font-bold.pts-display.mb-5');
+    if (priceEl) {
+      const priceVal = Number(loc.price || 0);
+      const isEn = window.PTSLang && typeof PTSLang.get === 'function' && PTSLang.get() === 'en';
+      priceEl.textContent = priceVal 
+        ? `${priceVal.toLocaleString(isEn ? 'en-US' : 'th-TH')} ${tt('common.baht', 'บาท')}` 
+        : tt('common.contactPrice', 'ติดต่อสอบถามราคา');
+    }
+
+    // 4. ปุ่ม CTA ต่างๆ
     const enrollLogin = document.querySelector('[data-cta="enroll-login"]');
     if (enrollLogin) enrollLogin.textContent = tt('courses.enrollLogin', 'เข้าสู่ระบบเพื่อสมัครเรียน');
+
     const cont = document.querySelector('[data-cta="continue"]');
     if (cont) cont.textContent = tt('courses.continue', 'เข้าเรียน');
+
     const enroll = document.querySelector('[data-cta="enroll"]');
     if (enroll) enroll.textContent = tt('courses.enroll', 'สมัครเรียน');
+
     const cal = document.querySelector('[data-cta="calendar"]');
     if (cal) {
       cal.innerHTML = `<span class="material-symbols-outlined" aria-hidden="true" style="font-size:18px;line-height:1">calendar_month</span>${escapeHtml(tt('courses.addCalendar', 'เพิ่มปฏิทิน'))}`;
     }
+
     const favBtn = document.getElementById('fav');
     if (favBtn) {
       const on = favBtn.classList.contains('is-active');
@@ -661,6 +694,9 @@ async function mountCourseNotifyControls(hostEl) {
       favBtn.setAttribute('aria-label', label);
       favBtn.setAttribute('title', label);
     }
+
+    // 5. ⚡ สั่งโหลดการ์ดสรุปรีวิวข้างล่างใหม่ให้แปลตามทันที
+    if (typeof loadReviews === 'function') loadReviews();
   });
 
   if (loggedIn && enrolled) {

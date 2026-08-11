@@ -274,7 +274,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
-    // ตารางเรียน
+    // ตารางเรียนของฉัน
     router.get('/my/schedules', async (req, res) => {
         const user = requireLogin(req, res);
         if (!user) return;
@@ -286,7 +286,10 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT
                         s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
-                        s.meeting_url, s.delivery_mode, s.course_id, c.course_name
+                        s.meeting_url, s.delivery_mode, s.course_id, 
+                        c.course_name_th, 
+                        c.course_name_en,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                     FROM dbo.class_schedules s
                     LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                     WHERE ${flagActiveSql('s.flag_use')}
@@ -303,13 +306,17 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    // รายการตารางเรียนทั่วไป
     router.get('/schedules', async (req, res) => {
         try {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT TOP 50
                     s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
-                    s.meeting_url, s.delivery_mode, s.course_id, c.course_name
+                    s.meeting_url, s.delivery_mode, s.course_id, 
+                    c.course_name_th, 
+                    c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE ${flagActiveSql('s.flag_use')} AND s.start_at >= DATEADD(day, -1, GETDATE())
@@ -408,46 +415,49 @@ function createLearningRouter({ poolPromise, requireLogin }) {
     });
 
     router.get('/payments/:paymentId', async (req, res) => {
-        const user = requireLogin(req, res);
-        if (!user) return;
-        const paymentId = parseInt(req.params.paymentId, 10);
-        if (!paymentId) return res.status(400).json({ success: false, message: 'รหัสการชำระไม่ถูกต้อง' });
+    const user = requireLogin(req, res);
+    if (!user) return;
+    const paymentId = parseInt(req.params.paymentId, 10);
+    if (!paymentId) return res.status(400).json({ success: false, message: 'รหัสการชำระไม่ถูกต้อง' });
 
-        try {
-            const pool = await poolPromise;
-            const result = await pool.request()
-                .input('paymentId', sql.Int, paymentId)
-                .input('userId', sql.Int, user.user_id)
-                .query(`
-                    SELECT
-                        p.payment_id, p.amount, p.currency, p.status, p.method, p.source,
-                        p.reference_code, p.paid_at, p.created_at, p.course_id,
-                        p.slip_image_url, p.transfer_at, p.reject_reason,
-                        c.course_name
-                    FROM dbo.payments p
-                    INNER JOIN dbo.courses c ON c.course_id = p.course_id
-                    WHERE p.payment_id = @paymentId AND p.user_id = @userId
-                `);
-            if (!result.recordset.length) {
-                return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงิน' });
-            }
-            const row = result.recordset[0];
-            const promptpayId = getPromptPayId();
-            const payload = row.method === 'promptpay' && row.status === 'pending'
-                ? buildPromptPayPayload(promptpayId, row.amount)
-                : null;
-            res.json({
-                success: true,
-                data: row,
-                promptpay: payload ? {
-                    id_masked: String(promptpayId).replace(/(\d{3})\d+(\d{3})/, '$1****$2'),
-                    qr_payload: payload
-                } : null
-            });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+    try {
+        const pool = await poolPromise;
+        const result = await pool.request()
+            .input('paymentId', sql.Int, paymentId)
+            .input('userId', sql.Int, user.user_id)
+            .query(`
+                SELECT
+                    p.payment_id, p.amount, p.currency, p.status, p.method, p.source,
+                    p.reference_code, p.paid_at, p.created_at, p.course_id,
+                    p.slip_image_url, p.transfer_at, p.reject_reason,
+                    -- ✅ แก้ไขจุดนี้: ดึง course_name_th / course_name_en และตั้ง Alias เป็น course_name
+                    c.course_name_th, 
+                    c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
+                FROM dbo.payments p
+                INNER JOIN dbo.courses c ON c.course_id = p.course_id
+                WHERE p.payment_id = @paymentId AND p.user_id = @userId
+            `);
+        if (!result.recordset.length) {
+            return res.status(404).json({ success: false, message: 'ไม่พบรายการชำระเงิน' });
         }
-    });
+        const row = result.recordset[0];
+        const promptpayId = getPromptPayId();
+        const payload = row.method === 'promptpay' && row.status === 'pending'
+            ? buildPromptPayPayload(promptpayId, row.amount)
+            : null;
+        res.json({
+            success: true,
+            data: row,
+            promptpay: payload ? {
+                id_masked: String(promptpayId).replace(/(\d{3})\d+(\d{3})/, '$1****$2'),
+                qr_payload: payload
+            } : null
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
     router.get('/courses/:courseId/checkout', async (req, res) => {
         const user = requireLogin(req, res);
@@ -513,11 +523,14 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 }
             }
 
-            res.json({
+                res.json({
                 success: true,
                 data: {
                     course_id: row.course_id,
-                    course_name: pickText(row, 'course_name', resolveLangFromReq(req)),
+                    // ✅ ใช้คอลัมน์จริง row.course_name_th / row.course_name_en
+                    course_name: row.course_name_th || row.course_name_en || '', 
+                    course_name_th: row.course_name_th || '',
+                    course_name_en: row.course_name_en || '',
                     price: Number(row.price) || 0,
                     is_enrolled: isEnrolled,
                     is_paid: paid.recordset.length > 0,

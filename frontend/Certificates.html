@@ -297,15 +297,25 @@ function modeTag(mode) {
 
 function filteredList() {
   let list = allCerts.slice();
+
+  // ✅ Helper อ่านชื่อคอร์สแบบยืดหยุ่น รองรับทั้ง 2 ภาษา
+  const getCertCourseName = (c) => (
+    c.course_name || c.course_name_th || c.course_name_en || ''
+  ).toString().trim();
+
+  // 1. ค้นหาข้อมูล (Filter)
   if (query) {
     const q = query.toLowerCase();
-    list = list.filter((c) => String(c.course_name || '').toLowerCase().includes(q));
+    list = list.filter((c) => getCertCourseName(c).toLowerCase().includes(q));
   }
+
+  // 2. จัดเรียงข้อมูล (Sort)
   if (filterMode === 'az') {
-    list.sort((a, b) => String(a.course_name || '').localeCompare(String(b.course_name || ''), 'th'));
+    list.sort((a, b) => getCertCourseName(a).localeCompare(getCertCourseName(b), 'th'));
   } else {
     list.sort((a, b) => new Date(certCompletionDate(b)) - new Date(certCompletionDate(a)));
   }
+
   return list;
 }
 
@@ -372,30 +382,40 @@ function render() {
     return;
   }
 
-  const cards = list.map((c) => {
+const cards = list.map((c) => {
     const doneAt = certCompletionDate(c);
+    const locale = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en-US' : 'th-TH';
+    const isEn = locale === 'en-US';
+
     const dateText = doneAt
-      ? new Date(doneAt).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
+      ? new Date(doneAt).toLocaleDateString(locale, { year: 'numeric', month: 'short', day: 'numeric' })
       : '-';
+
+    // ✅ ดึงชื่อคอร์สภาษาที่ถูกต้องผ่าน PTSCourseI18n พร้อม Fallback
+    const courseTitle = window.PTSCourseI18n 
+      ? PTSCourseI18n.name(c) 
+      : (c.course_name || c.course_name_th || c.course_name_en || '');
+
     const preview = certificateHtml({
       userName,
-      courseName: (window.PTSCourseI18n ? PTSCourseI18n.name(c) : (c.course_name || c.course_name_th || '')),
+      courseName: courseTitle,
       completedAt: doneAt
     });
+
     return `
       <article class="cert-card">
         <div class="cert-card__preview">
           <div class="cert-card__preview-scale">${preview}</div>
         </div>
         <div class="cert-card__body">
-          <h3 class="cert-card__section_title">${escapeHtml(c.course_name)}</h3>
-          <p class="cert-card__meta">เรียนจบเมื่อ: ${escapeHtml(dateText)}</p>
+          <h3 class="cert-card__section_title">${escapeHtml(courseTitle)}</h3>
+          <p class="cert-card__meta">${isEn ? 'Completed on:' : 'เรียนจบเมื่อ:'} ${escapeHtml(dateText)}</p>
           <div class="cert-card__actions">
             <button type="button" class="pts-btn pts-btn-primary cert-download" data-id="${c.certificate_id}">
               <span class="material-symbols-outlined" style="font-size:18px">download</span>
-              ดู / ดาวน์โหลด PDF
+              ${isEn ? 'View / Download PDF' : 'ดู / ดาวน์โหลด PDF'}
             </button>
-            <button type="button" class="cert-share" data-id="${c.certificate_id}" aria-label="แชร์ใบประกาศ">
+            <button type="button" class="cert-share" data-id="${c.certificate_id}" aria-label="${isEn ? 'Share Certificate' : 'แชร์ใบประกาศ'}">
               <span class="material-symbols-outlined">share</span>
             </button>
           </div>

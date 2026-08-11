@@ -585,7 +585,10 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await pool.request().query(`
-                SELECT s.*, c.course_name
+                SELECT s.*, 
+                    c.course_name_th, 
+                    c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE ${flagActiveSql('s.flag_use')}

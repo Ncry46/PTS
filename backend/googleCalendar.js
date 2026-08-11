@@ -595,7 +595,10 @@ async function listUserFutureSchedules(pool, userId, courseId) {
     const result = await req.query(`
         SELECT
             s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
-            s.meeting_url, s.delivery_mode, s.course_id, c.course_name
+            s.meeting_url, s.delivery_mode, s.course_id, 
+            c.course_name_th, 
+            c.course_name_en,
+            COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
         FROM dbo.class_schedules s
         LEFT JOIN dbo.courses c ON c.course_id = s.course_id
         WHERE ${flagActiveSql('s.flag_use')}
@@ -916,7 +919,10 @@ async function syncScheduleToEnrolledUsers(pool, scheduleId) {
             .query(`
                 SELECT
                     s.schedule_id, s.section_title, s.start_at, s.end_at, s.location,
-                    s.meeting_url, s.delivery_mode, s.course_id, c.course_name
+                    s.meeting_url, s.delivery_mode, s.course_id, 
+                    c.course_name_th, 
+                    c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
                 FROM dbo.class_schedules s
                 LEFT JOIN dbo.courses c ON c.course_id = s.course_id
                 WHERE s.schedule_id = @scheduleId AND ${flagActiveSql('s.flag_use')} AND s.course_id IS NOT NULL
