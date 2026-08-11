@@ -481,93 +481,180 @@
   .adm-pay-slip-link { display:inline-block; }
   .adm-pay-meta { font-size:12px; color:#5c4f55; line-height:1.45; }
   .adm-pay-section { margin-top:28px; padding-top:18px; border-top:1px solid rgba(151,66,88,.12); }
+
+  /* —— Coupons admin —— */
+  .cp-page { display:grid; gap:18px; }
+  .cp-hero {
+    display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px; align-items:flex-end;
+  }
+  .cp-hero h2 { margin:0; font-size:1.35rem; color:#ca1156; }
+  .cp-hero p { margin:6px 0 0; color:#5c4f55; font-size:13px; max-width:52ch; line-height:1.5; }
+  .cp-stat {
+    display:inline-flex; align-items:center; gap:8px;
+    padding:8px 12px; border-radius:999px; font-size:12px; font-weight:700;
+    background:rgba(151,66,88,.08); color:#ca1156; white-space:nowrap;
+  }
+  .cp-create {
+    border:1px solid rgba(151,66,88,.14);
+    border-radius:18px; background:#fff; padding:18px 18px 14px;
+  }
+  .cp-create__title {
+    margin:0 0 4px; font-size:15px; font-weight:800; color:#1c1520;
+  }
+  .cp-create__sub { margin:0 0 14px; font-size:12px; color:#5c4f55; }
+  .cp-field { display:flex; flex-direction:column; gap:6px; font-size:12px; font-weight:700; color:#5c4f55; }
+  .cp-field input, .cp-field select {
+    font:inherit; font-weight:500; color:#1c1520;
+    border:1px solid rgba(151,66,88,.18); border-radius:12px;
+    padding:10px 12px; background:#fff;
+  }
+  .cp-field input:focus, .cp-field select:focus {
+    outline:none; border-color:rgba(202,17,86,.45); box-shadow:0 0 0 3px rgba(202,17,86,.12);
+  }
+  .cp-hint {
+    margin:0; min-height:1.2em; font-size:12px; color:#5c4f55;
+  }
+  .cp-hint.is-warn { color:#9a6700; }
+  .cp-hint.is-ok { color:#166c39; }
+  .cp-create__actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; }
+  .cp-list-head {
+    display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:10px;
+  }
+  .cp-list-head h3 { margin:0; font-size:15px; font-weight:800; }
+  .cp-card {
+    border:1px solid rgba(151,66,88,.14);
+    border-radius:18px; background:#fff; overflow:hidden;
+    margin-bottom:12px;
+  }
+  .cp-card.is-disabled { opacity:.72; }
+  .cp-card__top {
+    display:flex; flex-wrap:wrap; justify-content:space-between; gap:12px;
+    padding:16px 16px 14px; align-items:flex-start;
+  }
+  .cp-code {
+    margin:0; font-family:ui-monospace,Consolas,monospace;
+    font-size:1.15rem; font-weight:800; letter-spacing:.06em; color:#1c1520;
+  }
+  .cp-badges { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+  .cp-badge {
+    display:inline-flex; align-items:center; gap:4px;
+    padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700;
+    background:#f0f0f0; color:#666;
+  }
+  .cp-badge--on { background:rgba(22,108,57,.1); color:#166c39; }
+  .cp-badge--off { background:#fde8e8; color:#a12626; }
+  .cp-badge--deal { background:rgba(202,17,86,.1); color:#ca1156; }
+  .cp-badge--rule { background:#e8f1fb; color:#1e4f8c; }
+  .cp-card__meta { margin:8px 0 0; font-size:12px; color:#5c4f55; line-height:1.5; }
+  .cp-card__actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+  .cp-card__actions .pts-btn { padding:8px 12px; font-size:12px; height:auto; min-height:0; }
+  .cp-mail {
+    display:none;
+    border-top:1px solid rgba(151,66,88,.1);
+    background:linear-gradient(180deg, #faf6f8 0%, #fff 40%);
+    padding:16px;
+  }
+  .cp-card.is-mail-open .cp-mail { display:block; }
+  .cp-mail__title {
+    margin:0 0 4px; font-size:14px; font-weight:800; color:#1c1520;
+  }
+  .cp-mail__help { margin:0 0 12px; font-size:12px; color:#5c4f55; line-height:1.45; }
   .cp-dnd {
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
+    grid-template-columns:1fr auto 1fr;
+    gap:10px;
+    align-items:stretch;
   }
   @media (max-width:900px) {
     .cp-dnd { grid-template-columns:1fr; }
+    .cp-dnd__arrow { display:none !important; }
+  }
+  .cp-dnd__arrow {
+    display:flex; align-items:center; justify-content:center;
+    color:#ca1156; font-size:22px; font-weight:800; padding-top:28px;
   }
   .cp-dnd__col {
-    border:1px solid rgba(151,66,88,.16);
-    border-radius:14px;
-    background:#fff;
-    padding:10px;
-    min-height:280px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
+    border:1px solid rgba(151,66,88,.14);
+    border-radius:16px; background:#fff; padding:12px;
+    min-height:300px; display:flex; flex-direction:column; gap:8px;
+  }
+  .cp-dnd__col--drop {
+    border-color:rgba(202,17,86,.28);
+    background:#fffafb;
   }
   .cp-dnd__head {
-    font-size:13px;
-    font-weight:700;
-    color:#1c1520;
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:8px;
+    font-size:12px; font-weight:800; color:#1c1520;
+    display:flex; justify-content:space-between; align-items:center; gap:8px;
+    letter-spacing:.02em;
+  }
+  .cp-count-pill {
+    font-size:11px; font-weight:800; color:#ca1156;
+    background:rgba(202,17,86,.1); padding:3px 8px; border-radius:999px;
   }
   .cp-user-pool, .cp-dropzone {
-    flex:1;
-    min-height:180px;
-    max-height:260px;
-    overflow:auto;
-    border-radius:10px;
-    border:1px dashed rgba(151,66,88,.22);
-    background:#faf7f8;
-    padding:8px;
+    flex:1; min-height:200px; max-height:280px; overflow:auto;
+    border-radius:12px; border:1px dashed rgba(151,66,88,.22);
+    background:#faf7f8; padding:8px;
+  }
+  .cp-dropzone {
+    border-style:dashed; border-color:rgba(202,17,86,.35);
+    background:#fff5f8;
   }
   .cp-dropzone.is-over {
-    border-color:#ca1156;
-    background:#fff0f5;
-    box-shadow:inset 0 0 0 1px rgba(202,17,86,.25);
+    border-color:#ca1156; border-style:solid;
+    background:#ffe8f0;
+    box-shadow:inset 0 0 0 1px rgba(202,17,86,.2);
   }
   .cp-dropzone__hint {
-    margin:0;
-    padding:18px 8px;
-    text-align:center;
-    color:#8a7a80;
-    font-size:13px;
-    pointer-events:none;
+    margin:0; padding:36px 12px; text-align:center; color:#8a7a80; font-size:13px;
+    pointer-events:none; line-height:1.5;
   }
+  .cp-dropzone__hint strong { display:block; color:#ca1156; margin-bottom:4px; }
   .cp-dropzone.has-items .cp-dropzone__hint { display:none; }
   .cp-chip {
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    padding:8px 10px;
-    margin-bottom:6px;
-    border-radius:10px;
-    background:#fff;
-    border:1px solid rgba(151,66,88,.14);
-    cursor:grab;
-    user-select:none;
+    display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding:8px 10px; margin-bottom:6px; border-radius:12px;
+    background:#fff; border:1px solid rgba(151,66,88,.12);
+    cursor:grab; user-select:none;
+    transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
   }
-  .cp-chip:active { cursor:grabbing; }
-  .cp-chip.is-picked {
-    opacity:.45;
-    pointer-events:none;
+  .cp-chip:hover { border-color:rgba(202,17,86,.35); box-shadow:0 4px 12px rgba(28,21,32,.06); }
+  .cp-chip:active { cursor:grabbing; transform:scale(.98); }
+  .cp-chip.is-picked { opacity:.38; pointer-events:none; filter:grayscale(.2); }
+  .cp-chip__left { display:flex; align-items:center; gap:10px; min-width:0; }
+  .cp-avatar {
+    width:32px; height:32px; border-radius:10px; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:12px; font-weight:800; color:#ca1156;
+    background:rgba(202,17,86,.1); border:1px solid rgba(202,17,86,.12);
   }
   .cp-chip__meta { min-width:0; }
   .cp-chip__name { display:block; font-weight:700; font-size:13px; color:#1c1520; }
-  .cp-chip__email { display:block; font-size:12px; color:#5c4f55; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-  .cp-chip__rm {
-    border:0;
-    background:#fde8e8;
-    color:#a12626;
-    width:28px;
-    height:28px;
-    border-radius:8px;
-    cursor:pointer;
-    font-size:16px;
-    line-height:1;
-    flex-shrink:0;
+  .cp-chip__email {
+    display:block; font-size:11px; color:#5c4f55;
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
   }
-  .cp-chip--ghost {
-    opacity:.7;
-    border-style:dashed;
+  .cp-chip__rm {
+    border:0; background:#fde8e8; color:#a12626;
+    width:28px; height:28px; border-radius:8px; cursor:pointer;
+    font-size:16px; line-height:1; flex-shrink:0;
+  }
+  .cp-chip__rm:hover { background:#f8c9c9; }
+  .cp-chip--ghost { opacity:.65; border-style:dashed; }
+  .cp-mail__foot {
+    display:grid; gap:10px; margin-top:12px;
+    padding-top:12px; border-top:1px solid rgba(151,66,88,.1);
+  }
+  .cp-mail__foot-row {
+    display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end;
+  }
+  .cp-mail__foot-row .cp-field { flex:1; min-width:220px; }
+  .cp-send-msg { margin:0; font-size:12px; color:#5c4f55; min-height:1.2em; }
+  .cp-send-msg.is-ok { color:#166c39; font-weight:700; }
+  .cp-send-msg.is-err { color:#a12626; font-weight:700; }
+  .cp-empty {
+    text-align:center; padding:28px 16px; color:#5c4f55; font-size:13px;
+    border:1px dashed rgba(151,66,88,.2); border-radius:16px; background:#fff;
   }
 </style>
 </head>
@@ -3032,129 +3119,167 @@ async function renderCoupons() {
   }
 
   let coupons = Array.isArray(couponRes.data) ? couponRes.data.slice() : [];
-  const users = Array.isArray(userRes.data) ? userRes.data.slice() : [];
+  const usersWithEmail = (Array.isArray(userRes.data) ? userRes.data : [])
+    .filter((u) => String(u.email || '').includes('@'));
 
   const usageLabel = (r) => {
-    if (r === 'once') return 'ใช้ได้ครั้งเดียวทั้งระบบ';
+    if (r === 'once') return 'ใช้ครั้งเดียว';
     if (r === 'once_per_user') return 'คนละครั้ง';
-    return 'จำกัดจำนวนครั้ง';
+    return 'จำกัดจำนวน';
   };
+
+  const initials = (name, email) => {
+    const n = String(name || '').trim();
+    if (n) return n.slice(0, 2).toUpperCase();
+    const e = String(email || '').trim();
+    return e ? e.slice(0, 2).toUpperCase() : '?';
+  };
+
+  const mailBound = new Set();
+  const recipientsMap = Object.create(null);
+
+  const buildMailHtml = (couponId) => `
+    <div class="cp-mail__title">ส่งคูปองทางอีเมล</div>
+    <p class="cp-mail__help">ลากชื่อจากซ้ายไปขวา · หรือดับเบิลคลิก · หรือกด “เพิ่มที่เห็น”</p>
+    <div class="cp-dnd" data-id="${couponId}">
+      <div class="cp-dnd__col">
+        <div class="cp-dnd__head"><span>รายชื่อผู้ใช้</span><span class="cp-count-pill">${usersWithEmail.length} คน</span></div>
+        <input type="search" class="cp-user-filter" data-id="${couponId}" placeholder="ค้นหาชื่อหรืออีเมล...">
+        <div class="cp-user-pool" data-id="${couponId}">
+          ${usersWithEmail.map((u) => `
+            <div class="cp-chip cp-pool-chip"
+                 draggable="true"
+                 data-coupon="${couponId}"
+                 data-user-id="${u.user_id}"
+                 data-email="${escapeHtml(u.email || '')}"
+                 data-name="${escapeHtml(u.username || '')}"
+                 data-search="${escapeHtml(String(u.username || '').toLowerCase() + ' ' + String(u.email || '').toLowerCase())}"
+                 title="ลากไปช่องผู้รับ หรือดับเบิลคลิก">
+              <span class="cp-chip__left">
+                <span class="cp-avatar">${escapeHtml(initials(u.username, u.email))}</span>
+                <span class="cp-chip__meta">
+                  <span class="cp-chip__name">${escapeHtml(u.username || '—')}</span>
+                  <span class="cp-chip__email">${escapeHtml(u.email || '')}</span>
+                </span>
+              </span>
+            </div>`).join('') || '<p class="adm-pay-meta m-0 p-2">ไม่พบผู้ใช้ที่มีอีเมล</p>'}
+        </div>
+        <button type="button" class="pts-btn pts-btn-outline cp-add-visible" data-id="${couponId}">เพิ่มทั้งหมดที่เห็น →</button>
+      </div>
+      <div class="cp-dnd__arrow" aria-hidden="true">→</div>
+      <div class="cp-dnd__col cp-dnd__col--drop">
+        <div class="cp-dnd__head">
+          <span>ผู้รับคูปอง</span>
+          <span class="cp-count-pill cp-selected-count" data-id="${couponId}">0 คน</span>
+        </div>
+        <div class="cp-dropzone" data-id="${couponId}">
+          <p class="cp-dropzone__hint"><strong>วางรายชื่อที่นี่</strong>ลากจากซ้าย หรือดับเบิลคลิกชื่อ</p>
+          <div class="cp-recipients" data-id="${couponId}"></div>
+        </div>
+        <button type="button" class="pts-btn pts-btn-outline cp-clear-users" data-id="${couponId}">ล้างผู้รับ</button>
+      </div>
+    </div>
+    <div class="cp-mail__foot">
+      <div class="cp-mail__foot-row">
+        <label class="cp-field">อีเมลเพิ่มนอกระบบ (คั่นด้วยจุลภาค)
+          <input class="cp-email" data-id="${couponId}" type="text" placeholder="a@mail.com, b@mail.com">
+        </label>
+        <button type="button" class="pts-btn pts-btn-primary cp-send" data-id="${couponId}">ส่งคูปองให้ผู้รับทั้งหมด</button>
+      </div>
+      <p class="cp-send-msg" data-id="${couponId}"></p>
+    </div>`;
 
   const paint = () => {
     panel.innerHTML = `
-      <div class="adm-c-head mb-4">
-        <div>
-          <h2 class="text-xl font-bold text-primary">คูปองส่วนลด</h2>
-          <p class="adm-pay-meta">สร้างรหัสคูปอง กำหนดส่วนลด (ไม่เกินราคาคอร์ส ลดได้ถึง 0 บาท) และส่งทางอีเมล</p>
+      <div class="cp-page">
+        <div class="cp-hero">
+          <div>
+            <h2>คูปองส่วนลด</h2>
+            <p>สร้างรหัสส่วนลดตามคอร์ส ลดได้ถึง 0 บาท แล้วส่งอีเมลให้ผู้เรียนหลายคนพร้อมกัน</p>
+          </div>
+          <span class="cp-stat">${coupons.length} คูปองในระบบ</span>
         </div>
-      </div>
 
-      <div class="pts-panel mb-4" style="padding:16px">
-        <h3 class="font-bold mb-3">สร้างคูปองใหม่</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
-            <select id="cp-course" class="mt-1 w-full border rounded-xl px-3 py-2">
-              <option value="">-- เลือก --</option>
-              ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(courseTitle(c) || getCourseName(c))} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
-            </select>
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">รหัสคูปอง (ตัวอักษร/ตัวเลข, ว่าง = สุ่ม)
-            <input id="cp-code" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น SAVE500 หรือ PA-FREE" maxlength="64">
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">ส่วนลด (บาท) — ใส่เท่ากับราคาคอร์ส = เหลือ 0
-            <input id="cp-discount" type="number" min="0" step="0.01" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 500">
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">กฎการใช้
-            <select id="cp-rule" class="mt-1 w-full border rounded-xl px-3 py-2">
-              <option value="once">ใช้ได้ครั้งเดียวทั้งระบบ</option>
-              <option value="max_uses" selected>จำกัดจำนวนครั้ง</option>
-              <option value="once_per_user">คนละครั้ง (กำหนดจำนวนรวมได้)</option>
-            </select>
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant" id="cp-max-wrap">จำนวนครั้งใช้ได้
-            <input id="cp-max" type="number" min="1" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 50" value="50">
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">หมดอายุ (ว่าง = ไม่หมดอายุ)
-            <input id="cp-exp" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2">
-            <span class="adm-pay-meta font-normal">ถ้าเลือกเวลา 00:00 ระบบจะถือเป็นสิ้นวันนั้น (23:59)</span>
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant md:col-span-2">หมายเหตุ
-            <input id="cp-note" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น โปรโมชันเดือน ส.ค.">
-          </label>
-        </div>
-        <p id="cp-hint" class="adm-pay-meta mb-2"></p>
-        <button type="button" id="cp-create" class="pts-btn pts-btn-primary mb-2">สร้างคูปอง</button>
-        <p id="cp-msg" class="pts-msg mb-1"></p>
-      </div>
+        <section class="cp-create">
+          <h3 class="cp-create__title">สร้างคูปองใหม่</h3>
+          <p class="cp-create__sub">ส่วนลดต้องไม่เกินราคาคอร์ส · ว่างรหัส = สุ่มให้อัตโนมัติ · ว่างวันหมดอายุ = ไม่หมดอายุ</p>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <label class="cp-field">หลักสูตร
+              <select id="cp-course">
+                <option value="">-- เลือกหลักสูตร --</option>
+                ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(courseTitle(c) || getCourseName(c))} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
+              </select>
+            </label>
+            <label class="cp-field">รหัสคูปอง
+              <input id="cp-code" placeholder="เช่น SAVE500 หรือ PA-FREE" maxlength="64">
+            </label>
+            <label class="cp-field">ส่วนลด (บาท)
+              <input id="cp-discount" type="number" min="0" step="0.01" placeholder="เช่น 500">
+            </label>
+            <label class="cp-field">กฎการใช้
+              <select id="cp-rule">
+                <option value="once">ใช้ได้ครั้งเดียวทั้งระบบ</option>
+                <option value="max_uses" selected>จำกัดจำนวนครั้ง</option>
+                <option value="once_per_user">คนละครั้ง (กำหนดจำนวนรวมได้)</option>
+              </select>
+            </label>
+            <label class="cp-field" id="cp-max-wrap">จำนวนครั้งใช้ได้
+              <input id="cp-max" type="number" min="1" placeholder="เช่น 50" value="50">
+            </label>
+            <label class="cp-field">วันหมดอายุ
+              <input id="cp-exp" type="datetime-local">
+            </label>
+            <label class="cp-field md:col-span-2">หมายเหตุ
+              <input id="cp-note" placeholder="เช่น โปรโมชันเดือน ส.ค.">
+            </label>
+          </div>
+          <p id="cp-hint" class="cp-hint" style="margin-top:10px"></p>
+          <div class="cp-create__actions">
+            <button type="button" id="cp-create" class="pts-btn pts-btn-primary">สร้างคูปอง</button>
+            <p id="cp-msg" class="pts-msg" style="margin:0"></p>
+          </div>
+        </section>
 
-      <div class="space-y-3">
-        ${coupons.map((c) => `
-          <div class="border rounded-xl p-3">
-            <div class="flex flex-wrap justify-between gap-2 items-start">
-              <div>
-                <p class="font-bold font-mono tracking-wide text-lg">${escapeHtml(c.code)}</p>
-                <p class="adm-pay-meta">${escapeHtml(courseTitle(c) || getCourseName(c) || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}</p>
-                <p class="adm-pay-meta">ลด ฿${Number(c.discount_amount || 0).toLocaleString('th-TH')}
-                  → เหลือ ฿${Math.max(0, Number(c.course_price || 0) - Number(c.discount_amount || 0)).toLocaleString('th-TH')}
-                  · ${usageLabel(c.usage_rule)}
-                  · ใช้แล้ว ${Number(c.used_count || 0)}${c.max_uses != null ? ` / ${c.max_uses}` : ''}</p>
-                <p class="adm-pay-meta">${c.expires_at ? `หมดอายุ ${fmtDt(c.expires_at)}` : 'ไม่หมดอายุ'}${c.note ? ` · ${escapeHtml(c.note)}` : ''}</p>
-              </div>
-              <button type="button" class="pts-btn pts-btn-outline cp-toggle" data-id="${c.coupon_id}" data-flag="${c.flag_use ? 0 : 1}">
-                ${c.flag_use ? 'ปิดใช้' : 'เปิดใช้'}
-              </button>
-            </div>
-            <div class="mt-3 border-t pt-3 space-y-2">
-              <p class="text-sm font-semibold text-on-surface-variant m-0">ส่งคูปองทางอีเมล — ลากรายชื่อจากซ้ายไปขวา (หรือดับเบิลคลิก)</p>
-              <div class="cp-dnd" data-id="${c.coupon_id}">
-                <div class="cp-dnd__col">
-                  <div class="cp-dnd__head"><span>รายชื่อผู้ใช้</span></div>
-                  <input type="search" class="cp-user-filter w-full border rounded-xl px-3 py-2 text-sm" data-id="${c.coupon_id}" placeholder="ค้นหาชื่อหรืออีเมล...">
-                  <div class="cp-user-pool" data-id="${c.coupon_id}">
-                    ${users.filter((u) => String(u.email || '').includes('@')).map((u) => `
-                      <div class="cp-chip cp-pool-chip"
-                           draggable="true"
-                           data-coupon="${c.coupon_id}"
-                           data-user-id="${u.user_id}"
-                           data-email="${escapeHtml(u.email || '')}"
-                           data-name="${escapeHtml(u.username || '')}"
-                           data-search="${escapeHtml(String(u.username || '').toLowerCase() + ' ' + String(u.email || '').toLowerCase())}"
-                           title="ลากไปช่องผู้รับ หรือดับเบิลคลิก">
-                        <span class="cp-chip__meta">
-                          <span class="cp-chip__name">${escapeHtml(u.username || '—')}</span>
-                          <span class="cp-chip__email">${escapeHtml(u.email || '')}</span>
-                        </span>
-                      </div>`).join('') || '<p class="adm-pay-meta m-0 p-2">ไม่พบผู้ใช้ที่มีอีเมล</p>'}
+        <section>
+          <div class="cp-list-head">
+            <h3>รายการคูปอง</h3>
+            <span class="adm-pay-meta">กด “ส่งอีเมล” เพื่อเปิดแผงลากรายชื่อ</span>
+          </div>
+          ${coupons.map((c) => {
+            const left = Math.max(0, Number(c.course_price || 0) - Number(c.discount_amount || 0));
+            const active = !!c.flag_use;
+            return `
+            <article class="cp-card${!active ? ' is-disabled' : ''}" data-card="${c.coupon_id}">
+              <div class="cp-card__top">
+                <div>
+                  <p class="cp-code">${escapeHtml(c.code)}</p>
+                  <div class="cp-badges">
+                    <span class="cp-badge ${active ? 'cp-badge--on' : 'cp-badge--off'}">${active ? 'เปิดใช้' : 'ปิดใช้'}</span>
+                    <span class="cp-badge cp-badge--deal">ลด ฿${Number(c.discount_amount || 0).toLocaleString('th-TH')} → เหลือ ฿${left.toLocaleString('th-TH')}</span>
+                    <span class="cp-badge cp-badge--rule">${usageLabel(c.usage_rule)} · ใช้แล้ว ${Number(c.used_count || 0)}${c.max_uses != null ? '/' + c.max_uses : ''}</span>
                   </div>
-                  <button type="button" class="pts-btn pts-btn-outline cp-add-visible" data-id="${c.coupon_id}">เพิ่มทั้งหมดที่เห็น →</button>
+                  <p class="cp-card__meta">${escapeHtml(courseTitle(c) || getCourseName(c) || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}<br>
+                    ${c.expires_at ? 'หมดอายุ ' + fmtDt(c.expires_at) : 'ไม่หมดอายุ'}${c.note ? ' · ' + escapeHtml(c.note) : ''}
+                  </p>
                 </div>
-                <div class="cp-dnd__col">
-                  <div class="cp-dnd__head">
-                    <span>ผู้รับคูปอง</span>
-                    <span class="adm-pay-meta cp-selected-count" data-id="${c.coupon_id}">0 คน</span>
-                  </div>
-                  <div class="cp-dropzone" data-id="${c.coupon_id}">
-                    <p class="cp-dropzone__hint">ลากรายชื่อมาวางที่นี่</p>
-                    <div class="cp-recipients" data-id="${c.coupon_id}"></div>
-                  </div>
-                  <button type="button" class="pts-btn pts-btn-outline cp-clear-users" data-id="${c.coupon_id}">ล้างผู้รับ</button>
+                <div class="cp-card__actions">
+                  <button type="button" class="pts-btn pts-btn-primary cp-open-mail" data-id="${c.coupon_id}">ส่งอีเมล</button>
+                  <button type="button" class="pts-btn pts-btn-outline cp-toggle" data-id="${c.coupon_id}" data-flag="${active ? 0 : 1}">
+                    ${active ? 'ปิดใช้' : 'เปิดใช้'}
+                  </button>
                 </div>
               </div>
-              <label class="text-sm font-semibold text-on-surface-variant block">อีเมลเพิ่มนอกระบบ (คั่นด้วยจุลภาค ถ้ามี)
-                <input class="cp-email mt-1 w-full border rounded-xl px-3 py-2" data-id="${c.coupon_id}" type="text" placeholder="a@mail.com, b@mail.com">
-              </label>
-              <button type="button" class="pts-btn pts-btn-primary cp-send" data-id="${c.coupon_id}">ส่งคูปองให้ผู้รับทั้งหมด</button>
-              <p class="cp-send-msg adm-pay-meta mt-1" data-id="${c.coupon_id}"></p>
-            </div>
-          </div>`).join('') || '<p class="adm-pay-meta">ยังไม่มีคูปอง</p>'}
+              <div class="cp-mail" data-mail="${c.coupon_id}"></div>
+            </article>`;
+          }).join('') || '<div class="cp-empty">ยังไม่มีคูปอง — สร้างอันแรกด้านบนได้เลย</div>'}
+        </section>
       </div>
     `;
 
     const ruleEl = document.getElementById('cp-rule');
     const maxWrap = document.getElementById('cp-max-wrap');
     const syncRule = () => {
-      const r = ruleEl.value;
-      maxWrap.style.display = r === 'once' ? 'none' : '';
+      maxWrap.style.display = ruleEl.value === 'once' ? 'none' : '';
     };
     ruleEl.onchange = syncRule;
     syncRule();
@@ -3166,16 +3291,19 @@ async function renderCoupons() {
       const opt = courseEl.selectedOptions[0];
       const price = opt ? Number(opt.getAttribute('data-price') || 0) : 0;
       const disc = Number(discountEl.value);
+      hintEl.className = 'cp-hint';
       if (!courseEl.value) { hintEl.textContent = ''; return; }
       if (!Number.isFinite(disc) || disc < 0) {
-        hintEl.textContent = 'ราคาคอร์ส ฿' + price.toLocaleString('th-TH') + ' — ส่วนลดต้องอยู่ระหว่าง 0 ถึงราคาคอร์ส';
+        hintEl.textContent = 'ราคาคอร์ส ฿' + price.toLocaleString('th-TH') + ' — ใส่ส่วนลด 0 ถึงราคาคอร์ส';
         return;
       }
       if (disc > price) {
+        hintEl.className = 'cp-hint is-warn';
         hintEl.textContent = 'ส่วนลดเกินราคาคอร์ส (฿' + price.toLocaleString('th-TH') + ') — บันทึกไม่ได้';
         return;
       }
       const left = Math.max(0, price - disc);
+      hintEl.className = 'cp-hint is-ok';
       hintEl.textContent = left === 0
         ? 'หลังลดเหลือ 0 บาท (เรียนฟรีด้วยคูปอง)'
         : 'หลังลดเหลือ ฿' + left.toLocaleString('th-TH');
@@ -3200,13 +3328,14 @@ async function renderCoupons() {
       try {
         await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
         msg.textContent = 'สร้างคูปองแล้ว';
-        msg.className = 'pts-msg is-ok mb-1';
+        msg.className = 'pts-msg is-ok';
         const fresh = await api('/api/admin/coupons');
         coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+        mailBound.clear();
         paint();
       } catch (e) {
         msg.textContent = e.message || 'สร้างไม่สำเร็จ';
-        msg.className = 'pts-msg is-err mb-1';
+        msg.className = 'pts-msg is-err';
       }
     };
 
@@ -3219,14 +3348,13 @@ async function renderCoupons() {
           });
           const fresh = await api('/api/admin/coupons');
           coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          mailBound.clear();
           paint();
         } catch (e) {
           alert(e.message || 'อัปเดตไม่สำเร็จ');
         }
       };
     });
-
-    const recipientsMap = Object.create(null);
 
     const getRecipientsBox = (couponId) => panel.querySelector('.cp-recipients[data-id="' + couponId + '"]');
     const getDropzone = (couponId) => panel.querySelector('.cp-dropzone[data-id="' + couponId + '"]');
@@ -3244,11 +3372,13 @@ async function renderCoupons() {
       map.forEach((item) => {
         const chip = document.createElement('div');
         chip.className = 'cp-chip';
-        chip.dataset.userId = String(item.userId);
         chip.innerHTML =
-          '<span class="cp-chip__meta">' +
-            '<span class="cp-chip__name">' + escapeHtml(item.name || '—') + '</span>' +
-            '<span class="cp-chip__email">' + escapeHtml(item.email || '') + '</span>' +
+          '<span class="cp-chip__left">' +
+            '<span class="cp-avatar">' + escapeHtml(initials(item.name, item.email)) + '</span>' +
+            '<span class="cp-chip__meta">' +
+              '<span class="cp-chip__name">' + escapeHtml(item.name || '—') + '</span>' +
+              '<span class="cp-chip__email">' + escapeHtml(item.email || '') + '</span>' +
+            '</span>' +
           '</span>' +
           '<button type="button" class="cp-chip__rm" aria-label="ลบ" title="ลบออก">×</button>';
         chip.querySelector('.cp-chip__rm').onclick = () => {
@@ -3273,116 +3403,154 @@ async function renderCoupons() {
       if (!uid) return;
       const map = recipientsMap[couponId] || (recipientsMap[couponId] = new Map());
       if (map.has(uid)) return;
-      map.set(uid, {
-        userId: uid,
-        email: String(email || '').trim(),
-        name: String(name || '').trim()
-      });
+      map.set(uid, { userId: uid, email: String(email || '').trim(), name: String(name || '').trim() });
       syncRecipientUi(couponId);
     };
 
-    panel.querySelectorAll('.cp-pool-chip').forEach((chip) => {
-      chip.addEventListener('dragstart', (e) => {
-        if (chip.classList.contains('is-picked')) {
-          e.preventDefault();
-          return;
-        }
-        const payload = JSON.stringify({
-          couponId: chip.dataset.coupon,
-          userId: chip.dataset.userId,
-          email: chip.dataset.email,
-          name: chip.dataset.name
-        });
-        e.dataTransfer.setData('application/x-pts-coupon-user', payload);
-        e.dataTransfer.setData('text/plain', payload);
-        e.dataTransfer.effectAllowed = 'copy';
-        chip.classList.add('cp-chip--ghost');
-      });
-      chip.addEventListener('dragend', () => chip.classList.remove('cp-chip--ghost'));
-      chip.addEventListener('dblclick', () => {
-        addRecipient(chip.dataset.coupon, chip.dataset.userId, chip.dataset.email, chip.dataset.name);
-      });
-    });
+    const bindMailPanel = (couponId) => {
+      if (mailBound.has(String(couponId))) {
+        syncRecipientUi(couponId);
+        return;
+      }
+      mailBound.add(String(couponId));
+      const scope = panel.querySelector('[data-mail="' + couponId + '"]');
+      if (!scope) return;
 
-    panel.querySelectorAll('.cp-dropzone').forEach((zone) => {
-      const couponId = zone.dataset.id;
-      zone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
-        zone.classList.add('is-over');
-      });
-      zone.addEventListener('dragleave', () => zone.classList.remove('is-over'));
-      zone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zone.classList.remove('is-over');
-        let raw = e.dataTransfer.getData('application/x-pts-coupon-user') || e.dataTransfer.getData('text/plain');
-        try {
-          const data = JSON.parse(raw || '{}');
-          if (String(data.couponId) !== String(couponId) && data.couponId != null) {
-            // allow drop across same page coupons with same user list
-          }
-          addRecipient(couponId, data.userId, data.email, data.name);
-        } catch (_) { /* ignore bad payload */ }
-      });
-    });
-
-    panel.querySelectorAll('.cp-user-filter').forEach((inp) => {
-      inp.oninput = () => {
-        const id = inp.dataset.id;
-        const q = String(inp.value || '').trim().toLowerCase();
-        const pool = getPool(id);
-        if (!pool) return;
-        pool.querySelectorAll('.cp-pool-chip').forEach((chip) => {
-          const hay = chip.getAttribute('data-search') || '';
-          chip.style.display = !q || hay.includes(q) ? '' : 'none';
-        });
-      };
-    });
-
-    panel.querySelectorAll('.cp-add-visible').forEach((btn) => {
-      btn.onclick = () => {
-        const id = btn.dataset.id;
-        const pool = getPool(id);
-        if (!pool) return;
-        pool.querySelectorAll('.cp-pool-chip').forEach((chip) => {
-          if (chip.style.display === 'none' || chip.classList.contains('is-picked')) return;
-          addRecipient(id, chip.dataset.userId, chip.dataset.email, chip.dataset.name);
-        });
-      };
-    });
-
-    panel.querySelectorAll('.cp-clear-users').forEach((btn) => {
-      btn.onclick = () => {
-        const id = btn.dataset.id;
-        recipientsMap[id] = new Map();
-        syncRecipientUi(id);
-      };
-    });
-
-    document.querySelectorAll('.cp-send').forEach((btn) => {
-      btn.onclick = async () => {
-        const id = btn.dataset.id;
-        const emailInp = panel.querySelector('.cp-email[data-id="' + id + '"]');
-        const msgEl = panel.querySelector('.cp-send-msg[data-id="' + id + '"]');
-        const map = recipientsMap[id] || new Map();
-        const user_ids = Array.from(map.keys());
-        const email = emailInp ? emailInp.value.trim() : '';
-        if (!user_ids.length && !email) {
-          if (msgEl) msgEl.textContent = 'กรุณาลากผู้ใช้มาช่องผู้รับ หรือใส่อีเมลเพิ่ม';
-          return;
-        }
-        btn.disabled = true;
-        if (msgEl) msgEl.textContent = 'กำลังส่งให้ ' + user_ids.length + ' คน' + (email ? ' + อีเมลเพิ่ม' : '') + '...';
-        try {
-          const res = await api('/api/admin/coupons/' + id + '/send-email', {
-            method: 'POST',
-            body: JSON.stringify({ user_ids, email })
+      scope.querySelectorAll('.cp-pool-chip').forEach((chip) => {
+        chip.addEventListener('dragstart', (e) => {
+          if (chip.classList.contains('is-picked')) { e.preventDefault(); return; }
+          const payload = JSON.stringify({
+            couponId: chip.dataset.coupon,
+            userId: chip.dataset.userId,
+            email: chip.dataset.email,
+            name: chip.dataset.name
           });
-          if (msgEl) msgEl.textContent = res.message || 'ส่งแล้ว';
-        } catch (e) {
-          if (msgEl) msgEl.textContent = e.message || 'ส่งไม่สำเร็จ';
-        } finally {
-          btn.disabled = false;
+          e.dataTransfer.setData('application/x-pts-coupon-user', payload);
+          e.dataTransfer.setData('text/plain', payload);
+          e.dataTransfer.effectAllowed = 'copy';
+          chip.classList.add('cp-chip--ghost');
+        });
+        chip.addEventListener('dragend', () => chip.classList.remove('cp-chip--ghost'));
+        chip.addEventListener('dblclick', () => {
+          addRecipient(chip.dataset.coupon, chip.dataset.userId, chip.dataset.email, chip.dataset.name);
+        });
+      });
+
+      const zone = scope.querySelector('.cp-dropzone');
+      if (zone) {
+        zone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+          zone.classList.add('is-over');
+        });
+        zone.addEventListener('dragleave', () => zone.classList.remove('is-over'));
+        zone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          zone.classList.remove('is-over');
+          try {
+            const data = JSON.parse(e.dataTransfer.getData('application/x-pts-coupon-user') || e.dataTransfer.getData('text/plain') || '{}');
+            addRecipient(couponId, data.userId, data.email, data.name);
+          } catch (_) { /* ignore */ }
+        });
+      }
+
+      const filter = scope.querySelector('.cp-user-filter');
+      if (filter) {
+        filter.oninput = () => {
+          const q = String(filter.value || '').trim().toLowerCase();
+          const pool = getPool(couponId);
+          if (!pool) return;
+          pool.querySelectorAll('.cp-pool-chip').forEach((chip) => {
+            const hay = chip.getAttribute('data-search') || '';
+            chip.style.display = !q || hay.includes(q) ? '' : 'none';
+          });
+        };
+      }
+
+      const addVisible = scope.querySelector('.cp-add-visible');
+      if (addVisible) {
+        addVisible.onclick = () => {
+          const pool = getPool(couponId);
+          if (!pool) return;
+          pool.querySelectorAll('.cp-pool-chip').forEach((chip) => {
+            if (chip.style.display === 'none' || chip.classList.contains('is-picked')) return;
+            addRecipient(couponId, chip.dataset.userId, chip.dataset.email, chip.dataset.name);
+          });
+        };
+      }
+
+      const clearBtn = scope.querySelector('.cp-clear-users');
+      if (clearBtn) {
+        clearBtn.onclick = () => {
+          recipientsMap[couponId] = new Map();
+          syncRecipientUi(couponId);
+        };
+      }
+
+      const sendBtn = scope.querySelector('.cp-send');
+      if (sendBtn) {
+        sendBtn.onclick = async () => {
+          const emailInp = scope.querySelector('.cp-email');
+          const msgEl = scope.querySelector('.cp-send-msg');
+          const map = recipientsMap[couponId] || new Map();
+          const user_ids = Array.from(map.keys());
+          const email = emailInp ? emailInp.value.trim() : '';
+          if (!user_ids.length && !email) {
+            if (msgEl) {
+              msgEl.className = 'cp-send-msg is-err';
+              msgEl.textContent = 'กรุณาลากผู้ใช้มาช่องผู้รับ หรือใส่อีเมลเพิ่ม';
+            }
+            return;
+          }
+          sendBtn.disabled = true;
+          if (msgEl) {
+            msgEl.className = 'cp-send-msg';
+            msgEl.textContent = 'กำลังส่งให้ ' + user_ids.length + ' คน' + (email ? ' + อีเมลเพิ่ม' : '') + '...';
+          }
+          try {
+            const res = await api('/api/admin/coupons/' + couponId + '/send-email', {
+              method: 'POST',
+              body: JSON.stringify({ user_ids, email })
+            });
+            if (msgEl) {
+              msgEl.className = 'cp-send-msg is-ok';
+              msgEl.textContent = res.message || 'ส่งแล้ว';
+            }
+          } catch (e) {
+            if (msgEl) {
+              msgEl.className = 'cp-send-msg is-err';
+              msgEl.textContent = e.message || 'ส่งไม่สำเร็จ';
+            }
+          } finally {
+            sendBtn.disabled = false;
+          }
+        };
+      }
+
+      syncRecipientUi(couponId);
+    };
+
+    document.querySelectorAll('.cp-open-mail').forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.dataset.id;
+        const card = panel.querySelector('[data-card="' + id + '"]');
+        if (!card) return;
+        const opening = !card.classList.contains('is-mail-open');
+        panel.querySelectorAll('.cp-card.is-mail-open').forEach((el) => {
+          if (el !== card) el.classList.remove('is-mail-open');
+        });
+        card.classList.toggle('is-mail-open', opening);
+        btn.textContent = opening ? 'ปิดแผงส่งเมล' : 'ส่งอีเมล';
+        if (opening) {
+          const mail = card.querySelector('[data-mail="' + id + '"]');
+          if (mail && !mail.dataset.ready) {
+            mail.innerHTML = buildMailHtml(id);
+            mail.dataset.ready = '1';
+            bindMailPanel(id);
+          } else {
+            bindMailPanel(id);
+          }
+          mail?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       };
     });
