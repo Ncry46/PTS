@@ -208,75 +208,76 @@ function createFormRouter({ poolPromise, requireLogin }) {
     });
 
     router.get('/forms/:formId', async (req, res) => {
-        const user = requireLogin(req, res);
-        if (!user) return;
-        const formId = Number(req.params.formId);
-        if (!formId) return res.status(400).json({ success: false, message: 'form_id ไม่ถูกต้อง' });
-        try {
-            const pool = await poolPromise;
-            const isAdmin = (user.role || '').toLowerCase() === 'admin';
-            const formRes = await pool.request()
-                .input('formId', sql.Int, formId)
-                .query(`
-                    SELECT f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
-                           f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
-                           f.course_id,
-                           c.course_name_th, c.course_name_en,
-                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
-                    FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
-                    WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
-                `);
-            const form = formRes.recordset[0];
-            if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
-            if (!form.is_published && !isAdmin) {
-                return res.status(403).json({ success: false, message: 'แบบฟอร์มยังไม่เปิดให้กรอก' });
-            }
-
-            const qRes = await pool.request()
-                .input('formId', sql.Int, formId)
-                .query(`
-                    SELECT question_id, form_id, label, help_text, question_type, options_json,
-                           is_required, sort_order, flag_use
-                    FROM dbo.custom_form_questions
-                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
-                    ORDER BY sort_order ASC, question_id ASC
-                `);
-
-            const mine = await pool.request()
-                .input('formId', sql.Int, formId)
-                .input('userId', sql.Int, user.user_id)
-                .query(`
-                    SELECT TOP 1 response_id, submitted_at, result_code, result_label, result_json
-                    FROM dbo.custom_form_responses
-                    WHERE form_id = @formId AND user_id = @userId
-                    ORDER BY submitted_at DESC
-                `);
-
-            let questions = (qRes.recordset || []).map(mapQuestion);
-            if (form.form_type === 'disc') {
-                questions = questions.map((q) => ({
-                    ...q,
-                    options: (q.options && q.options.length) ? q.options : DISC_OPTION_LABELS,
-                    question_type: ['radio', 'select'].includes(q.question_type) ? q.question_type : 'radio'
-                }));
-            }
-
-            res.json({
-                success: true,
-                data: {
-                    ...form,
-                    is_published: !!form.is_published,
-                    allow_resubmit: !!form.allow_resubmit,
-                    questions,
-                    my_response: mine.recordset[0] || null,
-                    disc_animals: DISC_META
-                }
-            });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
+    const user = requireLogin(req, res);
+    if (!user) return;
+    const formId = Number(req.params.formId);
+    if (!formId) return res.status(400).json({ success: false, message: 'form_id ไม่ถูกต้อง' });
+    try {
+        const pool = await poolPromise;
+        const isAdmin = (user.role || '').toLowerCase() === 'admin';
+        const formRes = await pool.request()
+            .input('formId', sql.Int, formId)
+            .query(`
+                SELECT f.form_id, f.section_title, f.description, f.is_published, f.allow_resubmit,
+                       f.flag_use, f.updated_at, ISNULL(f.form_type,'general') AS form_type,
+                       f.course_id, 
+                       c.course_name_th, 
+                       c.course_name_en,
+                       COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
+                FROM dbo.custom_forms f
+                LEFT JOIN dbo.courses c ON c.course_id = f.course_id
+                WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
+            `);
+        const form = formRes.recordset[0];
+        if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
+        if (!form.is_published && !isAdmin) {
+            return res.status(403).json({ success: false, message: 'แบบฟอร์มยังไม่เปิดให้กรอก' });
         }
-    });
+
+        const qRes = await pool.request()
+            .input('formId', sql.Int, formId)
+            .query(`
+                SELECT question_id, form_id, label, help_text, question_type, options_json,
+                       is_required, sort_order, flag_use
+                FROM dbo.custom_form_questions
+                WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
+                ORDER BY sort_order ASC, question_id ASC
+            `);
+
+        const mine = await pool.request()
+            .input('formId', sql.Int, formId)
+            .input('userId', sql.Int, user.user_id)
+            .query(`
+                SELECT TOP 1 response_id, submitted_at, result_code, result_label, result_json
+                FROM dbo.custom_form_responses
+                WHERE form_id = @formId AND user_id = @userId
+                ORDER BY submitted_at DESC
+            `);
+
+        let questions = (qRes.recordset || []).map(mapQuestion);
+        if (form.form_type === 'disc') {
+            questions = questions.map((q) => ({
+                ...q,
+                options: (q.options && q.options.length) ? q.options : DISC_OPTION_LABELS,
+                question_type: ['radio', 'select'].includes(q.question_type) ? q.question_type : 'radio'
+            }));
+        }
+
+        res.json({
+            success: true,
+            data: {
+                ...form,
+                is_published: !!form.is_published,
+                allow_resubmit: !!form.allow_resubmit,
+                questions,
+                my_response: mine.recordset[0] || null,
+                disc_animals: DISC_META
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
     router.get('/forms/:formId/my-response', async (req, res) => {
         const user = requireLogin(req, res);
@@ -552,47 +553,48 @@ function createAdminFormRouter({ poolPromise, requireLogin }) {
     });
 
     router.get('/forms/:formId', async (req, res) => {
-        if (!requireAdmin(req, res)) return;
-        const formId = Number(req.params.formId);
-        if (!formId) return res.status(400).json({ success: false, message: 'form_id ไม่ถูกต้อง' });
-        try {
-            const pool = await poolPromise;
-            const formRes = await pool.request()
-                .input('formId', sql.Int, formId)
-                .query(`
-                    SELECT f.*, ISNULL(f.form_type,'general') AS form_type,
-                           c.course_name_th, c.course_name_en,
-                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
-                    FROM dbo.custom_forms f
-                    LEFT JOIN dbo.courses c ON c.course_id = f.course_id
-                    WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
-                `);
-            const form = formRes.recordset[0];
-            if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
+    if (!requireAdmin(req, res)) return;
+    const formId = Number(req.params.formId);
+    if (!formId) return res.status(400).json({ success: false, message: 'form_id ไม่ถูกต้อง' });
+    try {
+        const pool = await poolPromise;
+        const formRes = await pool.request()
+            .input('formId', sql.Int, formId)
+            .query(`
+                SELECT f.*, 
+                       ISNULL(f.form_type,'general') AS form_type, 
+                       c.course_name_th, 
+                       c.course_name_en,
+                       COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
+                FROM dbo.custom_forms f
+                LEFT JOIN dbo.courses c ON c.course_id = f.course_id
+                WHERE f.form_id = @formId AND ${flagActiveSql('f.flag_use')}
+            `);
+        const form = formRes.recordset[0];
+        if (!form) return res.status(404).json({ success: false, message: 'ไม่พบแบบฟอร์ม' });
 
-            const qRes = await pool.request()
-                .input('formId', sql.Int, formId)
-                .query(`
-                    SELECT * FROM dbo.custom_form_questions
-                    WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
-                    ORDER BY sort_order ASC, question_id ASC
-                `);
-            res.json({
-                success: true,
-                data: {
-                    ...form,
-                    is_published: !!form.is_published,
-                    allow_resubmit: !!form.allow_resubmit,
-                    questions: (qRes.recordset || []).map(mapQuestion)
-                },
-                disc_option_labels: DISC_OPTION_LABELS,
-                disc_animals: DISC_META
-            });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
-        }
-    });
-
+        const qRes = await pool.request()
+            .input('formId', sql.Int, formId)
+            .query(`
+                SELECT * FROM dbo.custom_form_questions
+                WHERE form_id = @formId AND ${flagActiveSql('flag_use')}
+                ORDER BY sort_order ASC, question_id ASC
+            `);
+        res.json({
+            success: true,
+            data: {
+                ...form,
+                is_published: !!form.is_published,
+                allow_resubmit: !!form.allow_resubmit,
+                questions: (qRes.recordset || []).map(mapQuestion)
+            },
+            disc_option_labels: DISC_OPTION_LABELS,
+            disc_animals: DISC_META
+        });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
     router.put('/forms/:formId', async (req, res) => {
         if (!requireAdmin(req, res)) return;
         const formId = Number(req.params.formId);

@@ -23,8 +23,8 @@
         PTS Learning
       </a>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+        <a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px;" data-i18n="nav.login">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;" data-i18n="nav.register">สมัครสมาชิก</a>
       </div>
     </div>
   </nav>
@@ -53,9 +53,7 @@
       </div>
     </div>
     <div class="pts-cal__body">
-      <div class="pts-cal__weekdays" aria-hidden="true">
-        <span>จ</span><span>อ</span><span>พ</span><span>พฤ</span><span>ศ</span><span>ส</span><span>อา</span>
-      </div>
+      <div class="pts-cal__weekdays" id="cal-weekdays" aria-hidden="true"></div>
       <div class="pts-cal__grid" id="cal-grid"></div>
       <p class="pts-cal__legend" id="cal-legend" data-i18n="schedule.legend">จุดสี = มีตารางเรียน — กดวันใดก็ได้เพื่อดูรายการ (ถ้าไม่มีจะขึ้นว่าไม่มีรายการ)</p>
     </div>
@@ -66,13 +64,15 @@
     <button type="button" class="pts-btn pts-btn-ghost hidden" id="cal-clear-filter" data-i18n="schedule.showAll">แสดงทั้งหมด</button>
   </div>
   <div id="schedule-list" class="space-y-3">
-    <div class="pts-empty">กำลังโหลดตาราง...</div>
+    <div class="pts-empty" data-i18n="common.loading">กำลังโหลดตาราง...</div>
   </div>
 </main>
 <div class="pts-footer-note">© PTS Learning</div>
 <script>
 const escapeHtml = (t) => String(t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 const pad = (n) => String(n).padStart(2, '0');
+const tt = (key, fallback) => (window.PTSLang && typeof PTSLang.t === 'function' ? PTSLang.t(key, fallback) : (fallback || key));
+const getLangLocale = () => (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en-US' : 'th-TH';
 
 function toDateKey(value) {
   if (value == null) return '';
@@ -111,12 +111,13 @@ async function loadGcalShortcut() {
       return;
     }
     box.classList.remove('hidden');
+    const isEn = getLangLocale() === 'en-US';
     if (st.connected) {
       text.innerHTML = st.google_email
-        ? `<strong>เชื่อม Google แล้ว:</strong> ${escapeHtml(st.google_email)} — จัดการการแจ้งเตือนหรือซิงค์ได้ที่หน้าตั้งค่า`
-        : '<strong>เชื่อม Google Calendar แล้ว</strong> — จัดการบัญชีหลักได้ที่หน้าตั้งค่า';
+        ? `<strong>${isEn ? 'Google Connected:' : 'เชื่อม Google แล้ว:'}</strong> ${escapeHtml(st.google_email)} — ${isEn ? 'manage reminders in Settings' : 'จัดการการแจ้งเตือนหรือซิงค์ได้ที่หน้าตั้งค่า'}`
+        : `<strong>${isEn ? 'Google Calendar Connected' : 'เชื่อม Google Calendar แล้ว'}</strong> — ${isEn ? 'manage in Settings' : 'จัดการบัญชีหลักได้ที่หน้าตั้งค่า'}`;
     } else {
-      text.innerHTML = '<strong>ผูก Google Calendar</strong> — เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน';
+      text.innerHTML = `<strong>${tt('schedule.gcalShortcutStrong', 'ผูก Google Calendar')}</strong>${tt('schedule.gcalShortcutRest', ' — เชื่อมบัญชีหลักที่หน้าตั้งค่า เพื่อรับแจ้งเตือนก่อนวันเรียน')}`;
     }
   } catch (_) {
     box.classList.add('hidden');
@@ -134,16 +135,27 @@ function groupByDay(schedules) {
   return map;
 }
 
+function renderWeekdays() {
+  const weekdaysEl = document.getElementById('cal-weekdays');
+  if (!weekdaysEl) return;
+  const isEn = getLangLocale() === 'en-US';
+  const days = isEn 
+    ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+    : ['จ', 'อ', 'พ', 'พฤ', 'ศ', 'ส', 'อา'];
+  weekdaysEl.innerHTML = days.map(d => `<span>${d}</span>`).join('');
+}
+
 function renderCalendar() {
   const host = document.getElementById('schedule-calendar');
   const grid = document.getElementById('cal-grid');
   const label = document.getElementById('cal-month-label');
   if (!host || !grid) return;
 
+  renderWeekdays();
   host.hidden = false;
   const byDay = groupByDay(allSchedules);
   const monthDate = new Date(viewYear, viewMonth, 1);
-  label.textContent = monthDate.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
+  label.textContent = monthDate.toLocaleDateString(getLangLocale(), { month: 'long', year: 'numeric' });
 
   // Monday-first grid
   const firstDow = (monthDate.getDay() + 6) % 7; // 0=Mon
@@ -200,7 +212,6 @@ function renderCalendar() {
         viewYear = y;
         viewMonth = m;
       }
-      // กดวันเดิมอีกครั้ง = ยกเลิกตัวกรอง
       selectedDayKey = selectedDayKey === key ? null : key;
       renderCalendar();
       renderList();
@@ -213,23 +224,25 @@ function renderList() {
   const section_title = document.getElementById('schedule-list-section_title');
   const clearBtn = document.getElementById('cal-clear-filter');
   let rows = allSchedules.slice();
+  const locale = getLangLocale();
+  const isEn = locale === 'en-US';
 
   if (selectedDayKey) {
     rows = rows.filter((s) => toDateKey(s.start_at) === selectedDayKey);
     const nice = selectedDayKey.replace(/-/g, '/');
-    section_title.textContent = `รายการวันที่ ${nice}`;
+    section_title.textContent = isEn ? `Schedule for ${nice}` : `รายการวันที่ ${nice}`;
     clearBtn.classList.remove('hidden');
   } else {
-    section_title.textContent = 'รายการตาราง';
+    section_title.textContent = tt('schedule.listsection_title', 'รายการตาราง');
     clearBtn.classList.add('hidden');
   }
 
   if (!allSchedules.length) {
     el.innerHTML = `<div class="pts-empty">
       <div class="pts-empty__icon"><span class="material-symbols-outlined">event_busy</span></div>
-      <p class="font-semibold mb-1">ยังไม่มีตารางเรียน</p>
-      <p class="text-sm mb-4">เมื่อสมัครหลักสูตรที่มีตาราง จะแสดงในปฏิทินและรายการด้านล่าง</p>
-      <a class="pts-btn pts-btn-primary" href="Courses.html">ดูหลักสูตร</a>
+      <p class="font-semibold mb-1">${isEn ? 'No Schedule Yet' : 'ยังไม่มีตารางเรียน'}</p>
+      <p class="text-sm mb-4">${isEn ? 'When you enroll in courses with schedules, they will appear here.' : 'เมื่อสมัครหลักสูตรที่มีตาราง จะแสดงในปฏิทินและรายการด้านล่าง'}</p>
+      <a class="pts-btn pts-btn-primary" href="Courses.html">${isEn ? 'Browse Courses' : 'ดูหลักสูตร'}</a>
     </div>`;
     document.getElementById('schedule-calendar').hidden = true;
     return;
@@ -238,8 +251,8 @@ function renderList() {
   if (!rows.length) {
     el.innerHTML = `<div class="pts-empty">
       <div class="pts-empty__icon"><span class="material-symbols-outlined">event_busy</span></div>
-      <p class="font-semibold mb-1">ไม่มีรายการ</p>
-      <p class="text-sm">วันที่เลือกยังไม่มีตารางเรียน</p>
+      <p class="font-semibold mb-1">${isEn ? 'No Items' : 'ไม่มีรายการ'}</p>
+      <p class="text-sm">${isEn ? 'No classes scheduled for this date.' : 'วันที่เลือกยังไม่มีตารางเรียน'}</p>
     </div>`;
     return;
   }
@@ -247,27 +260,35 @@ function renderList() {
   el.innerHTML = rows.map((s) => {
     const d = parseScheduleDate(s.start_at);
     const endD = parseScheduleDate(s.end_at);
-    const month = d.toLocaleDateString('th-TH', { month: 'short' });
+    const month = d.toLocaleDateString(locale, { month: 'short' });
     const day = d.getDate();
     const timeOpts = { hour: '2-digit', minute: '2-digit', hour12: false };
-    const time = d.toLocaleTimeString('th-TH', timeOpts);
+    const time = d.toLocaleTimeString(locale, timeOpts);
     const endSameDay = !Number.isNaN(endD.getTime()) && toDateKey(d) === toDateKey(endD);
     const end = endSameDay
-      ? endD.toLocaleTimeString('th-TH', timeOpts)
-      : endD.toLocaleString('th-TH', { ...timeOpts, day: 'numeric', month: 'short' });
+      ? endD.toLocaleTimeString(locale, timeOpts)
+      : endD.toLocaleString(locale, { ...timeOpts, day: 'numeric', month: 'short' });
+    
+    // แปลงชื่อบทเรียน/คอร์ส ถ้ามี Localization
+    const courseName = isEn ? (s.course_name_en || s.course_name) : (s.course_name_th || s.course_name);
+    const sectionTitle = isEn ? (s.section_title_en || s.section_title) : (s.section_title_th || s.section_title);
+    const locationName = s.location 
+      ? s.location 
+      : (isEn ? 'Online' : 'ออนไลน์');
+
     return `<article class="pts-row">
       <div class="flex items-start gap-4">
         <div class="pts-date-badge"><span class="text-xs font-bold uppercase">${escapeHtml(month)}</span><strong>${day}</strong></div>
         <div>
           <span class="pts-chip mb-2">${escapeHtml(s.delivery_mode || 'online')}</span>
-          <h2 class="font-bold text-lg mt-1">${escapeHtml(s.section_title)}</h2>
-          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(s.course_name || '')} · ${escapeHtml(time)}–${escapeHtml(end)}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(s.location || 'ออนไลน์')}</p>
+          <h2 class="font-bold text-lg mt-1">${escapeHtml(sectionTitle || '')}</h2>
+          <p class="text-sm text-on-surface-variant mt-1">${escapeHtml(courseName || '')} · ${escapeHtml(time)}–${escapeHtml(end)}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(locationName)}</p>
         </div>
       </div>
       ${s.meeting_url
-        ? `<a href="${escapeHtml(s.meeting_url)}" target="_blank" rel="noopener" class="pts-btn pts-btn-primary">เข้าห้องเรียน</a>`
-        : `<span class="text-sm text-on-surface-variant">รอประกาศลิงก์</span>`}
+        ? `<a href="${escapeHtml(s.meeting_url)}" target="_blank" rel="noopener" class="pts-btn pts-btn-primary">${isEn ? 'Join Class' : 'เข้าห้องเรียน'}</a>`
+        : `<span class="text-sm text-on-surface-variant">${isEn ? 'Awaiting Link' : 'รอประกาศลิงก์'}</span>`}
     </article>`;
   }).join('');
 }
@@ -295,6 +316,16 @@ document.getElementById('cal-clear-filter').onclick = () => {
   renderCalendar();
   renderList();
 };
+
+// ⚡ เพิ่ม Event Listener ตัวรับสัญญาณการเปลี่ยนภาษา TH ⇄ EN
+document.addEventListener('pts-lang-change', () => {
+  if (window.PTSLang && typeof PTSLang.applyToDOM === 'function') {
+    PTSLang.applyToDOM();
+  }
+  loadGcalShortcut();
+  renderCalendar();
+  renderList();
+});
 
 async function load() {
   const me = await fetch('/api/users/me', { credentials: 'include' }).then((r) => r.json());

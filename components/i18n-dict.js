@@ -32,6 +32,12 @@ window.PTSLangDict = {
   'common.recommended': { th: 'แนะนำ', en: 'Recommended' },
   'common.new': { th: 'ใหม่', en: 'New' },
   'common.comingSoon': { th: 'เปิดเร็วๆ นี้', en: 'Coming Soon' },
+  'common.starts': { th: 'เริ่ม', en: 'Starts' },
+  'common.by': { th: 'โดย', en: 'by' },
+  'common.learnType': { th: 'ประเภทการเรียน', en: 'Learning type' },
+  'common.online': { th: 'ออนไลน์', en: 'Online' },
+  'common.onsite': { th: 'ออนไซต์', en: 'Onsite' },
+  'common.hybrid': { th: 'ไฮบริด', en: 'Hybrid' },
 
 
   /* —— Nav —— */

@@ -581,6 +581,9 @@ let adminCalViewYear = new Date().getFullYear();
 let adminCalViewMonth = new Date().getMonth();
 let adminCalSelectedDay = null;
 
+// ✅ Helper ดึงชื่อหลักสูตรภาษาหลัก
+const getCourseName = (c) => (c?.course_name_th || c?.course_name || c?.course_name_en || '').toString().trim();
+
 async function api(url, options = {}) {
   const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
   const headers = { 'Content-Type': 'application/json', 'X-PTS-Lang': lang, ...(options.headers || {}) };
@@ -782,14 +785,12 @@ async function renderCourses() {
     document.getElementById('c-start').value = toDateInput(c?.start_date);
     document.getElementById('c-enrolled').value = c?.total_enrolled != null ? Number(c.total_enrolled) : 0;
     
-    // ✅ แมปค่าคอลัมน์ flag_use/coursesFlag ให้ตรงกับ option value Y/N
     document.getElementById('c-flag').value = (c?.coursesFlag === 'N' || c?.flag_use === 'N') ? 'N' : 'Y';
     
     document.getElementById('c-cover').value = c?.cover_image_url || '';
     document.getElementById('c-desc').value = descTh;
     document.getElementById('c-desc-en').value = descEn;
     
-    // ✅ แมปค่าเป็น boolean จากตัวเลข 1/0
     document.getElementById('c-featured').checked = Number(c?.is_featured) === 1;
     document.getElementById('c-open-soon').checked = Number(c?.is_open_soon) === 1;
   };
@@ -911,16 +912,11 @@ async function renderCourses() {
       coursescat_id: document.getElementById('c-cat').value === '' ? null : Number(document.getElementById('c-cat').value),
       start_date: document.getElementById('c-start').value || null,
       total_enrolled: Number(document.getElementById('c-enrolled').value || 0),
-      
-      // ✅ ส่งค่า 'Y' หรือ 'N' ตรงๆ ตามที่เลือกใน Dropdown
       coursesFlag: document.getElementById('c-flag').value || 'Y',
-      
       cover_image_url: document.getElementById('c-cover').value,
       description_th: document.getElementById('c-desc').value,
       description_en: document.getElementById('c-desc-en').value,
       description: document.getElementById('c-desc').value,
-      
-      // ✅ ส่งค่าเป็นตัวเลข 1 หรือ 0
       is_featured: document.getElementById('c-featured').checked ? 1 : 0,
       is_open_soon: document.getElementById('c-open-soon').checked ? 1 : 0
     };
@@ -946,7 +942,6 @@ async function renderCourses() {
     }
   };
 
-
   searchInput.addEventListener('input', () => renderList(searchInput.value));
   renderList();
 }
@@ -954,7 +949,7 @@ async function renderCourses() {
 async function renderLessons() {
   if (!coursesCache.length) {
     const { data } = await api('/api/admin/courses');
-    coursesCache = data;
+    coursesCache = data || [];
   }
 
   let lessonsCache = [];
@@ -964,7 +959,7 @@ async function renderLessons() {
     <h2 id="lesson-form-section_title" class="font-bold text-lg mb-3">เพิ่มบทเรียนใหม่</h2>
     <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
       <select id="l-course" class="border rounded-xl px-3 py-2">
-        ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)} (ID ${c.course_id})</option>`).join('')}
+        ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(getCourseName(c))} (ID ${c.course_id})</option>`).join('')}
       </select>
       <input id="l-section_title" class="border rounded-xl px-3 py-2" placeholder="ชื่อบทเรียน">
       <input id="l-video" class="border rounded-xl px-3 py-2 md:col-span-2" placeholder="Video embed URL (เช่น YouTube embed)">
@@ -1212,7 +1207,7 @@ async function renderLessons() {
 async function renderSchedules() {
   if (!coursesCache.length) {
     const { data } = await api('/api/admin/courses');
-    coursesCache = data;
+    coursesCache = data || [];
   }
   const { data } = await api('/api/admin/schedules');
   adminSchedulesCache = Array.isArray(data) ? data.slice() : [];
@@ -1342,10 +1337,11 @@ async function renderSchedules() {
       const range = Number.isNaN(d.getTime())
         ? '—'
         : `${d.toLocaleString('th-TH')} – ${end.toLocaleString('th-TH')}`;
+      const name = s.course_name || s.course_name_th || s.course_name_en || '-';
       return `<div class="border rounded-xl p-3 flex justify-between gap-2">
         <div>
           <p class="font-bold">${escapeHtml(s.section_title)}</p>
-          <p class="text-sm text-on-surface-variant">${escapeHtml(s.course_name || '-')} · ${escapeHtml(range)}</p>
+          <p class="text-sm text-on-surface-variant">${escapeHtml(name)} · ${escapeHtml(range)}</p>
           <p class="text-xs text-on-surface-variant mt-1">${escapeHtml(s.delivery_mode || 'online')}${s.location ? ` · ${escapeHtml(s.location)}` : ''}</p>
         </div>
         <button type="button" class="del-schedule text-red-600 font-bold" data-id="${s.schedule_id}">ลบ</button>
@@ -1392,7 +1388,7 @@ async function renderSchedules() {
       <label class="text-sm font-semibold text-on-surface-variant">ผูกกับหลักสูตร (จำเป็น — ต้องเป็นหลักสูตรที่นักเรียนสมัครไว้)
         <select id="s-course" class="mt-1 w-full border rounded-xl px-3 py-2" required>
           <option value="">-- เลือกหลักสูตร --</option>
-          ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+          ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(getCourseName(c))}</option>`).join('')}
         </select>
       </label>
       <label class="text-sm font-semibold text-on-surface-variant">วันเวลาเริ่ม
@@ -1763,7 +1759,7 @@ async function renderForms() {
                   <div class="text-xs text-on-surface-variant">${escapeHtml(f.description || '')}</div>
                 </td>
                 <td><span class="adm-c-badge">${escapeHtml(f.form_type === 'disc' ? 'DISC' : f.form_type === 'course' ? 'ก่อนคอร์ส' : 'ทั่วไป')}</span></td>
-                <td class="text-sm">${f.form_type === 'course' ? escapeHtml(f.course_name || ('#' + f.course_id)) : '—'}</td>
+                <td class="text-sm">${f.form_type === 'course' ? escapeHtml(getCourseName(f) || ('#' + f.course_id)) : '—'}</td>
                 <td><span class="adm-c-badge${f.is_published ? ' is-on' : ''}">${f.is_published ? 'เปิดกรอก' : 'ปิด'}</span></td>
                 <td>${Number(f.question_count || 0)}</td>
                 <td>${Number(f.response_count || 0)}</td>
@@ -1827,7 +1823,7 @@ async function renderForms() {
             <label class="text-xs font-bold">เชื่อมกับหลักสูตร</label>
             <select id="fe-course" class="adm-c-search w-full">
               <option value="">— เลือกหลักสูตร —</option>
-              ${courses.map((c) => `<option value="${c.course_id}" ${Number(form.course_id) === Number(c.course_id) ? 'selected' : ''}>${escapeHtml(c.course_name || ('#' + c.course_id))}</option>`).join('')}
+              ${courses.map((c) => `<option value="${c.course_id}" ${Number(form.course_id) === Number(c.course_id) ? 'selected' : ''}>${escapeHtml(getCourseName(c) || ('#' + c.course_id))}</option>`).join('')}
             </select>
             <p class="text-xs text-on-surface-variant mt-1">ผู้ใช้ต้องกรอกฟอร์มนี้ก่อนเข้าเรียนหลักสูตรที่เลือก</p>
           </div>
@@ -2061,7 +2057,7 @@ async function renderForms() {
           <label class="text-xs font-bold">เชื่อมกับหลักสูตร</label>
           <select id="fc-course" class="adm-c-search w-full">
             <option value="">— เลือกหลักสูตร —</option>
-            ${courses.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name || ('#' + c.course_id))}</option>`).join('')}
+            ${courses.map((c) => `<option value="${c.course_id}">${escapeHtml(getCourseName(c) || ('#' + c.course_id))}</option>`).join('')}
           </select>
         </div>
         <div class="md:col-span-2">
@@ -2567,7 +2563,7 @@ async function renderPayments() {
                   <div class="adm-c-name">${escapeHtml(p.username || '—')}</div>
                   <div class="adm-pay-meta">${escapeHtml(p.email || '')}</div>
                 </td>
-                <td>${escapeHtml(p.course_name || '—')}</td>
+                <td>${escapeHtml(getCourseName(p) || '—')}</td>
                 <td>${sourceBadge(p)}</td>
                 <td><span class="adm-pay-meta">${escapeHtml(methodLabel(p))}</span></td>
                 <td>
@@ -2603,7 +2599,7 @@ async function renderPayments() {
               ${statusBadge(p)}
             </div>
             <div class="adm-c-card__meta">
-              <span>${escapeHtml(p.course_name || '—')}</span>
+              <span>${escapeHtml(getCourseName(p) || '—')}</span>
               <span>฿${fmtMoney(p.amount)}</span>
               <span>${fmtDt(p.transfer_at || p.paid_at || p.created_at)}</span>
             </div>
@@ -2629,7 +2625,7 @@ async function renderPayments() {
           <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
             <select id="ac-course" class="mt-1 w-full border rounded-xl px-3 py-2">
               <option value="">-- เลือก --</option>
-              ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(c.course_name)}</option>`).join('')}
+              ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(getCourseName(c))}</option>`).join('')}
             </select>
           </label>
           <label class="text-sm font-semibold text-on-surface-variant">รหัส (ว่าง = สุ่มให้)
@@ -2652,7 +2648,7 @@ async function renderPayments() {
             <div class="border rounded-xl p-3 flex flex-wrap justify-between gap-2 items-start">
               <div>
                 <p class="font-bold font-mono tracking-wide">${escapeHtml(a.code)}</p>
-                <p class="adm-pay-meta">${escapeHtml(a.course_name || '')} · ใช้แล้ว ${Number(a.used_count || 0)}${a.max_uses != null ? ` / ${a.max_uses}` : ''}</p>
+                <p class="adm-pay-meta">${escapeHtml(getCourseName(a) || '')} · ใช้แล้ว ${Number(a.used_count || 0)}${a.max_uses != null ? ` / ${a.max_uses}` : ''}</p>
                 <p class="adm-pay-meta">${a.expires_at ? `หมดอายุ ${fmtDt(a.expires_at)}` : 'ไม่หมดอายุ'}${a.note ? ` · ${escapeHtml(a.note)}` : ''}</p>
               </div>
               <button type="button" class="pts-btn pts-btn-outline ac-toggle" data-id="${a.access_code_id}" data-flag="${a.flag_use ? 0 : 1}">
@@ -2971,7 +2967,7 @@ async function renderCoupons() {
           <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
             <select id="cp-course" class="mt-1 w-full border rounded-xl px-3 py-2">
               <option value="">-- เลือก --</option>
-              ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(courseTitle(c))} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
+              ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(courseTitle(c) || getCourseName(c))} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
             </select>
           </label>
           <label class="text-sm font-semibold text-on-surface-variant">รหัสคูปอง (ตัวอักษร/ตัวเลข, ว่าง = สุ่ม)
@@ -3009,7 +3005,7 @@ async function renderCoupons() {
             <div class="flex flex-wrap justify-between gap-2 items-start">
               <div>
                 <p class="font-bold font-mono tracking-wide text-lg">${escapeHtml(c.code)}</p>
-                <p class="adm-pay-meta">${escapeHtml(courseTitle(c) || c.course_name || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}</p>
+                <p class="adm-pay-meta">${escapeHtml(courseTitle(c) || getCourseName(c) || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}</p>
                 <p class="adm-pay-meta">ลด ฿${Number(c.discount_amount || 0).toLocaleString('th-TH')}
                   → เหลือ ฿${Math.max(0, Number(c.course_price || 0) - Number(c.discount_amount || 0)).toLocaleString('th-TH')}
                   · ${usageLabel(c.usage_rule)}
@@ -3140,7 +3136,6 @@ async function renderCoupons() {
 
   paint();
 }
-
 
 const tabs = {
   courses: renderCourses,
