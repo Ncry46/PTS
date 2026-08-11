@@ -313,6 +313,7 @@ async function mountCourseNotifyControls(hostEl) {
   if (!c.instructor_name) c.instructor_name = c.instructor_name_th || c.instructor_name_en || cRaw.instructor_name || '-';
   if (!c.description) c.description = c.description_th || c.description_en || cRaw.description || '';
   window.__ptsCourseRaw = cRaw;
+  const courseTitle = (window.PTSCourseI18n ? PTSCourseI18n.name(c) : '') || c.course_name || c.course_name_th || c.course_name_en || '';
   const price = Number(c.price || 0);
   const enrolled = Number(c.is_enrolled) === 1;
   const loggedIn = !!me.loggedIn;
