@@ -3016,19 +3016,32 @@ async function renderCoupons() {
                 ${c.flag_use ? 'ปิดใช้' : 'เปิดใช้'}
               </button>
             </div>
-            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 items-end border-t pt-3">
-              <label class="text-sm font-semibold text-on-surface-variant">เลือกผู้ใช้ในระบบ
-                <select class="cp-user mt-1 w-full border rounded-xl px-3 py-2" data-id="${c.coupon_id}">
-                  <option value="">-- หรือใส่อีเมลด้านขวา --</option>
-                  ${users.map((u) => `<option value="${u.user_id}">${escapeHtml(u.username || '')} &lt;${escapeHtml(u.email || '')}&gt;</option>`).join('')}
-                </select>
+            <div class="mt-3 border-t pt-3 space-y-2">
+              <div class="flex flex-wrap gap-2 items-end justify-between">
+                <p class="text-sm font-semibold text-on-surface-variant m-0">ส่งคูปองทางอีเมล — ติ๊กเลือกได้หลายคน</p>
+                <span class="adm-pay-meta cp-selected-count" data-id="${c.coupon_id}">เลือก 0 คน</span>
+              </div>
+              <div class="flex flex-wrap gap-2 items-center">
+                <input type="search" class="cp-user-filter flex-1 min-w-[180px] border rounded-xl px-3 py-2 text-sm" data-id="${c.coupon_id}" placeholder="ค้นหาชื่อหรืออีเมล...">
+                <button type="button" class="pts-btn pts-btn-outline cp-select-visible" data-id="${c.coupon_id}">เลือกที่เห็น</button>
+                <button type="button" class="pts-btn pts-btn-outline cp-clear-users" data-id="${c.coupon_id}">ล้างการเลือก</button>
+              </div>
+              <div class="cp-user-list border rounded-xl p-2 max-h-52 overflow-y-auto text-sm" data-id="${c.coupon_id}">
+                ${users.filter((u) => String(u.email || '').includes('@')).map((u) => `
+                  <label class="cp-user-row flex items-start gap-2 py-1.5 px-1 rounded hover:bg-surface-container cursor-pointer" data-search="${escapeHtml(String(u.username || '').toLowerCase() + ' ' + String(u.email || '').toLowerCase())}">
+                    <input type="checkbox" class="cp-user-cb mt-1" value="${u.user_id}" data-coupon="${c.coupon_id}">
+                    <span>
+                      <span class="font-semibold">${escapeHtml(u.username || '—')}</span>
+                      <span class="adm-pay-meta block">${escapeHtml(u.email || '')}</span>
+                    </span>
+                  </label>`).join('') || '<p class="adm-pay-meta m-0 p-2">ไม่พบผู้ใช้ที่มีอีเมล</p>'}
+              </div>
+              <label class="text-sm font-semibold text-on-surface-variant block">อีเมลเพิ่มนอกระบบ (คั่นด้วยจุลภาค ถ้ามี)
+                <input class="cp-email mt-1 w-full border rounded-xl px-3 py-2" data-id="${c.coupon_id}" type="text" placeholder="a@mail.com, b@mail.com">
               </label>
-              <label class="text-sm font-semibold text-on-surface-variant">อีเมลปลายทาง
-                <input class="cp-email mt-1 w-full border rounded-xl px-3 py-2" data-id="${c.coupon_id}" type="email" placeholder="name@example.com">
-              </label>
-              <button type="button" class="pts-btn pts-btn-primary cp-send" data-id="${c.coupon_id}">ส่งคูปองทางอีเมล</button>
+              <button type="button" class="pts-btn pts-btn-primary cp-send" data-id="${c.coupon_id}">ส่งคูปองให้ที่เลือก</button>
+              <p class="cp-send-msg adm-pay-meta mt-1" data-id="${c.coupon_id}"></p>
             </div>
-            <p class="cp-send-msg adm-pay-meta mt-2" data-id="${c.coupon_id}"></p>
           </div>`).join('') || '<p class="adm-pay-meta">ยังไม่มีคูปอง</p>'}
       </div>
     `;
@@ -3112,17 +3125,23 @@ async function renderCoupons() {
     document.querySelectorAll('.cp-send').forEach((btn) => {
       btn.onclick = async () => {
         const id = btn.dataset.id;
-        const userSel = panel.querySelector('.cp-user[data-id="' + id + '"]');
+        const list = panel.querySelector('.cp-user-list[data-id="' + id + '"]');
         const emailInp = panel.querySelector('.cp-email[data-id="' + id + '"]');
         const msgEl = panel.querySelector('.cp-send-msg[data-id="' + id + '"]');
-        const user_id = userSel && userSel.value ? parseInt(userSel.value, 10) : null;
+        const checked = list
+          ? Array.from(list.querySelectorAll('.cp-user-cb:checked')).map((el) => parseInt(el.value, 10)).filter((n) => n > 0)
+          : [];
         const email = emailInp ? emailInp.value.trim() : '';
+        if (!checked.length && !email) {
+          if (msgEl) msgEl.textContent = 'กรุณาติ๊กเลือกผู้ใช้ หรือใส่อีเมลเพิ่ม';
+          return;
+        }
         btn.disabled = true;
-        if (msgEl) msgEl.textContent = 'กำลังส่ง...';
+        if (msgEl) msgEl.textContent = 'กำลังส่งให้ ' + (checked.length || 0) + ' คน' + (email ? ' + อีเมลเพิ่ม' : '') + '...';
         try {
           const res = await api('/api/admin/coupons/' + id + '/send-email', {
             method: 'POST',
-            body: JSON.stringify({ user_id, email })
+            body: JSON.stringify({ user_ids: checked, email })
           });
           if (msgEl) msgEl.textContent = res.message || 'ส่งแล้ว';
         } catch (e) {
@@ -3130,6 +3149,55 @@ async function renderCoupons() {
         } finally {
           btn.disabled = false;
         }
+      };
+    });
+
+    const updateSelectedCount = (couponId) => {
+      const list = panel.querySelector('.cp-user-list[data-id="' + couponId + '"]');
+      const countEl = panel.querySelector('.cp-selected-count[data-id="' + couponId + '"]');
+      if (!list || !countEl) return;
+      const n = list.querySelectorAll('.cp-user-cb:checked').length;
+      countEl.textContent = 'เลือก ' + n + ' คน';
+    };
+
+    panel.querySelectorAll('.cp-user-cb').forEach((cb) => {
+      cb.onchange = () => updateSelectedCount(cb.getAttribute('data-coupon'));
+    });
+
+    panel.querySelectorAll('.cp-user-filter').forEach((inp) => {
+      inp.oninput = () => {
+        const id = inp.dataset.id;
+        const q = String(inp.value || '').trim().toLowerCase();
+        const list = panel.querySelector('.cp-user-list[data-id="' + id + '"]');
+        if (!list) return;
+        list.querySelectorAll('.cp-user-row').forEach((row) => {
+          const hay = row.getAttribute('data-search') || '';
+          row.style.display = !q || hay.includes(q) ? '' : 'none';
+        });
+      };
+    });
+
+    panel.querySelectorAll('.cp-select-visible').forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.dataset.id;
+        const list = panel.querySelector('.cp-user-list[data-id="' + id + '"]');
+        if (!list) return;
+        list.querySelectorAll('.cp-user-row').forEach((row) => {
+          if (row.style.display === 'none') return;
+          const cb = row.querySelector('.cp-user-cb');
+          if (cb) cb.checked = true;
+        });
+        updateSelectedCount(id);
+      };
+    });
+
+    panel.querySelectorAll('.cp-clear-users').forEach((btn) => {
+      btn.onclick = () => {
+        const id = btn.dataset.id;
+        const list = panel.querySelector('.cp-user-list[data-id="' + id + '"]');
+        if (!list) return;
+        list.querySelectorAll('.cp-user-cb').forEach((cb) => { cb.checked = false; });
+        updateSelectedCount(id);
       };
     });
   };

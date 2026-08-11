@@ -160,7 +160,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await pool.request().query(`
-                SELECT TOP 200 user_id, email, username, phone, Role, FlagUse, Url
+                SELECT TOP 1000 user_id, email, username, phone, Role, FlagUse, Url
                 FROM dbo.users
                 ORDER BY user_id DESC
             `);
@@ -1192,11 +1192,28 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         const id = parseInt(req.params.id, 10);
         if (!id) return res.status(400).json({ success: false, message: 'รหัสคูปองไม่ถูกต้อง' });
 
-        const userId = req.body.user_id != null && req.body.user_id !== ''
-            ? parseInt(req.body.user_id, 10)
-            : null;
-        let email = String(req.body.email || '').trim().toLowerCase();
-        let fullName = String(req.body.full_name || '').trim();
+        const body = req.body || {};
+        const userIdsRaw = Array.isArray(body.user_ids)
+            ? body.user_ids
+            : (body.user_id != null && body.user_id !== '' ? [body.user_id] : []);
+        const userIds = [...new Set(
+            userIdsRaw
+                .map((v) => parseInt(v, 10))
+                .filter((n) => Number.isFinite(n) && n > 0)
+        )];
+
+        const extraEmails = [];
+        const pushEmail = (raw) => {
+            String(raw || '')
+                .split(/[,;\s]+/)
+                .map((s) => s.trim().toLowerCase())
+                .filter((s) => s.includes('@'))
+                .forEach((s) => {
+                    if (!extraEmails.includes(s)) extraEmails.push(s);
+                });
+        };
+        pushEmail(body.email);
+        if (Array.isArray(body.emails)) body.emails.forEach(pushEmail);
 
         try {
             const pool = await poolPromise;
@@ -1220,19 +1237,40 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: 'คูปองถูกปิดใช้งานแล้ว' });
             }
 
-            if (userId) {
-                const userRes = await pool.request()
-                    .input('userId', sql.Int, userId)
-                    .query(`SELECT user_id, email, username FROM dbo.users WHERE user_id = @userId`);
-                if (!userRes.recordset.length) {
-                    return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            /** @type {{ email: string, fullName: string, userId: number|null }[]} */
+            const recipients = [];
+            const seen = new Set();
+
+            if (userIds.length) {
+                const idList = userIds.join(',');
+                const userRes = await pool.request().query(`
+                    SELECT user_id, email, username
+                    FROM dbo.users
+                    WHERE user_id IN (${idList})
+                `);
+                for (const u of userRes.recordset || []) {
+                    const em = String(u.email || '').trim().toLowerCase();
+                    if (!em || !em.includes('@') || seen.has(em)) continue;
+                    seen.add(em);
+                    recipients.push({
+                        email: em,
+                        fullName: String(u.username || '').trim(),
+                        userId: u.user_id
+                    });
                 }
-                email = String(userRes.recordset[0].email || '').trim().toLowerCase();
-                if (!fullName) fullName = String(userRes.recordset[0].username || '').trim();
             }
 
-            if (!email || !email.includes('@')) {
-                return res.status(400).json({ success: false, message: 'กรุณาระบุอีเมลหรือเลือกผู้ใช้ในระบบ' });
+            for (const em of extraEmails) {
+                if (seen.has(em)) continue;
+                seen.add(em);
+                recipients.push({ email: em, fullName: '', userId: null });
+            }
+
+            if (!recipients.length) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'กรุณาติ๊กเลือกผู้ใช้อย่างน้อย 1 คน หรือใส่อีเมลเพิ่ม'
+                });
             }
 
             const coursePrice = Number(coupon.course_price) || 0;
@@ -1241,19 +1279,50 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const finalHint = finalAmount === 0
                 ? 'ใช้แล้วเรียนฟรี (0 บาท)'
                 : `ราคาหลังลดประมาณ ฿${finalAmount.toLocaleString('th-TH')}`;
+            const courseName = pickText(coupon, 'course_name', 'th') || coupon.course_name;
+            const courseNameEn = pickText(coupon, 'course_name', 'en') || '';
 
-            await sendCouponEmail(email, {
-                fullName,
-                courseName: pickText(coupon, 'course_name', 'th') || coupon.course_name,
-                courseNameEn: pickText(coupon, 'course_name', 'en') || '',
-                code: coupon.code,
-                discountAmount: discount,
-                finalHint
-            });
+            let sent = 0;
+            const failed = [];
+            for (const r of recipients) {
+                try {
+                    await sendCouponEmail(r.email, {
+                        fullName: r.fullName,
+                        courseName,
+                        courseNameEn,
+                        code: coupon.code,
+                        discountAmount: discount,
+                        finalHint
+                    });
+                    sent += 1;
+                } catch (err) {
+                    failed.push({
+                        email: r.email,
+                        message: err.message || 'ส่งไม่สำเร็จ'
+                    });
+                    if (err && (err.code === 'MAIL_NOT_CONFIGURED' || err.code === 'SMTP_MISSING' || err.code === 'BREVO_MISSING')) {
+                        return res.status(503).json({
+                            success: false,
+                            message: 'ยังไม่ได้ตั้งค่าการส่งอีเมล — ไปที่แท็บอีเมล OTP เพื่อตั้งค่า',
+                            data: { sent, failed, total: recipients.length }
+                        });
+                    }
+                }
+            }
 
+            if (sent === 0) {
+                return res.status(500).json({
+                    success: false,
+                    message: failed[0]?.message || 'ส่งอีเมลไม่สำเร็จ',
+                    data: { sent, failed, total: recipients.length }
+                });
+            }
+
+            const failNote = failed.length ? ` (ล้มเหลว ${failed.length} คน)` : '';
             res.json({
                 success: true,
-                message: `ส่งคูปองไปที่ ${email} แล้ว`
+                message: `ส่งคูปองสำเร็จ ${sent}/${recipients.length} คน${failNote}`,
+                data: { sent, failed, total: recipients.length }
             });
         } catch (error) {
             const code = error && error.code;
