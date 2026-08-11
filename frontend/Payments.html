@@ -372,13 +372,19 @@ async function loadPayments() {
     } else {
       status = '<span class="pay-status pay-status--pending">รอชำระ / รอสลิป</span>';
     }
-    const action = p.status === 'pending' && p.method !== 'card' && p.method !== 'access_code'
-      ? `<button data-id="${p.payment_id}" class="resume-slip pts-btn pts-btn-primary">แนบสลิป</button>`
-      : (p.status === 'pending' && p.method === 'card'
-        ? `<button data-id="${p.payment_id}" data-amount="${p.amount}" class="resume-card pts-btn pts-btn-outline">ชำระด้วยบัตร</button>`
-        : (p.status === 'rejected'
-          ? `<button data-id="${p.payment_id}" class="resume-slip pts-btn pts-btn-outline">ส่งสลิปใหม่</button>`
-          : ''));
+    let action = '';
+    const cid = Number(p.course_id) || 0;
+    if (p.status === 'pending' && p.method !== 'card' && p.method !== 'access_code') {
+      action = `<button data-id="${p.payment_id}" class="resume-slip pts-btn pts-btn-primary">แนบสลิป</button>`;
+    } else if (p.status === 'pending' && p.method === 'card') {
+      action = `<button data-id="${p.payment_id}" data-amount="${p.amount}" class="resume-card pts-btn pts-btn-outline">ชำระด้วยบัตร</button>`;
+    } else if (p.status === 'pending_review' && cid) {
+      action = `<a class="pts-btn pts-btn-outline" href="CourseDetail.html?courseId=${cid}">ดูรายละเอียดคอร์ส</a>`;
+    } else if (p.status === 'rejected') {
+      action = `<button data-id="${p.payment_id}" class="resume-slip pts-btn pts-btn-outline">ส่งสลิปใหม่</button>`;
+    } else if (p.status === 'paid' && cid) {
+      action = `<a class="pts-btn pts-btn-primary" href="Learn.html?courseId=${cid}">เข้าเรียนต่อ</a>`;
+    }
     return `
       <div class="pts-row" style="padding:14px;margin-bottom:10px">
         <div>
