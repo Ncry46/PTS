@@ -166,7 +166,8 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
           </button>
         </div>
         ${p.feeling && feelingLabel[p.feeling] ? `<p class="text-sm mb-2">กำลังรู้สึก <strong>${feelingLabel[p.feeling]}</strong></p>` : ''}
-        <p class="whitespace-pre-line text-on-surface-variant mb-3">${escapeHtml(p.content||'')}</p>
+        ${p.content ? `<p class="whitespace-pre-line text-on-surface-variant mb-3">${escapeHtml(p.content||'')}</p>` : ''}
+        ${p.image_url ? `<div class="mb-3 overflow-hidden rounded-2xl border border-outline-variant/40"><img src="${escapeHtml(p.image_url)}" alt="รูปโพสต์" class="w-full max-h-80 object-contain bg-black/5"></div>` : ''}
         <a class="text-sm font-bold text-primary" href="Community.html">ดูในคอมมูนิตี้ →</a>
       </article>`).join('');
   }

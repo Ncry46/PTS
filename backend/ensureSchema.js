@@ -904,7 +904,10 @@ async function ensureCompatColumns(pool) {
         /* Community post feelings (Facebook-style mood) */
         `IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
             AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
-         ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL`
+         ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL`,
+        `IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+            AND COL_LENGTH('dbo.community_posts', 'image_url') IS NULL
+         ALTER TABLE dbo.community_posts ADD image_url NVARCHAR(500) NULL`
     ];
 
     let ok = 0;

@@ -3,6 +3,7 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
+const multer = require('multer');
 try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
 const { ensureLearningSchema, ensureCompatColumns, createNotification } = require('./ensureSchema');
 const {
@@ -91,6 +92,43 @@ try {
     try { fs.mkdirSync(path.join(uploadsDir, 'cert'), { recursive: true }); } catch (__) {}
 }
 try { fs.mkdirSync(path.join(uploadsDir, 'slips'), { recursive: true }); } catch (_) {}
+try { fs.mkdirSync(path.join(uploadsDir, 'community'), { recursive: true }); } catch (_) {}
+
+const COMMUNITY_IMG_DIR = path.join(uploadsDir, 'community');
+const COMMUNITY_IMG_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);
+const communityImageUpload = multer({
+    storage: multer.diskStorage({
+        destination: (_req, _file, cb) => {
+            try { fs.mkdirSync(COMMUNITY_IMG_DIR, { recursive: true }); } catch (_) { /* ignore */ }
+            cb(null, COMMUNITY_IMG_DIR);
+        },
+        filename: (_req, file, cb) => {
+            const ext = path.extname(file.originalname || '').toLowerCase();
+            const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)
+                ? (ext === '.jpeg' ? '.jpg' : ext)
+                : '.jpg';
+            cb(null, `post-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${safeExt}`);
+        }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+        if (COMMUNITY_IMG_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+        else cb(new Error('รองรับเฉพาะรูป JPG, PNG, WEBP หรือ GIF'));
+    }
+});
+
+async function ensureCommunityPostColumns(pool) {
+    await pool.request().query(`
+        IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+           AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
+        ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
+    `);
+    await pool.request().query(`
+        IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+           AND COL_LENGTH('dbo.community_posts', 'image_url') IS NULL
+        ALTER TABLE dbo.community_posts ADD image_url NVARCHAR(500) NULL
+    `);
+}
 
 // API ห้าม cache — กันรีเฟรชแล้วได้ผลลัพธ์ค้าง/สลับได้-ไม่ได้
 app.use('/api', (req, res, next) => {
@@ -651,11 +689,7 @@ app.get('/api/community', async (req, res) => {
         const pool = await poolPromise;
         const userId = req.session?.user?.user_id || null;
 
-        await pool.request().query(`
-            IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
-               AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
-            ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
-        `);
+        await ensureCommunityPostColumns(pool);
 
         const result = await pool.request()
             .input('userId', sql.Int, userId)
@@ -664,6 +698,7 @@ app.get('/api/community', async (req, res) => {
                 p.post_id,
                 p.content,
                 p.feeling,
+                p.image_url,
                 p.created_at,
                 u.username AS author_name,
                 ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
@@ -708,11 +743,7 @@ app.get('/api/my/liked-posts', async (req, res) => {
 
     try {
         const pool = await poolPromise;
-        await pool.request().query(`
-            IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
-               AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
-            ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
-        `);
+        await ensureCommunityPostColumns(pool);
         const result = await pool.request()
             .input('userId', sql.Int, user.user_id)
             .query(`
@@ -720,6 +751,7 @@ app.get('/api/my/liked-posts', async (req, res) => {
                     p.post_id,
                     p.content,
                     p.feeling,
+                    p.image_url,
                     p.created_at,
                     u.username AS author_name,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
@@ -825,68 +857,72 @@ app.get('/api/community/trending', async (req, res) => {
 });
 
 // =========================================================================
-// ✍️ สร้างโพสต์คอมมูนิตี้ (ต้องล็อกอิน)
+// ✍️ สร้างโพสต์คอมมูนิตี้ (ต้องล็อกอิน) — รองรับรูป + อารมณ์
 // =========================================================================
-app.post('/api/community', async (req, res) => {
-    if (!req.session || !req.session.user || !req.session.user.user_id) {
-        return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบก่อนโพสต์' });
-    }
+app.post('/api/community', (req, res) => {
+    communityImageUpload.single('image')(req, res, async (uploadErr) => {
+        if (uploadErr) {
+            return res.status(400).json({ success: false, message: uploadErr.message || 'อัปโหลดรูปไม่สำเร็จ' });
+        }
+        if (!req.session || !req.session.user || !req.session.user.user_id) {
+            return res.status(401).json({ success: false, message: 'กรุณาเข้าสู่ระบบก่อนโพสต์' });
+        }
 
-    const content = (req.body.content || '').trim();
-    if (!content) {
-        return res.status(400).json({ success: false, message: 'กรุณากรอกข้อความก่อนโพสต์' });
-    }
-    if (content.length > 2000) {
-        return res.status(400).json({ success: false, message: 'ข้อความยาวเกิน 2000 ตัวอักษร' });
-    }
+        const content = String(req.body?.content || '').trim();
+        const imageUrl = req.file ? `/uploads/community/${req.file.filename}` : null;
 
-    const ALLOWED_FEELINGS = new Set([
-        'happy', 'grateful', 'excited', 'proud', 'thoughtful',
-        'curious', 'tired', 'celebrating', 'motivated', 'relaxed'
-    ]);
-    const feelingRaw = String(req.body.feeling || '').trim().toLowerCase();
-    const feeling = ALLOWED_FEELINGS.has(feelingRaw) ? feelingRaw : null;
+        if (!content && !imageUrl) {
+            return res.status(400).json({ success: false, message: 'กรุณาใส่ข้อความหรือรูปภาพก่อนโพสต์' });
+        }
+        if (content.length > 2000) {
+            return res.status(400).json({ success: false, message: 'ข้อความยาวเกิน 2000 ตัวอักษร' });
+        }
 
-    try {
-        const pool = await poolPromise;
-        // Ensure column exists on older DBs
-        await pool.request().query(`
-            IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
-               AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
-            ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
-        `);
+        const ALLOWED_FEELINGS = new Set([
+            'happy', 'grateful', 'excited', 'proud', 'thoughtful',
+            'curious', 'tired', 'celebrating', 'motivated', 'relaxed'
+        ]);
+        const feelingRaw = String(req.body?.feeling || '').trim().toLowerCase();
+        const feeling = ALLOWED_FEELINGS.has(feelingRaw) ? feelingRaw : null;
 
-        const result = await pool.request()
-            .input('userId', sql.Int, req.session.user.user_id)
-            .input('content', sql.NVarChar, content)
-            .input('feeling', sql.NVarChar(40), feeling);
-        const { bindFlagInput } = require('./db');
-        await bindFlagInput(pool, result, 'flagUse', 'community_posts', true);
-        const inserted = await result.query(`
-                INSERT INTO dbo.community_posts (user_id, content, feeling, flag_use, created_at)
-                OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.feeling, INSERTED.created_at
-                VALUES (@userId, @content, @feeling, @flagUse, GETDATE())
+        try {
+            const pool = await poolPromise;
+            await ensureCommunityPostColumns(pool);
+
+            const result = await pool.request()
+                .input('userId', sql.Int, req.session.user.user_id)
+                .input('content', sql.NVarChar, content || '')
+                .input('feeling', sql.NVarChar(40), feeling)
+                .input('imageUrl', sql.NVarChar(500), imageUrl);
+            const { bindFlagInput } = require('./db');
+            await bindFlagInput(pool, result, 'flagUse', 'community_posts', true);
+            const inserted = await result.query(`
+                INSERT INTO dbo.community_posts (user_id, content, feeling, image_url, flag_use, created_at)
+                OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.feeling, INSERTED.image_url, INSERTED.created_at
+                VALUES (@userId, @content, @feeling, @imageUrl, @flagUse, GETDATE())
             `);
 
-        const created = inserted.recordset[0];
-        res.json({
-            success: true,
-            message: 'โพสต์สำเร็จ',
-            data: {
-                post_id: created.post_id,
-                content: created.content,
-                feeling: created.feeling || null,
-                created_at: created.created_at,
-                author_name: req.session.user.name,
-                author_avatar: req.session.user.Url || null,
-                like_count: 0,
-                comment_count: 0
-            }
-        });
-    } catch (error) {
-        console.error('❌ สร้างโพสต์ล้มเหลว:', error.message);
-        res.status(500).json({ success: false, message: 'ไม่สามารถสร้างโพสต์ได้: ' + error.message });
-    }
+            const created = inserted.recordset[0];
+            res.json({
+                success: true,
+                message: 'โพสต์สำเร็จ',
+                data: {
+                    post_id: created.post_id,
+                    content: created.content,
+                    feeling: created.feeling || null,
+                    image_url: created.image_url || null,
+                    created_at: created.created_at,
+                    author_name: req.session.user.name,
+                    author_avatar: req.session.user.Url || null,
+                    like_count: 0,
+                    comment_count: 0
+                }
+            });
+        } catch (error) {
+            console.error('❌ สร้างโพสต์ล้มเหลว:', error.message);
+            res.status(500).json({ success: false, message: 'ไม่สามารถสร้างโพสต์ได้: ' + error.message });
+        }
+    });
 });
 
 // =========================================================================
