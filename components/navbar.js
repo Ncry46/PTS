@@ -395,6 +395,7 @@
   function profileMenuHtml(name, roleLabel, avatar, isAdmin) {
     const studentLinks = `
           <a href="DashbordU.html" role="menuitem" data-i18n="nav.dashboard">${t('nav.dashboard', 'แดชบอร์ด')}</a>
+          <a href="Payments.html" role="menuitem" data-i18n="nav.payments">${t('nav.payments', 'การชำระเงิน')}</a>
           <a href="Forms.html" role="menuitem" data-i18n="nav.forms">${t('nav.forms', 'แบบฟอร์ม')}</a>
           <a href="Certificates.html" role="menuitem" data-i18n="nav.certificates">${t('nav.certificates', 'ใบประกาศ')}</a>
           <a href="Favorites.html" role="menuitem" data-i18n="nav.favorites">${t('nav.favorites', 'รายการโปรด')}</a>
