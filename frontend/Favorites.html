@@ -146,6 +146,11 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
   } else if (!postData.data.length) {
     postBox.innerHTML = `<div class="pts-empty pts-card">ยังไม่มีโพสต์ที่ถูกใจ<br><a class="text-primary font-bold" href="Community.html">ไปสำรวจคอมมูนิตี้</a></div>`;
   } else {
+    const feelingLabel = {
+      happy: '😊 มีความสุข', grateful: '🙏 รู้สึกขอบคุณ', excited: '✨ ตื่นเต้น',
+      proud: '🌟 ภูมิใจ', motivated: '💪 มีไฟ', thoughtful: '🤔 ครุ่นคิด',
+      curious: '🧐 อยากรู้', celebrating: '🎉 ฉลอง', relaxed: '😌 ผ่อนคลาย', tired: '😮‍💨 เหนื่อย'
+    };
     postBox.innerHTML = postData.data.map(p => `
       <article class="pts-card p-5">
         <div class="flex items-start justify-between gap-3 mb-3">
@@ -160,6 +165,7 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
             <span class="material-symbols-outlined">favorite</span> เลิกถูกใจ
           </button>
         </div>
+        ${p.feeling && feelingLabel[p.feeling] ? `<p class="text-sm mb-2">กำลังรู้สึก <strong>${feelingLabel[p.feeling]}</strong></p>` : ''}
         <p class="whitespace-pre-line text-on-surface-variant mb-3">${escapeHtml(p.content||'')}</p>
         <a class="text-sm font-bold text-primary" href="Community.html">ดูในคอมมูนิตี้ →</a>
       </article>`).join('');

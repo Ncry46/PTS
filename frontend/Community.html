@@ -138,6 +138,61 @@ tailwind.config = {
     text-align: center;
     padding: 2rem 1.25rem;
   }
+  .cm-shell .cm-feeling-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.75rem;
+  }
+  .cm-shell .cm-feeling-btn {
+    border: 1px solid var(--pts-border);
+    background: var(--pts-surface);
+    color: var(--pts-text);
+    border-radius: 999px;
+    padding: 0.28rem 0.7rem;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+  }
+  .cm-shell .cm-feeling-btn:hover {
+    background: var(--pts-primary-soft);
+    border-color: color-mix(in srgb, var(--pts-primary) 35%, var(--pts-border));
+  }
+  .cm-shell .cm-feeling-btn.is-active {
+    background: var(--pts-primary-soft);
+    border-color: var(--pts-primary);
+    color: var(--pts-primary-deep);
+  }
+  .cm-shell .cm-feeling-selected {
+    margin-top: 0.55rem;
+    font-size: 0.85rem;
+    color: var(--pts-muted);
+  }
+  .cm-shell .cm-feeling-selected strong {
+    color: var(--pts-primary);
+    font-weight: 800;
+  }
+  .cm-shell .cm-feeling-clear {
+    border: 0;
+    background: transparent;
+    color: var(--pts-primary);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 0.35rem;
+  }
+  .cm-shell .cm-post-feeling {
+    margin: 0 0 0.65rem;
+    font-size: 0.88rem;
+    color: var(--pts-muted);
+  }
+  .cm-shell .cm-post-feeling strong {
+    color: var(--pts-text);
+    font-weight: 700;
+  }
   html[data-theme="dark"] .cm-shell .pts-page-hero {
     background:
       radial-gradient(120% 80% at 0% 0%, rgba(232, 149, 168, 0.12), transparent 55%),
@@ -177,8 +232,10 @@ tailwind.config = {
       <section id="composer-section" class="pts-card p-5 hidden">
         <h2 class="font-bold text-primary mb-3">สร้างโพสต์ใหม่</h2>
         <p class="text-sm text-on-surface-variant mb-3">โพสต์จะขึ้นในคอมมูนิตี้ทันที — ไม่ต้องรอแอดมินอนุมัติ</p>
-        <textarea id="post-content" rows="3" maxlength="2000" placeholder="แชร์ประสบการณ์ หรือถามคำถาม..."
+        <textarea id="post-content" rows="3" maxlength="2000" placeholder="คุณกำลังคิดอะไรอยู่..."
           class="w-full rounded-2xl border border-outline-variant bg-white p-4 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+        <div class="cm-feeling-bar" id="feeling-bar" role="group" aria-label="เลือกอารมณ์"></div>
+        <p id="feeling-selected" class="cm-feeling-selected hidden"></p>
         <div class="flex items-center justify-between mt-3">
           <span id="char-count" class="text-sm text-on-surface-variant">0/2000</span>
           <button id="submit-post" type="button" class="pts-btn pts-btn-primary">โพสต์เลย</button>
@@ -209,6 +266,20 @@ tailwind.config = {
 
 <script>
 let currentUser = null;
+let selectedFeeling = null;
+const FEELINGS = [
+  { id: 'happy', emoji: '😊', label: 'มีความสุข' },
+  { id: 'grateful', emoji: '🙏', label: 'รู้สึกขอบคุณ' },
+  { id: 'excited', emoji: '✨', label: 'ตื่นเต้น' },
+  { id: 'proud', emoji: '🌟', label: 'ภูมิใจ' },
+  { id: 'motivated', emoji: '💪', label: 'มีไฟ' },
+  { id: 'thoughtful', emoji: '🤔', label: 'ครุ่นคิด' },
+  { id: 'curious', emoji: '🧐', label: 'อยากรู้' },
+  { id: 'celebrating', emoji: '🎉', label: 'ฉลอง' },
+  { id: 'relaxed', emoji: '😌', label: 'ผ่อนคลาย' },
+  { id: 'tired', emoji: '😮‍💨', label: 'เหนื่อย' }
+];
+const feelingById = Object.fromEntries(FEELINGS.map((f) => [f.id, f]));
 const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const timeAgo = (dateString) => {
   if (!dateString) return '';
@@ -226,6 +297,40 @@ function requireAuth(actionLabel) {
   return false;
 }
 
+function renderFeelingBar() {
+  const bar = document.getElementById('feeling-bar');
+  if (!bar) return;
+  bar.innerHTML = FEELINGS.map((f) => `
+    <button type="button" class="cm-feeling-btn${selectedFeeling === f.id ? ' is-active' : ''}" data-feeling="${f.id}">
+      ${f.emoji} ${f.label}
+    </button>`).join('');
+  updateFeelingSelected();
+}
+
+function updateFeelingSelected() {
+  const el = document.getElementById('feeling-selected');
+  if (!el) return;
+  const f = feelingById[selectedFeeling];
+  if (!f) {
+    el.classList.add('hidden');
+    el.innerHTML = '';
+    return;
+  }
+  el.classList.remove('hidden');
+  el.innerHTML = `กำลังรู้สึก <strong>${f.emoji} ${escapeHtml(f.label)}</strong>
+    <button type="button" class="cm-feeling-clear" id="feeling-clear">ล้าง</button>`;
+  document.getElementById('feeling-clear')?.addEventListener('click', () => {
+    selectedFeeling = null;
+    renderFeelingBar();
+  });
+}
+
+function feelingLine(feelingId) {
+  const f = feelingById[feelingId];
+  if (!f) return '';
+  return `<p class="cm-post-feeling">กำลังรู้สึก <strong>${f.emoji} ${escapeHtml(f.label)}</strong></p>`;
+}
+
 function makePostCard(post) {
   const liked = Number(post.liked_by_me) === 1;
   const avatar = post.author_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.author_name || 'U')}&background=F8BBD0&color=880E4F&size=128`;
@@ -238,6 +343,7 @@ function makePostCard(post) {
           <p class="text-xs text-on-surface-variant">${timeAgo(post.created_at)}</p>
         </div>
       </div>
+      ${feelingLine(post.feeling)}
       <p class="cm-post-body whitespace-pre-line mb-4">${escapeHtml(post.content || '')}</p>
       <div class="cm-post-actions flex items-center gap-4 border-t border-outline-variant/30 pt-3 text-on-surface-variant">
         <button type="button" class="like-btn inline-flex items-center gap-1 ${liked ? 'pts-like-active' : ''}" data-post-id="${post.post_id}" ${currentUser ? '' : 'title="เข้าสู่ระบบเพื่อกดถูกใจ"'}>
@@ -340,6 +446,14 @@ async function loadComments(postId, panel) {
     </div>`).join('');
 }
 
+document.getElementById('feeling-bar')?.addEventListener('click', (e) => {
+  const btn = e.target.closest('.cm-feeling-btn');
+  if (!btn) return;
+  const id = btn.dataset.feeling;
+  selectedFeeling = selectedFeeling === id ? null : id;
+  renderFeelingBar();
+});
+
 document.getElementById('post-content')?.addEventListener('input', (e) => {
   document.getElementById('char-count').textContent = `${e.target.value.length}/2000`;
 });
@@ -360,12 +474,14 @@ document.getElementById('submit-post')?.addEventListener('click', async () => {
     const res = await fetch('/api/community', {
       method: 'POST', credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content })
+      body: JSON.stringify({ content, feeling: selectedFeeling || null })
     });
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.message || 'โพสต์ไม่สำเร็จ');
     document.getElementById('post-content').value = '';
     document.getElementById('char-count').textContent = '0/2000';
+    selectedFeeling = null;
+    renderFeelingBar();
     await loadPosts();
   } catch (e) {
     err.textContent = e.message;
@@ -436,6 +552,7 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
 
 (async () => {
   try {
+    renderFeelingBar();
     const me = await fetch('/api/users/me', { credentials: 'include' }).then(r => r.json());
     currentUser = me.loggedIn ? me.user : null;
     renderAuthUi();

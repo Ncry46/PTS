@@ -651,12 +651,19 @@ app.get('/api/community', async (req, res) => {
         const pool = await poolPromise;
         const userId = req.session?.user?.user_id || null;
 
+        await pool.request().query(`
+            IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+               AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
+            ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
+        `);
+
         const result = await pool.request()
             .input('userId', sql.Int, userId)
             .query(`
             SELECT 
                 p.post_id,
                 p.content,
+                p.feeling,
                 p.created_at,
                 u.username AS author_name,
                 ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
@@ -701,12 +708,18 @@ app.get('/api/my/liked-posts', async (req, res) => {
 
     try {
         const pool = await poolPromise;
+        await pool.request().query(`
+            IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+               AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
+            ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
+        `);
         const result = await pool.request()
             .input('userId', sql.Int, user.user_id)
             .query(`
                 SELECT
                     p.post_id,
                     p.content,
+                    p.feeling,
                     p.created_at,
                     u.username AS author_name,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
@@ -827,17 +840,32 @@ app.post('/api/community', async (req, res) => {
         return res.status(400).json({ success: false, message: 'ข้อความยาวเกิน 2000 ตัวอักษร' });
     }
 
+    const ALLOWED_FEELINGS = new Set([
+        'happy', 'grateful', 'excited', 'proud', 'thoughtful',
+        'curious', 'tired', 'celebrating', 'motivated', 'relaxed'
+    ]);
+    const feelingRaw = String(req.body.feeling || '').trim().toLowerCase();
+    const feeling = ALLOWED_FEELINGS.has(feelingRaw) ? feelingRaw : null;
+
     try {
         const pool = await poolPromise;
+        // Ensure column exists on older DBs
+        await pool.request().query(`
+            IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+               AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
+            ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL
+        `);
+
         const result = await pool.request()
             .input('userId', sql.Int, req.session.user.user_id)
-            .input('content', sql.NVarChar, content);
+            .input('content', sql.NVarChar, content)
+            .input('feeling', sql.NVarChar(40), feeling);
         const { bindFlagInput } = require('./db');
         await bindFlagInput(pool, result, 'flagUse', 'community_posts', true);
         const inserted = await result.query(`
-                INSERT INTO dbo.community_posts (user_id, content, flag_use, created_at)
-                OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.created_at
-                VALUES (@userId, @content, @flagUse, GETDATE())
+                INSERT INTO dbo.community_posts (user_id, content, feeling, flag_use, created_at)
+                OUTPUT INSERTED.post_id, INSERTED.content, INSERTED.feeling, INSERTED.created_at
+                VALUES (@userId, @content, @feeling, @flagUse, GETDATE())
             `);
 
         const created = inserted.recordset[0];
@@ -847,6 +875,7 @@ app.post('/api/community', async (req, res) => {
             data: {
                 post_id: created.post_id,
                 content: created.content,
+                feeling: created.feeling || null,
                 created_at: created.created_at,
                 author_name: req.session.user.name,
                 author_avatar: req.session.user.Url || null,

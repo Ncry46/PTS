@@ -899,7 +899,12 @@ async function ensureCompatColumns(pool) {
             AND COL_LENGTH('dbo.courses', 'description') IS NOT NULL
          UPDATE dbo.courses SET description = description_th
          WHERE (description IS NULL OR LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description))) = N'')
-           AND description_th IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) <> N''`
+           AND description_th IS NOT NULL AND LTRIM(RTRIM(CONVERT(NVARCHAR(MAX), description_th))) <> N''`,
+
+        /* Community post feelings (Facebook-style mood) */
+        `IF OBJECT_ID('dbo.community_posts','U') IS NOT NULL
+            AND COL_LENGTH('dbo.community_posts', 'feeling') IS NULL
+         ALTER TABLE dbo.community_posts ADD feeling NVARCHAR(40) NULL`
     ];
 
     let ok = 0;
