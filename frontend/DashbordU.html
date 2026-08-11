@@ -556,7 +556,7 @@
 <!-- Learning Card -->
 <div>
 <div class="dash-section-head">
-<h3 class="font-headline-sm text-headline-sm">เรียนล่าสุด</h3>
+<h3 class="font-headline-sm text-headline-sm">เรียนต่อ</h3>
 <a class="font-label-md text-label-md hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>
 </div>
 <div id="dash-my-courses" class="dash-myc-list">
@@ -581,14 +581,25 @@
 <div class="p-md">
 <div class="flex justify-between items-center mb-sm">
 <h3 class="font-label-md text-label-md font-bold text-primary flex items-center gap-xs">
+<span class="material-symbols-outlined text-[20px]">payments</span>
+การชำระเงิน / โปร
+</h3>
+</div>
+<div id="dash-pay-offers" class="space-y-sm text-sm text-on-surface-variant">กำลังโหลด...</div>
+</div>
+</div>
+<div class="dash-panel">
+<div class="p-md">
+<div class="flex justify-between items-center mb-sm">
+<h3 class="font-label-md text-label-md font-bold text-primary flex items-center gap-xs">
 <span class="material-symbols-outlined text-[20px]">forum</span>
-Community Feed
+คอมมูนิตี้
 </h3>
 <span id="dash-community-badge" class="hidden bg-primary/10 text-primary text-[10px] px-2 py-0.5 rounded-full font-bold"></span>
 </div>
-<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">ร่วมพูดคุยและแลกเปลี่ยนเทคนิคกับเพื่อนร่วมอาชีพในคอมมูนิตี้</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-md">ร่วมพูดคุยและแลกเปลี่ยนเทคนิคกับเพื่อนร่วมอาชีพ</p>
 <a href="Community.html" class="flex items-center justify-center gap-xs w-full bg-primary/5 text-primary py-2 rounded-xl font-bold text-label-md hover:bg-primary/10 transition-colors">
-เข้าสู่ฟีดคอมมูนิตี้
+เข้าสู่คอมมูนิตี้
 <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
 </a>
 </div>
@@ -600,12 +611,12 @@ Community Feed
 
 </div>
 </div>
-<!-- Mini CTA / Promotion -->
+<!-- Mini CTA -->
 <div class="dash-cta p-md h-48 flex flex-col justify-end">
 
 <div class="relative z-10">
-<h4 class="font-headline-sm text-headline-sm mb-xs">ปลดล็อกศักยภาพสูงสุด</h4>
-<p class="font-body-sm text-body-sm opacity-90 mb-md">สมัครสมาชิก Pro เพื่อเข้าถึงหลักสูตรพิเศษมากกว่า 50 รายการ</p>
+<h4 class="font-headline-sm text-headline-sm mb-xs">สำรวจหลักสูตรใหม่</h4>
+<p class="font-body-sm text-body-sm opacity-90 mb-md">เลือกคอร์สที่เหมาะกับเป้าหมาย แล้วเริ่มเรียนต่อได้ทันที</p>
 <a href="Courses.html" class="inline-block bg-white text-primary px-md py-xs rounded-full font-bold text-label-md active:scale-95 transition-transform">ดูหลักสูตร</a>
 </div>
 </div>
@@ -770,6 +781,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
       } catch (e) {
         scheduleEl.innerHTML = `<div class="bg-error-container text-error p-md rounded-20px">${e.message}</div>`;
+      }
+    }
+
+    // payments / offers
+    const payEl = document.getElementById('dash-pay-offers');
+    if (payEl) {
+      try {
+        const pres = await fetch('/api/my/payments', { credentials: 'include' });
+        const pdata = await pres.json();
+        if (!pres.ok || !pdata.success) throw new Error(pdata.message || 'โหลดการชำระไม่สำเร็จ');
+        const open = (pdata.data || []).filter((p) =>
+          p.status === 'pending' || p.status === 'pending_review' || p.status === 'rejected'
+        ).slice(0, 3);
+        if (!open.length) {
+          payEl.innerHTML = `
+            <p class="mb-2">ไม่มียอดค้างชำระ</p>
+            <a class="text-primary font-bold" href="Payments.html">ศูนย์การชำระเงิน →</a>
+            <span class="mx-1">·</span>
+            <a class="text-primary font-bold" href="Courses.html">ดูคอร์ส / โปร →</a>`;
+        } else {
+          const statusTh = (s) => {
+            if (s === 'pending_review') return 'รอตรวจสอบ';
+            if (s === 'rejected') return 'ถูกปฏิเสธ';
+            return 'รอชำระ';
+          };
+          payEl.innerHTML = open.map((p) => {
+            const name = (p.course_name || '').replace(/</g, '&lt;');
+            const amt = Number(p.amount || 0).toLocaleString('th-TH');
+            return `<div class="rounded-xl border border-[var(--pts-border,rgba(202,17,86,.14))] p-3">
+              <p class="font-bold text-on-surface">${name || 'หลักสูตร'}</p>
+              <p class="text-xs mt-1">฿${amt} · ${statusTh(p.status)}</p>
+            </div>`;
+          }).join('') + `<a class="inline-block mt-2 text-primary font-bold" href="Payments.html">จัดการการชำระเงิน →</a>`;
+        }
+      } catch (e) {
+        payEl.innerHTML = `<p style="color:#ba1a1a">${(e.message || '').replace(/</g,'&lt;')}</p>
+          <a class="text-primary font-bold" href="Payments.html">ไปหน้าชำระเงิน →</a>`;
       }
     }
 

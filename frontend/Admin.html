@@ -3154,9 +3154,10 @@ async function renderCoupons() {
   const panel = document.getElementById('panel');
   panel.innerHTML = '<p class="text-on-surface-variant">กำลังโหลดคูปอง...</p>';
 
-  const [couponRes, userRes] = await Promise.all([
+  const [couponRes, userRes, redeemRes] = await Promise.all([
     api('/api/admin/coupons').catch(() => ({ data: [] })),
-    api('/api/admin/users').catch(() => ({ data: [] }))
+    api('/api/admin/users').catch(() => ({ data: [] })),
+    api('/api/admin/coupon-redemptions').catch(() => ({ data: [] }))
   ]);
   if (!coursesCache.length) {
     try {
@@ -3166,8 +3167,18 @@ async function renderCoupons() {
   }
 
   let coupons = Array.isArray(couponRes.data) ? couponRes.data.slice() : [];
+  let redemptions = Array.isArray(redeemRes.data) ? redeemRes.data.slice() : [];
   const usersWithEmail = (Array.isArray(userRes.data) ? userRes.data : [])
     .filter((u) => String(u.email || '').includes('@'));
+
+  const refreshCouponLists = async () => {
+    const [fresh, redeems] = await Promise.all([
+      api('/api/admin/coupons'),
+      api('/api/admin/coupon-redemptions').catch(() => ({ data: [] }))
+    ]);
+    coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+    redemptions = Array.isArray(redeems.data) ? redeems.data.slice() : [];
+  };
 
   const usageLabel = (r) => {
     if (r === 'once') return 'ใช้ครั้งเดียว';
@@ -3322,6 +3333,39 @@ async function renderCoupons() {
             </article>`;
           }).join('') || '<div class="cp-empty">ยังไม่มีคูปอง — สร้างอันแรกด้านบนได้เลย</div>'}
         </section>
+
+        <section>
+          <div class="cp-list-head">
+            <h3>ประวัติการใช้คูปอง</h3>
+            <span class="adm-pay-meta">${redemptions.length} รายการล่าสุด</span>
+          </div>
+          <div class="adm-c-table-wrap">
+            <table class="adm-c-table">
+              <thead>
+                <tr>
+                  <th>เวลา</th>
+                  <th>ผู้ใช้</th>
+                  <th>คูปอง</th>
+                  <th>หลักสูตร</th>
+                  <th>ส่วนลด</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${redemptions.map((r) => `
+                  <tr>
+                    <td><span class="adm-pay-meta">${fmtDt(r.created_at)}</span></td>
+                    <td>
+                      <div class="adm-c-name">${escapeHtml(r.username || '—')}</div>
+                      <div class="adm-pay-meta">${escapeHtml(r.email || '')}</div>
+                    </td>
+                    <td><span class="adm-c-name">${escapeHtml(r.coupon_code || '')}</span></td>
+                    <td>${escapeHtml(courseTitle(r) || getCourseName(r) || '')}</td>
+                    <td>฿${Number(r.discount_applied || 0).toLocaleString('th-TH')}</td>
+                  </tr>`).join('') || '<tr><td colspan="5" class="adm-c-empty" style="border:0">ยังไม่มีการใช้คูปอง</td></tr>'}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
     `;
 
@@ -3378,8 +3422,7 @@ async function renderCoupons() {
         await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
         msg.textContent = 'สร้างคูปองแล้ว';
         msg.className = 'pts-msg is-ok';
-        const fresh = await api('/api/admin/coupons');
-        coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+        await refreshCouponLists();
         mailBound.clear();
         paint();
       } catch (e) {
@@ -3395,8 +3438,7 @@ async function renderCoupons() {
             method: 'PATCH',
             body: JSON.stringify({ flag_use: btn.dataset.flag === 'N' ? 'N' : 'Y' })
           });
-          const fresh = await api('/api/admin/coupons');
-          coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          await refreshCouponLists();
           mailBound.clear();
           paint();
         } catch (e) {
@@ -3412,8 +3454,7 @@ async function renderCoupons() {
         btn.disabled = true;
         try {
           await api('/api/admin/coupons/' + btn.dataset.id, { method: 'DELETE', body: '{}' });
-          const fresh = await api('/api/admin/coupons');
-          coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          await refreshCouponLists();
           mailBound.clear();
           paint();
         } catch (e) {

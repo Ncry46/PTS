@@ -1059,6 +1059,46 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    router.get('/coupon-redemptions', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const couponId = parseInt(req.query.coupon_id, 10);
+        try {
+            const pool = await poolPromise;
+            const request = pool.request();
+            let where = '';
+            if (couponId) {
+                request.input('couponId', sql.Int, couponId);
+                where = 'WHERE r.coupon_id = @couponId';
+            }
+            const result = await request.query(`
+                SELECT TOP 200
+                    r.redemption_id, r.coupon_id, r.user_id, r.payment_id, r.course_id,
+                    r.discount_applied, r.created_at,
+                    cp.code AS coupon_code,
+                    u.username, u.email,
+                    c.course_name_th, c.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
+                FROM dbo.coupon_redemptions r
+                INNER JOIN dbo.coupons cp ON cp.coupon_id = r.coupon_id
+                INNER JOIN dbo.users u ON u.user_id = r.user_id
+                INNER JOIN dbo.courses c ON c.course_id = r.course_id
+                ${where}
+                ORDER BY r.created_at DESC
+            `);
+            const lang = resolveLangFromReq(req);
+            res.json({
+                success: true,
+                lang,
+                data: (result.recordset || []).map((row) => ({
+                    ...row,
+                    course_name: pickText(row, 'course_name', lang) || row.course_name || null
+                }))
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
     router.post('/coupons', async (req, res) => {
         const admin = requireAdmin(req, res);
         if (!admin) return;
