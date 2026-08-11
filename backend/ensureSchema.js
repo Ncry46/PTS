@@ -105,6 +105,34 @@ async function ensureLearningSchema(pool) {
             created_at DATETIME NOT NULL CONSTRAINT DF_access_codes_created DEFAULT (GETDATE()),
             CONSTRAINT UQ_access_codes_code UNIQUE (code)
          )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'coupons')
+         CREATE TABLE dbo.coupons (
+            coupon_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            code VARCHAR(64) NOT NULL,
+            course_id INT NOT NULL,
+            discount_amount DECIMAL(10,2) NOT NULL,
+            usage_rule VARCHAR(20) NOT NULL CONSTRAINT DF_coupons_rule DEFAULT ('max_uses'),
+            max_uses INT NULL,
+            used_count INT NOT NULL CONSTRAINT DF_coupons_used DEFAULT (0),
+            expires_at DATETIME NULL,
+            note NVARCHAR(255) NULL,
+            flag_use BIT NOT NULL CONSTRAINT DF_coupons_flag DEFAULT (1),
+            created_by INT NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_coupons_created DEFAULT (GETDATE()),
+            CONSTRAINT UQ_coupons_code UNIQUE (code)
+         )`,
+        `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'coupon_redemptions')
+         CREATE TABLE dbo.coupon_redemptions (
+            redemption_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,
+            coupon_id INT NOT NULL,
+            user_id INT NOT NULL,
+            payment_id INT NULL,
+            course_id INT NOT NULL,
+            discount_applied DECIMAL(10,2) NOT NULL,
+            created_at DATETIME NOT NULL CONSTRAINT DF_coupon_redemptions_created DEFAULT (GETDATE())
+         )`,
+        `IF COL_LENGTH('dbo.payments', 'coupon_id') IS NULL
+         ALTER TABLE dbo.payments ADD coupon_id INT NULL`,
         `IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'course_favorites')
          CREATE TABLE dbo.course_favorites (
             favorite_id INT IDENTITY(1,1) NOT NULL PRIMARY KEY,

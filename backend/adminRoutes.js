@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = require('./mailSecrets');
-const { issueEmailOtp, getMailStatus } = require('./emailOtp');
+const { issueEmailOtp, getMailStatus, sendCouponEmail } = require('./emailOtp');
 const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
 const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath, listGalleryBanners, deleteGalleryBanner, isGalleryBannerFilename, reorderGalleryBanners, appendBannerToOrder } = require('./heroImages');
 const {
@@ -15,6 +15,11 @@ const {
     listCertAssets
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
+const {
+    USAGE_RULES,
+    normalizeCouponCode,
+    parseDiscountAmount
+} = require('./couponHelpers');
 const {
     COURSE_API_VERSION,
     isMissingBilingualColumnError,
@@ -995,6 +1000,247 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         } catch (error) {
             console.error('❌ อัปเดต access-code ล้มเหลว:', error.message);
             res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    // —— Coupons (discount codes) ——
+    router.get('/coupons', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request().query(`
+                SELECT TOP 200
+                    cp.coupon_id, cp.code, cp.course_id, cp.discount_amount, cp.usage_rule,
+                    cp.max_uses, cp.used_count, cp.expires_at, cp.note, cp.flag_use,
+                    cp.created_at, cp.created_by,
+                    ISNULL(c.price, 0) AS course_price,
+                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
+                    u.username AS created_by_name
+                FROM dbo.coupons cp
+                INNER JOIN dbo.courses c ON c.course_id = cp.course_id
+                LEFT JOIN dbo.users u ON u.user_id = cp.created_by
+                ORDER BY cp.created_at DESC
+            `);
+            res.json({ success: true, data: result.recordset });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.post('/coupons', async (req, res) => {
+        const admin = requireAdmin(req, res);
+        if (!admin) return;
+
+        const courseId = parseInt(req.body.course_id, 10);
+        let code = normalizeCouponCode(req.body.code);
+        const note = String(req.body.note || '').trim().slice(0, 255) || null;
+        const usageRule = String(req.body.usage_rule || 'max_uses').trim().toLowerCase();
+        const discount = parseDiscountAmount(req.body.discount_amount);
+        const maxUsesRaw = req.body.max_uses;
+        const maxUses = maxUsesRaw === '' || maxUsesRaw == null ? null : parseInt(maxUsesRaw, 10);
+        const expiresRaw = String(req.body.expires_at || '').trim();
+
+        if (!courseId) return res.status(400).json({ success: false, message: 'เลือกหลักสูตรก่อน' });
+        if (!USAGE_RULES.has(usageRule)) {
+            return res.status(400).json({ success: false, message: 'กฎการใช้คูปองไม่ถูกต้อง' });
+        }
+        if (discount == null) {
+            return res.status(400).json({ success: false, message: 'ส่วนลดต้องเป็นตัวเลขตั้งแต่ 0 ขึ้นไป' });
+        }
+        if (!code) {
+            code = `PA-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
+        }
+        if (code.length < 4 || code.length > 64) {
+            return res.status(400).json({ success: false, message: 'รหัสคูปองต้องยาว 4–64 ตัวอักษร' });
+        }
+        if (!/^[A-Z0-9._\-]+$/.test(code)) {
+            return res.status(400).json({ success: false, message: 'รหัสใช้ได้เฉพาะตัวอักษร ตัวเลข . _ -' });
+        }
+
+        let resolvedMaxUses = maxUses;
+        if (usageRule === 'once') {
+            resolvedMaxUses = 1;
+        } else if (usageRule === 'max_uses') {
+            if (resolvedMaxUses == null || Number.isNaN(resolvedMaxUses) || resolvedMaxUses < 1) {
+                return res.status(400).json({ success: false, message: 'กรุณาระบุจำนวนครั้งใช้ได้ (อย่างน้อย 1)' });
+            }
+        } else if (usageRule === 'once_per_user') {
+            if (resolvedMaxUses != null && (Number.isNaN(resolvedMaxUses) || resolvedMaxUses < 1)) {
+                return res.status(400).json({ success: false, message: 'จำนวนครั้งรวมไม่ถูกต้อง' });
+            }
+        }
+
+        let expiresAt = null;
+        if (expiresRaw) {
+            const d = new Date(expiresRaw);
+            if (Number.isNaN(d.getTime())) {
+                return res.status(400).json({ success: false, message: 'วันหมดอายุไม่ถูกต้อง' });
+            }
+            expiresAt = d;
+        }
+
+        try {
+            const pool = await poolPromise;
+            const course = await pool.request()
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    SELECT course_id, ISNULL(price, 0) AS price,
+                           COALESCE(NULLIF(LTRIM(RTRIM(course_name_th)), N''), NULLIF(LTRIM(RTRIM(course_name_en)), N'')) AS course_name
+                    FROM dbo.courses WHERE course_id = @courseId
+                `);
+            if (!course.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร' });
+            }
+            const coursePrice = Number(course.recordset[0].price) || 0;
+            if (discount > coursePrice) {
+                return res.status(400).json({
+                    success: false,
+                    message: `ส่วนลดต้องไม่เกินราคาคอร์ส (฿${coursePrice.toLocaleString('th-TH')})`
+                });
+            }
+
+            const insertReq = pool.request()
+                .input('code', sql.VarChar(64), code)
+                .input('courseId', sql.Int, courseId)
+                .input('discount', sql.Decimal(10, 2), discount)
+                .input('usageRule', sql.VarChar(20), usageRule)
+                .input('maxUses', sql.Int, resolvedMaxUses)
+                .input('expiresAt', sql.DateTime, expiresAt)
+                .input('note', sql.NVarChar(255), note)
+                .input('createdBy', sql.Int, admin.user_id);
+            await bindFlagInput(pool, insertReq, 'flagUse', 'coupons', true);
+            const inserted = await insertReq.query(`
+                INSERT INTO dbo.coupons
+                (code, course_id, discount_amount, usage_rule, max_uses, used_count, expires_at, note, flag_use, created_by)
+                OUTPUT INSERTED.coupon_id, INSERTED.code, INSERTED.course_id, INSERTED.discount_amount,
+                       INSERTED.usage_rule, INSERTED.max_uses, INSERTED.used_count, INSERTED.expires_at,
+                       INSERTED.note, INSERTED.flag_use, INSERTED.created_at
+                VALUES (@code, @courseId, @discount, @usageRule, @maxUses, 0, @expiresAt, @note, @flagUse, @createdBy)
+            `);
+
+            res.json({
+                success: true,
+                message: 'สร้างคูปองแล้ว',
+                data: {
+                    ...inserted.recordset[0],
+                    course_name: course.recordset[0].course_name,
+                    course_price: coursePrice
+                }
+            });
+        } catch (error) {
+            if (String(error.message || '').includes('UQ_coupons_code') || String(error.number) === '2627') {
+                return res.status(409).json({ success: false, message: 'รหัสคูปองนี้มีอยู่แล้ว' });
+            }
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.patch('/coupons/:id', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ success: false, message: 'รหัสไม่ถูกต้อง' });
+
+        const rawFlag = req.body.flag_use;
+        if (rawFlag === undefined || rawFlag === null) {
+            return res.status(400).json({ success: false, message: 'กรุณาระบุ flag_use' });
+        }
+
+        const isEnable = isFlagActive(rawFlag);
+        try {
+            const pool = await poolPromise;
+            const result = await setFlagUse(pool, {
+                table: 'coupons',
+                idColumn: 'coupon_id',
+                idValue: id,
+                active: isEnable
+            });
+            if (!result.rowsAffected?.[0]) {
+                return res.status(404).json({ success: false, message: 'ไม่พบคูปอง' });
+            }
+            res.json({
+                success: true,
+                message: isEnable ? 'เปิดใช้คูปองแล้ว' : 'ปิดใช้คูปองแล้ว'
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.post('/coupons/:id/send-email', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const id = parseInt(req.params.id, 10);
+        if (!id) return res.status(400).json({ success: false, message: 'รหัสคูปองไม่ถูกต้อง' });
+
+        const userId = req.body.user_id != null && req.body.user_id !== ''
+            ? parseInt(req.body.user_id, 10)
+            : null;
+        let email = String(req.body.email || '').trim().toLowerCase();
+        let fullName = String(req.body.full_name || '').trim();
+
+        try {
+            const pool = await poolPromise;
+            const couponRes = await pool.request()
+                .input('id', sql.Int, id)
+                .query(`
+                    SELECT
+                        cp.coupon_id, cp.code, cp.discount_amount, cp.flag_use,
+                        ISNULL(c.price, 0) AS course_price,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name
+                    FROM dbo.coupons cp
+                    INNER JOIN dbo.courses c ON c.course_id = cp.course_id
+                    WHERE cp.coupon_id = @id
+                `);
+            if (!couponRes.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบคูปอง' });
+            }
+            const coupon = couponRes.recordset[0];
+            if (!coupon.flag_use) {
+                return res.status(400).json({ success: false, message: 'คูปองถูกปิดใช้งานแล้ว' });
+            }
+
+            if (userId) {
+                const userRes = await pool.request()
+                    .input('userId', sql.Int, userId)
+                    .query(`SELECT user_id, email, username FROM dbo.users WHERE user_id = @userId`);
+                if (!userRes.recordset.length) {
+                    return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+                }
+                email = String(userRes.recordset[0].email || '').trim().toLowerCase();
+                if (!fullName) fullName = String(userRes.recordset[0].username || '').trim();
+            }
+
+            if (!email || !email.includes('@')) {
+                return res.status(400).json({ success: false, message: 'กรุณาระบุอีเมลหรือเลือกผู้ใช้ในระบบ' });
+            }
+
+            const coursePrice = Number(coupon.course_price) || 0;
+            const discount = Math.min(Number(coupon.discount_amount) || 0, coursePrice);
+            const finalAmount = Math.max(0, coursePrice - discount);
+            const finalHint = finalAmount === 0
+                ? 'ใช้แล้วเรียนฟรี (0 บาท)'
+                : `ราคาหลังลดประมาณ ฿${finalAmount.toLocaleString('th-TH')}`;
+
+            await sendCouponEmail(email, {
+                fullName,
+                courseName: coupon.course_name,
+                code: coupon.code,
+                discountAmount: discount,
+                finalHint
+            });
+
+            res.json({
+                success: true,
+                message: `ส่งคูปองไปที่ ${email} แล้ว`
+            });
+        } catch (error) {
+            const code = error && error.code;
+            if (code === 'MAIL_NOT_CONFIGURED' || code === 'SMTP_MISSING' || code === 'BREVO_MISSING') {
+                return res.status(503).json({
+                    success: false,
+                    message: 'ยังไม่ได้ตั้งค่าการส่งอีเมล — ไปที่แท็บอีเมล OTP เพื่อตั้งค่า'
+                });
+            }
+            res.status(500).json({ success: false, message: error.message || 'ส่งอีเมลไม่สำเร็จ' });
         }
     });
 

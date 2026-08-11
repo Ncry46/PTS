@@ -2,6 +2,7 @@ const sql = require('mssql');
 const { syncAfterEnroll } = require('./googleCalendar');
 const { createNotification } = require('./ensureSchema');
 const { sendEnrollmentConfirmEmail } = require('./emailOtp');
+const { recordRedemption } = require('./couponHelpers');
 
 async function ensureEnrolled(pool, userId, courseId) {
     const existing = await pool.request()
@@ -9,6 +10,45 @@ async function ensureEnrolled(pool, userId, courseId) {
         .input('courseId', sql.Int, courseId)
         .query(`SELECT enrollment_id FROM dbo.course_enrollments WHERE user_id = @userId AND course_id = @courseId`);
     return existing.recordset.length > 0;
+}
+
+async function ensureCouponRedemption(pool, userId, paymentId, courseId) {
+    try {
+        const payInfo = await pool.request()
+            .input('paymentId', sql.Int, paymentId)
+            .input('courseId', sql.Int, courseId)
+            .query(`
+                SELECT p.coupon_id, p.amount, ISNULL(c.price, 0) AS course_price
+                FROM dbo.payments p
+                LEFT JOIN dbo.courses c ON c.course_id = @courseId
+                WHERE p.payment_id = @paymentId
+            `);
+        const row = payInfo.recordset[0];
+        if (!row || !row.coupon_id) return;
+
+        const existing = await pool.request()
+            .input('paymentId', sql.Int, paymentId)
+            .query(`
+                SELECT TOP 1 redemption_id
+                FROM dbo.coupon_redemptions
+                WHERE payment_id = @paymentId
+            `);
+        if (existing.recordset.length) return;
+
+        const coursePrice = Number(row.course_price) || 0;
+        const paidAmount = Number(row.amount) || 0;
+        const discountApplied = Math.max(0, coursePrice - paidAmount);
+
+        await recordRedemption(pool, {
+            couponId: row.coupon_id,
+            userId,
+            paymentId,
+            courseId,
+            discountApplied
+        });
+    } catch (err) {
+        console.warn('[coupon] ensureCouponRedemption:', err.message);
+    }
 }
 
 /**
@@ -32,6 +72,8 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
             WHERE payment_id = @paymentId
         `);
 
+    await ensureCouponRedemption(pool, userId, paymentId, courseId);
+
     const enrolled = await ensureEnrolled(pool, userId, courseId);
     if (!enrolled) {
         await pool.request()
@@ -50,7 +92,8 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
                 .input('userId', sql.Int, userId)
                 .input('courseId', sql.Int, courseId)
                 .query(`
-                    SELECT u.username, u.email, c.course_name
+                    SELECT u.username, u.email,
+                           COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N''), c.course_name) AS course_name
                     FROM dbo.users u
                     CROSS JOIN dbo.courses c
                     WHERE u.user_id = @userId AND c.course_id = @courseId

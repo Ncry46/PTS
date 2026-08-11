@@ -10,6 +10,7 @@ const { findRequiredCourseForm } = require('./formRoutes');
 const { tryUploadLocalFile } = require('./googleDrive');
 const { flagActiveSql, isFlagActive } = require('./db');
 const { localizeCourseRow, localizeCourseRows, resolveLangFromReq, pickText } = require('./courseLang');
+const { loadValidCoupon, recordRedemption, normalizeCouponCode } = require('./couponHelpers');
 
 const SLIP_DIR = path.join(__dirname, '..', 'uploads', 'slips');
 const SLIP_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -540,6 +541,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
         const methodRaw = String(req.body.method || 'promptpay').toLowerCase();
         const method = methodRaw === 'card' ? 'card' : 'promptpay';
         const source = 'direct_signup';
+        const couponCode = normalizeCouponCode(req.body.coupon_code || req.body.couponCode || '');
 
         try {
             const pool = await poolPromise;
@@ -553,14 +555,34 @@ function createLearningRouter({ poolPromise, requireLogin }) {
             }
 
             const dbPrice = Number(course.recordset[0].price) || 0;
-            let amount = req.body.amount != null && req.body.amount !== ''
-                ? Number(req.body.amount)
-                : dbPrice;
-            if (!Number.isFinite(amount) || amount <= 0) amount = dbPrice;
-            if (Number.isNaN(amount) || amount <= 0) {
+            let amount = dbPrice;
+            let couponId = null;
+            let discountApplied = 0;
+
+            if (couponCode) {
+                const validated = await loadValidCoupon(pool, {
+                    code: couponCode,
+                    courseId,
+                    userId: user.user_id
+                });
+                if (!validated.ok) {
+                    return res.status(validated.status || 400).json({
+                        success: false,
+                        message: validated.message
+                    });
+                }
+                amount = validated.finalAmount;
+                couponId = validated.coupon.coupon_id;
+                discountApplied = validated.discount;
+            }
+
+            if (!Number.isFinite(amount) || amount < 0) {
+                return res.status(400).json({ success: false, message: 'ยอดชำระไม่ถูกต้อง' });
+            }
+            if (amount <= 0 && !couponId) {
                 return res.status(400).json({
                     success: false,
-                    message: 'หลักสูตรนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน หรือใช้รหัสเข้าเรียน'
+                    message: 'หลักสูตรนี้ยังไม่มีราคา กรุณาติดต่อแอดมิน หรือใช้รหัสเข้าเรียน/คูปอง'
                 });
             }
 
@@ -572,7 +594,41 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 return res.json({ success: true, already_paid: true, message: 'คุณชำระเงินหลักสูตรนี้แล้ว' });
             }
 
-            // Reuse open pending row for same course+method when possible
+            if (amount <= 0 && couponId) {
+                const reference = `CPN${Date.now()}${user.user_id}`;
+                const inserted = await pool.request()
+                    .input('userId', sql.Int, user.user_id)
+                    .input('courseId', sql.Int, courseId)
+                    .input('amount', sql.Decimal(10, 2), 0)
+                    .input('method', sql.VarChar, 'coupon')
+                    .input('source', sql.VarChar, 'coupon')
+                    .input('reference', sql.VarChar, reference)
+                    .input('couponId', sql.Int, couponId)
+                    .query(`
+                        INSERT INTO dbo.payments
+                        (user_id, course_id, amount, currency, status, method, source, reference_code, coupon_id, paid_at)
+                        OUTPUT INSERTED.payment_id, INSERTED.reference_code, INSERTED.amount, INSERTED.status, INSERTED.method, INSERTED.source
+                        VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @couponId, NULL)
+                    `);
+                const paymentRow = inserted.recordset[0];
+                await recordRedemption(pool, {
+                    couponId,
+                    userId: user.user_id,
+                    paymentId: paymentRow.payment_id,
+                    courseId,
+                    discountApplied
+                });
+                await markPaidAndEnroll(pool, user.user_id, paymentRow.payment_id, courseId);
+                return res.json({
+                    success: true,
+                    free_with_coupon: true,
+                    message: 'ใช้คูปองสำเร็จ — เปิดสิทธิ์เรียนแล้ว (0 บาท)',
+                    data: paymentRow,
+                    course: course.recordset[0],
+                    discount: discountApplied
+                });
+            }
+
             const pending = await pool.request()
                 .input('userId', sql.Int, user.user_id)
                 .input('courseId', sql.Int, courseId)
@@ -593,9 +649,11 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('paymentId', sql.Int, paymentRow.payment_id)
                     .input('amount', sql.Decimal(10, 2), amount)
                     .input('source', sql.VarChar, source)
+                    .input('couponId', sql.Int, couponId)
                     .query(`
                         UPDATE dbo.payments
                         SET amount = @amount, status = 'pending', source = @source,
+                            coupon_id = @couponId,
                             slip_image_url = NULL, transfer_at = NULL, reject_reason = NULL,
                             reviewed_by = NULL, reviewed_at = NULL
                         WHERE payment_id = @paymentId
@@ -612,11 +670,12 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     .input('method', sql.VarChar, method)
                     .input('source', sql.VarChar, source)
                     .input('reference', sql.VarChar, reference)
+                    .input('couponId', sql.Int, couponId)
                     .query(`
                         INSERT INTO dbo.payments
-                        (user_id, course_id, amount, currency, status, method, source, reference_code)
+                        (user_id, course_id, amount, currency, status, method, source, reference_code, coupon_id)
                         OUTPUT INSERTED.payment_id, INSERTED.reference_code, INSERTED.amount, INSERTED.status, INSERTED.method, INSERTED.source
-                        VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference)
+                        VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @couponId)
                     `);
                 paymentRow = inserted.recordset[0];
             }
@@ -633,6 +692,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     : 'พร้อมชำระด้วยบัตรเครดิต',
                 data: paymentRow,
                 course: course.recordset[0],
+                discount: discountApplied,
                 promptpay: qrPayload ? {
                     id_masked: String(promptpayId).replace(/(\d{3})\d+(\d{3})/, '$1****$2'),
                     qr_payload: qrPayload
@@ -820,6 +880,131 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 auto_approved: true,
                 message: `ชำระด้วยบัตร •••• ${last4} สำเร็จ — อนุมัติอัตโนมัติและเปิดสิทธิ์เรียนแล้ว`,
                 last4
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    /** Preview coupon discount for a course */
+    router.post('/coupons/validate', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+        const courseId = parseInt(req.body.courseId || req.body.course_id, 10);
+        const code = req.body.code;
+        try {
+            const pool = await poolPromise;
+            const validated = await loadValidCoupon(pool, {
+                code,
+                courseId,
+                userId: user.user_id
+            });
+            if (!validated.ok) {
+                return res.status(validated.status || 400).json({
+                    success: false,
+                    message: validated.message
+                });
+            }
+            res.json({
+                success: true,
+                data: {
+                    code: validated.coupon.code,
+                    course_id: courseId,
+                    course_price: validated.coursePrice,
+                    discount_amount: validated.discount,
+                    final_amount: validated.finalAmount,
+                    course_name: validated.courseName
+                }
+            });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    /** Apply coupon: free enroll if 0, else return discount for checkout */
+    router.post('/coupons/apply', async (req, res) => {
+        const user = requireLogin(req, res);
+        if (!user) return;
+        const courseId = parseInt(req.body.courseId || req.body.course_id, 10);
+        const code = req.body.code;
+        try {
+            const pool = await poolPromise;
+            const validated = await loadValidCoupon(pool, {
+                code,
+                courseId,
+                userId: user.user_id
+            });
+            if (!validated.ok) {
+                return res.status(validated.status || 400).json({
+                    success: false,
+                    message: validated.message
+                });
+            }
+
+            const paid = await pool.request()
+                .input('userId', sql.Int, user.user_id)
+                .input('courseId', sql.Int, courseId)
+                .query(`
+                    SELECT TOP 1 payment_id FROM dbo.payments
+                    WHERE user_id = @userId AND course_id = @courseId AND status = 'paid'
+                `);
+            if (paid.recordset.length) {
+                return res.json({
+                    success: true,
+                    already_paid: true,
+                    message: 'คุณมีสิทธิ์เรียนหลักสูตรนี้อยู่แล้ว'
+                });
+            }
+
+            if (validated.finalAmount <= 0) {
+                const reference = `CPN${Date.now()}${user.user_id}`;
+                const inserted = await pool.request()
+                    .input('userId', sql.Int, user.user_id)
+                    .input('courseId', sql.Int, courseId)
+                    .input('amount', sql.Decimal(10, 2), 0)
+                    .input('method', sql.VarChar, 'coupon')
+                    .input('source', sql.VarChar, 'coupon')
+                    .input('reference', sql.VarChar, reference)
+                    .input('couponId', sql.Int, validated.coupon.coupon_id)
+                    .query(`
+                        INSERT INTO dbo.payments
+                        (user_id, course_id, amount, currency, status, method, source, reference_code, coupon_id, paid_at)
+                        OUTPUT INSERTED.payment_id
+                        VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @couponId, NULL)
+                    `);
+                const paymentId = inserted.recordset[0].payment_id;
+                await recordRedemption(pool, {
+                    couponId: validated.coupon.coupon_id,
+                    userId: user.user_id,
+                    paymentId,
+                    courseId,
+                    discountApplied: validated.discount
+                });
+                await markPaidAndEnroll(pool, user.user_id, paymentId, courseId);
+                return res.json({
+                    success: true,
+                    free_with_coupon: true,
+                    message: `ใช้คูปองสำเร็จ — เปิดสิทธิ์เรียน ${validated.courseName || ''} แล้ว (0 บาท)`,
+                    data: {
+                        payment_id: paymentId,
+                        course_id: courseId,
+                        final_amount: 0,
+                        discount_amount: validated.discount
+                    }
+                });
+            }
+
+            res.json({
+                success: true,
+                free_with_coupon: false,
+                message: `ใช้คูปองได้ — ลด ฿${validated.discount.toLocaleString('th-TH')} เหลือ ฿${validated.finalAmount.toLocaleString('th-TH')}`,
+                data: {
+                    code: validated.coupon.code,
+                    course_id: courseId,
+                    course_price: validated.coursePrice,
+                    discount_amount: validated.discount,
+                    final_amount: validated.finalAmount
+                }
             });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });

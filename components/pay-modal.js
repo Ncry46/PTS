@@ -9,6 +9,8 @@
     courseId: null,
     courseName: '',
     price: 0,
+    basePrice: 0,
+    couponCode: '',
     method: 'promptpay',
     paymentId: null,
     qrWidget: null,
@@ -129,6 +131,8 @@
     root = root || document.getElementById('pts-pay-modal');
     if (!root) return;
     state.paymentId = null;
+    state.couponCode = '';
+    state.price = state.basePrice || state.price;
     clearQr(root);
     var meta = $('[data-qr-meta]', root);
     if (meta) meta.textContent = 'กด “สร้าง QR CODE” เพื่อชำระ';
@@ -210,12 +214,14 @@
 
   async function createPayment(method) {
     if (!state.courseId) throw new Error('ไม่พบหลักสูตร');
+    var body = { amount: Number(state.price) || 0, method: method };
+    if (state.couponCode) body.coupon_code = state.couponCode;
     var data = await apiJson('/api/courses/' + encodeURIComponent(state.courseId) + '/pay', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ amount: Number(state.price) || 0, method: method })
+      body: JSON.stringify(body)
     });
-    if (data.already_paid) {
+    if (data.already_paid || data.free_with_coupon) {
       finishSuccess(data.message || 'ชำระหลักสูตรนี้แล้ว');
       throw new Error('__handled');
     }
@@ -391,13 +397,22 @@
       try {
         var code = ($('[data-coupon]', root).value || '').trim();
         if (!code) throw new Error('กรุณากรอกคูปองโค้ด');
-        var data = await apiJson('/api/access-codes/redeem', {
+        var data = await apiJson('/api/coupons/apply', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code: code, courseId: state.courseId })
         });
-        $('[data-coupon]', root).value = '';
-        finishSuccess(data.message || 'ใช้คูปองสำเร็จ — เปิดสิทธิ์เรียนแล้ว');
+        if (data.already_paid || data.free_with_coupon) {
+          finishSuccess(data.message || 'ใช้คูปองสำเร็จ — เปิดสิทธิ์เรียนแล้ว');
+          return;
+        }
+        var info = data.data || {};
+        state.couponCode = info.code || code;
+        state.price = Number(info.final_amount);
+        if (!Number.isFinite(state.price)) state.price = state.basePrice;
+        var amountEl = $('[data-pay-amount]', root);
+        if (amountEl) amountEl.textContent = money(state.price);
+        setMsg(data.message || 'ใช้คูปองแล้ว', true);
       } catch (err) {
         if (err.message !== '__handled') setMsg(err.message, false);
       } finally {
@@ -430,7 +445,9 @@
 
     state.courseId = opts.courseId;
     state.courseName = opts.courseName || '';
-    state.price = Number(opts.price || 0);
+    state.basePrice = Number(opts.price || 0);
+    state.price = state.basePrice;
+    state.couponCode = '';
     state.onSuccess = opts.onSuccess || null;
 
     var root = ensureDom();

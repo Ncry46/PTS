@@ -511,6 +511,7 @@
       <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
       <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
       <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
+      <button type="button" class="tab-btn" data-tab="coupons">คูปองส่วนลด</button>
       <button type="button" class="tab-btn" data-tab="mail">อีเมล OTP</button>
     </nav>
   </aside>
@@ -518,7 +519,7 @@
     <section class="pts-page-hero">
       <span class="pts-chip mb-3">Admin</span>
       <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.admin.section_title">แผงควบคุมแอดมิน</h1>
-      <p class="text-on-surface-variant" data-i18n="page.admin.sub">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน แบนเนอร์ รูปใบประกาศ และการส่งอีเมล OTP</p>
+      <p class="text-on-surface-variant" data-i18n="page.admin.sub">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน คูปองส่วนลด แบนเนอร์ รูปใบประกาศ และการส่งอีเมล OTP</p>
     </section>
     <section id="panel" class="pts-panel"></section>
   </div>
@@ -2922,6 +2923,215 @@ async function renderCertAssets() {
   });
 }
 
+async function renderCoupons() {
+  const panel = document.getElementById('panel');
+  panel.innerHTML = '<p class="text-on-surface-variant">กำลังโหลดคูปอง...</p>';
+
+  const [couponRes, userRes] = await Promise.all([
+    api('/api/admin/coupons').catch(() => ({ data: [] })),
+    api('/api/admin/users').catch(() => ({ data: [] }))
+  ]);
+  if (!coursesCache.length) {
+    try {
+      const cr = await api('/api/admin/courses');
+      coursesCache = Array.isArray(cr.data) ? cr.data.slice() : [];
+    } catch (_) { coursesCache = []; }
+  }
+
+  let coupons = Array.isArray(couponRes.data) ? couponRes.data.slice() : [];
+  const users = Array.isArray(userRes.data) ? userRes.data.slice() : [];
+
+  const usageLabel = (r) => {
+    if (r === 'once') return 'ใช้ได้ครั้งเดียวทั้งระบบ';
+    if (r === 'once_per_user') return 'คนละครั้ง';
+    return 'จำกัดจำนวนครั้ง';
+  };
+
+  const paint = () => {
+    panel.innerHTML = `
+      <div class="adm-c-head mb-4">
+        <div>
+          <h2 class="text-xl font-bold text-primary">คูปองส่วนลด</h2>
+          <p class="adm-pay-meta">สร้างรหัสคูปอง กำหนดส่วนลด (ไม่เกินราคาคอร์ส ลดได้ถึง 0 บาท) และส่งทางอีเมล</p>
+        </div>
+      </div>
+
+      <div class="pts-panel mb-4" style="padding:16px">
+        <h3 class="font-bold mb-3">สร้างคูปองใหม่</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
+            <select id="cp-course" class="mt-1 w-full border rounded-xl px-3 py-2">
+              <option value="">-- เลือก --</option>
+              ${coursesCache.map((c) => `<option value="${c.course_id}" data-price="${Number(c.price) || 0}">${escapeHtml(c.course_name || c.course_name_th || '')} (฿${Number(c.price || 0).toLocaleString('th-TH')})</option>`).join('')}
+            </select>
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">รหัสคูปอง (ตัวอักษร/ตัวเลข, ว่าง = สุ่ม)
+            <input id="cp-code" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น SAVE500 หรือ PA-FREE" maxlength="64">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">ส่วนลด (บาท) — ใส่เท่ากับราคาคอร์ส = เหลือ 0
+            <input id="cp-discount" type="number" min="0" step="0.01" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 500">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">กฎการใช้
+            <select id="cp-rule" class="mt-1 w-full border rounded-xl px-3 py-2">
+              <option value="once">ใช้ได้ครั้งเดียวทั้งระบบ</option>
+              <option value="max_uses" selected>จำกัดจำนวนครั้ง</option>
+              <option value="once_per_user">คนละครั้ง (กำหนดจำนวนรวมได้)</option>
+            </select>
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant" id="cp-max-wrap">จำนวนครั้งใช้ได้
+            <input id="cp-max" type="number" min="1" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 50" value="50">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant">หมดอายุ (ถ้ามี)
+            <input id="cp-exp" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2">
+          </label>
+          <label class="text-sm font-semibold text-on-surface-variant md:col-span-2">หมายเหตุ
+            <input id="cp-note" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น โปรโมชันเดือน ส.ค.">
+          </label>
+        </div>
+        <p id="cp-hint" class="adm-pay-meta mb-2"></p>
+        <button type="button" id="cp-create" class="pts-btn pts-btn-primary mb-2">สร้างคูปอง</button>
+        <p id="cp-msg" class="pts-msg mb-1"></p>
+      </div>
+
+      <div class="space-y-3">
+        ${coupons.map((c) => `
+          <div class="border rounded-xl p-3">
+            <div class="flex flex-wrap justify-between gap-2 items-start">
+              <div>
+                <p class="font-bold font-mono tracking-wide text-lg">${escapeHtml(c.code)}</p>
+                <p class="adm-pay-meta">${escapeHtml(c.course_name || '')} · ราคาคอร์ส ฿${Number(c.course_price || 0).toLocaleString('th-TH')}</p>
+                <p class="adm-pay-meta">ลด ฿${Number(c.discount_amount || 0).toLocaleString('th-TH')}
+                  → เหลือ ฿${Math.max(0, Number(c.course_price || 0) - Number(c.discount_amount || 0)).toLocaleString('th-TH')}
+                  · ${usageLabel(c.usage_rule)}
+                  · ใช้แล้ว ${Number(c.used_count || 0)}${c.max_uses != null ? ` / ${c.max_uses}` : ''}</p>
+                <p class="adm-pay-meta">${c.expires_at ? `หมดอายุ ${fmtDt(c.expires_at)}` : 'ไม่หมดอายุ'}${c.note ? ` · ${escapeHtml(c.note)}` : ''}</p>
+              </div>
+              <button type="button" class="pts-btn pts-btn-outline cp-toggle" data-id="${c.coupon_id}" data-flag="${c.flag_use ? 0 : 1}">
+                ${c.flag_use ? 'ปิดใช้' : 'เปิดใช้'}
+              </button>
+            </div>
+            <div class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 items-end border-t pt-3">
+              <label class="text-sm font-semibold text-on-surface-variant">เลือกผู้ใช้ในระบบ
+                <select class="cp-user mt-1 w-full border rounded-xl px-3 py-2" data-id="${c.coupon_id}">
+                  <option value="">-- หรือใส่อีเมลด้านขวา --</option>
+                  ${users.map((u) => `<option value="${u.user_id}">${escapeHtml(u.username || '')} &lt;${escapeHtml(u.email || '')}&gt;</option>`).join('')}
+                </select>
+              </label>
+              <label class="text-sm font-semibold text-on-surface-variant">อีเมลปลายทาง
+                <input class="cp-email mt-1 w-full border rounded-xl px-3 py-2" data-id="${c.coupon_id}" type="email" placeholder="name@example.com">
+              </label>
+              <button type="button" class="pts-btn pts-btn-primary cp-send" data-id="${c.coupon_id}">ส่งคูปองทางอีเมล</button>
+            </div>
+            <p class="cp-send-msg adm-pay-meta mt-2" data-id="${c.coupon_id}"></p>
+          </div>`).join('') || '<p class="adm-pay-meta">ยังไม่มีคูปอง</p>'}
+      </div>
+    `;
+
+    const ruleEl = document.getElementById('cp-rule');
+    const maxWrap = document.getElementById('cp-max-wrap');
+    const syncRule = () => {
+      const r = ruleEl.value;
+      maxWrap.style.display = r === 'once' ? 'none' : '';
+    };
+    ruleEl.onchange = syncRule;
+    syncRule();
+
+    const courseEl = document.getElementById('cp-course');
+    const discountEl = document.getElementById('cp-discount');
+    const hintEl = document.getElementById('cp-hint');
+    const updateHint = () => {
+      const opt = courseEl.selectedOptions[0];
+      const price = opt ? Number(opt.getAttribute('data-price') || 0) : 0;
+      const disc = Number(discountEl.value);
+      if (!courseEl.value) { hintEl.textContent = ''; return; }
+      if (!Number.isFinite(disc) || disc < 0) {
+        hintEl.textContent = 'ราคาคอร์ส ฿' + price.toLocaleString('th-TH') + ' — ส่วนลดต้องอยู่ระหว่าง 0 ถึงราคาคอร์ส';
+        return;
+      }
+      if (disc > price) {
+        hintEl.textContent = 'ส่วนลดเกินราคาคอร์ส (฿' + price.toLocaleString('th-TH') + ') — บันทึกไม่ได้';
+        return;
+      }
+      const left = Math.max(0, price - disc);
+      hintEl.textContent = left === 0
+        ? 'หลังลดเหลือ 0 บาท (เรียนฟรีด้วยคูปอง)'
+        : 'หลังลดเหลือ ฿' + left.toLocaleString('th-TH');
+    };
+    courseEl.onchange = updateHint;
+    discountEl.oninput = updateHint;
+
+    document.getElementById('cp-create').onclick = async () => {
+      const msg = document.getElementById('cp-msg');
+      msg.textContent = '';
+      const usage_rule = ruleEl.value;
+      const maxRaw = document.getElementById('cp-max').value;
+      const body = {
+        course_id: parseInt(courseEl.value, 10),
+        code: document.getElementById('cp-code').value.trim(),
+        discount_amount: Number(discountEl.value),
+        usage_rule,
+        max_uses: usage_rule === 'once' ? 1 : (maxRaw === '' ? null : parseInt(maxRaw, 10)),
+        expires_at: document.getElementById('cp-exp').value || '',
+        note: document.getElementById('cp-note').value.trim()
+      };
+      try {
+        await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
+        msg.textContent = 'สร้างคูปองแล้ว';
+        msg.className = 'pts-msg is-ok mb-1';
+        const fresh = await api('/api/admin/coupons');
+        coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+        paint();
+      } catch (e) {
+        msg.textContent = e.message || 'สร้างไม่สำเร็จ';
+        msg.className = 'pts-msg is-err mb-1';
+      }
+    };
+
+    document.querySelectorAll('.cp-toggle').forEach((btn) => {
+      btn.onclick = async () => {
+        try {
+          await api('/api/admin/coupons/' + btn.dataset.id, {
+            method: 'PATCH',
+            body: JSON.stringify({ flag_use: Number(btn.dataset.flag) })
+          });
+          const fresh = await api('/api/admin/coupons');
+          coupons = Array.isArray(fresh.data) ? fresh.data.slice() : [];
+          paint();
+        } catch (e) {
+          alert(e.message || 'อัปเดตไม่สำเร็จ');
+        }
+      };
+    });
+
+    document.querySelectorAll('.cp-send').forEach((btn) => {
+      btn.onclick = async () => {
+        const id = btn.dataset.id;
+        const userSel = panel.querySelector('.cp-user[data-id="' + id + '"]');
+        const emailInp = panel.querySelector('.cp-email[data-id="' + id + '"]');
+        const msgEl = panel.querySelector('.cp-send-msg[data-id="' + id + '"]');
+        const user_id = userSel && userSel.value ? parseInt(userSel.value, 10) : null;
+        const email = emailInp ? emailInp.value.trim() : '';
+        btn.disabled = true;
+        if (msgEl) msgEl.textContent = 'กำลังส่ง...';
+        try {
+          const res = await api('/api/admin/coupons/' + id + '/send-email', {
+            method: 'POST',
+            body: JSON.stringify({ user_id, email })
+          });
+          if (msgEl) msgEl.textContent = res.message || 'ส่งแล้ว';
+        } catch (e) {
+          if (msgEl) msgEl.textContent = e.message || 'ส่งไม่สำเร็จ';
+        } finally {
+          btn.disabled = false;
+        }
+      };
+    });
+  };
+
+  paint();
+}
+
+
 const tabs = {
   courses: renderCourses,
   lessons: renderLessons,
@@ -2932,6 +3142,7 @@ const tabs = {
   users: renderUsers,
   posts: renderPosts,
   payments: renderPayments,
+  coupons: renderCoupons,
   mail: renderMail
 };
 
