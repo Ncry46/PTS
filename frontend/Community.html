@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Community | PTS Learning</title>
+<title>คอมมูนิตี้ | PA Learning</title>
 <script src="/comp/theme-boot.js"></script>
-<script src="/comp/i18n-dict.js?v=20260725lang"></script>
+<script src="/comp/i18n-dict.js?v=20260811community"></script>
 <script src="/comp/lang-boot.js?v=20260725lang"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260727homecream">
+<link rel="stylesheet" href="site.css?v=20260811community">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
 tailwind.config = {
@@ -17,25 +17,141 @@ tailwind.config = {
     extend: {
       colors: {
         primary: '#ca1156',
-        background: '#f7f4f8',
-        'on-surface': '#1a1930',
-        'on-surface-variant': '#544245',
-        'surface-container-low': '#f6f1ff',
-        'outline-variant': '#d9c1c4',
+        background: '#f3f0f1',
+        'on-surface': '#1c1520',
+        'on-surface-variant': '#5c4f55',
+        'surface-container-low': '#fce8ef',
+        'outline-variant': 'rgba(202, 17, 86, 0.18)',
         error: '#ba1a1a'
       }
     }
   }
 };
 </script>
+<style>
+  /* Premium polish — layout structure unchanged */
+  .cm-shell .pts-page-hero {
+    background:
+      radial-gradient(120% 80% at 0% 0%, rgba(202, 17, 86, 0.08), transparent 55%),
+      radial-gradient(90% 70% at 100% 20%, rgba(61, 90, 76, 0.06), transparent 50%),
+      linear-gradient(180deg, #faf7f8 0%, #f3f0f1 100%);
+    border: 1px solid var(--pts-border);
+    box-shadow: var(--pts-shadow-sm);
+  }
+  .cm-shell .pts-page-hero .pts-chip {
+    background: var(--pts-primary-soft);
+    color: var(--pts-primary-deep);
+    border: 0;
+    letter-spacing: 0.06em;
+  }
+  .cm-shell .pts-page-hero h1 {
+    color: var(--pts-text);
+    letter-spacing: -0.02em;
+  }
+  .cm-shell .pts-page-hero p {
+    color: var(--pts-muted);
+    line-height: 1.55;
+  }
+  .cm-shell .pts-grid-2 {
+    gap: 1.35rem;
+  }
+  .cm-shell .pts-card {
+    border: 1px solid color-mix(in srgb, var(--pts-border) 85%, transparent);
+    box-shadow: 0 1px 0 rgba(28, 21, 32, 0.03), 0 10px 28px rgba(28, 21, 32, 0.045);
+    background: color-mix(in srgb, var(--pts-surface) 96%, #fff);
+  }
+  .cm-shell .pts-card:hover {
+    transform: none;
+    box-shadow: 0 1px 0 rgba(28, 21, 32, 0.03), 0 14px 32px rgba(28, 21, 32, 0.06);
+  }
+  .cm-shell #composer-section h2 {
+    font-size: 1.05rem;
+    letter-spacing: -0.01em;
+  }
+  .cm-shell #post-content {
+    background: var(--pts-input-bg);
+    border-color: var(--pts-border);
+    color: var(--pts-text);
+    line-height: 1.55;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .cm-shell #post-content:focus {
+    border-color: color-mix(in srgb, var(--pts-primary) 45%, var(--pts-border));
+    box-shadow: 0 0 0 3px rgba(202, 17, 86, 0.1);
+  }
+  .cm-shell .cm-feed-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--pts-text);
+    letter-spacing: -0.01em;
+  }
+  .cm-shell .cm-post-name {
+    color: var(--pts-text);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+  .cm-shell .cm-post-body {
+    color: var(--pts-text);
+    line-height: 1.6;
+    font-size: 0.98rem;
+  }
+  .cm-shell .cm-post-actions {
+    border-top-color: color-mix(in srgb, var(--pts-border) 80%, transparent) !important;
+  }
+  .cm-shell .like-btn,
+  .cm-shell .comment-toggle {
+    padding: 0.2rem 0.35rem;
+    border-radius: 999px;
+    transition: color .15s ease, background .15s ease;
+  }
+  .cm-shell .like-btn:hover,
+  .cm-shell .comment-toggle:hover {
+    background: var(--pts-primary-soft);
+    color: var(--pts-primary);
+  }
+  .cm-shell .comment-list > div {
+    background: color-mix(in srgb, var(--pts-primary-soft) 55%, var(--pts-surface)) !important;
+    border: 1px solid color-mix(in srgb, var(--pts-border) 70%, transparent);
+  }
+  .cm-shell .comment-input {
+    background: var(--pts-input-bg);
+    border-color: var(--pts-border);
+    color: var(--pts-text);
+  }
+  .cm-shell .comment-input:focus {
+    border-color: color-mix(in srgb, var(--pts-primary) 45%, var(--pts-border));
+    box-shadow: 0 0 0 3px rgba(202, 17, 86, 0.1);
+  }
+  .cm-shell aside .pts-card h3 {
+    letter-spacing: -0.01em;
+  }
+  .cm-shell #trending-container li {
+    border: 1px solid transparent;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  .cm-shell #trending-container li:hover {
+    background: var(--pts-primary-soft) !important;
+    border-color: color-mix(in srgb, var(--pts-border) 80%, transparent);
+  }
+  .cm-shell .pts-empty.pts-card {
+    color: var(--pts-muted);
+    text-align: center;
+    padding: 2rem 1.25rem;
+  }
+  html[data-theme="dark"] .cm-shell .pts-page-hero {
+    background:
+      radial-gradient(120% 80% at 0% 0%, rgba(232, 149, 168, 0.12), transparent 55%),
+      linear-gradient(180deg, #1a161a 0%, #121014 100%);
+  }
+</style>
 </head>
 <body class="pts-body">
 <div id="app-navbar">
   <nav style="position:fixed;top:0;left:0;right:0;z-index:99999;height:68px;background:var(--pts-nav-bg,#fff);border-bottom:1px solid var(--pts-border,rgba(151,66,88,.18));">
     <div style="max-width:1120px;margin:0 auto;height:100%;padding:0 16px;display:flex;align-items:center;justify-content:space-between;">
       <a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700;">
-        <img src="/logo.png" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
-        PTS Learning
+        <img src="/logo.png" alt="PA Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block;">
+        PA Learning
       </a>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
         <a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
@@ -44,12 +160,12 @@ tailwind.config = {
     </div>
   </nav>
 </div>
-<main class="pts-main pts-main--wide">
+<main class="pts-main pts-main--wide cm-shell">
   <section class="pts-page-hero">
     <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
       <div>
-        <span class="pts-chip mb-3">PTS Community</span>
-        <h1 class="text-3xl md:text-4xl font-bold text-primary leading-tight mb-2 pts-display" data-i18n="page.community.section_title">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
+        <span class="pts-chip mb-3">PA Community</span>
+        <h1 class="text-3xl md:text-4xl font-bold leading-tight mb-2 pts-display" data-i18n="page.community.section_title">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
         <p class="text-on-surface-variant max-w-2xl" data-i18n="page.community.sub">แลกเปลี่ยนประสบการณ์ อ่านโพสต์ และเรียนรู้จากเพื่อนร่วมอาชีพ</p>
       </div>
       <div id="hero-actions" class="flex flex-wrap gap-2"></div>
@@ -71,7 +187,7 @@ tailwind.config = {
       </section>
 
       <div class="flex items-center justify-between">
-        <h2 class="text-xl font-bold">โพสต์ล่าสุด</h2>
+        <h2 class="cm-feed-title">โพสต์ล่าสุด</h2>
         <a id="liked-link" href="Liked.html" class="hidden text-sm font-bold text-primary hover:underline">โพสต์ที่ถูกใจ →</a>
       </div>
       <div id="post-container" class="space-y-4"></div>
@@ -89,7 +205,7 @@ tailwind.config = {
     </aside>
   </div>
 </main>
-<div class="pts-footer-note">© PTS Learning · Community</div>
+<div class="pts-footer-note">© PA Learning · คอมมูนิตี้</div>
 
 <script>
 let currentUser = null;
@@ -116,14 +232,14 @@ function makePostCard(post) {
   return `
     <article class="pts-card p-5" data-post-id="${post.post_id}">
       <div class="flex items-center gap-3 mb-4">
-        <img class="w-11 h-11 rounded-full object-cover" src="${avatar}" alt="">
+        <img class="w-11 h-11 rounded-full object-cover ring-2 ring-[var(--pts-primary-soft)]" src="${avatar}" alt="">
         <div>
-          <p class="font-bold">${escapeHtml(post.author_name || 'ผู้ใช้งาน')}</p>
+          <p class="cm-post-name">${escapeHtml(post.author_name || 'ผู้ใช้งาน')}</p>
           <p class="text-xs text-on-surface-variant">${timeAgo(post.created_at)}</p>
         </div>
       </div>
-      <p class="whitespace-pre-line text-on-surface-variant mb-4">${escapeHtml(post.content || '')}</p>
-      <div class="flex items-center gap-4 border-t border-outline-variant/30 pt-3 text-on-surface-variant">
+      <p class="cm-post-body whitespace-pre-line mb-4">${escapeHtml(post.content || '')}</p>
+      <div class="cm-post-actions flex items-center gap-4 border-t border-outline-variant/30 pt-3 text-on-surface-variant">
         <button type="button" class="like-btn inline-flex items-center gap-1 ${liked ? 'pts-like-active' : ''}" data-post-id="${post.post_id}" ${currentUser ? '' : 'title="เข้าสู่ระบบเพื่อกดถูกใจ"'}>
           <span class="material-symbols-outlined text-[20px]">favorite</span>
           <span class="like-count text-sm font-semibold">${post.like_count || 0}</span>
