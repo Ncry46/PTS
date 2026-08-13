@@ -827,7 +827,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!grid) return;
     const t = (key, fallback) => (window.PTSLang && PTSLang.t ? PTSLang.t(key, fallback) : fallback);
     const localized = (window.PTSCourseI18n ? PTSCourseI18n.localizeAll(allCourses) : allCourses);
-    const list = localized.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
+    const list = localized.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 5);
     if (!list.length) {
       grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">' +
         escapeHtml(t('home.emptyCourses', 'ยังไม่มีหลักสูตรในระบบ')) +
