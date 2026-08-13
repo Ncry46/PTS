@@ -524,9 +524,26 @@
     width:64px; height:64px; object-fit:cover; border-radius:10px;
     border:1px solid rgba(151,66,88,.18); background:#f7f2f5; cursor:zoom-in;
   }
-  .adm-pay-slip-link { display:inline-block; }
+  .adm-pay-slip-link { display:inline-block; cursor:zoom-in; }
   .adm-pay-meta { font-size:12px; color:#5c4f55; line-height:1.45; }
   .adm-pay-section { margin-top:28px; padding-top:18px; border-top:1px solid rgba(151,66,88,.12); }
+  .adm-slip-modal {
+    position: fixed; inset: 0; z-index: 100000;
+    background: rgba(18,10,18,.72); display: none;
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  .adm-slip-modal.is-open { display: flex; }
+  .adm-slip-modal__panel {
+    position: relative; max-width: min(920px, 96vw); max-height: 90vh;
+    background: #fff; border-radius: 18px; padding: 14px; overflow: auto;
+    box-shadow: 0 24px 60px rgba(0,0,0,.35);
+  }
+  .adm-slip-modal__panel img {
+    display: block; max-width: 100%; max-height: 78vh; margin: 0 auto; border-radius: 12px;
+  }
+  .adm-slip-modal__actions {
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 12px;
+  }
 
   /* —— Coupons admin —— */
   .cp-page { display:grid; gap:18px; }
@@ -733,6 +750,7 @@
       <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
       <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
       <button type="button" class="tab-btn" data-tab="coupons">คูปองส่วนลด</button>
+      <button type="button" class="tab-btn" data-tab="audit">ประวัติแอดมิน</button>
       <button type="button" class="tab-btn" data-tab="mail">อีเมล OTP</button>
     </nav>
   </aside>
@@ -2694,6 +2712,65 @@ async function renderPosts() {
   renderList();
 }
 
+function openSlipLightbox(url) {
+  if (!url) return;
+  let modal = document.getElementById('adm-slip-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'adm-slip-modal';
+    modal.className = 'adm-slip-modal';
+    modal.innerHTML = `
+      <div class="adm-slip-modal__panel" role="dialog" aria-modal="true" aria-label="พรีวิวสลิป">
+        <img id="adm-slip-modal-img" alt="สลิปโอนเงิน">
+        <div class="adm-slip-modal__actions">
+          <a id="adm-slip-modal-open" class="pts-btn pts-btn-outline" target="_blank" rel="noopener">เปิดแท็บใหม่</a>
+          <button type="button" class="pts-btn pts-btn-primary" id="adm-slip-modal-close">ปิด</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal || e.target.id === 'adm-slip-modal-close') modal.classList.remove('is-open');
+    });
+  }
+  const img = document.getElementById('adm-slip-modal-img');
+  const open = document.getElementById('adm-slip-modal-open');
+  if (img) img.src = url;
+  if (open) open.href = url;
+  modal.classList.add('is-open');
+}
+
+async function renderAudit() {
+  const { data } = await api('/api/admin/audit?limit=150');
+  const rows = Array.isArray(data) ? data : [];
+  const panel = document.getElementById('panel');
+  panel.innerHTML = `
+    <div class="space-y-4">
+      <div>
+        <h2 class="font-bold text-lg text-primary mb-1">ประวัติการทำงานแอดมิน</h2>
+        <p class="text-sm text-on-surface-variant">บันทึกการอนุมัติ/ปฏิเสธชำระเงิน และการสร้าง/แก้/ลบหลักสูตร</p>
+      </div>
+      <div class="pts-card overflow-x-auto">
+        <table class="adm-c-table w-full text-sm">
+          <thead>
+            <tr>
+              <th>เวลา</th><th>แอดมิน</th><th>การกระทำ</th><th>เป้าหมาย</th><th>รายละเอียด</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r) => `
+              <tr>
+                <td>${escapeHtml(r.created_at ? new Date(r.created_at).toLocaleString('th-TH') : '—')}</td>
+                <td>${escapeHtml(r.admin_name || r.admin_id || '—')}</td>
+                <td><strong>${escapeHtml(r.action || '')}</strong></td>
+                <td>${escapeHtml(r.entity || '')} ${escapeHtml(r.entity_id || '')}</td>
+                <td class="adm-pay-meta"><code>${escapeHtml(r.detail_json || '')}</code></td>
+              </tr>`).join('') || '<tr><td colspan="5" class="adm-c-empty" style="border:0">ยังไม่มีประวัติ</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
 async function renderPayments() {
   if (!coursesCache.length) {
     try {
@@ -2857,9 +2934,9 @@ async function renderPayments() {
                 </td>
                 <td>
                   ${p.slip_image_url
-                    ? `<a class="adm-pay-slip-link" href="${escapeHtml(p.slip_image_url)}" target="_blank" rel="noopener">
+                    ? `<button type="button" class="adm-pay-slip-link slip-preview-btn" data-slip="${escapeHtml(p.slip_image_url)}" title="พรีวิวสลิป">
                         <img class="adm-pay-slip" src="${escapeHtml(p.slip_image_url)}" alt="สลิป">
-                      </a>`
+                      </button>`
                     : '<span class="adm-pay-meta">—</span>'}
                 </td>
                 <td>
@@ -2897,7 +2974,7 @@ async function renderPayments() {
                 : '—'
             }</div>
             ${p.slip_image_url
-              ? `<a href="${escapeHtml(p.slip_image_url)}" target="_blank" rel="noopener"><img class="adm-pay-slip" src="${escapeHtml(p.slip_image_url)}" alt="สลิป"></a>`
+              ? `<button type="button" class="adm-pay-slip-link slip-preview-btn" data-slip="${escapeHtml(p.slip_image_url)}" title="พรีวิวสลิป"><img class="adm-pay-slip" src="${escapeHtml(p.slip_image_url)}" alt="สลิป"></button>`
               : ''}
             ${rowActions(p)}
           </article>`).join('') || '<div class="adm-c-empty">ไม่มีรายการในแท็บนี้</div>'}
@@ -2997,6 +3074,13 @@ async function renderPayments() {
           alert(e.message || 'ปฏิเสธไม่สำเร็จ');
           btn.disabled = false;
         }
+      };
+    });
+
+    document.querySelectorAll('.slip-preview-btn').forEach((btn) => {
+      btn.onclick = (e) => {
+        e.preventDefault();
+        openSlipLightbox(btn.dataset.slip);
       };
     });
 
@@ -3757,6 +3841,7 @@ const tabs = {
   posts: renderPosts,
   payments: renderPayments,
   coupons: renderCoupons,
+  audit: renderAudit,
   mail: renderMail
 };
 

@@ -4,11 +4,13 @@
   "description": "",
   "main": "backend/server.js",
   "scripts": {
-    "test": "node --test",
+    "test": "node --test tests/**/*.test.js",
+    "test:smoke": "node --test tests/smoke.test.js",
     "start": "node backend/server.js",
     "db:check": "node backend/check-db.js",
     "google:check": "node backend/check-google-setup.js",
-    "google:setup": "node backend/write-google-local.js"
+    "google:setup": "node backend/write-google-local.js",
+    "drive:migrate": "node scripts/migrate-uploads-to-drive.js"
   },
   "keywords": [],
   "author": "",

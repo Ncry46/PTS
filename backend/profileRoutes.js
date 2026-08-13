@@ -121,6 +121,33 @@ function createProfileRouter({ poolPromise, requireLogin }) {
         }
     });
 
+    /** Public learner card for community (no email/phone) */
+    router.get('/users/:userId/public', async (req, res) => {
+        const userId = parseInt(req.params.userId, 10);
+        if (!userId) return res.status(400).json({ success: false, message: 'รหัสผู้ใช้ไม่ถูกต้อง' });
+        try {
+            const pool = await poolPromise;
+            const result = await pool.request()
+                .input('userId', sql.Int, userId)
+                .query(`
+                    SELECT
+                        u.user_id,
+                        u.username,
+                        ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(ISNULL(u.username, N'U'), 1) + '&background=F8BBD0&color=880E4F&size=128') AS avatar_url,
+                        (SELECT COUNT(*) FROM dbo.community_posts p WHERE p.user_id = u.user_id AND ${flagActiveSql('p.flag_use')}) AS post_count,
+                        (SELECT COUNT(*) FROM dbo.course_enrollments e WHERE e.user_id = u.user_id) AS course_count
+                    FROM dbo.users u
+                    WHERE u.user_id = @userId
+                `);
+            if (!result.recordset.length) {
+                return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
+            }
+            res.json({ success: true, data: result.recordset[0] });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
     router.put('/profile', async (req, res) => {
         const user = requireLogin(req, res);
         if (!user) return;

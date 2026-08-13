@@ -44,20 +44,44 @@ async function hasPaid(pool, userId, courseId) {
     return r.recordset.length > 0;
 }
 
-/** Eligible only after enroll + successful payment */
+/** Eligible after enroll + paid + course progress completed (~100%) */
 async function canReviewCourse(pool, userId, courseId) {
     if (!userId || !courseId) {
-        return { ok: false, enrolled: false, paid: false, reason: 'กรุณาเข้าสู่ระบบก่อน' };
+        return { ok: false, enrolled: false, paid: false, completed: false, reason: 'กรุณาเข้าสู่ระบบก่อน' };
     }
     const enrolled = await isEnrolled(pool, userId, courseId);
     const paid = await hasPaid(pool, userId, courseId);
     if (!enrolled) {
-        return { ok: false, enrolled, paid, reason: 'ต้องสมัครเรียนหลักสูตรนี้ก่อนจึงจะรีวิวได้' };
+        return { ok: false, enrolled, paid, completed: false, reason: 'ต้องสมัครเรียนหลักสูตรนี้ก่อนจึงจะรีวิวได้' };
     }
     if (!paid) {
-        return { ok: false, enrolled, paid, reason: 'ต้องชำระเงินเรียบร้อยแล้วจึงจะรีวิวได้' };
+        return { ok: false, enrolled, paid, completed: false, reason: 'ต้องชำระเงินเรียบร้อยแล้วจึงจะรีวิวได้' };
     }
-    return { ok: true, enrolled, paid, reason: null };
+    let progress = 0;
+    let status = '';
+    try {
+        const prog = await pool.request()
+            .input('userId', sql.Int, userId)
+            .input('courseId', sql.Int, courseId)
+            .query(`
+                SELECT TOP 1 progress_percent, status
+                FROM dbo.course_enrollments
+                WHERE user_id = @userId AND course_id = @courseId
+            `);
+        progress = Number(prog.recordset[0]?.progress_percent || 0);
+        status = String(prog.recordset[0]?.status || '').toLowerCase();
+    } catch (_) { /* ignore */ }
+    const completed = progress >= 100 || status === 'completed' || status === 'complete';
+    if (!completed) {
+        return {
+            ok: false,
+            enrolled,
+            paid,
+            completed: false,
+            reason: 'เรียนให้ครบ 100% ก่อนจึงจะรีวิวได้'
+        };
+    }
+    return { ok: true, enrolled, paid, completed: true, reason: null };
 }
 
 async function refreshCourseRating(pool, courseId) {

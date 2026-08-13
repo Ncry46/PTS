@@ -700,6 +700,7 @@ app.get('/api/community', async (req, res) => {
                 p.feeling,
                 p.image_url,
                 p.created_at,
+                p.user_id AS author_id,
                 u.username AS author_name,
                 ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
@@ -974,6 +975,24 @@ app.post('/api/community/:postId/like', async (req, res) => {
                 .input('userId', sql.Int, userId)
                 .query('INSERT INTO dbo.post_likes (post_id, user_id) VALUES (@postId, @userId)');
             liked = true;
+            try {
+                const owner = await pool.request()
+                    .input('postId', sql.Int, postId)
+                    .query('SELECT user_id FROM dbo.community_posts WHERE post_id = @postId');
+                const ownerId = owner.recordset[0]?.user_id;
+                if (ownerId && Number(ownerId) !== Number(userId)) {
+                    const who = req.session.user.name || req.session.user.username || 'ผู้ใช้';
+                    await createNotification(
+                        pool,
+                        ownerId,
+                        'มีคนถูกใจโพสต์ของคุณ',
+                        `${who} กดถูกใจโพสต์ของคุณ`,
+                        'Community.html'
+                    );
+                }
+            } catch (err) {
+                console.warn('[notify] like:', err.message);
+            }
         }
 
         const countResult = await pool.request()
@@ -1054,6 +1073,25 @@ app.post('/api/community/:postId/comments', async (req, res) => {
             `);
 
         const created = result.recordset[0];
+        try {
+            const owner = await pool.request()
+                .input('postId', sql.Int, postId)
+                .query('SELECT user_id FROM dbo.community_posts WHERE post_id = @postId');
+            const ownerId = owner.recordset[0]?.user_id;
+            if (ownerId && Number(ownerId) !== Number(user.user_id)) {
+                const who = user.name || user.username || 'ผู้ใช้';
+                const preview = content.length > 80 ? `${content.slice(0, 80)}…` : content;
+                await createNotification(
+                    pool,
+                    ownerId,
+                    'มีคอมเมนต์ใหม่บนโพสต์ของคุณ',
+                    `${who}: ${preview}`,
+                    'Community.html'
+                );
+            }
+        } catch (err) {
+            console.warn('[notify] comment:', err.message);
+        }
         res.json({
             success: true,
             message: 'คอมเมนต์สำเร็จ',
@@ -1323,6 +1361,12 @@ app.post('/api/attendance/scan', async (req, res) => {
 
 app.listen(PORT, HOST, () => {
     console.log(`🚀 Server running on http://${HOST}:${PORT}`);
+    try {
+        const { startUpcomingClassNotifier } = require('./upcomingClassNotify');
+        startUpcomingClassNotifier(() => poolPromise);
+    } catch (err) {
+        console.warn('🔔 Upcoming class notifier unavailable:', err.message);
+    }
     try {
         const configured = typeof googleCalendar.isGoogleConfigured === 'function'
             && googleCalendar.isGoogleConfigured();

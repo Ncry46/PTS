@@ -66,7 +66,7 @@ tailwind.config = {
     <p id="hero-sub" class="text-on-surface-variant max-w-2xl" data-i18n="page.courses.sub">เลือกหลักสูตร Online / Onsite / Hybrid ที่เหมาะกับเป้าหมายของคุณ</p>
   </div>
 
-  <div class="flex flex-wrap items-center justify-between gap-3 mb-6">
+  <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
     <div class="flex flex-wrap gap-2" id="filters">
       <button data-filter="all" class="filter-btn pts-btn pts-btn-primary">ทั้งหมด</button>
       <button data-filter="online" class="filter-btn pts-btn pts-btn-outline">Online</button>
@@ -74,6 +74,33 @@ tailwind.config = {
       <button data-filter="hybrid" class="filter-btn pts-btn pts-btn-outline">Hybrid</button>
     </div>
     <div id="hero-actions" class="flex flex-wrap gap-2"></div>
+  </div>
+  <div class="pts-card p-4 mb-6" id="course-tools">
+    <div class="flex flex-wrap gap-3 items-end">
+      <label class="flex-1 min-w-[180px]">
+        <span class="block text-xs font-bold text-on-surface-variant mb-1">ค้นหา</span>
+        <input id="course-search" type="search" placeholder="ชื่อคอร์ส / รายละเอียด / วิทยากร"
+          class="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+      </label>
+      <label class="w-28">
+        <span class="block text-xs font-bold text-on-surface-variant mb-1">ราคาต่ำสุด</span>
+        <input id="price-min" type="number" min="0" step="100" placeholder="0"
+          class="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+      </label>
+      <label class="w-28">
+        <span class="block text-xs font-bold text-on-surface-variant mb-1">ราคาสูงสุด</span>
+        <input id="price-max" type="number" min="0" step="100" placeholder="ไม่จำกัด"
+          class="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+      </label>
+      <label class="w-36">
+        <span class="block text-xs font-bold text-on-surface-variant mb-1">หมวด (รหัส)</span>
+        <select id="cat-filter" class="w-full rounded-xl border border-outline-variant px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
+          <option value="">ทุกหมวด</option>
+        </select>
+      </label>
+      <button type="button" id="course-tools-clear" class="pts-btn pts-btn-outline">ล้างตัวกรอง</button>
+    </div>
+    <p id="course-tools-hint" class="text-xs text-on-surface-variant mt-2"></p>
   </div>
 
   <div id="courses-grid" class="pts-course-grid"></div>
@@ -83,6 +110,7 @@ tailwind.config = {
 <script>
 let currentUser = null;
 let allCourses = [];
+let activeModeFilter = 'all';
 const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const formatText = (v) => {
   const s = v == null ? '' : String(v).trim();
@@ -284,12 +312,59 @@ function openCourseModal(course) {
 
 function renderCourses(courses) {
   allCourses = courses || [];
+  fillCategoryOptions(allCourses);
+  applyCourseFilters();
+}
+
+function fillCategoryOptions(courses) {
+  const sel = document.getElementById('cat-filter');
+  if (!sel) return;
+  const current = sel.value;
+  const cats = [...new Set(courses.map((c) => c.coursescat_id).filter((v) => v != null && v !== ''))]
+    .sort((a, b) => Number(a) - Number(b));
+  sel.innerHTML = '<option value="">ทุกหมวด</option>' + cats.map((id) =>
+    `<option value="${escapeHtml(String(id))}">หมวด ${escapeHtml(String(id))}</option>`
+  ).join('');
+  if (current && [...sel.options].some((o) => o.value === current)) sel.value = current;
+}
+
+function applyCourseFilters() {
   const grid = document.getElementById('courses-grid');
-  if (!allCourses.length) {
-    grid.innerHTML = '<div class="pts-empty pts-card col-span-full">ไม่พบหลักสูตรในขณะนี้</div>';
+  const q = String(document.getElementById('course-search')?.value || '').trim().toLowerCase();
+  const minRaw = document.getElementById('price-min')?.value;
+  const maxRaw = document.getElementById('price-max')?.value;
+  const min = minRaw === '' || minRaw == null ? null : Number(minRaw);
+  const max = maxRaw === '' || maxRaw == null ? null : Number(maxRaw);
+  const cat = String(document.getElementById('cat-filter')?.value || '').trim();
+  const mode = activeModeFilter;
+
+  const filtered = (allCourses || []).filter((course) => {
+    const type = String(course.delivery_mode || '').toLowerCase();
+    if (mode !== 'all' && type !== mode) return false;
+    const price = course.price == null || course.price === '' ? null : Number(course.price);
+    if (min != null && !Number.isNaN(min) && (price == null || price < min)) return false;
+    if (max != null && !Number.isNaN(max) && (price == null || price > max)) return false;
+    if (cat && String(course.coursescat_id || '') !== cat) return false;
+    if (q) {
+      const hay = [
+        pickCourseField(course, 'course_name'),
+        pickCourseField(course, 'description'),
+        pickCourseField(course, 'instructor_name'),
+        course.delivery_mode
+      ].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  const hint = document.getElementById('course-tools-hint');
+  if (hint) hint.textContent = `แสดง ${filtered.length} จาก ${allCourses.length} หลักสูตร`;
+
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="pts-empty pts-card col-span-full">ไม่พบหลักสูตรตามเงื่อนไขที่เลือก</div>';
     return;
   }
-  grid.innerHTML = allCourses.map(makeCourseCard).join('');
+  grid.innerHTML = filtered.map(makeCourseCard).join('');
 }
 
 document.addEventListener('pts-lang-change', () => {
@@ -306,10 +381,8 @@ function setActiveFilter(btn) {
 }
 
 function filterCourses(filter) {
-  document.querySelectorAll('#courses-grid [data-type]').forEach(card => {
-    const type = (card.dataset.type || '').toLowerCase();
-    card.classList.toggle('hidden', !(filter === 'all' || type === filter.toLowerCase()));
-  });
+  activeModeFilter = String(filter || 'all').toLowerCase();
+  applyCourseFilters();
 }
 
 document.getElementById('filters').addEventListener('click', (e) => {
@@ -317,6 +390,22 @@ document.getElementById('filters').addEventListener('click', (e) => {
   if (!btn) return;
   setActiveFilter(btn);
   filterCourses(btn.dataset.filter);
+});
+
+['course-search', 'price-min', 'price-max', 'cat-filter'].forEach((id) => {
+  document.getElementById(id)?.addEventListener('input', applyCourseFilters);
+  document.getElementById(id)?.addEventListener('change', applyCourseFilters);
+});
+document.getElementById('course-tools-clear')?.addEventListener('click', () => {
+  const search = document.getElementById('course-search');
+  const min = document.getElementById('price-min');
+  const max = document.getElementById('price-max');
+  const cat = document.getElementById('cat-filter');
+  if (search) search.value = '';
+  if (min) min.value = '';
+  if (max) max.value = '';
+  if (cat) cat.value = '';
+  applyCourseFilters();
 });
 
 document.getElementById('courses-grid').addEventListener('click', async (e) => {

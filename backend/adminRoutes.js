@@ -16,6 +16,7 @@ const {
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
 const { tryUploadLocalFile } = require('./googleDrive');
+const { writeAdminAudit, listAdminAudit, ensureAdminAuditTable } = require('./adminAudit');
 const {
     USAGE_RULES,
     normalizeCouponCode,
@@ -151,6 +152,18 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     (SELECT ISNULL(SUM(amount), 0) FROM dbo.payments WHERE status = 'paid') AS revenue
             `);
             res.json({ success: true, data: result.recordset[0] });
+        } catch (error) {
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
+
+    router.get('/audit', async (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        try {
+            const pool = await poolPromise;
+            await ensureAdminAuditTable(pool);
+            const data = await listAdminAudit(pool, { limit: req.query.limit });
+            res.json({ success: true, data });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }
@@ -304,6 +317,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             }
 
             const created = result.recordset[0];
+            const adminUser = req.session?.user || {};
+            await writeAdminAudit(pool, {
+                adminId: adminUser.user_id,
+                adminName: adminUser.name || adminUser.username || null,
+                action: 'create',
+                entity: 'course',
+                entityId: created?.course_id,
+                detail: { course_name: created?.course_name }
+            });
             res.json({ success: true, message: 'สร้างหลักสูตรสำเร็จ', data: created });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -370,6 +392,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                         is_open_soon = COALESCE(@openSoon, is_open_soon)
                     WHERE course_id = @courseId
                 `);
+            const adminUser = req.session?.user || {};
+            await writeAdminAudit(pool, {
+                adminId: adminUser.user_id,
+                adminName: adminUser.name || adminUser.username || null,
+                action: 'update',
+                entity: 'course',
+                entityId: courseId,
+                detail: { fields: Object.keys(req.body || {}) }
+            });
             res.json({ success: true, message: 'อัปเดตหลักสูตรแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -392,6 +423,14 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             if (!result.rowsAffected?.[0]) {
                 return res.status(404).json({ success: false, message: 'ไม่พบหลักสูตร หรือถูกลบไปแล้ว' });
             }
+            const adminUser = req.session?.user || {};
+            await writeAdminAudit(pool, {
+                adminId: adminUser.user_id,
+                adminName: adminUser.name || adminUser.username || null,
+                action: 'delete',
+                entity: 'course',
+                entityId: courseId
+            });
             res.json({ success: true, message: 'ลบหลักสูตรแล้ว' });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
@@ -841,6 +880,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 reviewedBy: admin.user_id
             });
 
+            await writeAdminAudit(pool, {
+                adminId: admin.user_id,
+                adminName: admin.name || admin.username || null,
+                action: 'approve',
+                entity: 'payment',
+                entityId: paymentId,
+                detail: { user_id: row.user_id, course_id: row.course_id }
+            });
+
             res.json({
                 success: true,
                 message: 'อนุมัติแล้ว — เปิดสิทธิ์คอร์สให้นักเรียนและส่งการแจ้งเตือนแล้ว'
@@ -895,6 +943,15 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 reason,
                 'Payments.html'
             ).catch(() => {});
+
+            await writeAdminAudit(pool, {
+                adminId: admin.user_id,
+                adminName: admin.name || admin.username || null,
+                action: 'reject',
+                entity: 'payment',
+                entityId: paymentId,
+                detail: { user_id: row.user_id, course_id: row.course_id, reason }
+            });
 
             res.json({ success: true, message: 'ปฏิเสธรายการแล้ว' });
         } catch (error) {

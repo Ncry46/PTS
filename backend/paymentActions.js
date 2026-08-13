@@ -103,8 +103,8 @@ async function markPaidAndEnroll(pool, userId, paymentId, courseId, options = {}
             await createNotification(
                 pool,
                 userId,
-                'ลงทะเบียนสำเร็จแล้ว',
-                `หลักสูตร ${row.course_name || ''} · รหัส #PTS-${paymentId}`,
+                'ชำระเงินอนุมัติแล้ว',
+                `หลักสูตร ${row.course_name || ''} · รหัส #PTS-${paymentId} · ลงทะเบียนสำเร็จ`,
                 'MyCourses.html'
             );
             if (row.email) {
