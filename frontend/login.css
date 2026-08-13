@@ -681,7 +681,10 @@ input[type="password"]::-ms-reveal,
     background: rgba(26,16,20,.5);
     backdrop-filter: blur(8px);
   }
-  .pts-login-modal:not(.hidden) { display: flex; }
+  .pts-login-modal.is-open,
+  .pts-login-modal:not(.hidden) {
+    display: flex !important;
+  }
 
   .pts-login-modal__card {
     width: 100%;

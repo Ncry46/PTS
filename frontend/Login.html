@@ -9,7 +9,7 @@
 <script src="/comp/lang-boot.js?v=20260806langfix"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link rel="stylesheet" href="auth-scene.css?v=20260805white2">
-<link rel="stylesheet" href="login.css?v=20260805white2">
+<link rel="stylesheet" href="login.css?v=20260813forgot">
 <link rel="stylesheet" href="register.css?v=20260805white2">
 <link rel="stylesheet" href="auth-split.css?v=20260806langfix">
 <style id="pts-auth-force-bg">
@@ -148,7 +148,7 @@
             <div class="pts-login__field">
               <div class="pts-login__field-row">
                 <label for="password" data-i18n="auth.password">รหัสผ่าน</label>
-                <button type="button" id="forgot-password-btn" class="pts-login__link" data-i18n="auth.forgot">ลืมรหัสผ่าน?</button>
+                <button type="button" id="forgot-password-btn" class="pts-login__link" data-i18n="auth.forgot" data-auth-keep-enabled>ลืมรหัสผ่าน?</button>
               </div>
               <div class="pts-login__control pts-pw-wrap">
                 <span class="material-symbols-outlined pts-login__ico">lock</span>
@@ -275,7 +275,7 @@
   </div>
 </main>
 
-<div id="reset-modal" class="pts-login-modal hidden">
+<div id="reset-modal" class="pts-login-modal hidden" aria-hidden="true">
   <div class="pts-login-modal__card" role="dialog" aria-modal="true" aria-labelledby="reset-section_title">
     <h3 id="reset-section_title">กู้คืนรหัสผ่านด้วย Email OTP</h3>
     <p>กรอกอีเมลที่สมัครไว้ ระบบจะส่งรหัส 6 หลักไปที่อีเมลนั้นโดยตรง (ใช้ได้ทุกโดเมน เช่น Gmail / Hotmail / เมลบริษัท)</p>
@@ -317,8 +317,8 @@
   </div>
 </div>
 
-<script src="auth-split.js?v=20260806langfix"></script>
-<script src="login.js?v=20260805split1"></script>
+<script src="auth-split.js?v=20260813forgot"></script>
+<script src="login.js?v=20260813forgot"></script>
 <script src="register.js?v=20260805split1"></script>
 <script src="password-toggle.js?v=20260720e"></script>
 <script src="/comp/navbar.js?v=20260813profilemenu"></script>

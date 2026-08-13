@@ -62,7 +62,11 @@
       pane.classList.toggle('is-dimmed', !active);
       pane.setAttribute('aria-hidden', active ? 'false' : 'true');
       pane.querySelectorAll('input, button, select, textarea').forEach((el) => {
-        if (el.hasAttribute('data-auth-keep-enabled')) return;
+        if (el.hasAttribute('data-auth-keep-enabled')) {
+          el.disabled = false;
+          el.removeAttribute('disabled');
+          return;
+        }
         if (el.closest('.pts-auth-split__cover')) return;
         el.tabIndex = active ? 0 : -1;
         el.disabled = !active;

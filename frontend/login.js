@@ -77,29 +77,75 @@
 
   function openResetModal() {
     const modal = document.getElementById('reset-modal');
+    if (!modal) {
+      console.error('reset-modal not found');
+      return;
+    }
+    const loginEmail = document.getElementById('email');
+    const resetEmail = document.getElementById('reset-email');
+    if (loginEmail && resetEmail && loginEmail.value && !resetEmail.value) {
+      resetEmail.value = loginEmail.value.trim();
+    }
     modal.classList.remove('hidden');
+    modal.classList.add('is-open');
     modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    clearResetMsg();
+    window.setTimeout(() => {
+      (resetEmail || modal.querySelector('input'))?.focus();
+    }, 30);
   }
 
   function closeResetModal() {
     const modal = document.getElementById('reset-modal');
+    if (!modal) return;
     modal.classList.add('hidden');
+    modal.classList.remove('is-open');
     modal.style.display = 'none';
-    document.getElementById('otp-verification-zone').classList.add('is-locked');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+    document.getElementById('otp-verification-zone')?.classList.add('is-locked');
     const confirmBtn = document.getElementById('confirm-reset-btn');
-    confirmBtn.disabled = true;
-    confirmBtn.classList.add('is-disabled');
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('is-disabled');
+    }
     clearResetMsg();
   }
 
   window.openResetModal = openResetModal;
   window.closeResetModal = closeResetModal;
 
-  document.getElementById('forgot-password-btn')?.addEventListener('click', (e) => {
+  function bindForgotPassword() {
+    const btn = document.getElementById('forgot-password-btn');
+    if (!btn || btn.dataset.boundForgot === '1') return;
+    btn.dataset.boundForgot = '1';
+    btn.disabled = false;
+    btn.removeAttribute('disabled');
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openResetModal();
+    });
+  }
+  bindForgotPassword();
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#forgot-password-btn');
+    if (!btn) return;
     e.preventDefault();
+    e.stopPropagation();
     openResetModal();
   });
   document.getElementById('reset-cancel-btn')?.addEventListener('click', closeResetModal);
+  document.getElementById('reset-modal')?.addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeResetModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape') return;
+    const modal = document.getElementById('reset-modal');
+    if (modal && modal.classList.contains('is-open')) closeResetModal();
+  });
   document.getElementById('otp-btn')?.addEventListener('click', () => { requestRealOTP(); });
   document.getElementById('confirm-reset-btn')?.addEventListener('click', () => { submitVerifyAndReset(); });
 
@@ -139,6 +185,8 @@
         confirmBtn.disabled = false;
         confirmBtn.classList.remove('is-disabled');
         otpBtn.innerText = 'ส่งอีกครั้ง';
+        showResetMsg(result.message || 'ส่งรหัส OTP ไปที่อีเมลแล้ว — ตรวจ inbox/สแปม', false);
+        document.getElementById('reset-otp')?.focus();
       } else {
         showResetMsg(result.message || 'ส่ง OTP ไม่สำเร็จ');
         otpBtn.innerText = 'ขอรหัส OTP';
@@ -171,7 +219,18 @@
         body: JSON.stringify(payload)
       });
       const result = await response.json();
-      if (result.success) closeResetModal();
+      if (result.success) {
+        showResetMsg(result.message || 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว — กลับไปเข้าสู่ระบบได้เลย', false);
+        window.setTimeout(() => {
+          closeResetModal();
+          const loginMsg = document.getElementById('login-msg');
+          if (loginMsg) {
+            loginMsg.textContent = 'ตั้งรหัสผ่านใหม่แล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่';
+            loginMsg.classList.remove('hidden');
+            loginMsg.classList.add('is-info');
+          }
+        }, 900);
+      }
       else showResetMsg(result.message || 'ยืนยันไม่สำเร็จ');
     } catch (err) {
       console.error(err);
