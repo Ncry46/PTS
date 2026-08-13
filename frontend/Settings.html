@@ -12,124 +12,151 @@
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
 
-  .set-page { width: 100%; max-width: none; margin: 0; }
+  .set-page { width: 100%; max-width: 960px; margin: 0 auto; }
+  .set-stack { display: grid; gap: 16px; }
+
   .set-card {
-    background: #fff;
+    background: var(--pts-surface, #fff);
     border: 1px solid rgba(151,66,88,.12);
-    border-radius: 22px;
-    box-shadow: 0 10px 28px -14px rgba(28,21,32,.12);
-    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px -16px rgba(28,21,32,.14);
+    padding: 22px 22px 20px;
   }
-  .set-card + .set-card { margin-top: 18px; }
-  .set-grid-2 {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 22px;
+  .set-card__head {
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+    margin-bottom: 18px; padding-bottom: 14px;
+    border-bottom: 1px solid rgba(151,66,88,.1);
   }
-  @media (min-width: 900px) {
-    .set-grid-2 { grid-template-columns: 1fr 1.15fr; gap: 28px; }
-  }
+  .set-card__head-text { min-width: 0; }
   .set-section_title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: #1c1520;
-    margin: 0 0 14px;
+    font-size: 1.05rem; font-weight: 700; color: #1c1520; margin: 0 0 4px;
   }
-  .set-sub { font-size: 13px; color: #5c4f55; margin: 0 0 16px; line-height: 1.45; }
-  .set-profile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 10px;
-    padding: 8px 4px 4px;
+  .set-sub {
+    font-size: 13px; color: #5c4f55; margin: 0; line-height: 1.45;
   }
-  .set-avatar-wrap { position: relative; }
+
+  .set-identity {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 20px;
+  }
+  .set-avatar-wrap { position: relative; flex-shrink: 0; }
   .set-avatar {
-    width: 112px; height: 112px;
+    width: 88px; height: 88px;
     border-radius: 999px;
     object-fit: cover;
     border: 3px solid #f3e4e8;
     background: #f7eef1;
+    display: block;
   }
   .set-avatar-edit {
-    position: absolute; right: 2px; bottom: 2px;
-    width: 34px; height: 34px; border-radius: 999px;
-    border: 0; cursor: pointer;
+    position: absolute; right: 0; bottom: 0;
+    width: 32px; height: 32px; border-radius: 999px;
+    border: 2px solid #fff; cursor: pointer;
     background: #ca1156; color: #fff;
     display: inline-flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 10px rgba(202,17,86,.28);
   }
-  .set-avatar-edit .material-symbols-outlined { font-size: 18px; }
-  .set-name { font-size: 1.2rem; font-weight: 700; color: #1c1520; margin: 0; }
+  .set-avatar-edit .material-symbols-outlined { font-size: 16px; }
+  .set-identity__meta { min-width: 0; }
+  .set-name { font-size: 1.15rem; font-weight: 700; color: #1c1520; margin: 0 0 6px; }
   .set-role {
     display: inline-flex; align-items: center;
-    font-size: 12px; font-weight: 700;
+    font-size: 11px; font-weight: 700; letter-spacing: .02em;
     color: #ca1156; background: rgba(151,66,88,.1);
     padding: 4px 10px; border-radius: 999px;
   }
-  .set-meta {
-    width: 100%;
-    margin-top: 8px;
-    text-align: left;
-    font-size: 13px;
-    color: #5c4f55;
-    display: grid; gap: 8px;
+  .set-identity__hint {
+    margin: 8px 0 0; font-size: 12px; color: #6b5c62; line-height: 1.4;
   }
-  .set-meta div {
-    display: flex; justify-content: space-between; gap: 10px;
-    padding: 10px 12px;
-    border-radius: 12px;
-    background: #f7f2f5;
-  }
-  .set-meta strong { color: #1c1520; font-weight: 600; }
+
+  .set-form { display: grid; gap: 4px; }
   .set-field { display: grid; gap: 6px; margin-bottom: 14px; }
   .set-field > span { font-size: 13px; font-weight: 600; color: #5c4f55; }
+  .set-field-hint { font-size: 12px; color: #6b5c62; margin-top: -2px; }
   .set-input {
     width: 100%;
     border: 1px solid rgba(151,66,88,.16);
-    background: #f7f2f5;
+    background: #faf7f8;
     border-radius: 12px;
     padding: 11px 14px;
     font: inherit;
     color: #1c1520;
+    transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
   }
-  .set-input:disabled { opacity: .85; }
+  .set-input:disabled {
+    opacity: 1; color: #5c4f55; background: #f0eaed; cursor: not-allowed;
+  }
   .set-input:focus {
     outline: none;
-    border-color: rgba(151,66,88,.45);
+    border-color: rgba(202,17,86,.45);
     background: #fff;
+    box-shadow: 0 0 0 3px rgba(202,17,86,.12);
   }
+
+  .set-otp-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: end;
+    margin-bottom: 14px;
+  }
+  .set-otp-row .set-field { margin-bottom: 0; }
+  @media (max-width: 520px) {
+    .set-otp-row { grid-template-columns: 1fr; }
+    .set-otp-row .pts-btn { width: 100%; }
+  }
+
+  .set-actions-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    margin-top: 4px;
+  }
+  .set-actions-bar .pts-btn { min-width: 140px; }
+  .set-file-note {
+    font-size: 12px; color: #5c4f55; margin: 0;
+  }
+
+  .set-lang {
+    display: inline-flex; gap: 4px; padding: 4px;
+    border: 1px solid rgba(151,66,88,.14);
+    border-radius: 999px; background: #faf7f8;
+  }
+  .set-lang label {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 88px; padding: 8px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 700; color: #5c4f55; cursor: pointer;
+  }
+  .set-lang input { position: absolute; opacity: 0; pointer-events: none; }
+  .set-lang label:has(input:checked) {
+    background: #ca1156; color: #fff;
+  }
+
   .set-conn {
     display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px;
+    padding: 14px;
     border-radius: 14px;
-    background: #f7f2f5;
+    border: 1px solid rgba(151,66,88,.1);
+    background: #faf7f8;
     margin-bottom: 10px;
   }
   .set-conn__icon {
-    width: 40px; height: 40px; border-radius: 12px;
+    width: 42px; height: 42px; border-radius: 12px;
     display: inline-flex; align-items: center; justify-content: center;
     background: #fff; color: #ca1156; flex-shrink: 0;
+    border: 1px solid rgba(151,66,88,.1);
   }
   .set-conn__icon--line { color: #06C755; }
   .set-conn__body { flex: 1; min-width: 0; }
   .set-conn__section_title { font-size: 14px; font-weight: 700; color: #1c1520; }
   .set-conn__status { font-size: 12px; color: #5c4f55; margin-top: 2px; }
   .set-conn__status.is-on { color: #2e7d32; font-weight: 600; }
-  .set-radio {
-    display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 16px;
-  }
-  .set-radio label {
-    display: inline-flex; align-items: center; gap: 8px;
-    font-size: 14px; font-weight: 600; color: #1c1520; cursor: pointer;
-  }
   .set-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+
   .set-privacy {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
-    gap: 12px;
+    gap: 14px;
   }
   .set-privacy__links {
-    display: flex; flex-wrap: wrap; gap: 14px;
+    display: flex; flex-wrap: wrap; gap: 8px 16px;
   }
   .set-privacy__links a {
     display: inline-flex; align-items: center; gap: 6px;
@@ -137,12 +164,15 @@
   }
   .set-privacy__links a:hover { color: #ca1156; }
   .set-privacy__links .material-symbols-outlined { font-size: 18px; }
+
   .set-edit-panel[hidden] { display: none !important; }
-  .set-divider { height: 1px; background: rgba(151,66,88,.1); margin: 14px 0; }
   .pts-btn-line {
     background: #06C755; border-color: #06C755; color: #fff;
   }
   .pts-btn-line:hover { filter: brightness(.96); color: #fff; }
+
+  /* keep legacy ids harmless if referenced */
+  #toggle-edit-profile, #meta-name, #meta-phone { display: none !important; }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
@@ -158,76 +188,109 @@
       <p class="text-on-surface-variant" data-i18n="page.settings.sub">จัดการโปรไฟล์และความปลอดภัย รวมถึงการเชื่อมต่อของคุณ</p>
     </section>
 
-    <!-- Top: Profile + Account -->
-    <section class="set-card">
-      <div class="set-grid-2">
-        <div>
-          <h2 class="set-section_title" data-i18n="settings.profile">ข้อมูลส่วนตัว</h2>
-          <div class="set-profile">
-            <div class="set-avatar-wrap">
-              <img id="avatar-preview" class="set-avatar" src="" alt="รูปโปรไฟล์">
-              <button type="button" id="pick-avatar" class="set-avatar-edit" data-i18n-section_title="settings.changeAvatar" data-i18n-aria-label="settings.changeAvatar" title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
-                <span class="material-symbols-outlined">photo_camera</span>
-              </button>
-              <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
-            </div>
+    <div class="set-stack">
+      <!-- Profile -->
+      <section class="set-card">
+        <div class="set-card__head">
+          <div class="set-card__head-text">
+            <h2 class="set-section_title" data-i18n="settings.profile">ข้อมูลส่วนตัว</h2>
+            <p class="set-sub">อัปเดตรูป ชื่อ และเบอร์โทรที่ใช้แสดงในระบบ</p>
+          </div>
+        </div>
+
+        <div class="set-identity">
+          <div class="set-avatar-wrap">
+            <img id="avatar-preview" class="set-avatar" src="" alt="รูปโปรไฟล์">
+            <button type="button" id="pick-avatar" class="set-avatar-edit" data-i18n-section_title="settings.changeAvatar" data-i18n-aria-label="settings.changeAvatar" title="เปลี่ยนรูปโปรไฟล์" aria-label="เปลี่ยนรูปโปรไฟล์">
+              <span class="material-symbols-outlined">photo_camera</span>
+            </button>
+            <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
+          </div>
+          <div class="set-identity__meta">
             <p class="set-name" id="display-name">—</p>
             <span class="set-role" id="display-role">สมาชิก PTS</span>
-            <div class="set-meta">
-              <div><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><strong id="meta-name">—</strong></div>
-              <div><span data-i18n="settings.phone">เบอร์โทร</span><strong id="meta-phone">—</strong></div>
-            </div>
-            <button type="button" id="toggle-edit-profile" class="pts-btn pts-btn-outline" style="margin-top:8px;width:100%;" data-i18n="settings.editProfile">แก้ไขข้อมูลส่วนตัว</button>
-            <p id="avatar-file-name" class="text-xs text-on-surface-variant"></p>
+            <p class="set-identity__hint">กดไอคอนกล้องเพื่อเลือกรูปใหม่ จากนั้นกดบันทึกโปรไฟล์</p>
+            <span id="meta-name" hidden>—</span>
+            <span id="meta-phone" hidden>—</span>
+            <button type="button" id="toggle-edit-profile" class="hidden" tabindex="-1" aria-hidden="true"></button>
+          </div>
+        </div>
+
+        <div id="edit-profile-panel" class="set-form">
+          <label class="set-field"><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><input id="username" class="set-input" autocomplete="name"></label>
+          <label class="set-field"><span data-i18n="settings.phone">เบอร์โทร</span><input id="phone" class="set-input" autocomplete="tel"></label>
+          <div class="set-actions-bar">
+            <button id="save-profile" class="pts-btn pts-btn-primary" data-i18n="settings.saveProfile">บันทึกโปรไฟล์</button>
             <button type="button" id="clear-avatar-pick" class="pts-btn pts-btn-ghost hidden" data-i18n="settings.clearAvatar">ยกเลิกไฟล์ที่เลือก</button>
+            <p id="avatar-file-name" class="set-file-note"></p>
           </div>
+          <p id="profile-msg" class="pts-msg"></p>
+        </div>
+      </section>
 
-          <div id="edit-profile-panel" class="set-edit-panel" hidden>
-            <div class="set-divider"></div>
-            <label class="set-field"><span data-i18n="settings.fullname">ชื่อ-นามสกุล</span><input id="username" class="set-input"></label>
-            <label class="set-field"><span data-i18n="settings.phone">เบอร์โทร</span><input id="phone" class="set-input"></label>
-            <button id="save-profile" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.saveProfile">บันทึกโปรไฟล์</button>
-            <p id="profile-msg" class="pts-msg"></p>
+      <!-- Security -->
+      <section class="set-card">
+        <div class="set-card__head">
+          <div class="set-card__head-text">
+            <h2 class="set-section_title" data-i18n="settings.account">บัญชีและความปลอดภัย</h2>
+            <p class="set-sub">อีเมลเข้าสู่ระบบ และการเปลี่ยนรหัสผ่านด้วย OTP</p>
           </div>
         </div>
 
-        <div>
-          <h2 class="set-section_title" data-i18n="settings.account">บัญชีและความปลอดภัย</h2>
-          <label class="set-field"><span data-i18n="settings.email">อีเมล</span><input id="email" class="set-input" disabled></label>
-          <label class="set-field"><span data-i18n="settings.currentPassword">รหัสผ่านปัจจุบัน</span>
-            <div class="pts-pw-wrap relative">
-              <input id="current_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1">
-              <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
-            </div>
-          </label>
-          <label class="set-field"><span data-i18n="settings.newPassword">รหัสผ่านใหม่</span>
-            <div class="pts-pw-wrap relative">
-              <input id="new_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1">
-              <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
-            </div>
-          </label>
-          <div class="flex flex-col sm:flex-row gap-3 items-stretch sm:items-end mb-3">
-            <label class="set-field flex-1 mb-0" style="margin-bottom:0;"><span data-i18n="settings.otp">รหัส OTP จากอีเมล</span>
-              <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="set-input text-center tracking-[0.3em] font-bold" placeholder="••••••">
-            </label>
-            <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap" data-i18n="settings.sendOtp">ส่ง OTP</button>
+        <label class="set-field">
+          <span data-i18n="settings.email">อีเมล</span>
+          <input id="email" class="set-input" disabled>
+          <span class="set-field-hint">ใช้อีเมลนี้สำหรับเข้าสู่ระบบและรับ OTP</span>
+        </label>
+
+        <label class="set-field"><span data-i18n="settings.currentPassword">รหัสผ่านปัจจุบัน</span>
+          <div class="pts-pw-wrap relative">
+            <input id="current_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1" autocomplete="current-password">
+            <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
           </div>
-          <button id="save-password" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.saveAll">บันทึกการเปลี่ยนแปลงทั้งหมด</button>
-          <p id="password-msg" class="pts-msg"></p>
+        </label>
+        <label class="set-field"><span data-i18n="settings.newPassword">รหัสผ่านใหม่</span>
+          <div class="pts-pw-wrap relative">
+            <input id="new_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1" autocomplete="new-password">
+            <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
+          </div>
+        </label>
+
+        <div class="set-otp-row">
+          <label class="set-field"><span data-i18n="settings.otp">รหัส OTP จากอีเมล</span>
+            <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="set-input text-center tracking-[0.3em] font-bold" placeholder="••••••" autocomplete="one-time-code">
+          </label>
+          <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap" data-i18n="settings.sendOtp">ส่ง OTP</button>
         </div>
-      </div>
-    </section>
 
-    <!-- Middle: Language + Connections -->
-    <section class="set-card" id="connections" style="margin-top:18px;">
-      <h2 class="set-section_title" data-i18n="settings.langConnections">ภาษาและการเชื่อมต่อ</h2>
-      <p class="set-sub" data-i18n="settings.language">ภาษา</p>
-      <div class="set-radio" role="radiogroup" data-i18n-aria-label="settings.language" aria-label="ภาษา">
-        <label><input type="radio" name="lang" value="th" checked> <span data-i18n="settings.lang.th">ไทย</span></label>
-        <label><input type="radio" name="lang" value="en"> <span data-i18n="settings.lang.en">English</span></label>
-      </div>
+        <div class="set-actions-bar">
+          <button id="save-password" class="pts-btn pts-btn-primary" data-i18n="settings.savePassword">บันทึกรหัสผ่าน</button>
+        </div>
+        <p id="password-msg" class="pts-msg"></p>
+      </section>
 
-      <p class="set-sub" style="margin-bottom:10px;" data-i18n="settings.connections">การเชื่อมต่อ</p>
+      <!-- Language -->
+      <section class="set-card">
+        <div class="set-card__head">
+          <div class="set-card__head-text">
+            <h2 class="set-section_title" data-i18n="settings.language">ภาษา</h2>
+            <p class="set-sub">เลือกภาษาที่ใช้แสดงบนเว็บไซต์</p>
+          </div>
+        </div>
+        <div class="set-lang" role="radiogroup" data-i18n-aria-label="settings.language" aria-label="ภาษา">
+          <label><input type="radio" name="lang" value="th" checked> <span data-i18n="settings.lang.th">ไทย</span></label>
+          <label><input type="radio" name="lang" value="en"> <span data-i18n="settings.lang.en">English</span></label>
+        </div>
+      </section>
+
+      <!-- Connections -->
+      <section class="set-card" id="connections">
+        <div class="set-card__head">
+          <div class="set-card__head-text">
+            <h2 class="set-section_title" data-i18n="settings.connections">การเชื่อมต่อ</h2>
+            <p class="set-sub">เชื่อม LINE OA และ Google Calendar เพื่อรับการแจ้งเตือน</p>
+          </div>
+        </div>
 
       <div class="set-conn" id="line-oa">
         <div class="set-conn__icon set-conn__icon--line"><span class="material-symbols-outlined">chat</span></div>
@@ -248,7 +311,7 @@
         <button type="button" id="line-unlink" class="pts-btn pts-btn-outline hidden">ยกเลิกการเชื่อม</button>
       </div>
       <p id="line-msg" class="pts-msg" style="margin-top:6px;"></p>
-      <p class="text-xs text-on-surface-variant" style="margin-top:4px;">
+      <p class="text-xs text-on-surface-variant" style="margin-top:4px;margin-bottom:14px;">
         ถ้าในแชทยังเป็นข้อความเก่า ให้ปิด Greeting Message ใน LINE OA Manager แล้วตั้ง Response mode เป็น Bot
       </p>
 
@@ -296,20 +359,27 @@
         </span>
         <span id="gcal-diagnose-line" class="block mt-1"></span>
       </p>
-    </section>
+      </section>
 
-    <!-- Bottom: Privacy -->
-    <section class="set-card" style="margin-top:18px;">
-      <div class="set-privacy">
-        <div class="set-privacy__links">
-          <a href="Legal.html"><span class="material-symbols-outlined">policy</span> <span data-i18n="settings.privacyPolicy">นโยบายความเป็นส่วนตัว</span></a>
-          <a href="Legal.html"><span class="material-symbols-outlined">description</span> <span data-i18n="settings.terms">ข้อกำหนดการใช้งาน</span></a>
-          <a href="mailto:businessdev@thanvasu.com?subject=ขอข้อมูลส่วนตัว%20PTS"><span class="material-symbols-outlined">download</span> <span data-i18n="settings.downloadData">ดาวน์โหลดข้อมูลส่วนตัว</span></a>
+      <!-- Privacy -->
+      <section class="set-card">
+        <div class="set-card__head">
+          <div class="set-card__head-text">
+            <h2 class="set-section_title">ความเป็นส่วนตัว</h2>
+            <p class="set-sub">เอกสารทางกฎหมาย และการจัดการบัญชี</p>
+          </div>
         </div>
-        <button type="button" id="delete-account-btn" class="pts-btn pts-btn-ghost" style="color:#ba1a1a;" data-i18n="settings.deleteAccount">ลบบัญชีผู้ใช้</button>
-      </div>
-      <p id="privacy-msg" class="pts-msg"></p>
-    </section>
+        <div class="set-privacy">
+          <div class="set-privacy__links">
+            <a href="Legal.html"><span class="material-symbols-outlined">policy</span> <span data-i18n="settings.privacyPolicy">นโยบายความเป็นส่วนตัว</span></a>
+            <a href="Legal.html"><span class="material-symbols-outlined">description</span> <span data-i18n="settings.terms">ข้อกำหนดการใช้งาน</span></a>
+            <a href="mailto:businessdev@thanvasu.com?subject=ขอข้อมูลส่วนตัว%20PTS"><span class="material-symbols-outlined">download</span> <span data-i18n="settings.downloadData">ดาวน์โหลดข้อมูลส่วนตัว</span></a>
+          </div>
+          <button type="button" id="delete-account-btn" class="pts-btn pts-btn-ghost" style="color:#ba1a1a;" data-i18n="settings.deleteAccount">ลบบัญชีผู้ใช้</button>
+        </div>
+        <p id="privacy-msg" class="pts-msg"></p>
+      </section>
+    </div>
   </div>
 </main>
 <div class="pts-footer-note">© PTS Learning</div>
@@ -344,8 +414,10 @@ function syncProfileMeta() {
   const name = document.getElementById('username').value || '—';
   const phone = document.getElementById('phone').value || '—';
   document.getElementById('display-name').textContent = name;
-  document.getElementById('meta-name').textContent = name;
-  document.getElementById('meta-phone').textContent = phone;
+  const metaName = document.getElementById('meta-name');
+  const metaPhone = document.getElementById('meta-phone');
+  if (metaName) metaName.textContent = name;
+  if (metaPhone) metaPhone.textContent = phone;
 }
 
 function t(key, fallback) {
@@ -388,17 +460,7 @@ function syncRoleLabel() {
   await refreshLineOaStatus();
 })();
 
-document.getElementById('toggle-edit-profile').onclick = () => {
-  const panel = document.getElementById('edit-profile-panel');
-  const open = panel.hasAttribute('hidden');
-  if (open) panel.removeAttribute('hidden');
-  else panel.setAttribute('hidden', '');
-  const btn = document.getElementById('toggle-edit-profile');
-  btn.textContent = open
-    ? t('settings.closeEdit', 'ปิดการแก้ไข')
-    : t('settings.editProfile', 'แก้ไขข้อมูลส่วนตัว');
-  btn.removeAttribute('data-i18n');
-};
+document.getElementById('username')?.addEventListener('input', syncProfileMeta);
 
 document.querySelectorAll('input[name="lang"]').forEach((el) => {
   el.addEventListener('change', () => {
@@ -414,14 +476,6 @@ document.querySelectorAll('input[name="lang"]').forEach((el) => {
 document.addEventListener('pts-lang-change', () => {
   syncLangRadios();
   syncRoleLabel();
-  const panel = document.getElementById('edit-profile-panel');
-  const btn = document.getElementById('toggle-edit-profile');
-  if (btn && panel) {
-    const open = !panel.hasAttribute('hidden');
-    btn.textContent = open
-      ? t('settings.closeEdit', 'ปิดการแก้ไข')
-      : t('settings.editProfile', 'แก้ไขข้อมูลส่วนตัว');
-  }
 });
 
 document.getElementById('delete-account-btn').onclick = () => {
@@ -578,10 +632,7 @@ document.getElementById('avatar-file').onchange = (e) => {
   const clearBtn = document.getElementById('clear-avatar-pick');
   const nameEl = document.getElementById('avatar-file-name');
   const msg = document.getElementById('profile-msg');
-  const panel = document.getElementById('edit-profile-panel');
   if (!file) return;
-  panel.removeAttribute('hidden');
-  document.getElementById('toggle-edit-profile').textContent = 'ปิดการแก้ไข';
   if (!String(file.type || '').startsWith('image/')) {
     msg.textContent = 'กรุณาเลือกไฟล์รูปภาพ';
     msg.className = 'pts-msg pts-msg--err';

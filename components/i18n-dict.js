@@ -179,6 +179,7 @@ window.PTSLangDict = {
   'settings.sendOtp': { th: 'ส่ง OTP', en: 'Send OTP' },
   'settings.sendingOtp': { th: 'กำลังส่ง...', en: 'Sending...' },
   'settings.saveAll': { th: 'บันทึกการเปลี่ยนแปลงทั้งหมด', en: 'Save all changes' },
+  'settings.savePassword': { th: 'บันทึกรหัสผ่าน', en: 'Save password' },
   'settings.langConnections': { th: 'ภาษาและการเชื่อมต่อ', en: 'Language & connections' },
   'settings.language': { th: 'ภาษา', en: 'Language' },
   'settings.connections': { th: 'การเชื่อมต่อ', en: 'Connections' },
