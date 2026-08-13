@@ -367,35 +367,22 @@ app.get('/api/users/me', async (req, res) => {
         try {
             const drive = require('./googleDrive');
             const url = String(req.session.user.Url || '');
-            const fileId = drive.extractDriveFileId(url);
-            if (fileId && !url.startsWith('/uploads/avatars/') && !req.session._avatarRestoreTried) {
-                req.session._avatarRestoreTried = true;
-                try {
-                    const file = await drive.fetchDriveFile(fileId);
-                    const avatarsDir = path.join(uploadsDir, 'avatars');
-                    fs.mkdirSync(avatarsDir, { recursive: true });
-                    const mime = String(file.mimeType || '').toLowerCase();
-                    let ext = '.jpg';
-                    if (mime.includes('png')) ext = '.png';
-                    else if (mime.includes('webp')) ext = '.webp';
-                    else if (mime.includes('gif')) ext = '.gif';
-                    const filename = `user-${req.session.user.user_id}-restored-${Date.now()}${ext}`;
-                    fs.writeFileSync(path.join(avatarsDir, filename), file.buffer);
-                    const localUrl = `/uploads/avatars/${filename}`;
-                    req.session.user.Url = localUrl;
-                    try {
-                        const pool = await poolPromise;
-                        await pool.request()
-                            .input('userId', sql.Int, req.session.user.user_id)
-                            .input('url', sql.NVarChar, localUrl)
-                            .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
-                    } catch (_) { /* session still updated for navbar */ }
-                } catch (err) {
-                    console.warn('[avatar] users/me restore:', err.message);
-                    req.session.user.Url = drive.normalizeDriveUrl(url) || url;
+            // Prefer durable Drive proxy URL in session/DB — do not rewrite to local-only.
+            if (url && !url.startsWith('/uploads/avatars/')) {
+                const fixed = drive.normalizeDriveUrl(url) || url;
+                if (fixed !== url) {
+                    req.session.user.Url = fixed;
+                    if (!req.session._avatarUrlNormalized) {
+                        req.session._avatarUrlNormalized = true;
+                        try {
+                            const pool = await poolPromise;
+                            await pool.request()
+                                .input('userId', sql.Int, req.session.user.user_id)
+                                .input('url', sql.NVarChar, fixed)
+                                .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
+                        } catch (_) { /* session still updated for navbar */ }
+                    }
                 }
-            } else if (url) {
-                req.session.user.Url = drive.normalizeDriveUrl(url) || url;
             }
         } catch (_) { /* ignore */ }
         try {
@@ -871,7 +858,7 @@ app.post('/api/community', (req, res) => {
         }
 
         const content = String(req.body?.content || '').trim();
-        const imageUrl = req.file ? `/uploads/community/${req.file.filename}` : null;
+        let imageUrl = req.file ? `/uploads/community/${req.file.filename}` : null;
 
         if (!content && !imageUrl) {
             return res.status(400).json({ success: false, message: 'กรุณาใส่ข้อความหรือรูปภาพก่อนโพสต์' });
@@ -888,7 +875,12 @@ app.post('/api/community', (req, res) => {
                     mimeType: req.file.mimetype,
                     category: 'community'
                 });
-                if (up && !up.ok && up.error) console.warn('[community→drive]', up.error);
+                if (up && up.ok && up.url) {
+                    // Persist Drive proxy URL in DB; keep local file as cache.
+                    imageUrl = up.url;
+                } else if (up && !up.ok && up.error) {
+                    console.warn('[community→drive]', up.error);
+                }
             } catch (e) {
                 console.warn('[community→drive]', e.message);
             }

@@ -775,14 +775,14 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     if (!Number.isNaN(d.getTime())) transferAt = d;
                 }
 
-                // Keep local slip for reliable admin preview; Drive holds a backup copy.
+                // Keep local slip as cache; store Drive proxy URL in DB when available.
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
                     mimeType: req.file.mimetype,
                     category: 'slips'
                 });
-                if (drive && drive.ok && drive.fileId) {
-                    // slipUrl stays local — do not delete the file after Drive backup
+                if (drive && drive.ok && drive.url) {
+                    slipUrl = drive.url;
                 } else if (drive && drive.error) {
                     console.warn('[slip→drive]', drive.error);
                 }

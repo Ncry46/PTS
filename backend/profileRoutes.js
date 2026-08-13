@@ -6,7 +6,7 @@ const multer = require('multer');
 const { flagActiveSql } = require('./db');
 const { localizeCourseRow, resolveLangFromReq, courseListTextSql, courseMetaSelectSql, COURSE_API_VERSION } = require('./courseLang');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
-const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId, fetchDriveFile } = require('./googleDrive');
+const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId } = require('./googleDrive');
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars');
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -40,52 +40,33 @@ const avatarUpload = multer({
     }
 });
 
-function extFromMime(mime, name) {
-    const m = String(mime || '').toLowerCase();
-    if (m.includes('png')) return '.png';
-    if (m.includes('webp')) return '.webp';
-    if (m.includes('gif')) return '.gif';
-    if (m.includes('jpeg') || m.includes('jpg')) return '.jpg';
-    const ext = path.extname(String(name || '')).toLowerCase();
-    if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext)) {
-        return ext === '.jpeg' ? '.jpg' : ext;
-    }
-    return '.jpg';
-}
-
-/** If profile Url points at Drive only, pull a local copy so <img> works again. */
+/**
+ * Prefer durable Drive proxy URL in DB (`/api/google/drive/file/:id`).
+ * Local `/uploads/avatars/` is fine too. Only rewrite broken public Drive links.
+ */
 async function restoreAvatarFromDriveIfNeeded(row, { pool, userId, sessionUser }) {
     const current = String(row.Url || '');
     if (!current || current.startsWith('/uploads/avatars/')) return row;
+    if (current.startsWith('/api/google/drive/file/')) {
+        if (sessionUser) sessionUser.Url = current;
+        return row;
+    }
     const fileId = extractDriveFileId(current);
     if (!fileId) return row;
 
-    try {
-        const file = await fetchDriveFile(fileId);
-        ensureAvatarDir();
-        const filename = `user-${userId}-restored-${Date.now()}${extFromMime(file.mimeType, file.name)}`;
-        const dest = path.join(AVATAR_DIR, filename);
-        fs.writeFileSync(dest, file.buffer);
-        const localUrl = `/uploads/avatars/${filename}`;
-        await pool.request()
-            .input('userId', sql.Int, userId)
-            .input('url', sql.NVarChar, localUrl)
-            .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
-        row.Url = localUrl;
-        if (sessionUser) sessionUser.Url = localUrl;
-    } catch (err) {
-        console.warn('[avatar] restore from Drive failed:', err.message);
-        const fixed = normalizeDriveUrl(current);
-        if (fixed && fixed !== current) {
-            row.Url = fixed;
-            try {
-                await pool.request()
-                    .input('userId', sql.Int, userId)
-                    .input('url', sql.NVarChar, fixed)
-                    .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
-                if (sessionUser) sessionUser.Url = fixed;
-            } catch (_) { /* ignore */ }
-        }
+    // Persist the working proxy URL in DB (do not replace with a local-only path).
+    const proxyUrl = normalizeDriveUrl(current) || `/api/google/drive/file/${encodeURIComponent(fileId)}`;
+    if (proxyUrl && proxyUrl !== current) {
+        row.Url = proxyUrl;
+        try {
+            await pool.request()
+                .input('userId', sql.Int, userId)
+                .input('url', sql.NVarChar, proxyUrl)
+                .query(`UPDATE dbo.users SET Url = @url WHERE user_id = @userId`);
+            if (sessionUser) sessionUser.Url = proxyUrl;
+        } catch (_) { /* ignore */ }
+    } else if (sessionUser) {
+        sessionUser.Url = current;
     }
     return row;
 }
@@ -279,8 +260,8 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     .query(`SELECT Url FROM dbo.users WHERE user_id = @userId`);
                 const oldUrl = prev.recordset[0]?.Url || '';
 
-                // Always keep a local file for <img> display. Drive is a backup copy.
-                // (Direct Drive/lh3 URLs and even the API proxy can fail in browsers.)
+                // Keep local file as cache. Prefer Drive proxy URL in DB so the image
+                // survives when the server uploads folder is wiped.
                 let publicUrl = localUrl;
                 let storedOn = 'local';
                 let driveError = null;
@@ -295,6 +276,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     storedOn = 'google_drive';
                     driveUrl = drive.url || null;
                     driveFileId = drive.fileId;
+                    if (driveUrl) publicUrl = driveUrl;
                 } else if (drive && drive.error) {
                     driveError = drive.error;
                 }
@@ -307,7 +289,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 req.session.user.Url = publicUrl;
 
                 // ลบไฟล์เก่าของเราเอง (ถ้าเคยอัปโหลดไว้ในเครื่อง)
-                if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/') && oldUrl !== publicUrl) {
+                if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/') && oldUrl !== localUrl) {
                     const oldPath = path.join(__dirname, '..', String(oldUrl).replace(/^\//, ''));
                     fs.promises.unlink(oldPath).catch(() => {});
                 }
@@ -315,11 +297,12 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 res.json({
                     success: true,
                     message: storedOn === 'google_drive'
-                        ? 'อัปเดตรูปโปรไฟล์แล้ว (สำรองบน Google Drive แล้ว)'
+                        ? 'อัปเดตรูปโปรไฟล์แล้ว (บันทึกในฐานข้อมูล + Google Drive)'
                         : (driveError
-                            ? `อัปเดตรูปโปรไฟล์แล้ว (เก็บในเครื่อง — Drive: ${driveError})`
-                            : 'อัปเดตรูปโปรไฟล์แล้ว'),
+                            ? `อัปเดตรูปโปรไฟล์แล้วในฐานข้อมูล (Drive: ${driveError})`
+                            : 'อัปเดตรูปโปรไฟล์แล้ว (บันทึกในฐานข้อมูล)'),
                     url: publicUrl,
+                    localUrl,
                     storage: storedOn,
                     driveConfigured: isDriveConfigured(),
                     driveError,
