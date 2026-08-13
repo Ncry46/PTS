@@ -5,7 +5,7 @@ const fs = require('fs');
 const multer = require('multer');
 const { flagActiveSql } = require('./db');
 const { localizeCourseRow, resolveLangFromReq, courseListTextSql, courseMetaSelectSql, COURSE_API_VERSION } = require('./courseLang');
-const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
+const { issuePasswordResetLink } = require('./emailOtp');
 const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId } = require('./googleDrive');
 const { recordMediaUpload } = require('./mediaFiles');
 
@@ -326,8 +326,8 @@ function createProfileRouter({ poolPromise, requireLogin }) {
         });
     });
 
-    // ขอ OTP ทางอีเมลเพื่อเปลี่ยนรหัสผ่าน (ผู้ใช้ที่ล็อกอินแล้ว)
-    router.post('/profile/password/request-otp', async (req, res) => {
+    // ส่งลิงก์เปลี่ยนรหัสผ่านไปที่อีเมล (ผู้ใช้ที่ล็อกอินแล้ว)
+    async function handleProfilePasswordResetLink(req, res) {
         const user = requireLogin(req, res);
         if (!user) return;
         try {
@@ -339,61 +339,33 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
             const email = String(result.recordset[0].email || '').trim();
-            const issued = await issueEmailOtp(email, 'change_password');
+            const issued = await issuePasswordResetLink(email, 'change_password');
             res.json({
                 success: true,
-                message: `ส่งรหัส OTP ไปที่อีเมลของคุณ ${issued.masked} แล้ว — ตรวจ inbox/สแปม หมดอายุใน 5 นาที`,
+                message: `ส่งลิงก์เปลี่ยนรหัสผ่านไปที่อีเมล ${issued.masked} แล้ว — ตรวจ inbox/สแปม ลิงก์หมดอายุใน 30 นาที`,
                 masked_email: issued.masked,
                 delivered: issued.delivered,
                 expires_in_seconds: issued.expires_in_seconds
             });
         } catch (error) {
-            console.error('❌ change-password request OTP:', error.message);
-            const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING'].includes(error.code)
+            console.error('❌ change-password request reset link:', error.message);
+            const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING', 'SMTP_MISSING', 'BREVO_MISSING'].includes(error.code)
                 ? 503
                 : 500;
             res.status(status).json({ success: false, message: error.message, code: error.code || null });
         }
-    });
+    }
 
-    // เปลี่ยนรหัสผ่าน: ตรวจ OTP จากอีเมล + รหัสผ่านปัจจุบัน
+    router.post('/profile/password/request-reset-link', handleProfilePasswordResetLink);
+    // คง path เดิม — ส่งลิงก์แทน OTP
+    router.post('/profile/password/request-otp', handleProfilePasswordResetLink);
+
+    // เลิกใช้ใน UI — คง endpoint เดิมไว้ชั่วคราว
     router.put('/profile/password', async (req, res) => {
-        const user = requireLogin(req, res);
-        if (!user) return;
-        const { current_password, new_password, otp } = req.body;
-        if (!current_password || !new_password || !otp || String(new_password).length < 4) {
-            return res.status(400).json({
-                success: false,
-                message: 'กรุณากรอกรหัสผ่านปัจจุบัน รหัสผ่านใหม่ และรหัส OTP จากอีเมล'
-            });
-        }
-        try {
-            const pool = await poolPromise;
-            const profile = await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .query(`SELECT email, password_hash FROM dbo.users WHERE user_id = @userId`);
-            if (!profile.recordset.length) {
-                return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
-            }
-
-            const row = profile.recordset[0];
-            if (String(row.password_hash) !== String(current_password)) {
-                return res.status(400).json({ success: false, message: 'รหัสผ่านปัจจุบันไม่ถูกต้อง' });
-            }
-
-            const checked = verifyEmailOtp(row.email, otp, 'change_password');
-            if (!checked.ok) {
-                return res.status(400).json({ success: false, message: checked.message });
-            }
-
-            await pool.request()
-                .input('userId', sql.Int, user.user_id)
-                .input('pass', sql.VarChar, new_password)
-                .query(`UPDATE dbo.users SET password_hash = @pass WHERE user_id = @userId`);
-            res.json({ success: true, message: 'เปลี่ยนรหัสผ่านสำเร็จ (ยืนยันด้วย OTP จากอีเมลแล้ว)' });
-        } catch (error) {
-            res.status(500).json({ success: false, message: error.message });
-        }
+        return res.status(410).json({
+            success: false,
+            message: 'เปลี่ยนรหัสผ่านผ่านหน้านี้ไม่ได้แล้ว — กดส่งลิงก์ไปที่อีเมล แล้วตั้งรหัสใหม่จากลิงก์ในเมล'
+        });
     });
 
     router.get('/notifications', async (req, res) => {

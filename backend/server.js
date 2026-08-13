@@ -31,7 +31,7 @@ try {
     }
 } catch (_) { /* ignore */ }
 const { syncAfterEnroll } = googleCalendar;
-const { issueEmailOtp, verifyEmailOtp, getMailStatus } = require('./emailOtp');
+const { verifyEmailOtp, issuePasswordResetLink, peekPasswordResetToken, consumePasswordResetToken, getMailStatus } = require('./emailOtp');
 const { writeSecretsFile } = require('./mailSecrets');
 const {
     COURSE_API_VERSION,
@@ -520,9 +520,9 @@ app.post('/api/users/register', async (req, res) => {
 });
 
 // -------------------------------------------------------------------------
-// 📧 ลืมรหัสผ่าน: ส่ง OTP ทางอีเมล
+// 📧 ลืมรหัสผ่าน: ส่งลิงก์ตั้งรหัสผ่านทางอีเมล
 // -------------------------------------------------------------------------
-app.post('/api/users/request-otp', async (req, res) => {
+async function handleRequestPasswordResetLink(req, res) {
     const email = String(req.body.email || '').trim().toLowerCase();
     if (!email) {
         return res.status(400).json({ success: false, message: 'กรุณากรอกอีเมล' });
@@ -539,30 +539,92 @@ app.post('/api/users/request-otp', async (req, res) => {
         }
 
         const userEmail = String(userCheck.recordset[0].email || email).trim();
-        const issued = await issueEmailOtp(userEmail, 'reset');
+        const issued = await issuePasswordResetLink(userEmail, 'reset');
         res.json({
             success: true,
-            message: `ส่งรหัส OTP ไปที่อีเมลของผู้ใช้ ${issued.masked} แล้ว (ใช้ได้กับทุกอีเมลที่สมัครในระบบ) — ตรวจ inbox/สแปม หมดอายุใน 5 นาที`,
+            message: `ส่งลิงก์ตั้งรหัสผ่านไปที่อีเมล ${issued.masked} แล้ว — ตรวจ inbox/สแปม ลิงก์หมดอายุใน 30 นาที`,
             masked_email: issued.masked,
             recipient_email: issued.masked,
             delivered: issued.delivered,
             expires_in_seconds: issued.expires_in_seconds
         });
     } catch (error) {
-        console.error('❌ request email OTP:', error.message);
-        const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING'].includes(error.code)
+        console.error('❌ request password reset link:', error.message);
+        const status = ['SMTP_NOT_CONFIGURED', 'MAIL_NOT_CONFIGURED', 'BREVO_NOT_CONFIGURED', 'MAIL_FROM_MISSING', 'SMTP_MISSING', 'BREVO_MISSING'].includes(error.code)
             ? 503
             : 500;
         res.status(status).json({
             success: false,
-            message: error.message || 'ส่งอีเมล OTP ไม่สำเร็จ',
+            message: error.message || 'ส่งอีเมลลิงก์ไม่สำเร็จ',
             code: error.code || null
         });
+    }
+}
+
+app.post('/api/users/request-reset-link', handleRequestPasswordResetLink);
+// คง path เดิมไว้ให้ client เก่า — ส่งลิงก์แทน OTP
+app.post('/api/users/request-otp', handleRequestPasswordResetLink);
+
+app.get('/api/users/reset-token', (req, res) => {
+    const checked = peekPasswordResetToken(req.query.token);
+    if (!checked.ok) {
+        return res.status(400).json({ success: false, message: checked.message });
+    }
+    res.json({
+        success: true,
+        masked_email: checked.masked,
+        purpose: checked.purpose,
+        expires_in_seconds: checked.expires_in_seconds
+    });
+});
+
+app.post('/api/users/reset-password', async (req, res) => {
+    const token = String(req.body.token || '').trim();
+    const newPassword = String(req.body.new_password || '');
+    const confirmPassword = req.body.confirm_password != null
+        ? String(req.body.confirm_password)
+        : newPassword;
+
+    if (!token || !newPassword) {
+        return res.status(400).json({ success: false, message: 'กรุณาใส่ลิงก์ที่ถูกต้องและรหัสผ่านใหม่' });
+    }
+    if (newPassword.length < 4) {
+        return res.status(400).json({ success: false, message: 'รหัสผ่านใหม่ต้องมีอย่างน้อย 4 ตัวอักษร' });
+    }
+    if (newPassword !== confirmPassword) {
+        return res.status(400).json({ success: false, message: 'รหัสผ่านใหม่กับยืนยันรหัสผ่านไม่ตรงกัน' });
+    }
+
+    const peeked = peekPasswordResetToken(token);
+    if (!peeked.ok) {
+        return res.status(400).json({ success: false, message: peeked.message });
+    }
+
+    try {
+        const pool = await poolPromise;
+        const userCheck = await pool.request()
+            .input('email', sql.VarChar, peeked.email)
+            .query('SELECT user_id FROM dbo.users WHERE email = @email');
+        if (!userCheck.recordset.length) {
+            return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้งาน' });
+        }
+
+        await pool.request()
+            .input('email', sql.VarChar, peeked.email)
+            .input('newPass', sql.VarChar, newPassword)
+            .query('UPDATE dbo.users SET password_hash = @newPass WHERE email = @email');
+
+        consumePasswordResetToken(token);
+
+        res.json({ success: true, message: 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว — เข้าสู่ระบบด้วยรหัสผ่านใหม่ได้เลย' });
+    } catch (error) {
+        console.error('❌ reset-password:', error.message);
+        res.status(500).json({ success: false, message: error.message || 'ตั้งรหัสผ่านไม่สำเร็จ' });
     }
 });
 
 // -------------------------------------------------------------------------
-// 🔐 ลืมรหัสผ่าน: ยืนยัน OTP จากอีเมล แล้วตั้งรหัสผ่านใหม่
+// 🔐 (เลิกใช้ใน UI) ลืมรหัสผ่านแบบ OTP — คงไว้ชั่วคราว
 // -------------------------------------------------------------------------
 app.post('/api/users/verify-otp-reset', async (req, res) => {
     const email = String(req.body.email || '').trim().toLowerCase();

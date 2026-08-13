@@ -75,6 +75,17 @@
     history.replaceState(null, '', location.pathname);
   })();
 
+  (function showResetOkMsg() {
+    const params = new URLSearchParams(location.search);
+    if (params.get('reset') !== 'ok') return;
+    const loginMsg = document.getElementById('login-msg');
+    if (!loginMsg) return;
+    loginMsg.textContent = 'ตั้งรหัสผ่านใหม่แล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่';
+    loginMsg.classList.remove('hidden');
+    loginMsg.classList.add('is-info');
+    history.replaceState(null, '', location.pathname + (location.hash || ''));
+  })();
+
   function setResetStep(step) {
     document.querySelectorAll('[data-reset-step]').forEach((el) => {
       const n = Number(el.getAttribute('data-reset-step'));
@@ -94,21 +105,19 @@
     if (loginEmail && resetEmail && loginEmail.value && !resetEmail.value) {
       resetEmail.value = loginEmail.value.trim();
     }
-    document.getElementById('otp-verification-zone')?.classList.add('is-locked');
-    const confirmBtn = document.getElementById('confirm-reset-btn');
-    if (confirmBtn) {
-      confirmBtn.disabled = true;
-      confirmBtn.classList.add('is-disabled');
-    }
     setResetStep(1);
     modal.classList.remove('hidden', 'is-closing', 'is-open');
-    // reflow so bounce/sparks replay every open
     void modal.offsetWidth;
     modal.classList.add('is-open');
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
     clearResetMsg();
+    const sendBtn = document.getElementById('otp-btn');
+    if (sendBtn) {
+      sendBtn.disabled = false;
+      sendBtn.textContent = 'ส่งลิงก์ไปที่อีเมล';
+    }
     window.setTimeout(() => {
       (resetEmail || modal.querySelector('input'))?.focus();
     }, 380);
@@ -120,12 +129,6 @@
     modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
-    document.getElementById('otp-verification-zone')?.classList.add('is-locked');
-    const confirmBtn = document.getElementById('confirm-reset-btn');
-    if (confirmBtn) {
-      confirmBtn.disabled = true;
-      confirmBtn.classList.add('is-disabled');
-    }
     setResetStep(1);
     clearResetMsg();
   }
@@ -175,8 +178,7 @@
     const modal = document.getElementById('reset-modal');
     if (modal && modal.classList.contains('is-open')) closeResetModal();
   });
-  document.getElementById('otp-btn')?.addEventListener('click', () => { requestRealOTP(); });
-  document.getElementById('confirm-reset-btn')?.addEventListener('click', () => { submitVerifyAndReset(); });
+  document.getElementById('otp-btn')?.addEventListener('click', () => { requestResetLink(); });
 
   function showResetMsg(text, isError = true) {
     const el = document.getElementById('reset-msg');
@@ -191,7 +193,7 @@
     if (el) { el.textContent = ''; el.classList.add('hidden'); }
   }
 
-  async function requestRealOTP() {
+  async function requestResetLink() {
     const email = document.getElementById('reset-email').value.trim();
     const otpBtn = document.getElementById('otp-btn');
     clearResetMsg();
@@ -202,73 +204,30 @@
     otpBtn.innerText = 'กำลังส่ง...';
     otpBtn.disabled = true;
     try {
-      const response = await fetch('/api/users/request-otp', {
+      const response = await fetch('/api/users/request-reset-link', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       });
       const result = await response.json();
       if (result.success) {
-        document.getElementById('otp-verification-zone').classList.remove('is-locked');
-        const confirmBtn = document.getElementById('confirm-reset-btn');
-        confirmBtn.disabled = false;
-        confirmBtn.classList.remove('is-disabled');
-        otpBtn.innerText = 'ส่งอีกครั้ง';
         setResetStep(2);
-        showResetMsg(result.message || 'ส่งรหัส OTP ไปที่อีเมลแล้ว — ตรวจ inbox/สแปม', false);
-        document.getElementById('reset-otp')?.focus();
+        showResetMsg(result.message || 'ส่งลิงก์ไปที่อีเมลแล้ว — เปิดเมลแล้วกดปุ่มตั้งรหัสผ่านใหม่', false);
+        otpBtn.innerText = 'ส่งลิงก์อีกครั้ง';
       } else {
-        showResetMsg(result.message || 'ส่ง OTP ไม่สำเร็จ');
-        otpBtn.innerText = 'ขอรหัส OTP';
+        showResetMsg(result.message || 'ส่งลิงก์ไม่สำเร็จ');
+        otpBtn.innerText = 'ส่งลิงก์ไปที่อีเมล';
       }
     } catch (err) {
       console.error(err);
       showResetMsg('เชื่อมต่อเซิร์ฟเวอร์ไม่สำเร็จ');
-      otpBtn.innerText = 'ขอรหัส OTP';
+      otpBtn.innerText = 'ส่งลิงก์ไปที่อีเมล';
     } finally {
       otpBtn.disabled = false;
     }
   }
-  window.requestRealOTP = requestRealOTP;
-
-  async function submitVerifyAndReset() {
-    const payload = {
-      email: document.getElementById('reset-email').value.trim(),
-      otp: document.getElementById('reset-otp').value.trim(),
-      new_password: document.getElementById('reset-new-password').value
-    };
-    clearResetMsg();
-    if (!payload.otp || !payload.new_password) {
-      showResetMsg('กรุณากรอกรหัส OTP 6 หลัก และตั้งรหัสผ่านใหม่');
-      return;
-    }
-    try {
-      const response = await fetch('/api/users/verify-otp-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-      if (result.success) {
-        setResetStep(3);
-        showResetMsg(result.message || 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว — กลับไปเข้าสู่ระบบได้เลย', false);
-        window.setTimeout(() => {
-          closeResetModal();
-          const loginMsg = document.getElementById('login-msg');
-          if (loginMsg) {
-            loginMsg.textContent = 'ตั้งรหัสผ่านใหม่แล้ว กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่';
-            loginMsg.classList.remove('hidden');
-            loginMsg.classList.add('is-info');
-          }
-        }, 900);
-      }
-      else showResetMsg(result.message || 'ยืนยันไม่สำเร็จ');
-    } catch (err) {
-      console.error(err);
-      showResetMsg('เกิดข้อผิดพลาดในการเชื่อมต่อ');
-    }
-  }
-  window.submitVerifyAndReset = submitVerifyAndReset;
+  window.requestResetLink = requestResetLink;
+  window.requestRealOTP = requestResetLink;
 
   document.getElementById('login-form')?.addEventListener('submit', async (e) => {
     e.preventDefault();

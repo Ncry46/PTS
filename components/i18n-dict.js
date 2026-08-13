@@ -177,6 +177,7 @@ window.PTSLangDict = {
   'settings.newPassword': { th: 'รหัสผ่านใหม่', en: 'New password' },
   'settings.otp': { th: 'รหัส OTP จากอีเมล', en: 'OTP from email' },
   'settings.sendOtp': { th: 'ส่ง OTP', en: 'Send OTP' },
+  'settings.sendResetLink': { th: 'ส่งลิงก์เปลี่ยนรหัสผ่านไปที่อีเมล', en: 'Email password reset link' },
   'settings.sendingOtp': { th: 'กำลังส่ง...', en: 'Sending...' },
   'settings.saveAll': { th: 'บันทึกการเปลี่ยนแปลงทั้งหมด', en: 'Save all changes' },
   'settings.savePassword': { th: 'บันทึกรหัสผ่าน', en: 'Save password' },

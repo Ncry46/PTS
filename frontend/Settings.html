@@ -254,27 +254,10 @@
 
         <div class="set-col set-col--security">
           <h2 class="set-section_title" data-i18n="settings.account">บัญชีและความปลอดภัย</h2>
-          <p class="set-sub">อีเมลเข้าสู่ระบบ และการเปลี่ยนรหัสผ่านด้วย OTP</p>
+          <p class="set-sub">อีเมลเข้าสู่ระบบ และการเปลี่ยนรหัสผ่านผ่านลิงก์ในเมล</p>
           <label class="set-field"><span data-i18n="settings.email">อีเมล</span><input id="email" class="set-input" disabled></label>
-          <label class="set-field"><span data-i18n="settings.currentPassword">รหัสผ่านปัจจุบัน</span>
-            <div class="pts-pw-wrap relative">
-              <input id="current_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1" autocomplete="current-password">
-              <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
-            </div>
-          </label>
-          <label class="set-field"><span data-i18n="settings.newPassword">รหัสผ่านใหม่</span>
-            <div class="pts-pw-wrap relative">
-              <input id="new_password" type="password" class="set-input pts-pw-input" data-pts-pw-field="1" autocomplete="new-password">
-              <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน"><span class="material-symbols-outlined" aria-hidden="true">visibility</span></button>
-            </div>
-          </label>
-          <div class="set-otp-row">
-            <label class="set-field"><span data-i18n="settings.otp">รหัส OTP จากอีเมล</span>
-              <input id="password_otp" type="text" maxlength="6" inputmode="numeric" class="set-input text-center tracking-[0.3em] font-bold" placeholder="••••••" autocomplete="one-time-code">
-            </label>
-            <button id="request-password-otp" type="button" class="pts-btn pts-btn-outline whitespace-nowrap" data-i18n="settings.sendOtp">ส่ง OTP</button>
-          </div>
-          <button id="save-password" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.saveAll">บันทึกการเปลี่ยนแปลงทั้งหมด</button>
+          <p class="set-sub" style="margin-top:4px;">กดปุ่มด้านล่าง ระบบจะส่งลิงก์ไปที่อีเมลของคุณ จากนั้นเปิดเมลเพื่อตั้งรหัสผ่านใหม่</p>
+          <button id="request-password-otp" type="button" class="pts-btn pts-btn-primary" style="width:100%;" data-i18n="settings.sendResetLink">ส่งลิงก์เปลี่ยนรหัสผ่านไปที่อีเมล</button>
           <p id="password-msg" class="pts-msg"></p>
         </div>
       </div>
@@ -972,9 +955,10 @@ document.getElementById('request-password-otp').onclick = async () => {
   const btn = document.getElementById('request-password-otp');
   const msg = document.getElementById('password-msg');
   btn.disabled = true;
+  const prev = btn.textContent;
   btn.textContent = 'กำลังส่ง...';
   try {
-    const res = await fetch('/api/profile/password/request-otp', { method: 'POST', credentials: 'include' });
+    const res = await fetch('/api/profile/password/request-reset-link', { method: 'POST', credentials: 'include' });
     const data = await res.json();
     msg.textContent = data.message || '';
     msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
@@ -983,28 +967,7 @@ document.getElementById('request-password-otp').onclick = async () => {
     msg.className = 'pts-msg pts-msg--err';
   } finally {
     btn.disabled = false;
-    btn.textContent = 'ส่ง OTP';
-  }
-};
-
-document.getElementById('save-password').onclick = async () => {
-  const res = await fetch('/api/profile/password', {
-    method: 'PUT', credentials: 'include',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      current_password: document.getElementById('current_password').value,
-      new_password: document.getElementById('new_password').value,
-      otp: document.getElementById('password_otp').value
-    })
-  });
-  const data = await res.json();
-  const msg = document.getElementById('password-msg');
-  msg.textContent = data.message || '';
-  msg.className = res.ok ? 'pts-msg pts-msg--ok' : 'pts-msg pts-msg--err';
-  if (res.ok) {
-    document.getElementById('current_password').value = '';
-    document.getElementById('new_password').value = '';
-    document.getElementById('password_otp').value = '';
+    btn.textContent = prev || 'ส่งลิงก์เปลี่ยนรหัสผ่านไปที่อีเมล';
   }
 };
 </script>
