@@ -669,7 +669,7 @@ input[type="password"]::-ms-reveal,
   }
   .pts-login__legal a:hover { color: var(--pts-primary, #ca1156); }
 
-  /* Modal */
+  /* ——— Premium forgot-password popup ——— */
   .pts-login-modal {
     position: fixed;
     inset: 0;
@@ -677,120 +677,311 @@ input[type="password"]::-ms-reveal,
     display: none;
     align-items: center;
     justify-content: center;
-    padding: 20px;
-    background: rgba(26,16,20,.5);
-    backdrop-filter: blur(8px);
+    padding: 18px;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 20%, rgba(202,17,86,.22), transparent 55%),
+      rgba(18, 10, 14, .58);
+    backdrop-filter: blur(14px) saturate(1.15);
+    -webkit-backdrop-filter: blur(14px) saturate(1.15);
   }
   .pts-login-modal.is-open,
   .pts-login-modal:not(.hidden) {
     display: flex !important;
+    animation: pts-pop-backdrop-in .35s ease both;
+  }
+  @keyframes pts-pop-backdrop-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
   }
 
   .pts-login-modal__card {
+    position: relative;
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
     border-radius: 28px;
-    background: var(--pts-surface, #fff);
-    border: 1px solid var(--pts-border, rgba(151,66,88,.14));
-    box-shadow: 0 30px 80px rgba(0,0,0,.28);
-    padding: 28px 24px 22px;
-    animation: pts-modal-in .35s cubic-bezier(.22,1,.36,1);
-    color: var(--pts-text, #1c1520);
+    overflow: hidden;
+    background: #fff;
+    border: 1px solid rgba(255,255,255,.55);
+    box-shadow:
+      0 40px 100px rgba(28,21,32,.34),
+      0 0 0 1px rgba(202,17,86,.08),
+      inset 0 1px 0 rgba(255,255,255,.9);
+    color: #1c1520;
+    animation: pts-pop-card-in .55s cubic-bezier(.22,1,.36,1) both;
+    transform-origin: 50% 60%;
   }
-  @keyframes pts-modal-in {
-    from { opacity: 0; transform: translateY(16px) scale(.96); }
-    to { opacity: 1; transform: translateY(0) scale(1); }
+  @keyframes pts-pop-card-in {
+    from { opacity: 0; transform: translateY(28px) scale(.92); filter: blur(4px); }
+    to { opacity: 1; transform: translateY(0) scale(1); filter: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pts-login-modal.is-open,
+    .pts-login-modal__card { animation: none; }
+  }
+
+  .pts-login-modal__glow {
+    position: absolute;
+    inset: -40% -20% auto;
+    height: 70%;
+    background:
+      radial-gradient(circle at 30% 40%, rgba(255,120,170,.35), transparent 50%),
+      radial-gradient(circle at 78% 20%, rgba(202,17,86,.28), transparent 45%);
+    pointer-events: none;
+    animation: pts-pop-glow 6s ease-in-out infinite alternate;
+  }
+  @keyframes pts-pop-glow {
+    from { transform: translateY(0) scale(1); opacity: .85; }
+    to { transform: translateY(8px) scale(1.06); opacity: 1; }
+  }
+
+  .pts-login-modal__close {
+    position: absolute;
+    top: 14px; right: 14px;
+    z-index: 3;
+    width: 36px; height: 36px;
+    border: 0; border-radius: 999px;
+    background: rgba(255,255,255,.72);
+    color: #5c4f55;
+    display: grid; place-items: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+  }
+  .pts-login-modal__close:hover {
+    background: #fff;
+    color: #ca1156;
+    transform: rotate(90deg);
+  }
+  .pts-login-modal__close .material-symbols-outlined { font-size: 20px; }
+
+  .pts-login-modal__hero {
+    position: relative;
+    z-index: 1;
+    padding: 28px 28px 18px;
+    text-align: center;
+  }
+  .pts-login-modal__badge {
+    width: 64px; height: 64px;
+    margin: 0 auto 14px;
+    border-radius: 22px;
+    display: grid; place-items: center;
+    color: #fff;
+    background: linear-gradient(145deg, #ff6b9d, #ca1156 55%, #a50e48);
+    box-shadow:
+      0 14px 28px rgba(202,17,86,.35),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    animation: pts-pop-badge 2.8s ease-in-out infinite;
+  }
+  @keyframes pts-pop-badge {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+  .pts-login-modal__badge .material-symbols-outlined { font-size: 30px; }
+  .pts-login-modal__eyebrow {
+    margin: 0 0 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #ca1156;
   }
   .pts-login-modal__card h3 {
     margin: 0;
-    text-align: center;
     font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
-    font-size: 1.25rem;
-    color: var(--pts-primary, #ca1156);
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: #1c1520;
+    letter-spacing: -.02em;
   }
-  .pts-login-modal__card > p {
-    margin: 8px 0 0;
-    text-align: center;
+  .pts-login-modal__lead {
+    margin: 8px auto 0;
+    max-width: 34ch;
     font-size: 13px;
     line-height: 1.55;
-    color: var(--pts-muted, #5c4f55);
+    color: #6b5c62;
   }
-  .pts-login-modal__body { margin-top: 20px; display: flex; flex-direction: column; gap: 14px; }
+
+  .pts-login-modal__steps {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 24px 6px;
+  }
+  .pts-login-modal__step {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #8a7a80;
+    background: rgba(151,66,88,.06);
+    transition: background .25s ease, color .25s ease, transform .25s ease;
+  }
+  .pts-login-modal__step span.num {
+    width: 18px; height: 18px;
+    border-radius: 999px;
+    display: grid; place-items: center;
+    font-size: 10px;
+    background: rgba(151,66,88,.12);
+  }
+  .pts-login-modal__step.is-on {
+    color: #ca1156;
+    background: rgba(202,17,86,.1);
+    transform: translateY(-1px);
+  }
+  .pts-login-modal__step.is-on span.num {
+    background: #ca1156;
+    color: #fff;
+  }
+  .pts-login-modal__step.is-done {
+    color: #2e7d32;
+    background: rgba(46,125,50,.1);
+  }
+  .pts-login-modal__step.is-done span.num {
+    background: #2e7d32;
+    color: #fff;
+  }
+
+  .pts-login-modal__body {
+    position: relative;
+    z-index: 1;
+    margin-top: 14px;
+    padding: 4px 24px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
   .pts-login-modal label {
     display: block;
     margin-bottom: 6px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--pts-muted, #5c4f55);
+    font-size: 12px;
+    font-weight: 700;
+    color: #5c4f55;
   }
   .pts-login-modal input[type="email"],
   .pts-login-modal input[type="text"],
   .pts-login-modal input[type="password"] {
     width: 100%;
-    border: 1px solid var(--pts-border, rgba(151,66,88,.18));
-    border-radius: 12px;
-    padding: 12px 14px;
+    border: 1px solid rgba(151,66,88,.16);
+    border-radius: 14px;
+    padding: 13px 14px;
     font: inherit;
     font-size: 15px;
     outline: none;
-    background: var(--pts-input-bg, #fff);
-    color: var(--pts-text, #1c1520);
+    background: #faf6f8;
+    color: #1c1520;
+    transition: border-color .2s ease, background .2s ease, box-shadow .2s ease;
   }
   .pts-login-modal input:focus {
-    border-color: rgba(151,66,88,.45);
-    box-shadow: 0 0 0 3px rgba(151,66,88,.12);
+    border-color: rgba(202,17,86,.45);
+    background: #fff;
+    box-shadow: 0 0 0 4px rgba(202,17,86,.12);
   }
-  .pts-login-modal__row { display: flex; gap: 8px; }
+  .pts-login-modal__row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+  }
+  @media (max-width: 420px) {
+    .pts-login-modal__row { grid-template-columns: 1fr; }
+    .pts-login-modal__otp-btn { width: 100%; min-height: 44px; }
+  }
   .pts-login-modal__otp-btn {
     flex-shrink: 0;
     border: 0;
-    border-radius: 12px;
-    padding: 0 14px;
-    background: #ca1156;
+    border-radius: 14px;
+    padding: 0 16px;
+    min-height: 48px;
+    background: linear-gradient(145deg, #ff4d8a, #ca1156);
     color: #fff;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 13px;
     cursor: pointer;
     white-space: nowrap;
+    box-shadow: 0 10px 22px rgba(202,17,86,.28);
+    transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
   }
+  .pts-login-modal__otp-btn:hover {
+    filter: brightness(1.05);
+    transform: translateY(-1px);
+    box-shadow: 0 14px 26px rgba(202,17,86,.34);
+  }
+  .pts-login-modal__otp-btn:disabled {
+    filter: grayscale(.35);
+    opacity: .75;
+    cursor: wait;
+    transform: none;
+  }
+
   .pts-login-modal__actions {
+    position: relative;
+    z-index: 1;
     display: flex;
     gap: 10px;
-    margin-top: 8px;
+    padding: 8px 24px 22px;
   }
   .pts-login-modal__actions button {
     flex: 1;
-    min-height: 46px;
+    min-height: 48px;
     border-radius: 999px;
-    font-weight: 700;
+    font-weight: 800;
     font-size: 14px;
     cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
   }
   .pts-login-modal__cancel {
-    border: 1px solid var(--pts-border, rgba(151,66,88,.2));
-    background: var(--pts-surface, #fff);
-    color: var(--pts-muted, #5c4f55);
+    border: 1px solid rgba(151,66,88,.18);
+    background: #fff;
+    color: #5c4f55;
+  }
+  .pts-login-modal__cancel:hover {
+    background: #faf6f8;
+    color: #ca1156;
   }
   .pts-login-modal__confirm {
     border: 0;
-    background: #ca1156;
+    background: linear-gradient(145deg, #ff4d8a, #ca1156 60%, #a50e48);
     color: #fff;
+    box-shadow: 0 12px 24px rgba(202,17,86,.3);
+  }
+  .pts-login-modal__confirm:hover:not(:disabled):not(.is-disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(202,17,86,.38);
   }
   .pts-login-modal__confirm:disabled,
   .pts-login-modal__confirm.is-disabled {
-    background: #b8b0b3;
+    background: #c9c0c4;
+    box-shadow: none;
     cursor: not-allowed;
+    transform: none;
   }
+
   .pts-login-modal__otp-zone {
-    transition: opacity .3s ease;
+    border-radius: 18px;
+    padding: 14px;
+    background: linear-gradient(180deg, rgba(202,17,86,.05), rgba(255,255,255,.4));
+    border: 1px solid rgba(151,66,88,.1);
+    transition: opacity .4s ease, transform .45s cubic-bezier(.22,1,.36,1), filter .4s ease;
   }
   .pts-login-modal__otp-zone.is-locked {
-    opacity: .4;
+    opacity: .42;
     pointer-events: none;
+    filter: grayscale(.25);
+    transform: scale(.985);
+  }
+  .pts-login-modal__otp-zone:not(.is-locked) {
+    animation: pts-pop-unlock .55s cubic-bezier(.22,1,.36,1) both;
+  }
+  @keyframes pts-pop-unlock {
+    from { opacity: .4; transform: translateY(8px) scale(.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
   .pts-login-modal__dash {
-    border-top: 1px dashed rgba(151,66,88,.25);
-    margin: 4px 0 14px;
+    display: none;
   }
   .pts-login-modal__otp-field { margin-bottom: 14px; }
   .pts-login-modal__otp-label {
@@ -802,15 +993,45 @@ input[type="password"]::-ms-reveal,
   .pts-login-modal__otp-label .material-symbols-outlined { font-size: 18px; }
   .pts-login-modal__otp-input {
     text-align: center;
-    font-weight: 700;
-    letter-spacing: .3em;
-    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: .35em;
+    font-size: 1.25rem;
     border-width: 2px !important;
-    border-color: rgba(151,66,88,.28) !important;
+    border-color: rgba(202,17,86,.22) !important;
+    background: #fff !important;
   }
   .pts-login-modal__pw { position: relative; }
   .pts-login-modal__pw input { padding-right: 2.75rem; }
-  .pts-login-modal__msg { margin-top: 12px; }
+  .pts-login-modal__msg {
+    margin: 0 24px 20px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: center;
+  }
+  .pts-login-modal__msg:not(.hidden) {
+    background: rgba(202,17,86,.08);
+  }
+
+  html[data-theme="dark"] .pts-login-modal__card {
+    background: #1a1216;
+    border-color: rgba(255,255,255,.08);
+    color: #f6eef1;
+  }
+  html[data-theme="dark"] .pts-login-modal__card h3 { color: #f6eef1; }
+  html[data-theme="dark"] .pts-login-modal__lead { color: #b9a8ae; }
+  html[data-theme="dark"] .pts-login-modal input[type="email"],
+  html[data-theme="dark"] .pts-login-modal input[type="text"],
+  html[data-theme="dark"] .pts-login-modal input[type="password"] {
+    background: rgba(255,255,255,.04);
+    border-color: rgba(255,255,255,.12);
+    color: #f6eef1;
+  }
+  html[data-theme="dark"] .pts-login-modal__cancel {
+    background: rgba(255,255,255,.04);
+    color: #d7c6cc;
+  }
 
   @media (prefers-reduced-motion: reduce) {
     .pts-campus__bloom,

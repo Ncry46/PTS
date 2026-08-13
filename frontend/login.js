@@ -75,6 +75,14 @@
     history.replaceState(null, '', location.pathname);
   })();
 
+  function setResetStep(step) {
+    document.querySelectorAll('[data-reset-step]').forEach((el) => {
+      const n = Number(el.getAttribute('data-reset-step'));
+      el.classList.toggle('is-on', n === step);
+      el.classList.toggle('is-done', n < step);
+    });
+  }
+
   function openResetModal() {
     const modal = document.getElementById('reset-modal');
     if (!modal) {
@@ -86,6 +94,13 @@
     if (loginEmail && resetEmail && loginEmail.value && !resetEmail.value) {
       resetEmail.value = loginEmail.value.trim();
     }
+    document.getElementById('otp-verification-zone')?.classList.add('is-locked');
+    const confirmBtn = document.getElementById('confirm-reset-btn');
+    if (confirmBtn) {
+      confirmBtn.disabled = true;
+      confirmBtn.classList.add('is-disabled');
+    }
+    setResetStep(1);
     modal.classList.remove('hidden');
     modal.classList.add('is-open');
     modal.style.display = 'flex';
@@ -111,6 +126,7 @@
       confirmBtn.disabled = true;
       confirmBtn.classList.add('is-disabled');
     }
+    setResetStep(1);
     clearResetMsg();
   }
 
@@ -138,6 +154,7 @@
     openResetModal();
   });
   document.getElementById('reset-cancel-btn')?.addEventListener('click', closeResetModal);
+  document.getElementById('reset-close-btn')?.addEventListener('click', closeResetModal);
   document.getElementById('reset-modal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) closeResetModal();
   });
@@ -185,6 +202,7 @@
         confirmBtn.disabled = false;
         confirmBtn.classList.remove('is-disabled');
         otpBtn.innerText = 'ส่งอีกครั้ง';
+        setResetStep(2);
         showResetMsg(result.message || 'ส่งรหัส OTP ไปที่อีเมลแล้ว — ตรวจ inbox/สแปม', false);
         document.getElementById('reset-otp')?.focus();
       } else {
@@ -220,6 +238,7 @@
       });
       const result = await response.json();
       if (result.success) {
+        setResetStep(3);
         showResetMsg(result.message || 'ตั้งรหัสผ่านใหม่เรียบร้อยแล้ว — กลับไปเข้าสู่ระบบได้เลย', false);
         window.setTimeout(() => {
           closeResetModal();

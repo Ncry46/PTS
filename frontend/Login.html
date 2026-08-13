@@ -9,7 +9,7 @@
 <script src="/comp/lang-boot.js?v=20260806langfix"></script>
 <link rel="stylesheet" href="site.css?v=20260727homecream">
 <link rel="stylesheet" href="auth-scene.css?v=20260805white2">
-<link rel="stylesheet" href="login.css?v=20260813forgot">
+<link rel="stylesheet" href="login.css?v=20260813popup">
 <link rel="stylesheet" href="register.css?v=20260805white2">
 <link rel="stylesheet" href="auth-split.css?v=20260806langfix">
 <style id="pts-auth-force-bg">
@@ -277,8 +277,25 @@
 
 <div id="reset-modal" class="pts-login-modal hidden" aria-hidden="true">
   <div class="pts-login-modal__card" role="dialog" aria-modal="true" aria-labelledby="reset-section_title">
-    <h3 id="reset-section_title">กู้คืนรหัสผ่านด้วย Email OTP</h3>
-    <p>กรอกอีเมลที่สมัครไว้ ระบบจะส่งรหัส 6 หลักไปที่อีเมลนั้นโดยตรง (ใช้ได้ทุกโดเมน เช่น Gmail / Hotmail / เมลบริษัท)</p>
+    <div class="pts-login-modal__glow" aria-hidden="true"></div>
+    <button type="button" class="pts-login-modal__close" id="reset-close-btn" aria-label="ปิด">
+      <span class="material-symbols-outlined" aria-hidden="true">close</span>
+    </button>
+
+    <div class="pts-login-modal__hero">
+      <div class="pts-login-modal__badge" aria-hidden="true">
+        <span class="material-symbols-outlined">lock_reset</span>
+      </div>
+      <p class="pts-login-modal__eyebrow">Secure recovery</p>
+      <h3 id="reset-section_title">กู้คืนรหัสผ่าน</h3>
+      <p class="pts-login-modal__lead">ยืนยันตัวตนด้วยรหัส OTP จากอีเมล แล้วตั้งรหัสผ่านใหม่ได้ทันที</p>
+    </div>
+
+    <div class="pts-login-modal__steps" aria-hidden="true">
+      <div class="pts-login-modal__step is-on" data-reset-step="1"><span class="num">1</span> อีเมล</div>
+      <div class="pts-login-modal__step" data-reset-step="2"><span class="num">2</span> OTP</div>
+      <div class="pts-login-modal__step" data-reset-step="3"><span class="num">3</span> รหัสใหม่</div>
+    </div>
 
     <div class="pts-login-modal__body">
       <div>
@@ -293,14 +310,14 @@
         <div class="pts-login-modal__dash"></div>
         <div class="pts-login-modal__otp-field">
           <label for="reset-otp" class="pts-login-modal__otp-label">
-            <span class="material-symbols-outlined">mail</span> รหัส OTP 6 หลักจากอีเมล
+            <span class="material-symbols-outlined">mark_email_read</span> รหัส OTP 6 หลัก
           </label>
-          <input class="pts-login-modal__otp-input" type="text" id="reset-otp" placeholder="••••••" maxlength="6" inputmode="numeric">
+          <input class="pts-login-modal__otp-input" type="text" id="reset-otp" placeholder="••••••" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
         </div>
         <div>
           <label for="reset-new-password">ตั้งรหัสผ่านใหม่</label>
           <div class="pts-pw-wrap pts-login-modal__pw">
-            <input type="password" id="reset-new-password" placeholder="••••••••" data-pts-pw-field="1">
+            <input type="password" id="reset-new-password" placeholder="••••••••" data-pts-pw-field="1" autocomplete="new-password">
             <button type="button" class="pts-pw-toggle hidden" data-pts-pw-toggle="1" aria-label="แสดงหรือซ่อนรหัสผ่าน">
               <span class="material-symbols-outlined" aria-hidden="true">visibility</span>
             </button>
@@ -318,7 +335,7 @@
 </div>
 
 <script src="auth-split.js?v=20260813forgot"></script>
-<script src="login.js?v=20260813forgot"></script>
+<script src="login.js?v=20260813popup"></script>
 <script src="register.js?v=20260805split1"></script>
 <script src="password-toggle.js?v=20260720e"></script>
 <script src="/comp/navbar.js?v=20260813profilemenu"></script>
