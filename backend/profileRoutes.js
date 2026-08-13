@@ -142,7 +142,83 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             if (!result.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบผู้ใช้' });
             }
-            res.json({ success: true, data: result.recordset[0] });
+
+            const profile = result.recordset[0];
+
+            let recentPosts = [];
+            try {
+                const posts = await pool.request()
+                    .input('userId', sql.Int, userId)
+                    .query(`
+                        SELECT TOP 5
+                            p.post_id,
+                            p.content,
+                            p.feeling,
+                            p.image_url,
+                            p.created_at,
+                            (SELECT COUNT(*) FROM dbo.post_likes pl WHERE pl.post_id = p.post_id) AS like_count,
+                            (SELECT COUNT(*) FROM dbo.post_comments pc WHERE pc.post_id = p.post_id) AS comment_count
+                        FROM dbo.community_posts p
+                        WHERE p.user_id = @userId AND ${flagActiveSql('p.flag_use')}
+                        ORDER BY p.created_at DESC
+                    `);
+                recentPosts = posts.recordset || [];
+            } catch (err) {
+                console.warn('[public-profile] posts:', err.message);
+            }
+
+            let courses = [];
+            try {
+                const enrolled = await pool.request()
+                    .input('userId', sql.Int, userId)
+                    .query(`
+                        SELECT TOP 8
+                            c.course_id,
+                            COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N''), c.course_name, N'หลักสูตร') AS course_name,
+                            c.cover_image_url,
+                            e.progress_percent,
+                            e.status,
+                            e.enrolled_at
+                        FROM dbo.course_enrollments e
+                        INNER JOIN dbo.courses c ON c.course_id = e.course_id
+                        WHERE e.user_id = @userId
+                          AND ${flagActiveSql('c.flag_use')}
+                        ORDER BY
+                            CASE WHEN ISNULL(e.progress_percent, 0) >= 100 OR LOWER(ISNULL(e.status, '')) IN ('completed', 'complete') THEN 0 ELSE 1 END,
+                            e.enrolled_at DESC
+                    `);
+                courses = enrolled.recordset || [];
+            } catch (err) {
+                // Fallback without bilingual / enrolled_at columns
+                try {
+                    const enrolled = await pool.request()
+                        .input('userId', sql.Int, userId)
+                        .query(`
+                            SELECT TOP 8
+                                c.course_id,
+                                COALESCE(c.course_name, N'หลักสูตร') AS course_name,
+                                c.cover_image_url,
+                                e.progress_percent,
+                                e.status
+                            FROM dbo.course_enrollments e
+                            INNER JOIN dbo.courses c ON c.course_id = e.course_id
+                            WHERE e.user_id = @userId
+                            ORDER BY e.progress_percent DESC
+                        `);
+                    courses = enrolled.recordset || [];
+                } catch (err2) {
+                    console.warn('[public-profile] courses:', err2.message);
+                }
+            }
+
+            res.json({
+                success: true,
+                data: {
+                    ...profile,
+                    recent_posts: recentPosts,
+                    courses
+                }
+            });
         } catch (error) {
             res.status(500).json({ success: false, message: error.message });
         }

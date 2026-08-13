@@ -6,15 +6,14 @@
 <title>โปรไฟล์ผู้เรียน | PA Learning</title>
 <script src="/comp/theme-boot.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260813profile2">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
+<link rel="stylesheet" href="site.css?v=20260813profile3">
 <style>
-  body.pts-body {
-    font-family: 'Bai Jamjuree', sans-serif;
-  }
+  body.pts-body { font-family: 'Bai Jamjuree', sans-serif; }
   .up-shell {
-    max-width: 520px;
+    max-width: 640px;
     margin: 0 auto;
-    padding: 1.25rem 1rem 2.5rem;
+    padding: 1.25rem 1rem 2.75rem;
   }
   .up-card {
     background: #fff;
@@ -24,7 +23,6 @@
     padding: 1.75rem 1.5rem 1.5rem;
     display: flex;
     flex-direction: column;
-    align-items: stretch;
     gap: 1.35rem;
   }
   .up-head {
@@ -83,14 +81,130 @@
     font-weight: 600;
     color: #5c4f55;
   }
+  .up-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .up-section__title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #9b0d42;
+    letter-spacing: -0.01em;
+  }
+  .up-empty {
+    margin: 0;
+    padding: 1rem;
+    border-radius: 1rem;
+    background: #faf6f7;
+    border: 1px dashed rgba(202, 17, 86, 0.2);
+    color: #5c4f55;
+    font-size: 0.88rem;
+    text-align: center;
+  }
+  .up-post {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(202, 17, 86, 0.12);
+    border-radius: 1rem;
+    padding: 0.9rem 1rem;
+    background: #fff;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .up-post:hover {
+    border-color: rgba(202, 17, 86, 0.28);
+    box-shadow: 0 8px 20px rgba(155, 13, 66, 0.08);
+  }
+  .up-post__meta {
+    margin: 0 0 0.45rem;
+    font-size: 0.75rem;
+    color: #5c4f55;
+  }
+  .up-post__body {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    color: #1c1520;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    white-space: pre-line;
+  }
+  .up-post__thumb {
+    margin-top: 0.65rem;
+    width: 100%;
+    max-height: 160px;
+    object-fit: cover;
+    border-radius: 0.75rem;
+    background: #1a0f14;
+  }
+  .up-post__foot {
+    margin-top: 0.55rem;
+    display: flex;
+    gap: 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #9b0d42;
+  }
+  .up-course {
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 0.75rem;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    border: 1px solid rgba(202, 17, 86, 0.12);
+    border-radius: 1rem;
+    padding: 0.7rem;
+    background: #fff;
+  }
+  .up-course:hover {
+    border-color: rgba(202, 17, 86, 0.28);
+  }
+  .up-course__cover {
+    width: 64px;
+    height: 64px;
+    border-radius: 0.75rem;
+    object-fit: cover;
+    background: #fff0f4;
+  }
+  .up-course__name {
+    margin: 0 0 0.35rem;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #1c1520;
+    line-height: 1.3;
+  }
+  .up-course__bar {
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(202, 17, 86, 0.12);
+    overflow: hidden;
+  }
+  .up-course__bar > span {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ca1156, #e11d48);
+  }
+  .up-course__meta {
+    margin: 0.35rem 0 0;
+    font-size: 0.75rem;
+    color: #5c4f55;
+    font-weight: 600;
+  }
+  .up-course__meta.is-done { color: #3d5a4c; }
   .up-actions {
     display: flex;
     justify-content: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
     padding-top: 0.15rem;
   }
-  .up-actions .pts-btn {
-    min-width: 180px;
-  }
+  .up-actions .pts-btn { min-width: 150px; }
   .up-msg {
     margin: 0;
     text-align: center;
@@ -109,6 +223,62 @@
 </main>
 <script>
 const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function timeAgo(iso) {
+  const t = new Date(iso).getTime();
+  if (!t) return '';
+  const sec = Math.max(0, Math.floor((Date.now() - t) / 1000));
+  if (sec < 60) return 'เมื่อสักครู่';
+  if (sec < 3600) return `${Math.floor(sec / 60)} นาทีที่แล้ว`;
+  if (sec < 86400) return `${Math.floor(sec / 3600)} ชั่วโมงที่แล้ว`;
+  if (sec < 604800) return `${Math.floor(sec / 86400)} วันที่แล้ว`;
+  return new Date(iso).toLocaleDateString('th-TH');
+}
+
+function progressOf(c) {
+  const p = Math.max(0, Math.min(100, Number(c.progress_percent || 0)));
+  const done = p >= 100 || /complete/i.test(String(c.status || ''));
+  return { p: done ? 100 : p, done };
+}
+
+function renderPosts(posts) {
+  if (!posts.length) return `<p class="up-empty">ยังไม่มีโพสต์ในคอมมูนิตี้</p>`;
+  return posts.map((p) => {
+    const body = String(p.content || '').trim() || (p.image_url ? 'แนบรูปภาพ' : '—');
+    const img = p.image_url
+      ? `<img class="up-post__thumb" src="${escapeHtml(p.image_url)}" alt="" loading="lazy">`
+      : '';
+    return `
+      <a class="up-post" href="Community.html">
+        <p class="up-post__meta">${escapeHtml(timeAgo(p.created_at))}${p.feeling ? ' · กำลังรู้สึก ' + escapeHtml(p.feeling) : ''}</p>
+        <p class="up-post__body">${escapeHtml(body)}</p>
+        ${img}
+        <div class="up-post__foot">
+          <span>♥ ${Number(p.like_count || 0)}</span>
+          <span>💬 ${Number(p.comment_count || 0)}</span>
+        </div>
+      </a>`;
+  }).join('');
+}
+
+function renderCourses(courses) {
+  if (!courses.length) return `<p class="up-empty">ยังไม่มีหลักสูตรที่สมัคร</p>`;
+  return courses.map((c) => {
+    const { p, done } = progressOf(c);
+    const cover = c.cover_image_url || '/uploads/hero/home-banner.png';
+    return `
+      <a class="up-course" href="CourseDetail.html?id=${Number(c.course_id)}">
+        <img class="up-course__cover" src="${escapeHtml(cover)}" alt="" loading="lazy"
+          onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">
+        <div>
+          <p class="up-course__name">${escapeHtml(c.course_name || 'หลักสูตร')}</p>
+          <div class="up-course__bar" aria-hidden="true"><span style="width:${p}%"></span></div>
+          <p class="up-course__meta${done ? ' is-done' : ''}">${done ? 'เรียนจบแล้ว' : `ความคืบหน้า ${p}%`}</p>
+        </div>
+      </a>`;
+  }).join('');
+}
+
 (async () => {
   const box = document.getElementById('profile-box');
   const id = Number(new URLSearchParams(location.search).get('id') || 0);
@@ -123,6 +293,8 @@ const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&l
     const data = await res.json();
     if (!res.ok || !data.success) throw new Error(data.message || 'โหลดไม่สำเร็จ');
     const u = data.data;
+    const posts = Array.isArray(u.recent_posts) ? u.recent_posts : [];
+    const courses = Array.isArray(u.courses) ? u.courses : [];
     box.innerHTML = `
       <div class="up-head">
         <img class="up-avatar" src="${escapeHtml(u.avatar_url)}" alt="">
@@ -135,6 +307,14 @@ const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&l
         <div class="up-stat"><strong>${Number(u.post_count || 0)}</strong><span>โพสต์</span></div>
         <div class="up-stat"><strong>${Number(u.course_count || 0)}</strong><span>หลักสูตรที่สมัคร</span></div>
       </div>
+      <section class="up-section">
+        <h2 class="up-section__title">โพสต์ล่าสุด</h2>
+        ${renderPosts(posts)}
+      </section>
+      <section class="up-section">
+        <h2 class="up-section__title">หลักสูตรที่เรียน</h2>
+        ${renderCourses(courses)}
+      </section>
       <div class="up-actions">
         <a class="pts-btn pts-btn-primary" href="Community.html">กลับคอมมูนิตี้</a>
       </div>`;
