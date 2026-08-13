@@ -227,11 +227,16 @@
 
   .ban-thumb {
     position: relative;
+    flex: 0 0 140px;
+    width: 140px;
+    max-width: 140px;
     border-radius: 14px;
     overflow: hidden;
     background: #120a12;
     aspect-ratio: 16 / 9;
-    min-height: 88px;
+    min-height: 72px;
+    z-index: 0;
+    isolation: isolate;
   }
   .ban-thumb__bg {
     position: absolute; inset: -8%;
@@ -298,29 +303,70 @@
   .ban-adv summary::-webkit-details-marker { display:none; }
   .ban-adv[open] summary { margin-bottom:12px; }
   .ban-list-item {
-    display:grid; gap:12px; align-items:center;
-    grid-template-columns: 1fr;
-    border:1px solid var(--pts-border,rgba(151,66,88,.14));
-    border-radius:16px; padding:12px; background:var(--pts-surface,#fff);
-    cursor:grab;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 12px;
+    align-items: center;
+    border: 1px solid var(--pts-border,rgba(151,66,88,.14));
+    border-radius: 16px;
+    padding: 12px;
+    background: var(--pts-surface,#fff);
+    cursor: grab;
   }
   .ban-list-item.is-dragging { opacity:.55; cursor:grabbing; }
   .ban-list-item.is-drag-over {
     border-color:#ca1156;
     box-shadow: inset 0 0 0 2px rgba(151,66,88,.25);
   }
-  @media (min-width:800px) {
-    .ban-list-item { grid-template-columns: 28px 140px minmax(0,1fr) auto; }
-  }
   .ban-list-handle {
-    display:none; align-items:center; justify-content:center;
-    color:#ca1156; font-size:18px; user-select:none;
+    flex: 0 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ca1156;
+    font-size: 18px;
+    user-select: none;
   }
-  @media (min-width:800px) {
-    .ban-list-handle { display:flex; }
+  .ban-list-meta {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
   }
-  .ban-list-item.is-hidden { opacity:.55; }
+  .ban-list-meta p {
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .ban-list-actions {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+  }
+  .ban-list-item.is-disabled {
+    opacity: .62;
+    background: color-mix(in srgb, var(--pts-surface,#fff) 88%, #9ca3af);
+  }
+  .ban-list-item.is-disabled .ban-thumb {
+    filter: grayscale(.35);
+  }
+  .ban-status {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #ca1156;
+  }
+  .ban-status.is-on { color: #3d5a4c; }
   .ban-order-msg { font-size:12px; color:#5c4f55; margin:8px 0 0; min-height:1.2em; }
+  @media (max-width: 720px) {
+    .ban-list-item { flex-wrap: wrap; }
+    .ban-list-meta { flex-basis: calc(100% - 180px); }
+    .ban-list-actions { width: 100%; justify-content: flex-end; }
+  }
   .ban-mini-themes { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
   .ban-mini-themes button {
     width:22px; height:22px; border-radius:999px; border:2px solid #fff;
@@ -1700,7 +1746,7 @@ async function renderBanners() {
 
       <div class="pts-card p-5">
         <h3 class="font-bold mb-1">รายการแบนเนอร์ (<span id="banner-count">${list.length}</span>)</h3>
-        <p class="text-sm text-on-surface-variant mb-3">ลากการ์ดขึ้น–ลงเพื่อเปลี่ยนลำดับสไลด์ · อันบนสุดขึ้นก่อน</p>
+        <p class="text-sm text-on-surface-variant mb-3">ลากการ์ดขึ้น–ลงเพื่อเปลี่ยนลำดับสไลด์ · อันบนสุดขึ้นก่อน · ปิดได้โดยไม่ต้องลบ</p>
         <div id="banner-list" class="grid gap-3"></div>
         <p id="banner-order-msg" class="ban-order-msg"></p>
         <p class="text-xs text-on-surface-variant mt-3">
@@ -1730,8 +1776,11 @@ async function renderBanners() {
   };
 
   const renderList = () => {
+    const activeCount = list.filter((x) => x.enabled !== false).length;
     countEl.textContent = String(list.length);
-    updateStage(list[0], 1);
+    const stageItem = list.find((x) => x.enabled !== false) || list[0];
+    const stageIndex = Math.max(0, list.indexOf(stageItem));
+    updateStage(stageItem, stageIndex + 1);
     if (!list.length) {
       listEl.innerHTML = '<div class="pts-empty">ยังไม่มีแบนเนอร์ — อัปโหลดรูปหรือวิดีโอด้านบนได้เลย</div>';
       return;
@@ -1739,6 +1788,7 @@ async function renderBanners() {
     listEl.innerHTML = list.map((b, i) => {
       const motion = isMotionItem(b);
       const video = isVideoItem(b);
+      const enabled = b.enabled !== false;
       const kindLabel = video ? 'วิดีโอ' : (motion ? 'เคลื่อนไหว' : 'รูปนิ่ง');
       const thumb = video
         ? `<video class="ban-thumb__fg" src="${escapeHtml(b.url)}" muted loop playsinline autoplay></video>`
@@ -1746,16 +1796,45 @@ async function renderBanners() {
            <img class="ban-thumb__fg" src="${escapeHtml(b.url)}" alt=""
              onerror="this.onerror=null;this.src='/uploads/hero/home-banner.png'">`;
       return `
-      <article class="ban-list-item" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
+      <article class="ban-list-item${enabled ? '' : ' is-disabled'}" draggable="true" data-index="${i}" data-file="${escapeHtml(b.filename || b.id)}">
         <div class="ban-list-handle" title="ลากเพื่อเรียงลำดับ" aria-hidden="true">☰</div>
         <div class="ban-thumb" title="คลิกเพื่อพรีวิว">${thumb}</div>
-        <div class="min-w-0">
+        <div class="ban-list-meta">
           <p class="text-xs text-on-surface-variant">ลำดับสไลด์ ${i + 1}${i === 0 ? ' · ขึ้นก่อน' : ''} · ${kindLabel}</p>
-          <p class="text-sm font-bold truncate"><code>${escapeHtml(b.filename || b.id)}</code></p>
+          <p class="text-sm font-bold"><code>${escapeHtml(b.filename || b.id)}</code></p>
+          <span class="ban-status ${enabled ? 'is-on' : ''}">${enabled ? 'กำลังแสดง' : 'ปิดอยู่ — ไม่โชว์หน้าแรก'}</span>
         </div>
-        <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
+        <div class="ban-list-actions">
+          <button type="button" class="pts-btn pts-btn-outline banner-toggle" data-file="${escapeHtml(b.filename || b.id)}" data-enabled="${enabled ? '1' : '0'}">
+            ${enabled ? 'ปิด' : 'เปิด'}
+          </button>
+          <button type="button" class="pts-btn pts-btn-outline text-red-600 banner-del" data-file="${escapeHtml(b.filename || b.id)}">ลบ</button>
+        </div>
       </article>`;
     }).join('');
+    if (countEl) {
+      countEl.title = `ทั้งหมด ${list.length} · แสดงบนหน้าแรก ${activeCount}`;
+    }
+
+    listEl.querySelectorAll('.banner-toggle').forEach((btn) => {
+      btn.onclick = async (e) => {
+        e.stopPropagation();
+        const filename = btn.dataset.file;
+        if (!filename) return;
+        const currentlyOn = btn.dataset.enabled === '1';
+        try {
+          const res = await api(`/api/admin/home-banners/${encodeURIComponent(filename)}/visibility`, {
+            method: 'PUT',
+            body: JSON.stringify({ enabled: !currentlyOn })
+          });
+          list = Array.isArray(res.data) ? res.data : list;
+          renderList();
+          orderMsg.textContent = currentlyOn ? 'ปิดแบนเนอร์แล้ว (ยังไม่ลบ) ✓' : 'เปิดแบนเนอร์แล้ว ✓';
+        } catch (err) {
+          alert(err.message || 'อัปเดตไม่สำเร็จ');
+        }
+      };
+    });
 
     listEl.querySelectorAll('.banner-del').forEach((btn) => {
       btn.onclick = async (e) => {

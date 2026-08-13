@@ -778,7 +778,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 // Keep local slip for reliable admin preview; Drive holds a backup copy.
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
-                    mimeType: req.file.mimetype
+                    mimeType: req.file.mimetype,
+                    category: 'slips'
                 });
                 if (drive && drive.ok && drive.fileId) {
                     // slipUrl stays local — do not delete the file after Drive backup
@@ -1161,7 +1162,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
     router.get('/home-banners', (_req, res) => {
         try {
             const { listGalleryBanners } = require('./heroImages');
-            const items = listGalleryBanners();
+            const items = listGalleryBanners({ activeOnly: true });
             const data = items.length
                 ? items.map((x) => ({ id: x.id, url: x.url, alt: 'Banner' }))
                 : [{ id: 'fallback', url: '/uploads/hero/home-banner.png', alt: 'PTS Learning' }];

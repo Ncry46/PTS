@@ -878,6 +878,20 @@ app.post('/api/community', (req, res) => {
             return res.status(400).json({ success: false, message: 'ข้อความยาวเกิน 2000 ตัวอักษร' });
         }
 
+        if (req.file) {
+            try {
+                const drive = require('./googleDrive');
+                const up = await drive.tryUploadLocalFile(req.file.path, {
+                    filename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    category: 'community'
+                });
+                if (up && !up.ok && up.error) console.warn('[community→drive]', up.error);
+            } catch (e) {
+                console.warn('[community→drive]', e.message);
+            }
+        }
+
         const ALLOWED_FEELINGS = new Set([
             'happy', 'grateful', 'excited', 'proud', 'thoughtful',
             'curious', 'tired', 'celebrating', 'motivated', 'relaxed'

@@ -7,7 +7,7 @@ const multer = require('multer');
 const { writeSecretsFile, readSecretsFile, readLocalMail, publicMailStatus } = require('./mailSecrets');
 const { issueEmailOtp, getMailStatus, sendCouponEmail } = require('./emailOtp');
 const { syncScheduleToEnrolledUsers, removeScheduleFromAllCalendars } = require('./googleCalendar');
-const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath, listGalleryBanners, deleteGalleryBanner, isGalleryBannerFilename, reorderGalleryBanners, appendBannerToOrder } = require('./heroImages');
+const { HERO_DIR, ensureHeroDir, mapHeroSlidesImages, HOME_BANNER_FILENAME, getHomeBannerInfo, homeBannerPath, listGalleryBanners, deleteGalleryBanner, setGalleryBannerEnabled, isGalleryBannerFilename, reorderGalleryBanners, appendBannerToOrder } = require('./heroImages');
 const {
     CERT_DIR,
     CERT_SLOTS,
@@ -15,6 +15,7 @@ const {
     listCertAssets
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
+const { tryUploadLocalFile } = require('./googleDrive');
 const {
     USAGE_RULES,
     normalizeCouponCode,
@@ -1607,14 +1608,24 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
     router.post('/hero-slides/upload', (req, res) => {
         if (!requireAdmin(req, res)) return;
-        heroUpload.single('image')(req, res, (err) => {
+        heroUpload.single('image')(req, res, async (err) => {
             if (err) {
                 return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
             }
             if (!req.file) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
             }
-            res.json({ success: true, url: `/uploads/hero/${req.file.filename}` });
+            const drive = await tryUploadLocalFile(req.file.path, {
+                filename: req.file.filename,
+                mimeType: req.file.mimetype,
+                category: 'hero'
+            });
+            if (drive && !drive.ok && drive.error) console.warn('[hero→drive]', drive.error);
+            res.json({
+                success: true,
+                url: `/uploads/hero/${req.file.filename}`,
+                driveBackup: !!(drive && drive.ok)
+            });
         });
     });
 
@@ -1642,12 +1653,12 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
     router.get('/home-banners', (req, res) => {
         if (!requireAdmin(req, res)) return;
-        res.json({ success: true, data: listGalleryBanners() });
+        res.json({ success: true, data: listGalleryBanners({ includeDisabled: true }) });
     });
 
     router.post('/home-banners/upload', (req, res) => {
         if (!requireAdmin(req, res)) return;
-        galleryBannerUpload.single('image')(req, res, (err) => {
+        galleryBannerUpload.single('image')(req, res, async (err) => {
             if (err) {
                 return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
             }
@@ -1655,16 +1666,24 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูปหรือวิดีโอ' });
             }
             try { appendBannerToOrder(req.file.filename); } catch (_) { /* ignore */ }
-            const items = listGalleryBanners();
+            const drive = await tryUploadLocalFile(req.file.path, {
+                filename: req.file.filename,
+                mimeType: req.file.mimetype,
+                category: 'hero'
+            });
+            if (drive && !drive.ok && drive.error) console.warn('[home-banner→drive]', drive.error);
+            const items = listGalleryBanners({ includeDisabled: true });
             const item = items.find((x) => x.filename === req.file.filename) || {
                 filename: req.file.filename,
-                url: `/uploads/hero/${req.file.filename}`
+                url: `/uploads/hero/${req.file.filename}`,
+                enabled: true
             };
             res.json({
                 success: true,
                 message: 'เพิ่มแบนเนอร์แล้ว',
                 data: item,
-                list: items
+                list: items,
+                driveBackup: !!(drive && drive.ok)
             });
         });
     });
@@ -1689,7 +1708,26 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         if (!result.ok) {
             return res.status(400).json({ success: false, message: result.message || 'ลบไม่สำเร็จ' });
         }
-        res.json({ success: true, message: 'ลบแบนเนอร์แล้ว', data: listGalleryBanners() });
+        res.json({ success: true, message: 'ลบแบนเนอร์แล้ว', data: listGalleryBanners({ includeDisabled: true }) });
+    });
+
+    router.put('/home-banners/:filename/visibility', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        const enabledRaw = req.body?.enabled;
+        const enabled = enabledRaw === true || enabledRaw === 1 || enabledRaw === '1' || String(enabledRaw).toLowerCase() === 'true';
+        const disable = enabledRaw === false || enabledRaw === 0 || enabledRaw === '0' || String(enabledRaw).toLowerCase() === 'false';
+        if (!enabled && !disable) {
+            return res.status(400).json({ success: false, message: 'กรุณาส่ง enabled เป็น true หรือ false' });
+        }
+        const result = setGalleryBannerEnabled(req.params.filename, enabled);
+        if (!result.ok) {
+            return res.status(400).json({ success: false, message: result.message || 'อัปเดตไม่สำเร็จ' });
+        }
+        res.json({
+            success: true,
+            message: enabled ? 'เปิดแบนเนอร์แล้ว' : 'ปิดแบนเนอร์แล้ว (ยังไม่ลบ)',
+            data: result.data
+        });
     });
 
     /** แบนเนอร์หน้าแรก — บันทึกเป็นไฟล์คงที่ uploads/hero/home-banner.png (legacy) */
@@ -1719,20 +1757,27 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
     router.post('/home-banner/upload', (req, res) => {
         if (!requireAdmin(req, res)) return;
-        homeBannerUpload.single('image')(req, res, (err) => {
+        homeBannerUpload.single('image')(req, res, async (err) => {
             if (err) {
                 return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
             }
             if (!req.file) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
             }
+            const drive = await tryUploadLocalFile(req.file.path, {
+                filename: req.file.filename,
+                mimeType: req.file.mimetype,
+                category: 'hero'
+            });
+            if (drive && !drive.ok && drive.error) console.warn('[home-banner-legacy→drive]', drive.error);
             const info = getHomeBannerInfo();
             res.json({
                 success: true,
                 message: 'บันทึกแบนเนอร์หน้าแรกแล้ว',
                 url: info.url,
                 filename: info.filename,
-                bytes: info.bytes
+                bytes: info.bytes,
+                driveBackup: !!(drive && drive.ok)
             });
         });
     });
@@ -1766,13 +1811,19 @@ function createAdminRouter({ poolPromise, requireLogin }) {
 
     router.post('/cert-assets/upload', (req, res) => {
         if (!requireAdmin(req, res)) return;
-        certUpload.single('image')(req, res, (err) => {
+        certUpload.single('image')(req, res, async (err) => {
             if (err) {
                 return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
             }
             if (!req.file) {
                 return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
             }
+            const drive = await tryUploadLocalFile(req.file.path, {
+                filename: req.file.filename,
+                mimeType: req.file.mimetype,
+                category: 'cert'
+            });
+            if (drive && !drive.ok && drive.error) console.warn('[cert→drive]', drive.error);
             const slotKey = String(req.query.slot || req.body.slot || '').trim().toLowerCase();
             const items = listCertAssets();
             const item = items.find((x) => x.slot === slotKey) || items.find((x) => x.filename === req.file.filename);
@@ -1780,7 +1831,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 success: true,
                 message: `อัปโหลด${item?.label || ''}แล้ว`,
                 url: item?.url || `/uploads/cert/${req.file.filename}`,
-                data: items
+                data: items,
+                driveBackup: !!(drive && drive.ok)
             });
         });
     });

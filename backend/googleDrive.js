@@ -347,16 +347,123 @@ async function fetchDriveFile(fileId) {
     }
 }
 
-async function uploadImageToDrive({ filePath, buffer, filename, mimeType, folderId }) {
-    if (!getDriveFolderId() && !folderId) {
+const DRIVE_CATEGORIES = Object.freeze({
+    avatars: 'avatars',
+    slips: 'slips',
+    community: 'community',
+    hero: 'hero',
+    cert: 'cert'
+});
+
+const FOLDER_CACHE_FILE = path.join(__dirname, 'google.drive.folders.json');
+let folderIdCache = null;
+
+function normalizeDriveCategory(category) {
+    const key = String(category || '').trim().toLowerCase();
+    return DRIVE_CATEGORIES[key] || '';
+}
+
+function loadFolderIdCache() {
+    if (folderIdCache) return folderIdCache;
+    try {
+        if (fs.existsSync(FOLDER_CACHE_FILE)) {
+            const raw = JSON.parse(fs.readFileSync(FOLDER_CACHE_FILE, 'utf8'));
+            folderIdCache = raw && typeof raw === 'object' ? raw : {};
+            return folderIdCache;
+        }
+    } catch (_) { /* ignore */ }
+    folderIdCache = {};
+    return folderIdCache;
+}
+
+function saveFolderIdCache() {
+    try {
+        fs.writeFileSync(FOLDER_CACHE_FILE, JSON.stringify(folderIdCache || {}, null, 2), 'utf8');
+    } catch (err) {
+        console.warn('[drive] cannot save folder cache:', err.message);
+    }
+}
+
+async function findChildFolder(parentId, name, accessToken) {
+    const q = [
+        `'${parentId}' in parents`,
+        `name = '${String(name).replace(/'/g, "\\'")}'`,
+        `mimeType = 'application/vnd.google-apps.folder'`,
+        'trashed = false'
+    ].join(' and ');
+    const url = `https://www.googleapis.com/drive/v3/files?supportsAllDrives=true&includeItemsFromAllDrives=true&fields=files(id,name)&q=${encodeURIComponent(q)}&pageSize=5`;
+    const res = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+        throw new Error(data.error?.message || 'ค้นหาโฟลเดอร์ย่อยบน Drive ไม่สำเร็จ');
+    }
+    return data.files && data.files[0] ? data.files[0].id : '';
+}
+
+async function createChildFolder(parentId, name, accessToken) {
+    const res = await fetch(
+        'https://www.googleapis.com/drive/v3/files?supportsAllDrives=true&fields=id,name',
+        {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                name,
+                mimeType: 'application/vnd.google-apps.folder',
+                parents: [parentId]
+            })
+        }
+    );
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.id) {
+        throw new Error(data.error?.message || 'สร้างโฟลเดอร์ย่อยบน Drive ไม่สำเร็จ');
+    }
+    return data.id;
+}
+
+/**
+ * Resolve (find-or-create) a typed subfolder under GOOGLE_DRIVE_FOLDER_ID.
+ * @param {string} category avatars|slips|community|hero|cert
+ */
+async function ensureCategoryFolder(category) {
+    const folderName = normalizeDriveCategory(category);
+    if (!folderName) {
+        throw new Error(`หมวด Drive ไม่รู้จัก: ${category}`);
+    }
+    const rootId = getDriveFolderId();
+    if (!rootId) throw new Error('ยังไม่ได้ตั้งค่า GOOGLE_DRIVE_FOLDER_ID');
+
+    const cache = loadFolderIdCache();
+    const cacheKey = `${rootId}:${folderName}`;
+    if (cache[cacheKey]) return cache[cacheKey];
+
+    const { token: accessToken } = await getAccessToken();
+    let id = await findChildFolder(rootId, folderName, accessToken);
+    if (!id) id = await createChildFolder(rootId, folderName, accessToken);
+    cache[cacheKey] = id;
+    folderIdCache = cache;
+    saveFolderIdCache();
+    return id;
+}
+
+async function uploadImageToDrive({ filePath, buffer, filename, mimeType, folderId, category }) {
+    if (!getDriveFolderId() && !folderId && !category) {
         throw new Error('ยังไม่ได้ตั้งค่า GOOGLE_DRIVE_FOLDER_ID');
     }
     if (!hasOAuthDrive() && !hasServiceAccount()) {
         throw new Error('ยังไม่ได้ตั้งค่า Google Drive auth (OAuth หรือ Service Account)');
     }
 
+    let parent = folderId || null;
+    if (!parent && category) {
+        parent = await ensureCategoryFolder(category);
+    }
+    if (!parent) parent = getDriveFolderId();
+    if (!parent) throw new Error('ยังไม่ได้ตั้งค่า GOOGLE_DRIVE_FOLDER_ID');
+
     const { token: accessToken, mode } = await getAccessToken();
-    const parent = folderId || getDriveFolderId();
     const name = String(filename || `pts-${Date.now()}.jpg`).replace(/[^\w.\-()+@\u0E00-\u0E7F]+/g, '_');
     const mime = mimeType || 'image/jpeg';
 
@@ -406,7 +513,8 @@ async function uploadImageToDrive({ filePath, buffer, filename, mimeType, folder
         url: publicViewUrl(data.id),
         webViewLink: data.webViewLink || `https://drive.google.com/file/d/${data.id}/view`,
         mode,
-        parents: data.parents || []
+        category: normalizeDriveCategory(category) || null,
+        parents: data.parents || [parent]
     };
 }
 
@@ -417,11 +525,13 @@ async function tryUploadLocalFile(filePath, opts = {}) {
     try {
         const filename = opts.filename || path.basename(filePath);
         const mimeType = opts.mimeType || guessMime(filename);
+        const category = normalizeDriveCategory(opts.category) || null;
         const uploaded = await uploadImageToDrive({
             filePath,
             filename,
             mimeType,
-            folderId: opts.folderId
+            folderId: opts.folderId,
+            category: category || undefined
         });
         return uploaded;
     } catch (err) {
@@ -530,6 +640,8 @@ module.exports = {
     getDriveFolderId,
     uploadImageToDrive,
     tryUploadLocalFile,
+    ensureCategoryFolder,
+    DRIVE_CATEGORIES,
     publicViewUrl,
     extractDriveFileId,
     normalizeDriveUrl,

@@ -185,7 +185,8 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                 let driveFileId = null;
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
-                    mimeType: req.file.mimetype
+                    mimeType: req.file.mimetype,
+                    category: 'avatars'
                 });
                 if (drive && drive.ok && drive.fileId) {
                     storedOn = 'google_drive';

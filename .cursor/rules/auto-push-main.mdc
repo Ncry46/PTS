@@ -1,0 +1,29 @@
+---
+description: After finishing fixes, commit and push to GitHub main automatically
+alwaysApply: true
+---
+
+# Auto push completed work to `main`
+
+When a coding task is **finished** (bugfix, feature, or polish the user asked for):
+
+1. **Commit** the relevant project files to `main` (do not wait for the user to ask again).
+2. **Push** to `origin main` immediately after a successful commit.
+3. Tell the user the commit hash / short summary and that it was pushed.
+
+## Include
+- Source code, docs, configs related to the completed work
+
+## Exclude
+- Secrets (`.env`, credentials, tokens, `google.drive.token.json`, service-account JSON)
+- Large/local media unless the user explicitly asked to commit them (`uploads/avatars/*`, new hero banner binaries)
+- Scratch / temp (`.superpowers/`, one-off `scripts/check-*.js` unless part of the deliverable)
+
+## Commit style
+- Concise message focusing on why (feat/fix/style/docs)
+- PowerShell-safe commit message (plain `-m "..."` is fine on Windows)
+
+## Exceptions
+- If push fails (auth/network/conflicts), report the error and stop — do not force-push.
+- Never `push --force` to `main`.
+- If the user says not to push for a specific task, skip for that task only.

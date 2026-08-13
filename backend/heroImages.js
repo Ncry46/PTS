@@ -29,7 +29,7 @@ function publicHomeBannerUrl() {
         return `/uploads/hero/${HOME_BANNER_FILENAME}?v=${ver}`;
     }
     // fallback: รูปแบนเนอร์อื่นในโฟลเดอร์
-    const others = listGalleryBanners();
+    const others = listGalleryBanners({ activeOnly: true });
     if (others.length) return others[0].url;
     return `/uploads/hero/${HOME_BANNER_FILENAME}`;
 }
@@ -80,38 +80,62 @@ function bannerOrderPath() {
     return path.join(HERO_DIR, BANNER_ORDER_FILE);
 }
 
-function readBannerOrder() {
+function readBannerMeta() {
     ensureHeroDir();
     const file = bannerOrderPath();
     try {
-        if (!fs.existsSync(file)) return [];
+        if (!fs.existsSync(file)) return { order: [], disabled: [] };
         const raw = JSON.parse(fs.readFileSync(file, 'utf8'));
-        const list = Array.isArray(raw) ? raw : (Array.isArray(raw?.order) ? raw.order : []);
-        return list.map((x) => path.basename(String(x || ''))).filter(isGalleryBannerFilename);
+        const orderList = Array.isArray(raw) ? raw : (Array.isArray(raw?.order) ? raw.order : []);
+        const disabledList = Array.isArray(raw?.disabled) ? raw.disabled : [];
+        return {
+            order: orderList.map((x) => path.basename(String(x || ''))).filter(isGalleryBannerFilename),
+            disabled: disabledList.map((x) => path.basename(String(x || ''))).filter(isGalleryBannerFilename)
+        };
     } catch (_) {
-        return [];
+        return { order: [], disabled: [] };
     }
+}
+
+function writeBannerMeta({ order, disabled }) {
+    ensureHeroDir();
+    const cleanOrder = (Array.isArray(order) ? order : [])
+        .map((x) => path.basename(String(x || '')))
+        .filter(isGalleryBannerFilename);
+    const seen = new Set();
+    const uniqueOrder = [];
+    for (const name of cleanOrder) {
+        if (seen.has(name)) continue;
+        seen.add(name);
+        uniqueOrder.push(name);
+    }
+    const orderSet = new Set(uniqueOrder);
+    const cleanDisabled = [...new Set(
+        (Array.isArray(disabled) ? disabled : [])
+            .map((x) => path.basename(String(x || '')))
+            .filter((name) => isGalleryBannerFilename(name) && orderSet.has(name))
+    )];
+    fs.writeFileSync(
+        bannerOrderPath(),
+        JSON.stringify({ order: uniqueOrder, disabled: cleanDisabled }, null, 2),
+        'utf8'
+    );
+    return { order: uniqueOrder, disabled: cleanDisabled };
+}
+
+function readBannerOrder() {
+    return readBannerMeta().order;
 }
 
 function writeBannerOrder(order) {
-    ensureHeroDir();
-    const clean = (Array.isArray(order) ? order : [])
-        .map((x) => path.basename(String(x || '')))
-        .filter(isGalleryBannerFilename);
-    // unique preserve order
-    const seen = new Set();
-    const unique = [];
-    for (const name of clean) {
-        if (seen.has(name)) continue;
-        seen.add(name);
-        unique.push(name);
-    }
-    fs.writeFileSync(bannerOrderPath(), JSON.stringify({ order: unique }, null, 2), 'utf8');
-    return unique;
+    const meta = readBannerMeta();
+    return writeBannerMeta({ order, disabled: meta.disabled }).order;
 }
 
-function listGalleryBanners() {
+function listGalleryBanners(opts = {}) {
     ensureHeroDir();
+    const includeDisabled = opts.includeDisabled !== false;
+    const activeOnly = opts.activeOnly === true;
     let names = [];
     try {
         names = fs.readdirSync(HERO_DIR).filter(isGalleryBannerFilename);
@@ -119,46 +143,79 @@ function listGalleryBanners() {
         names = [];
     }
 
+    const meta = readBannerMeta();
+    const disabledSet = new Set(meta.disabled);
+
     const items = names.map((filename) => {
         const abs = path.join(HERO_DIR, filename);
         let stat;
         try { stat = fs.statSync(abs); } catch (_) { return null; }
         if (!stat.isFile()) return null;
         const ver = Math.floor(stat.mtimeMs);
-        const meta = bannerMediaMeta(filename);
+        const metaKind = bannerMediaMeta(filename);
+        const enabled = !disabledSet.has(filename);
         return {
             id: filename,
             filename,
             url: `/uploads/hero/${filename}?v=${ver}`,
             bytes: stat.size,
             updated_at: stat.mtime.toISOString(),
-            kind: meta.kind,
-            animated: meta.animated,
-            mime: meta.mime
+            kind: metaKind.kind,
+            animated: metaKind.animated,
+            mime: metaKind.mime,
+            enabled
         };
     }).filter(Boolean);
 
     const byName = new Map(items.map((x) => [x.filename, x]));
-    const saved = readBannerOrder().filter((name) => byName.has(name));
+    const saved = meta.order.filter((name) => byName.has(name));
     const remaining = items
         .filter((x) => !saved.includes(x.filename))
         .sort((a, b) => String(b.updated_at).localeCompare(String(a.updated_at)));
 
-    const ordered = [
+    let ordered = [
         ...saved.map((name) => byName.get(name)),
         ...remaining
     ].filter(Boolean);
 
-    // keep order file in sync with existing files
+    // keep order file in sync with existing files (preserve disabled)
     if (ordered.length && (saved.length !== ordered.length || saved.some((n, i) => n !== ordered[i].filename))) {
-        try { writeBannerOrder(ordered.map((x) => x.filename)); } catch (_) { /* ignore */ }
+        try {
+            writeBannerMeta({
+                order: ordered.map((x) => x.filename),
+                disabled: meta.disabled.filter((n) => ordered.some((x) => x.filename === n))
+            });
+        } catch (_) { /* ignore */ }
+    }
+
+    if (activeOnly) {
+        ordered = ordered.filter((x) => x.enabled);
+    } else if (!includeDisabled) {
+        ordered = ordered.filter((x) => x.enabled);
     }
 
     return ordered.map((item, index) => ({ ...item, sort_order: index + 1 }));
 }
 
+function setGalleryBannerEnabled(filename, enabled) {
+    const safe = path.basename(String(filename || ''));
+    if (!isGalleryBannerFilename(safe)) {
+        return { ok: false, message: 'ชื่อไฟล์ไม่ถูกต้อง' };
+    }
+    const abs = path.join(HERO_DIR, safe);
+    if (!abs.startsWith(HERO_DIR) || !fs.existsSync(abs)) {
+        return { ok: false, message: 'ไม่พบไฟล์' };
+    }
+    const meta = readBannerMeta();
+    const order = meta.order.includes(safe) ? meta.order : [...meta.order, safe];
+    let disabled = meta.disabled.filter((n) => n !== safe);
+    if (!enabled) disabled.push(safe);
+    writeBannerMeta({ order, disabled });
+    return { ok: true, data: listGalleryBanners({ includeDisabled: true }) };
+}
+
 function reorderGalleryBanners(order) {
-    const current = listGalleryBanners();
+    const current = listGalleryBanners({ includeDisabled: true });
     const byName = new Map(current.map((x) => [x.filename, x]));
     const wanted = (Array.isArray(order) ? order : [])
         .map((x) => path.basename(String(x || '')))
@@ -166,16 +223,20 @@ function reorderGalleryBanners(order) {
     const rest = current
         .map((x) => x.filename)
         .filter((name) => !wanted.includes(name));
-    writeBannerOrder([...wanted, ...rest]);
-    return listGalleryBanners();
+    const meta = readBannerMeta();
+    writeBannerMeta({ order: [...wanted, ...rest], disabled: meta.disabled });
+    return listGalleryBanners({ includeDisabled: true });
 }
 
 function appendBannerToOrder(filename) {
     const safe = path.basename(String(filename || ''));
     if (!isGalleryBannerFilename(safe)) return readBannerOrder();
-    const order = readBannerOrder().filter((n) => n !== safe);
+    const meta = readBannerMeta();
+    const order = meta.order.filter((n) => n !== safe);
     order.push(safe);
-    return writeBannerOrder(order);
+    // newly uploaded banners start enabled
+    const disabled = meta.disabled.filter((n) => n !== safe);
+    return writeBannerMeta({ order, disabled }).order;
 }
 
 function deleteGalleryBanner(filename) {
@@ -192,8 +253,11 @@ function deleteGalleryBanner(filename) {
     }
     try {
         fs.unlinkSync(abs);
-        const order = readBannerOrder().filter((n) => n !== safe);
-        writeBannerOrder(order);
+        const meta = readBannerMeta();
+        writeBannerMeta({
+            order: meta.order.filter((n) => n !== safe),
+            disabled: meta.disabled.filter((n) => n !== safe)
+        });
         return { ok: true };
     } catch (err) {
         return { ok: false, message: err.message || 'ลบไม่สำเร็จ' };
@@ -224,7 +288,7 @@ function localUploadExists(urlPath) {
 }
 
 function pickFallback(slideIndex = 0) {
-    const gallery = listGalleryBanners();
+    const gallery = listGalleryBanners({ activeOnly: true });
     if (gallery.length) {
         return gallery[Math.abs(slideIndex) % gallery.length].url.split('?')[0];
     }
@@ -349,6 +413,7 @@ module.exports = {
     reorderGalleryBanners,
     appendBannerToOrder,
     deleteGalleryBanner,
+    setGalleryBannerEnabled,
     isGalleryBannerFilename,
     bannerMediaMeta,
     listLocalHeroFiles,
