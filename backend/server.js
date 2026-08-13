@@ -754,6 +754,7 @@ app.get('/api/my/liked-posts', async (req, res) => {
                     p.feeling,
                     p.image_url,
                     p.created_at,
+                    p.user_id AS author_id,
                     u.username AS author_name,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
                     (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
@@ -1029,6 +1030,7 @@ app.get('/api/community/:postId/comments', async (req, res) => {
                     c.post_id,
                     c.content,
                     c.created_at,
+                    c.user_id AS author_id,
                     u.username AS author_name,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar
                 FROM dbo.post_comments c

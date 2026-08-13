@@ -261,19 +261,20 @@
         border:2px solid var(--pts-primary-soft,#f6e6ea);
       }
       .pts-topnav__drop {
-        display:none; position:absolute; top:calc(100% + 8px); right:0; z-index:100002;
+        display:none; flex-direction:column; position:absolute; top:calc(100% + 8px); right:0; z-index:100002;
         width:min(280px, calc(100vw - 24px)); padding:0;
         background:var(--pts-surface,#fff);
         border:1px solid var(--pts-border,rgba(151,66,88,.16));
         border-radius:14px;
         box-shadow:var(--pts-shadow,0 16px 40px rgba(28,21,32,.14));
-        overflow:hidden;
+        overflow:hidden; max-height:min(70vh, 520px);
       }
-      .pts-topnav__user-wrap.is-open .pts-topnav__drop { display:block; }
+      .pts-topnav__user-wrap.is-open .pts-topnav__drop { display:flex; }
       .pts-topnav__drop-head {
         display:flex; align-items:center; gap:10px; padding:14px 14px 12px;
         border-bottom:1px solid var(--pts-border,rgba(151,66,88,.12));
         background:linear-gradient(180deg, var(--pts-nav-hover,#faf4f6), var(--pts-surface,#fff));
+        flex-shrink:0;
       }
       .pts-topnav__drop-head img {
         width:40px; height:40px; border-radius:999px; object-fit:cover;
@@ -284,7 +285,7 @@
         font-size:11px; font-weight:700; color:var(--pts-primary,#ca1156);
         text-transform:uppercase; letter-spacing:.04em; margin-top:2px;
       }
-      .pts-topnav__drop-nav { padding:6px; }
+      .pts-topnav__drop-nav { padding:6px; overflow-y:auto; flex:1; min-height:0; }
       .pts-topnav__drop-nav a, .pts-topnav__drop-nav button {
         display:flex; align-items:center; width:100%; text-align:left; padding:11px 12px;
         border:none; background:transparent; font:inherit; font-size:14px; font-weight:600;
@@ -393,24 +394,32 @@
   }
 
   function profileMenuHtml(name, roleLabel, avatar, isAdmin) {
+    // Align with sidebars: student → user-sidebar, admin → Admin.html tabs
     const studentLinks = `
           <a href="DashbordU.html" role="menuitem" data-i18n="nav.dashboard">${t('nav.dashboard', 'แดชบอร์ด')}</a>
+          <a href="MyCourses.html" role="menuitem" data-i18n="nav.mycourses">${t('nav.mycourses', 'หลักสูตรของฉัน')}</a>
           <a href="Payments.html" role="menuitem" data-i18n="nav.payments">${t('nav.payments', 'การชำระเงิน')}</a>
           <a href="Forms.html" role="menuitem" data-i18n="nav.forms">${t('nav.forms', 'แบบฟอร์ม')}</a>
           <a href="Certificates.html" role="menuitem" data-i18n="nav.certificates">${t('nav.certificates', 'ใบประกาศ')}</a>
           <a href="Favorites.html" role="menuitem" data-i18n="nav.favorites">${t('nav.favorites', 'รายการโปรด')}</a>
-          <a href="Schedule.html" role="menuitem" data-i18n="nav.schedule">${t('nav.schedule', 'ตารางเรียน / QR Onsite')}</a>
+          <a href="Schedule.html" role="menuitem" data-i18n="nav.schedule">${t('nav.schedule', 'ตารางเรียน')}</a>
+          <a href="Notifications.html" role="menuitem" data-i18n="nav.notifications">${t('nav.notifications', 'การแจ้งเตือน')}</a>
           <a href="Settings.html" role="menuitem" data-i18n="nav.settings">${t('nav.settings', 'ตั้งค่า')}</a>`;
 
     const adminLinks = `
+          <a href="Admin.html#courses" role="menuitem" data-i18n="nav.admin.courses">${t('nav.admin.courses', 'หลักสูตร')}</a>
           <a href="Admin.html#lessons" role="menuitem" data-i18n="nav.admin.lessons">${t('nav.admin.lessons', 'บทเรียน')}</a>
           <a href="Admin.html#schedules" role="menuitem" data-i18n="nav.admin.schedules">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
           <a href="Admin.html#forms" role="menuitem" data-i18n="nav.admin.forms">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
           <a href="Admin.html#banners" role="menuitem" data-i18n="nav.admin.banners">${t('nav.admin.banners', 'แบนเนอร์')}</a>
+          <a href="Admin.html#cert" role="menuitem" data-i18n="nav.admin.cert">${t('nav.admin.cert', 'ใบประกาศ')}</a>
           <a href="Admin.html#users" role="menuitem" data-i18n="nav.admin.users">${t('nav.admin.users', 'ผู้ใช้')}</a>
           <a href="Admin.html#posts" role="menuitem" data-i18n="nav.admin.posts">${t('nav.admin.posts', 'โพสต์')}</a>
           <a href="Admin.html#payments" role="menuitem" data-i18n="nav.admin.payments">${t('nav.admin.payments', 'ชำระเงิน')}</a>
-          <a href="Admin.html#mail" role="menuitem" data-i18n="nav.admin.mail">${t('nav.admin.mail', 'อีเมล OTP')}</a>`;
+          <a href="Admin.html#coupons" role="menuitem" data-i18n="nav.admin.coupons">${t('nav.admin.coupons', 'คูปองส่วนลด')}</a>
+          <a href="Admin.html#audit" role="menuitem" data-i18n="nav.admin.audit">${t('nav.admin.audit', 'ประวัติแอดมิน')}</a>
+          <a href="Admin.html#mail" role="menuitem" data-i18n="nav.admin.mail">${t('nav.admin.mail', 'อีเมล OTP')}</a>
+          <a href="Settings.html" role="menuitem" data-i18n="nav.settings">${t('nav.settings', 'ตั้งค่าโปรไฟล์')}</a>`;
 
     return `
       <div class="pts-topnav__user-wrap" data-pts-user-wrap>
@@ -561,6 +570,29 @@
           <a href="Home.html" data-i18n="nav.home">${t('nav.home', 'หน้าแรก')}</a>
           ${coursesMobileHtml()}
           <a href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
+          ${isAdmin
+            ? `<a href="Admin.html#courses">${t('nav.admin.courses', 'หลักสูตร')}</a>
+               <a href="Admin.html#lessons">${t('nav.admin.lessons', 'บทเรียน')}</a>
+               <a href="Admin.html#schedules">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
+               <a href="Admin.html#forms">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
+               <a href="Admin.html#banners">${t('nav.admin.banners', 'แบนเนอร์')}</a>
+               <a href="Admin.html#cert">${t('nav.admin.cert', 'ใบประกาศ')}</a>
+               <a href="Admin.html#users">${t('nav.admin.users', 'ผู้ใช้')}</a>
+               <a href="Admin.html#posts">${t('nav.admin.posts', 'โพสต์')}</a>
+               <a href="Admin.html#payments">${t('nav.admin.payments', 'ชำระเงิน')}</a>
+               <a href="Admin.html#coupons">${t('nav.admin.coupons', 'คูปองส่วนลด')}</a>
+               <a href="Admin.html#audit">${t('nav.admin.audit', 'ประวัติแอดมิน')}</a>
+               <a href="Admin.html#mail">${t('nav.admin.mail', 'อีเมล OTP')}</a>
+               <a href="Settings.html">${t('nav.settings', 'ตั้งค่าโปรไฟล์')}</a>`
+            : `<a href="DashbordU.html">${t('nav.dashboard', 'แดชบอร์ด')}</a>
+               <a href="MyCourses.html">${t('nav.mycourses', 'หลักสูตรของฉัน')}</a>
+               <a href="Payments.html">${t('nav.payments', 'การชำระเงิน')}</a>
+               <a href="Forms.html">${t('nav.forms', 'แบบฟอร์ม')}</a>
+               <a href="Certificates.html">${t('nav.certificates', 'ใบประกาศ')}</a>
+               <a href="Favorites.html">${t('nav.favorites', 'รายการโปรด')}</a>
+               <a href="Schedule.html">${t('nav.schedule', 'ตารางเรียน')}</a>
+               <a href="Notifications.html">${t('nav.notifications', 'การแจ้งเตือน')}</a>
+               <a href="Settings.html">${t('nav.settings', 'ตั้งค่า')}</a>`}
         </div>
       </nav>`;
     bindToggles(container);

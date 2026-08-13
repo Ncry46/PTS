@@ -155,9 +155,13 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
       <article class="pts-card p-5">
         <div class="flex items-start justify-between gap-3 mb-3">
           <div class="flex items-center gap-3 min-w-0">
-            <img class="w-10 h-10 rounded-full object-cover flex-shrink-0" src="${escapeHtml(p.author_avatar||PLACEHOLDER)}" alt="" onerror="this.style.visibility='hidden'">
+            ${p.author_id
+              ? `<a href="User.html?id=${Number(p.author_id)}" class="flex-shrink-0" title="ดูโปรไฟล์"><img class="w-10 h-10 rounded-full object-cover" src="${escapeHtml(p.author_avatar||PLACEHOLDER)}" alt="" onerror="this.style.visibility='hidden'"></a>`
+              : `<img class="w-10 h-10 rounded-full object-cover flex-shrink-0" src="${escapeHtml(p.author_avatar||PLACEHOLDER)}" alt="" onerror="this.style.visibility='hidden'">`}
             <div class="min-w-0">
-              <p class="font-bold truncate">${escapeHtml(p.author_name||'')}</p>
+              <p class="font-bold truncate">${p.author_id
+                ? `<a href="User.html?id=${Number(p.author_id)}" class="hover:underline" style="color:inherit">${escapeHtml(p.author_name||'')}</a>`
+                : escapeHtml(p.author_name||'')}</p>
               <p class="text-xs text-on-surface-variant">${new Date(p.created_at).toLocaleString('th-TH')}</p>
             </div>
           </div>
@@ -211,6 +215,6 @@ document.getElementById('tab-posts').onclick = () => setTab('posts');
 })();
 </script>
 <script src="/comp/user-sidebar.js?v=20260727paymodal"></script>
-<script src="/comp/navbar.js?v=20260727baijam"></script>
+<script src="/comp/navbar.js?v=20260813profilemenu"></script>
 </body>
 </html>
