@@ -52,9 +52,7 @@ body.pts-register .pts-auth-scene__geo {
 body.pts-login > #app-navbar,
 body.pts-register > #app-navbar,
 body.pts-login > .pts-login__stage,
-body.pts-register > .pts-login__stage,
-body.pts-login > .pts-login-modal,
-body.pts-register > .pts-login-modal {
+body.pts-register > .pts-login__stage {
   position: relative;
   z-index: 5;
 }

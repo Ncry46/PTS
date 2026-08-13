@@ -100,6 +100,10 @@
       console.error('reset-modal not found');
       return;
     }
+    // keep overlay on <body> so fixed centering is never trapped by page layout
+    if (modal.parentElement !== document.body) {
+      document.body.appendChild(modal);
+    }
     const loginEmail = document.getElementById('email');
     const resetEmail = document.getElementById('reset-email');
     if (loginEmail && resetEmail && loginEmail.value && !resetEmail.value) {
@@ -112,6 +116,7 @@
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    window.scrollTo(0, 0);
     clearResetMsg();
     const sendBtn = document.getElementById('otp-btn');
     if (sendBtn) {
@@ -119,7 +124,7 @@
       sendBtn.textContent = 'ส่งลิงก์ไปที่อีเมล';
     }
     window.setTimeout(() => {
-      (resetEmail || modal.querySelector('input'))?.focus();
+      (resetEmail || modal.querySelector('input'))?.focus({ preventScroll: true });
     }, 380);
   }
 

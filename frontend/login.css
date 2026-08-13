@@ -669,25 +669,35 @@ input[type="password"]::-ms-reveal,
   }
   .pts-login__legal a:hover { color: var(--pts-primary, #ca1156); }
 
-  /* ——— Premium forgot-password popup ——— */
+  /* ——— Premium forgot-password popup (viewport overlay) ——— */
+  body.pts-login > .pts-login-modal,
+  body.pts-register > .pts-login-modal,
   .pts-login-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100000;
+    position: fixed !important;
+    inset: 0 !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    z-index: 100000 !important;
     display: none;
     align-items: center;
     justify-content: center;
     padding: 18px;
-    background:
-      radial-gradient(ellipse 80% 60% at 50% 20%, rgba(202,17,86,.22), transparent 55%),
-      rgba(18, 10, 14, .58);
-    backdrop-filter: blur(14px) saturate(1.15);
-    -webkit-backdrop-filter: blur(14px) saturate(1.15);
+    margin: 0;
+    width: auto;
+    height: auto;
+    max-height: none;
+    overflow: auto;
+    overscroll-behavior: contain;
+    background: rgba(18, 10, 14, .42);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
   }
   .pts-login-modal.is-open,
   .pts-login-modal:not(.hidden) {
     display: flex !important;
-    animation: pts-pop-backdrop-in .4s ease both;
+    animation: pts-pop-backdrop-in .35s ease both;
   }
   .pts-login-modal.is-closing {
     animation: pts-pop-backdrop-out .28s ease both;
@@ -735,6 +745,7 @@ input[type="password"]::-ms-reveal,
     position: relative;
     width: 100%;
     max-width: 440px;
+    margin: auto;
     border-radius: 28px;
     overflow: hidden;
     background: #fff;
@@ -744,7 +755,8 @@ input[type="password"]::-ms-reveal,
       0 0 0 1px rgba(202,17,86,.08),
       inset 0 1px 0 rgba(255,255,255,.9);
     color: #1c1520;
-    transform-origin: 50% 80%;
+    transform-origin: 50% 50%;
+    flex-shrink: 0;
   }
   .pts-login-modal.is-open .pts-login-modal__card {
     animation: pts-pop-bounce-in .75s cubic-bezier(.34,1.45,.64,1) both;
