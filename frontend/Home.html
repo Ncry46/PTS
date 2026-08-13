@@ -1,8 +1,8 @@
 <!DOCTYPE html><html lang="th" style="">
         <head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
         <script src="/comp/theme-boot.js"></script>
-        <script src="/comp/i18n-dict.js?v=20260725lang"></script>
-        <script src="/comp/lang-boot.js?v=20260725lang"></script>
+        <script src="/comp/i18n-dict.js?v=20260813enfix"></script>
+        <script src="/comp/lang-boot.js?v=20260813enfix"></script>
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link href="https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&amp;family=Bai+Jamjuree:wght@200;300;400;500;600;700&amp;display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
@@ -379,21 +379,21 @@
 <div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
 <div class="text-left">
 <h2 class="font-headline-lg text-headline-lg text-on-background mb-base" data-i18n="home.courses">หลักสูตรแนะนำ</h2>
-<p class="font-body-md text-body-md text-on-surface-variant">ข้อมูลจากระบบจริง อัปเดตตามหลักสูตรในฐานข้อมูล</p>
+<p class="font-body-md text-body-md text-on-surface-variant" data-i18n="home.coursesSub">ข้อมูลจากระบบจริง อัปเดตตามหลักสูตรในฐานข้อมูล</p>
 </div>
 <a href="Courses.html" class="flex items-center gap-sm text-primary font-bold group">
-                ดูทั้งหมด
+                <span data-i18n="home.viewAll">ดูทั้งหมด</span>
                 <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
 </a>
 </div>
 <div class="flex flex-wrap gap-sm mb-lg" id="home-course-filters">
-<button type="button" data-mode="" class="home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm">ทั้งหมด</button>
+<button type="button" data-mode="" class="home-filter px-6 py-2 bg-primary text-on-primary rounded-full font-label-md text-label-md shadow-sm" data-i18n="home.filterAll">ทั้งหมด</button>
 <button type="button" data-mode="online" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Online</button>
 <button type="button" data-mode="onsite" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Onsite</button>
 <button type="button" data-mode="hybrid" class="home-filter px-6 py-2 bg-surface-container-highest text-on-surface-variant hover:bg-primary-fixed hover:text-primary transition-colors rounded-full font-label-md text-label-md">Hybrid</button>
 </div>
 <div id="home-courses" class="pts-course-grid">
-  <div class="text-on-surface-variant col-span-full py-8 text-center">กำลังโหลดหลักสูตร...</div>
+  <div class="text-on-surface-variant col-span-full py-8 text-center" data-i18n="home.loadingCourses">กำลังโหลดหลักสูตร...</div>
 </div>
 </div>
 </section>
@@ -401,38 +401,38 @@
 <section class="py-xl bg-surface">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
 <div class="text-center mb-xl">
-<h2 class="font-headline-lg text-headline-lg text-on-background" data-i18n="home.why">เริ่มต้นเรียนได้ 3 รูปแบบ</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-background" data-i18n="home.stepsTitle">เริ่มต้นเรียนได้ 3 รูปแบบ</h2>
 </div>
 <div class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md">
 <!-- Step 1 -->
 <div class="flex flex-col items-center text-center">
 <div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">1</div>
-<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.why1">เลือกหลักสูตร</h5>
-<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.why1-desc">เลือกวิชาที่คุณสนใจ</p>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.step1">เลือกหลักสูตร</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.step1Desc">เลือกวิชาที่คุณสนใจ</p>
 </div>
 <!-- Step 2 -->
 <div class="flex flex-col items-center text-center">
 <div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">2</div>
-<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.why2">ลงทะเบียน</h5>
-<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.why2-desc">ชำระเงินผ่านระบบ QR Code</p>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.step2">ลงทะเบียน</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.step2Desc">ชำระเงินผ่านระบบ QR Code</p>
 </div>
 <!-- Step 3 -->
 <div class="flex flex-col items-center text-center">
 <div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">3</div>
-<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.why3">Online / Onsite / Hybrid</h5>
-<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.why3-desc">เข้าเรียนตามรูปแบบที่เลือก</p>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.step3">Online / Onsite / Hybrid</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.step3Desc">เข้าเรียนตามรูปแบบที่เลือก</p>
 </div>
 <!-- Step 4 -->
 <div class="flex flex-col items-center text-center">
 <div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">4</div>
-<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.why4">เรียนจบ</h5>
-<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.why4-desc">ผ่านเกณฑ์แบบทดสอบ</p>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.step4">เรียนจบ</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.step4Desc">ผ่านเกณฑ์แบบทดสอบ</p>
 </div>
 <!-- Step 5 -->
 <div class="flex flex-col items-center text-center">
 <div class="w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center font-headline-sm mb-md soft-shadow">5</div>
-<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.why5">รับใบประกาศ</h5>
-<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.why5-desc">ขอรับใบเซอร์ฯ ดิจิทัลได้ทันที</p>
+<h5 class="font-label-md text-label-md font-bold mb-xs text-on-surface" data-i18n="home.step5">รับใบประกาศ</h5>
+<p class="font-body-sm text-body-sm text-on-surface-variant" data-i18n="home.step5Desc">ขอรับใบเซอร์ฯ ดิจิทัลได้ทันที</p>
 </div>
 </div>
 </div>
@@ -503,33 +503,33 @@
 <section class="py-xl bg-white">
 <div class="max-w-2xl mx-auto px-margin-mobile md:px-lg">
 <div class="text-center mb-xl">
-<h2 class="font-headline-lg text-headline-lg text-on-background mb-base">คำถามที่พบบ่อย (FAQ)</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-background mb-base" data-i18n="home.faqTitle">คำถามที่พบบ่อย (FAQ)</h2>
 </div>
 <div class="space-y-sm">
 <details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
 <summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
-<span class="font-headline-sm text-headline-sm text-on-surface">หลักสูตรมีอายุการใช้งานกี่วัน?</span>
+<span class="font-headline-sm text-headline-sm text-on-surface" data-i18n="home.faq1q">หลักสูตรมีอายุการใช้งานกี่วัน?</span>
 <span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
 </summary>
-<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md" data-i18n="home.faq1a">
                         คุณสามารถเข้าเรียนได้ตลอดชีพ (Lifetime Access) ไม่มีวันหมดอายุ เพื่อให้คุณได้กลับมาทบทวนความรู้ได้เสมอ
                     </div>
 </details>
 <details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
 <summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
-<span class="font-headline-sm text-headline-sm text-on-surface">มีการสอบเพื่อรับใบประกาศหรือไม่?</span>
+<span class="font-headline-sm text-headline-sm text-on-surface" data-i18n="home.faq2q">มีการสอบเพื่อรับใบประกาศหรือไม่?</span>
 <span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
 </summary>
-<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md" data-i18n="home.faq2a">
                         ใช่ค่ะ ในแต่ละหลักสูตรจะมีแบบทดสอบหลังเรียนจบ คุณต้องทำคะแนนให้ผ่านเกณฑ์ที่กำหนดเพื่อขอรับใบประกาศนียบัตรดิจิทัล
                     </div>
 </details>
 <details class="group bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/20 overflow-hidden">
 <summary class="flex justify-between items-center p-md cursor-pointer list-none hover:bg-surface-container-low transition-colors">
-<span class="font-headline-sm text-headline-sm text-on-surface">สามารถขอใบกำกับภาษีได้ไหม?</span>
+<span class="font-headline-sm text-headline-sm text-on-surface" data-i18n="home.faq3q">สามารถขอใบกำกับภาษีได้ไหม?</span>
 <span class="material-symbols-outlined group-open:rotate-180 transition-transform">expand_more</span>
 </summary>
-<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md">
+<div class="p-md pt-0 text-on-surface-variant font-body-md text-body-md" data-i18n="home.faq3a">
                         ได้ค่ะ ท่านสามารถระบุข้อมูลการขอใบกำกับภาษีได้ในขั้นตอนการชำระเงิน หรือติดต่อทีมงาน Support ผ่าน Line OA
                     </div>
 </details>
@@ -542,11 +542,11 @@
 <div class="bg-primary text-on-primary rounded-2xl p-lg md:p-xl flex flex-col md:flex-row items-center justify-between gap-lg relative overflow-hidden">
 <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
 <div class="relative z-10 text-center md:text-left space-y-sm">
-<h2 class="font-headline-lg text-headline-lg">พร้อมยกระดับอาชีพของคุณแล้วหรือยัง?</h2>
-<p class="font-body-lg text-body-lg text-white/80">เริ่มเรียนรู้วันนี้เพื่อก้าวสู่การเป็นมืออาชีพที่ใครๆ ก็ต้องการตัว</p>
+<h2 class="font-headline-lg text-headline-lg" data-i18n="home.ctaTitle">พร้อมยกระดับอาชีพของคุณแล้วหรือยัง?</h2>
+<p class="font-body-lg text-body-lg text-white/80" data-i18n="home.ctaSub">เริ่มเรียนรู้วันนี้เพื่อก้าวสู่การเป็นมืออาชีพที่ใครๆ ก็ต้องการตัว</p>
 </div>
 <div class="relative z-10">
-<button class="px-xl py-4 bg-white text-primary rounded-full font-headline-sm text-headline-sm hover:bg-surface-bright active:scale-95 transition-all shadow-xl" onclick="location.href='Courses.html'">สมัครเรียนตอนนี้</button>
+<button class="px-xl py-4 bg-white text-primary rounded-full font-headline-sm text-headline-sm hover:bg-surface-bright active:scale-95 transition-all shadow-xl" onclick="location.href='Courses.html'" data-i18n="home.ctaBtn">สมัครเรียนตอนนี้</button>
 </div>
 </div>
 </div>
@@ -557,12 +557,12 @@
 <div class="flex flex-col md:flex-row justify-between items-center px-margin-mobile md:px-lg gap-md max-w-container-max mx-auto">
 <div class="space-y-sm text-center md:text-left">
 <img alt="Personal Assistant Academy Logo" class="h-10 w-auto object-contain mx-auto md:mx-0" src="/logo.png">
-<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ เพื่อความก้าวหน้าในสายงานอย่างยั่งยืน</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs" data-i18n="home.footerAbout">ศูนย์กลางการเรียนรู้และพัฒนาทักษะสำหรับผู้ช่วยส่วนตัวมืออาชีพ เพื่อความก้าวหน้าในสายงานอย่างยั่งยืน</p>
 </div>
 <div class="flex flex-wrap justify-center gap-md">
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">เกี่ยวกับเรา</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">นโยบายความเป็นส่วนตัว</a>
-<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html">ติดต่อเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html" data-i18n="home.footerAboutLink">เกี่ยวกับเรา</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html" data-i18n="home.footerPrivacy">นโยบายความเป็นส่วนตัว</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="Legal.html" data-i18n="home.footerContact">ติดต่อเรา</a>
 <a class="text-on-surface-variant hover:text-primary transition-colors font-body-sm text-body-sm" href="LineApp.html">LINE OA Support</a>
 </div>
 <div class="flex gap-sm">
@@ -825,15 +825,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const renderCourses = () => {
     if (!grid) return;
+    const t = (key, fallback) => (window.PTSLang && PTSLang.t ? PTSLang.t(key, fallback) : fallback);
     const localized = (window.PTSCourseI18n ? PTSCourseI18n.localizeAll(allCourses) : allCourses);
     const list = localized.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 6);
     if (!list.length) {
-      grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">ยังไม่มีหลักสูตรในระบบ · <a class="text-primary font-bold" href="Courses.html">ดูหน้าหลักสูตร</a></div>';
+      grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">' +
+        escapeHtml(t('home.emptyCourses', 'ยังไม่มีหลักสูตรในระบบ')) +
+        ' · <a class="text-primary font-bold" href="Courses.html">' +
+        escapeHtml(t('home.viewAll', 'ดูทั้งหมด')) + '</a></div>';
       return;
     }
     grid.innerHTML = list.map(c => {
       const mode = String(c.delivery_mode || 'online').toLowerCase();
-      const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '-';
+      const hoursUnit = t('home.hours', 'ชม.');
+      const hours = c.total_hours != null ? `${Number(c.total_hours)} ${hoursUnit}` : '-';
       const price = Number(c.price || 0).toLocaleString('th-TH');
       const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
       const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00ca01';
@@ -844,6 +849,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       const instructor = (lang === 'en'
         ? (c.instructor_name_en || c.instructor_name_th || c.instructor_name || '')
         : (c.instructor_name_th || c.instructor_name_en || c.instructor_name || '')).toString().trim() || '-';
+      const detailsLabel = t('btn.details', 'รายละเอียด');
       return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
         <div class="pts-course-card__media">
           <img alt="" src="${img}" loading="lazy">
@@ -863,7 +869,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           </div>
           <div class="pts-course-card__foot">
             <span class="pts-course-card__price">฿${price}</span>
-            <span class="pts-btn pts-btn-outline pts-course-card__cta" style="pointer-events:none">รายละเอียด</span>
+            <span class="pts-btn pts-btn-outline pts-course-card__cta" style="pointer-events:none">${escapeHtml(detailsLabel)}</span>
           </div>
         </div>
       </a>`;
