@@ -8,6 +8,7 @@ const { mapHeroSlidesImages } = require('./heroImages');
 const { markPaidAndEnroll, ensureEnrolled } = require('./paymentActions');
 const { findRequiredCourseForm } = require('./formRoutes');
 const { tryUploadLocalFile } = require('./googleDrive');
+const { recordMediaUpload } = require('./mediaFiles');
 const { flagActiveSql, isFlagActive } = require('./db');
 const { localizeCourseRow, localizeCourseRows, resolveLangFromReq, pickText } = require('./courseLang');
 const { loadValidCoupon, recordRedemption, normalizeCouponCode } = require('./couponHelpers');
@@ -768,6 +769,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 }
 
                 let slipUrl = `/uploads/slips/${req.file.filename}`;
+                const localUrl = `/uploads/slips/${req.file.filename}`;
                 const transferRaw = String(req.body.transfer_at || '').trim();
                 let transferAt = null;
                 if (transferRaw) {
@@ -776,6 +778,8 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 }
 
                 // Keep local slip as cache; store Drive proxy URL in DB when available.
+                let driveFileId = null;
+                let driveUrl = null;
                 const drive = await tryUploadLocalFile(req.file.path, {
                     filename: req.file.filename,
                     mimeType: req.file.mimetype,
@@ -783,17 +787,13 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 });
                 if (drive && drive.ok && drive.url) {
                     slipUrl = drive.url;
+                    driveUrl = drive.url;
+                    driveFileId = drive.fileId || null;
                 } else if (drive && drive.error) {
                     console.warn('[slip→drive]', drive.error);
                 }
 
-                // Remove previous slip file if re-submitting after reject
-                if (row.slip_image_url && String(row.slip_image_url).startsWith('/uploads/slips/')) {
-                    try {
-                        const prev = path.join(SLIP_DIR, path.basename(row.slip_image_url));
-                        if (fs.existsSync(prev)) fs.unlinkSync(prev);
-                    } catch (_) { /* ignore */ }
-                }
+                // Keep old slip files on disk for history (media_files).
 
                 await pool.request()
                     .input('paymentId', sql.Int, paymentId)
@@ -809,6 +809,22 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                             reviewed_at = NULL
                         WHERE payment_id = @paymentId
                     `);
+
+                await recordMediaUpload(pool, {
+                    category: 'slips',
+                    userId: user.user_id,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl,
+                    driveFileId,
+                    driveUrl,
+                    publicUrl: slipUrl,
+                    refTable: 'payments',
+                    refId: paymentId,
+                    note: 'payment slip'
+                });
 
                 res.json({
                     success: true,

@@ -16,6 +16,7 @@ const {
 } = require('./certAssets');
 const { markPaidAndEnroll } = require('./paymentActions');
 const { tryUploadLocalFile } = require('./googleDrive');
+const { recordMediaUpload } = require('./mediaFiles');
 const { writeAdminAudit, listAdminAudit, ensureAdminAuditTable } = require('./adminAudit');
 const {
     USAGE_RULES,
@@ -1678,9 +1679,31 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 category: 'hero'
             });
             if (drive && !drive.ok && drive.error) console.warn('[hero→drive]', drive.error);
+            const localUrl = `/uploads/hero/${req.file.filename}`;
+            const publicUrl = (drive && drive.ok && drive.url) ? drive.url : localUrl;
+            try {
+                const pool = await poolPromise;
+                await recordMediaUpload(pool, {
+                    category: 'hero',
+                    userId: req.session?.user?.user_id || null,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl,
+                    driveFileId: drive && drive.ok ? drive.fileId : null,
+                    driveUrl: drive && drive.ok ? drive.url : null,
+                    publicUrl,
+                    refTable: 'hero',
+                    refId: req.file.filename,
+                    note: 'hero slide'
+                });
+            } catch (mediaErr) {
+                console.warn('[hero→media_files]', mediaErr.message);
+            }
             res.json({
                 success: true,
-                url: `/uploads/hero/${req.file.filename}`,
+                url: localUrl,
                 driveBackup: !!(drive && drive.ok)
             });
         });
@@ -1729,10 +1752,32 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 category: 'hero'
             });
             if (drive && !drive.ok && drive.error) console.warn('[home-banner→drive]', drive.error);
+            const localUrl = `/uploads/hero/${req.file.filename}`;
+            const publicUrl = (drive && drive.ok && drive.url) ? drive.url : localUrl;
+            try {
+                const pool = await poolPromise;
+                await recordMediaUpload(pool, {
+                    category: 'hero',
+                    userId: req.session?.user?.user_id || null,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl,
+                    driveFileId: drive && drive.ok ? drive.fileId : null,
+                    driveUrl: drive && drive.ok ? drive.url : null,
+                    publicUrl,
+                    refTable: 'hero',
+                    refId: req.file.filename,
+                    note: 'home gallery banner'
+                });
+            } catch (mediaErr) {
+                console.warn('[home-banner→media_files]', mediaErr.message);
+            }
             const items = listGalleryBanners({ includeDisabled: true });
             const item = items.find((x) => x.filename === req.file.filename) || {
                 filename: req.file.filename,
-                url: `/uploads/hero/${req.file.filename}`,
+                url: localUrl,
                 enabled: true
             };
             res.json({
@@ -1828,6 +1873,26 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             });
             if (drive && !drive.ok && drive.error) console.warn('[home-banner-legacy→drive]', drive.error);
             const info = getHomeBannerInfo();
+            try {
+                const pool = await poolPromise;
+                await recordMediaUpload(pool, {
+                    category: 'hero',
+                    userId: req.session?.user?.user_id || null,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename || HOME_BANNER_FILENAME,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl: `/uploads/hero/${HOME_BANNER_FILENAME}`,
+                    driveFileId: drive && drive.ok ? drive.fileId : null,
+                    driveUrl: drive && drive.ok ? drive.url : null,
+                    publicUrl: (drive && drive.ok && drive.url) ? drive.url : `/uploads/hero/${HOME_BANNER_FILENAME}`,
+                    refTable: 'hero',
+                    refId: HOME_BANNER_FILENAME,
+                    note: 'home banner legacy'
+                });
+            } catch (mediaErr) {
+                console.warn('[home-banner-legacy→media_files]', mediaErr.message);
+            }
             res.json({
                 success: true,
                 message: 'บันทึกแบนเนอร์หน้าแรกแล้ว',
@@ -1884,6 +1949,27 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const slotKey = String(req.query.slot || req.body.slot || '').trim().toLowerCase();
             const items = listCertAssets();
             const item = items.find((x) => x.slot === slotKey) || items.find((x) => x.filename === req.file.filename);
+            const localUrl = item?.url?.split('?')[0] || `/uploads/cert/${req.file.filename}`;
+            try {
+                const pool = await poolPromise;
+                await recordMediaUpload(pool, {
+                    category: 'cert',
+                    userId: req.session?.user?.user_id || null,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl,
+                    driveFileId: drive && drive.ok ? drive.fileId : null,
+                    driveUrl: drive && drive.ok ? drive.url : null,
+                    publicUrl: (drive && drive.ok && drive.url) ? drive.url : localUrl,
+                    refTable: 'cert',
+                    refId: slotKey || req.file.filename,
+                    note: `cert ${item?.label || slotKey || 'asset'}`
+                });
+            } catch (mediaErr) {
+                console.warn('[cert→media_files]', mediaErr.message);
+            }
             res.json({
                 success: true,
                 message: `อัปโหลด${item?.label || ''}แล้ว`,

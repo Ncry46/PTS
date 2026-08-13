@@ -1,5 +1,6 @@
 const sql = require('mssql');
 const { isAutoSchemaEnabled } = require('./db');
+const { ensureMediaFilesTable } = require('./mediaFiles');
 
 async function ensureLearningSchema(pool) {
     if (!isAutoSchemaEnabled()) {
@@ -924,6 +925,12 @@ async function ensureCompatColumns(pool) {
     }
     console.log(`🧩 Column compat checked (${ok} ok, ${skipped} skipped)`);
     await migrateCouponsFlagUseToYn(pool);
+    try {
+        await ensureMediaFilesTable(pool);
+        console.log('🧩 media_files table ready');
+    } catch (err) {
+        console.warn('[compat] media_files:', err.message);
+    }
 }
 
 module.exports = { ensureLearningSchema, ensureCompatColumns, createNotification, migrateCouponsFlagUseToYn };

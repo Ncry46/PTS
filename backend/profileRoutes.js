@@ -7,6 +7,7 @@ const { flagActiveSql } = require('./db');
 const { localizeCourseRow, resolveLangFromReq, courseListTextSql, courseMetaSelectSql, COURSE_API_VERSION } = require('./courseLang');
 const { issueEmailOtp, verifyEmailOtp } = require('./emailOtp');
 const { tryUploadLocalFile, isDriveConfigured, normalizeDriveUrl, extractDriveFileId } = require('./googleDrive');
+const { recordMediaUpload } = require('./mediaFiles');
 
 const AVATAR_DIR = path.join(__dirname, '..', 'uploads', 'avatars');
 const ALLOWED_MIME = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/gif']);
@@ -255,10 +256,6 @@ function createProfileRouter({ poolPromise, requireLogin }) {
             const localUrl = `/uploads/avatars/${req.file.filename}`;
             try {
                 const pool = await poolPromise;
-                const prev = await pool.request()
-                    .input('userId', sql.Int, user.user_id)
-                    .query(`SELECT Url FROM dbo.users WHERE user_id = @userId`);
-                const oldUrl = prev.recordset[0]?.Url || '';
 
                 // Keep local file as cache. Prefer Drive proxy URL in DB so the image
                 // survives when the server uploads folder is wiped.
@@ -288,11 +285,22 @@ function createProfileRouter({ poolPromise, requireLogin }) {
 
                 req.session.user.Url = publicUrl;
 
-                // ลบไฟล์เก่าของเราเอง (ถ้าเคยอัปโหลดไว้ในเครื่อง)
-                if (oldUrl && String(oldUrl).startsWith('/uploads/avatars/') && oldUrl !== localUrl) {
-                    const oldPath = path.join(__dirname, '..', String(oldUrl).replace(/^\//, ''));
-                    fs.promises.unlink(oldPath).catch(() => {});
-                }
+                // Keep old avatar files on disk; history lives in media_files.
+                const media = await recordMediaUpload(pool, {
+                    category: 'avatars',
+                    userId: user.user_id,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl,
+                    driveFileId,
+                    driveUrl,
+                    publicUrl,
+                    refTable: 'users',
+                    refId: user.user_id,
+                    note: storedOn === 'google_drive' ? 'avatar+drive' : 'avatar+local'
+                });
 
                 res.json({
                     success: true,
@@ -308,6 +316,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                     driveError,
                     driveUrl,
                     driveFileId,
+                    media_id: media.media_id || null,
                     user: req.session.user
                 });
             } catch (error) {

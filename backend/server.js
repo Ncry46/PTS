@@ -6,6 +6,7 @@ const session = require('express-session');
 const multer = require('multer');
 try { require('dotenv').config({ path: path.join(__dirname, '..', '.env') }); } catch (_) {}
 const { ensureLearningSchema, ensureCompatColumns, createNotification } = require('./ensureSchema');
+const { recordMediaUpload } = require('./mediaFiles');
 const {
     sql,
     DB_NAME,
@@ -859,6 +860,8 @@ app.post('/api/community', (req, res) => {
 
         const content = String(req.body?.content || '').trim();
         let imageUrl = req.file ? `/uploads/community/${req.file.filename}` : null;
+        let communityLocalUrl = imageUrl;
+        let communityDrive = null;
 
         if (!content && !imageUrl) {
             return res.status(400).json({ success: false, message: 'กรุณาใส่ข้อความหรือรูปภาพก่อนโพสต์' });
@@ -875,6 +878,7 @@ app.post('/api/community', (req, res) => {
                     mimeType: req.file.mimetype,
                     category: 'community'
                 });
+                communityDrive = up;
                 if (up && up.ok && up.url) {
                     // Persist Drive proxy URL in DB; keep local file as cache.
                     imageUrl = up.url;
@@ -911,6 +915,29 @@ app.post('/api/community', (req, res) => {
             `);
 
             const created = inserted.recordset[0];
+
+            if (req.file && created?.post_id) {
+                try {
+                    await recordMediaUpload(pool, {
+                        category: 'community',
+                        userId: req.session.user.user_id,
+                        originalName: req.file.originalname,
+                        storedFilename: req.file.filename,
+                        mimeType: req.file.mimetype,
+                        fileSizeBytes: req.file.size,
+                        localUrl: communityLocalUrl,
+                        driveFileId: communityDrive && communityDrive.ok ? communityDrive.fileId : null,
+                        driveUrl: communityDrive && communityDrive.ok ? communityDrive.url : null,
+                        publicUrl: imageUrl,
+                        refTable: 'community_posts',
+                        refId: created.post_id,
+                        note: 'community post image'
+                    });
+                } catch (mediaErr) {
+                    console.warn('[community→media_files]', mediaErr.message);
+                }
+            }
+
             res.json({
                 success: true,
                 message: 'โพสต์สำเร็จ',
