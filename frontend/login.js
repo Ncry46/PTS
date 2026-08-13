@@ -101,7 +101,9 @@
       confirmBtn.classList.add('is-disabled');
     }
     setResetStep(1);
-    modal.classList.remove('hidden');
+    modal.classList.remove('hidden', 'is-closing', 'is-open');
+    // reflow so bounce/sparks replay every open
+    void modal.offsetWidth;
     modal.classList.add('is-open');
     modal.style.display = 'flex';
     modal.setAttribute('aria-hidden', 'false');
@@ -109,14 +111,12 @@
     clearResetMsg();
     window.setTimeout(() => {
       (resetEmail || modal.querySelector('input'))?.focus();
-    }, 30);
+    }, 380);
   }
 
-  function closeResetModal() {
-    const modal = document.getElementById('reset-modal');
-    if (!modal) return;
+  function finishCloseResetModal(modal) {
     modal.classList.add('hidden');
-    modal.classList.remove('is-open');
+    modal.classList.remove('is-open', 'is-closing');
     modal.style.display = 'none';
     modal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
@@ -128,6 +128,18 @@
     }
     setResetStep(1);
     clearResetMsg();
+  }
+
+  function closeResetModal() {
+    const modal = document.getElementById('reset-modal');
+    if (!modal || modal.classList.contains('hidden')) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishCloseResetModal(modal);
+      return;
+    }
+    modal.classList.add('is-closing');
+    modal.classList.remove('is-open');
+    window.setTimeout(() => finishCloseResetModal(modal), 280);
   }
 
   window.openResetModal = openResetModal;
