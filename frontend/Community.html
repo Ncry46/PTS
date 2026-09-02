@@ -7,9 +7,9 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260813enfix"></script>
 <script src="/comp/lang-boot.js?v=20260813enfix"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260811calm">
+<link rel="stylesheet" href="site.css?v=20260902seed">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
 tailwind.config = {
@@ -43,7 +43,7 @@ tailwind.config = {
   }
 
   .cm-shell {
-    --cm-red: #ca1156;
+    --cm-red: var(--pts-primary);
     --cm-red-deep: #9b0d42;
     --cm-red-hot: #e11d48;
     --cm-blush: #fff0f4;
@@ -460,8 +460,8 @@ tailwind.config = {
         PA Learning
       </a>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
-        <a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
+        <a href="Login.html" style="padding:8px 14px;border:1px solid var(--pts-primary);border-radius:999px;color:var(--pts-primary);text-decoration:none;font-weight:700;font-size:14px;">เข้าสู่ระบบ</a>
+        <a href="Register.html" style="padding:8px 14px;background:var(--pts-primary);border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px;">สมัครสมาชิก</a>
       </div>
     </div>
   </nav>
@@ -949,8 +949,8 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
       + '<a href="Home.html" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--pts-text,#1c1520);font-weight:700">'
       + '<img src="/logo.png" alt="PTS Learning" style="height:42px;width:auto;max-width:160px;object-fit:contain;display:block">PTS Learning</a>'
       + '<div style="display:flex;gap:8px">'
-      + '<a href="Login.html" style="padding:8px 14px;border:1px solid #ca1156;border-radius:999px;color:#ca1156;text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
-      + '<a href="Register.html" style="padding:8px 14px;background:#ca1156;border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
+      + '<a href="Login.html" style="padding:8px 14px;border:1px solid var(--pts-primary);border-radius:999px;color:var(--pts-primary);text-decoration:none;font-weight:700;font-size:14px">เข้าสู่ระบบ</a>'
+      + '<a href="Register.html" style="padding:8px 14px;background:var(--pts-primary);border-radius:999px;color:#fff;text-decoration:none;font-weight:700;font-size:14px">สมัครสมาชิก</a>'
       + '</div></div></nav>';
   }
 })();

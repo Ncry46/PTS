@@ -10,9 +10,9 @@
 <script src="/comp/i18n-dict.js?v=20260813enfix"></script>
 <script src="/comp/lang-boot.js?v=20260813enfix"></script>
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
-<link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260727homecream">
+<link rel="stylesheet" href="site.css?v=20260902seed">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#ca1156','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
 <style>
@@ -40,7 +40,7 @@
   .myc-stat__value {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #ca1156;
+    color: var(--pts-primary);
     line-height: 1.2;
   }
   .myc-section { margin-bottom: 28px; }
@@ -101,7 +101,7 @@
     position: absolute;
     left: 10px;
     bottom: 10px;
-    background: #ca1156;
+    background: var(--pts-primary);
     color: #fff;
     font-size: 11px;
     font-weight: 700;
@@ -162,7 +162,7 @@
     margin-bottom: 6px;
     gap: 8px;
   }
-  .myc-progress-row strong { color: #ca1156; }
+  .myc-progress-row strong { color: var(--pts-primary); }
   .myc-bar {
     height: 6px;
     width: 100%;
@@ -173,7 +173,7 @@
   .myc-bar > span {
     display: block;
     height: 100%;
-    background: #ca1156;
+    background: var(--pts-primary);
     border-radius: 999px;
   }
   .myc-status {
@@ -187,7 +187,7 @@
   }
   .myc-status--progress {
     background: rgba(151,66,88,.1);
-    color: #ca1156;
+    color: var(--pts-primary);
   }
   .myc-status--done {
     background: rgba(46,125,50,.12);
@@ -215,7 +215,7 @@
     text-align: center;
     font-size: 12px;
     font-weight: 600;
-    color: #ca1156;
+    color: var(--pts-primary);
     text-decoration: none;
     padding: 2px 0;
   }

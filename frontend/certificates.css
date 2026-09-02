@@ -83,7 +83,7 @@
   border-radius: 999px;
   display: inline-grid;
   place-items: center;
-  background: #ca1156;
+  background: var(--pts-primary);
   color: #fff;
   font-size: 11px;
 }
@@ -159,7 +159,7 @@
 }
 .cert-card__section_title {
   margin: 0;
-  font-family: 'SN Pro', 'Bai Jamjuree', sans-serif;
+  font-family: 'LINE Seed Sans TH', sans-serif;
   font-size: 0.92rem;
   font-weight: 700;
   color: var(--pts-text, #1c1520);
@@ -226,14 +226,14 @@
   height: 44px;
   border-radius: 999px;
   background: #f6e6ea;
-  color: #ca1156;
+  color: var(--pts-primary);
   display: grid;
   place-items: center;
 }
 .cert-teaser__icon .material-symbols-outlined { font-size: 22px; }
 .cert-teaser p { margin: 0; color: #5c4f55; font-size: 12px; line-height: 1.45; max-width: 14rem; }
 .cert-teaser a {
-  color: #ca1156;
+  color: var(--pts-primary);
   font-weight: 700;
   text-decoration: none;
 }
@@ -246,7 +246,7 @@
 }
 .cert-page .pts-empty__icon {
   width: 56px; height: 56px; margin: 0 auto 10px;
-  border-radius: 999px; background: #f6e6ea; color: #ca1156;
+  border-radius: 999px; background: #f6e6ea; color: var(--pts-primary);
   display: grid; place-items: center;
 }
 
@@ -262,7 +262,7 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
   padding: 25px;
   box-sizing: border-box;
-  font-family: 'Sarabun', 'Bai Jamjuree', sans-serif;
+  font-family: 'LINE Seed Sans TH', sans-serif;
   color: #111;
 }
 
@@ -401,7 +401,7 @@
   position: absolute;
   top: 52%; left: 50%;
   transform: translate(-50%, -50%) rotate(-18deg);
-  font-family: 'Libre Baskerville', Georgia, serif;
+  font-family: 'LINE Seed Sans TH', sans-serif;
   font-size: 85px;
   font-weight: 700;
   color: rgba(139, 0, 0, 0.04);
@@ -456,7 +456,7 @@
 }
 
 .pts-cert__heading {
-  font-family: 'Libre Baskerville', Georgia, serif;
+  font-family: 'LINE Seed Sans TH', sans-serif;
   font-size: 44px;
   font-weight: 700;
   color: #111111;
@@ -489,7 +489,7 @@
   margin-bottom: 18px;
 }
 .pts-cert__name {
-  font-family: 'Sarabun', 'Bai Jamjuree', sans-serif;
+  font-family: 'LINE Seed Sans TH', sans-serif;
   font-size: 36px;
   font-weight: 700;
   color: #8B0000;
@@ -696,8 +696,8 @@ body.cert-modal-open .user-side {
 }
 
 html[data-theme="dark"] .cert-page .text-on-surface-variant { color: var(--pts-muted, #b8a8ae); }
-html[data-theme="dark"] .cert-page .text-primary { color: var(--pts-primary, #e895a8); }
+html[data-theme="dark"] .cert-page .text-primary { color: var(--pts-primary, #ca1156); }
 html[data-theme="dark"] .cert-tag--online { background: rgba(22,108,57,.22); color: #6ee7b7; }
 html[data-theme="dark"] .cert-tag--onsite { background: rgba(154,103,0,.22); color: #fdba74; }
 html[data-theme="dark"] .cert-tag--hybrid { background: rgba(61,90,76,.28); color: #b3ceab; }
-html[data-theme="dark"] .cert-tag--default { background: rgba(232,149,168,.16); color: #e895a8; }
+html[data-theme="dark"] .cert-tag--default { background: rgba(202,17,86,.16); color: #ca1156; }

@@ -782,7 +782,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             } else if (statusFilter === 'open') {
                 where += ` AND p.status IN ('pending', 'pending_review')`;
             }
-            if (sourceFilter === 'direct_signup' || sourceFilter === 'access_code' || sourceFilter === 'coupon') {
+            if (sourceFilter === 'direct_signup' || sourceFilter === 'coupon') {
                 request.input('source', sql.VarChar(50), sourceFilter);
                 where += ' AND ISNULL(p.source, \'direct_signup\') = @source';
             }
@@ -797,19 +797,17 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                     ISNULL(p.source, 'direct_signup') AS source,
                     p.reference_code, p.paid_at, p.created_at,
                     p.slip_image_url, p.transfer_at, p.reviewed_by, p.reviewed_at, p.reject_reason,
-                    p.access_code_id, p.coupon_id,
+                    p.coupon_id,
                     u.username, u.email,
                     c.course_name_th, c.course_name_en,
                     COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
                     reviewer.username AS reviewer_name,
-                    ac.code AS access_code,
                     cp.code AS coupon_code,
                     cp.discount_amount AS coupon_discount
                 FROM dbo.payments p
                 INNER JOIN dbo.users u ON u.user_id = p.user_id
                 INNER JOIN dbo.courses c ON c.course_id = p.course_id
                 LEFT JOIN dbo.users reviewer ON reviewer.user_id = p.reviewed_by
-                LEFT JOIN dbo.access_codes ac ON ac.access_code_id = p.access_code_id
                 LEFT JOIN dbo.coupons cp ON cp.coupon_id = p.coupon_id
                 ${where}
                 ORDER BY
@@ -829,7 +827,6 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 let workflow = 'other';
                 if (status === 'pending_review') workflow = 'pending_review';
                 else if (status === 'paid' && isGateway) workflow = 'auto_approved';
-                else if (status === 'paid' && String(p.source) === 'access_code') workflow = 'access_code';
                 else if (status === 'paid' && String(p.source) === 'coupon') workflow = 'coupon';
                 else if (status === 'paid' && isManual && p.reviewed_by) workflow = 'manual_approved';
                 else if (status === 'paid') workflow = 'paid';
@@ -966,14 +963,14 @@ function createAdminRouter({ poolPromise, requireLogin }) {
             const pool = await poolPromise;
             const result = await pool.request().query(`
                 SELECT TOP 200
-                    a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
-                    a.expires_at, a.note, a.flag_use, a.created_at, a.created_by,
-                    c.course_name_th, c.course_name_en,
-                    COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name, u.username AS created_by_name
-                FROM dbo.access_codes a
-                INNER JOIN dbo.courses c ON c.course_id = a.course_id
-                LEFT JOIN dbo.users u ON u.user_id = a.created_by
-                ORDER BY a.created_at DESC
+                    c.coupon_id AS access_code_id, c.code, c.course_id, c.max_uses, c.used_count,
+                    c.expires_at, c.note, c.flag_use, c.created_at, c.created_by,
+                    co.course_name_th, co.course_name_en,
+                    COALESCE(NULLIF(LTRIM(RTRIM(co.course_name_th)), N''), NULLIF(LTRIM(RTRIM(co.course_name_en)), N'')) AS course_name, u.username AS created_by_name
+                FROM dbo.coupons c
+                INNER JOIN dbo.courses co ON co.course_id = c.course_id
+                LEFT JOIN dbo.users u ON u.user_id = c.created_by
+                ORDER BY c.created_at DESC
             `);
             res.json({ success: true, data: result.recordset });
         } catch (error) {
@@ -1028,13 +1025,13 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('expiresAt', sql.DateTime, expiresAt)
                 .input('note', sql.NVarChar(255), note)
                 .input('createdBy', sql.Int, admin.user_id);
-            await bindFlagInput(pool, insertReq, 'flagUse', 'access_codes', true);
+            await bindFlagInput(pool, insertReq, 'flagUse', 'coupons', true);
             const inserted = await insertReq.query(`
-                    INSERT INTO dbo.access_codes
-                    (code, course_id, max_uses, used_count, expires_at, note, flag_use, created_by)
-                    OUTPUT INSERTED.access_code_id, INSERTED.code, INSERTED.course_id, INSERTED.max_uses,
+                    INSERT INTO dbo.coupons
+                    (code, course_id, discount_amount, usage_rule, max_uses, used_count, expires_at, note, flag_use, created_by)
+                    OUTPUT INSERTED.coupon_id, INSERTED.code, INSERTED.course_id, INSERTED.max_uses,
                            INSERTED.used_count, INSERTED.expires_at, INSERTED.note, INSERTED.flag_use, INSERTED.created_at
-                    VALUES (@code, @courseId, @maxUses, 0, @expiresAt, @note, @flagUse, @createdBy)
+                    VALUES (@code, @courseId, 0, 'max_uses', @maxUses, 0, @expiresAt, @note, @flagUse, @createdBy)
                 `);
 
             res.json({
@@ -1043,7 +1040,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 data: { ...inserted.recordset[0], course_name: course.recordset[0].course_name }
             });
         } catch (error) {
-            if (String(error.message || '').includes('UQ_access_codes_code') || String(error.number) === '2627') {
+            if (String(error.message || '').includes('UQ_coupons_code') || String(error.number) === '2627') {
                 return res.status(409).json({ success: false, message: 'รหัสนี้มีอยู่แล้ว' });
             }
             res.status(500).json({ success: false, message: error.message });
@@ -1065,8 +1062,8 @@ function createAdminRouter({ poolPromise, requireLogin }) {
         try {
             const pool = await poolPromise;
             const result = await setFlagUse(pool, {
-                table: 'access_codes',
-                idColumn: 'access_code_id',
+                table: 'coupons',
+                idColumn: 'coupon_id',
                 idValue: id,
                 active: isEnable
             });

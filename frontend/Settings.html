@@ -7,7 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260813enfixsettings2"></script>
 <script src="/comp/lang-boot.js?v=20260813enfix"></script>
-<link rel="stylesheet" href="site.css?v=20260727homecream">
+<link rel="stylesheet" href="site.css?v=20260902seed">
 <style>
   input[type="password"]::-ms-reveal,
   input[type="password"]::-ms-clear { display: none !important; width: 0 !important; height: 0 !important; }
@@ -76,7 +76,7 @@
     position: absolute; right: 2px; bottom: 2px;
     width: 34px; height: 34px; border-radius: 999px;
     border: 2px solid #fff; cursor: pointer;
-    background: #ca1156; color: #fff;
+    background: var(--pts-primary); color: #fff;
     display: inline-flex; align-items: center; justify-content: center;
     box-shadow: 0 6px 14px rgba(202,17,86,.3);
   }
@@ -86,7 +86,7 @@
   .set-role {
     display: inline-flex; align-items: center;
     font-size: 12px; font-weight: 700;
-    color: #ca1156; background: rgba(151,66,88,.1);
+    color: var(--pts-primary); background: rgba(151,66,88,.1);
     padding: 4px 12px; border-radius: 999px;
   }
   .set-meta {
@@ -138,7 +138,7 @@
   .set-conn__icon {
     width: 42px; height: 42px; border-radius: 12px;
     display: inline-flex; align-items: center; justify-content: center;
-    background: #fff; color: #ca1156; flex-shrink: 0;
+    background: #fff; color: var(--pts-primary); flex-shrink: 0;
     border: 1px solid rgba(151,66,88,.1);
   }
   .set-conn__icon--line { color: #06C755; }
@@ -158,7 +158,7 @@
     font-size: 13px; font-weight: 700; color: #5c4f55; cursor: pointer;
   }
   .set-radio input { position: absolute; opacity: 0; pointer-events: none; }
-  .set-radio label.is-active { background: #ca1156; color: #fff; }
+  .set-radio label.is-active { background: var(--pts-primary); color: #fff; }
   .set-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
   .set-privacy {
     display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
@@ -169,7 +169,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     font-size: 13px; font-weight: 600; color: #5c4f55; text-decoration: none;
   }
-  .set-privacy__links a:hover { color: #ca1156; }
+  .set-privacy__links a:hover { color: var(--pts-primary); }
   .set-privacy__links .material-symbols-outlined { font-size: 18px; }
   .set-edit-panel[hidden] { display: none !important; }
   .set-divider { height: 1px; background: rgba(151,66,88,.1); margin: 16px 0 14px; }

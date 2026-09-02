@@ -54,7 +54,7 @@ body.pts-pay-modal-open { overflow: hidden; }
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #CA1156;
+color: var(--pts-primary);
 }
 .pts-pay-modal__section_title {
   margin: 0 0 6px;
@@ -134,7 +134,7 @@ body.pts-pay-modal-open { overflow: hidden; }
 }
 .pts-pay-modal .pts-input:focus {
   outline: none;
-  border-color: #CA1156;
+  border-color: var(--pts-primary);
   background: #fff;
   box-shadow: 0 0 0 3px rgba(202, 17, 86, 0.14);
 }

@@ -1,5 +1,5 @@
 /* PTS Learning — shared professional shell */
-@import url('https://fonts.googleapis.com/css2?family=SN+Pro:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Bai+Jamjuree:wght@200;300;400;500;600;700&display=swap');
+@import url('https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css');
 
 :root {
   --pts-primary: #CA1156;
@@ -17,9 +17,9 @@
   --pts-radius-sm: 12px;
   --pts-nav-h: 68px;
   --pts-max: 1120px;
-  /* SN Pro for Latin; Bai Jamjuree covers Thai glyphs */
-  --pts-font: 'SN Pro', 'Bai Jamjuree', sans-serif;
-  --pts-display: 'SN Pro', 'Bai Jamjuree', sans-serif;
+  /* LINE Seed Sans TH covers Latin + Thai glyphs */
+  --pts-font: 'LINE Seed Sans TH', sans-serif;
+  --pts-display: 'LINE Seed Sans TH', sans-serif;
   --pts-nav-bg: #ffffff;
   --pts-nav-hover: #fce8ef;
   --pts-wash-a: rgba(202, 17, 86, 0.12);
@@ -31,9 +31,9 @@
 
 html[data-theme="dark"] {
   color-scheme: dark;
-  --pts-primary: #e895a8;
+  --pts-primary: #ca1156;
   --pts-primary-deep: #ffb1c1;
-  --pts-primary-soft: rgba(232, 149, 168, 0.16);
+  --pts-primary-soft: rgba(202, 17, 86, 0.16);
   --pts-accent: #8fbc9a;
   --pts-bg: #121014;
   --pts-surface: #1c181c;
@@ -527,13 +527,14 @@ a { color: inherit; }
 }
 
 .user-side__link.is-active {
-  background: #ca1156;
+  background: var(--pts-primary);
   color: #fff;
-  border-color: #ca1156;
+  border-color: var(--pts-primary);
 }
 
 html[data-theme="dark"] .user-side__link.is-active {
-  background: #b85a70;
+  background: var(--pts-primary);
+  border-color: var(--pts-primary);
   border-color: #b85a70;
 }
 
@@ -1250,9 +1251,9 @@ textarea.pts-input {
 button.pts-cal__day.pts-cal__day--selected,
 .pts-cal__day.pts-cal__day--selected {
   cursor: pointer;
-  border-color: #7a2f42;
-  background-color: #ca1156;
-  background-image: linear-gradient(160deg, #7a2f42 0%, #ca1156 55%, #b45d74 100%);
+  border-color: var(--pts-primary-deep);
+  background-color: var(--pts-primary);
+  background-image: linear-gradient(160deg, var(--pts-primary-deep) 0%, var(--pts-primary) 55%, var(--pts-primary-deep) 100%);
   color: #fff;
   box-shadow: 0 10px 22px rgba(151, 66, 88, 0.28);
   transform: translateY(-1px);
@@ -1503,7 +1504,7 @@ input.pts-pw-input::-ms-clear {
 
 /* —— Home banner: full-width image, no zoom —— */
 .pts-home-banner {
-  --hb-rose: #ca1156;
+  --hb-rose: var(--pts-primary);
   --hb-blush: #ffb1c1;
   --hb-gold: #c4a46a;
   --hb-ink: #140c12;
@@ -1690,7 +1691,7 @@ video.pts-home-banner__media {
   display: block;
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #ffb1c1, #ca1156 45%, #c4a46a);
+  background: linear-gradient(90deg, #ffb1c1, var(--pts-primary) 45%, #c4a46a);
   box-shadow: 0 0 12px rgba(255,177,193,.55);
 }
 .pts-home-banner__progress > span.is-running {
@@ -2795,7 +2796,7 @@ video.pts-home-banner__media {
 .pts-attend-qr__chip .material-symbols-outlined { font-size: 16px; }
 .pts-attend-qr__section_title {
   margin: 0 0 6px;
-  font-family: var(--pts-display, 'SN Pro', 'Bai Jamjuree', sans-serif);
+  font-family: var(--pts-display, 'LINE Seed Sans TH', sans-serif);
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--pts-primary, #ca1156);

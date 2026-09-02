@@ -1057,13 +1057,13 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('code', sql.VarChar, code)
                 .query(`
                     SELECT TOP 1
-                        a.access_code_id, a.code, a.course_id, a.max_uses, a.used_count,
-                        a.expires_at, a.flag_use, c.course_name_th, c.course_name_en,
-                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N'')) AS course_name,
-                        ISNULL(c.price, 0) AS price
-                    FROM dbo.access_codes a
-                    INNER JOIN dbo.courses c ON c.course_id = a.course_id
-                    WHERE UPPER(a.code) = @code
+                        c.coupon_id AS access_code_id, c.code, c.course_id, c.max_uses, c.used_count,
+                        c.expires_at, c.flag_use, co.course_name_th, co.course_name_en,
+                        COALESCE(NULLIF(LTRIM(RTRIM(co.course_name_th)), N''), NULLIF(LTRIM(RTRIM(co.course_name_en)), N'')) AS course_name,
+                        ISNULL(co.price, 0) AS price
+                    FROM dbo.coupons c
+                    INNER JOIN dbo.courses co ON co.course_id = c.course_id
+                    WHERE UPPER(c.code) = @code
                 `);
             if (!found.recordset.length) {
                 return res.status(404).json({ success: false, message: 'ไม่พบรหัสเข้าเรียน' });
@@ -1108,25 +1108,17 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                 .input('userId', sql.Int, user.user_id)
                 .input('courseId', sql.Int, row.course_id)
                 .input('amount', sql.Decimal(10, 2), 0)
-                .input('method', sql.VarChar, 'access_code')
-                .input('source', sql.VarChar, 'access_code')
+                .input('method', sql.VarChar, 'coupon')
+                .input('source', sql.VarChar, 'coupon')
                 .input('reference', sql.VarChar, reference)
-                .input('accessCodeId', sql.Int, row.access_code_id)
+                .input('couponId', sql.Int, row.access_code_id)
                 .query(`
                     INSERT INTO dbo.payments
-                    (user_id, course_id, amount, currency, status, method, source, reference_code, access_code_id, paid_at)
+                    (user_id, course_id, amount, currency, status, method, source, reference_code, coupon_id, paid_at)
                     OUTPUT INSERTED.payment_id
-                    VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @accessCodeId, NULL)
+                    VALUES (@userId, @courseId, @amount, 'THB', 'pending', @method, @source, @reference, @couponId, NULL)
                 `);
             const paymentId = inserted.recordset[0].payment_id;
-
-            await pool.request()
-                .input('accessCodeId', sql.Int, row.access_code_id)
-                .query(`
-                    UPDATE dbo.access_codes
-                    SET used_count = ISNULL(used_count, 0) + 1
-                    WHERE access_code_id = @accessCodeId
-                `);
 
             await markPaidAndEnroll(pool, user.user_id, paymentId, row.course_id);
 
@@ -1137,7 +1129,7 @@ function createLearningRouter({ poolPromise, requireLogin }) {
                     payment_id: paymentId,
                     course_id: row.course_id,
                     course_name: pickText(row, 'course_name', 'th'),
-                    source: 'access_code'
+                    source: 'coupon'
                 }
             });
         } catch (error) {
