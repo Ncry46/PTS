@@ -150,15 +150,8 @@ body.pts-body.pts-login.pts-auth-duo {
     transform var(--auth-slide),
     border-radius var(--auth-slide),
     box-shadow var(--auth-slide);
-  /* Vibrant #CA1156 premium cover — bright, not muddy */
-  background:
-    radial-gradient(closest-side at 14% 18%, rgba(255, 120, 170, 0.72), transparent 68%),
-    radial-gradient(closest-side at 88% 14%, rgba(255, 77, 138, 0.58), transparent 64%),
-    radial-gradient(closest-side at 78% 86%, rgba(202, 17, 86, 0.55), transparent 70%),
-    radial-gradient(closest-side at 20% 82%, rgba(255, 180, 210, 0.42), transparent 66%),
-    linear-gradient(148deg, #ff6b9d 0%, #CA1156 28%, #ff4d8a 52%, #e91a68 76%, #CA1156 100%);
-  background-size: 200% 200%;
-  animation: pts-auth-cover-iri 12s ease-in-out infinite alternate;
+  /* Vibrant cover — illustration art + slide animation */
+  background: #8f0f42;
   box-shadow:
     -22px 0 56px rgba(202, 17, 86, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.28),
@@ -190,9 +183,16 @@ body.pts-body.pts-login.pts-auth-duo {
 }
 
 .pts-auth-split.is-sliding .pts-auth-split__cover {
-  animation:
-    pts-auth-cover-iri 14s ease-in-out infinite alternate,
-    pts-auth-cover-lift 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+  animation: pts-auth-cover-lift 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.pts-auth-split.is-sliding .pts-auth-split__cover-art {
+  animation: pts-auth-cover-art-lift 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+@keyframes pts-auth-cover-art-lift {
+  0%, 100% { transform: scale(1.06); filter: brightness(1); }
+  45% { transform: scale(1.1); filter: brightness(1.06); }
 }
 
 @keyframes pts-auth-cover-iri {
@@ -212,6 +212,67 @@ body.pts-body.pts-login.pts-auth-duo {
   overflow: hidden;
   pointer-events: none;
   transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.pts-auth-split__cover-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  transform: scale(1.06);
+  transform-origin: center center;
+  will-change: transform;
+  animation: pts-auth-cover-art-breathe 16s ease-in-out infinite alternate;
+}
+
+.pts-auth-split__cover-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(143, 15, 66, 0.08) 0%, rgba(143, 15, 66, 0.02) 28%, rgba(143, 15, 66, 0.18) 62%, rgba(80, 8, 38, 0.42) 100%),
+    radial-gradient(ellipse 88% 58% at 50% 42%, rgba(255, 255, 255, 0.06), rgba(143, 15, 66, 0.22) 72%);
+}
+
+@keyframes pts-auth-cover-art-breathe {
+  0% { transform: scale(1.05) translate3d(0, 0, 0); }
+  100% { transform: scale(1.1) translate3d(0, -1.5%, 0); }
+}
+
+/* Legacy FX layers — kept for older cached HTML; hidden when using cover art */
+.pts-auth-split__cover:not(:has(.pts-auth-split__cover-art)) {
+  background:
+    radial-gradient(closest-side at 14% 18%, rgba(255, 120, 170, 0.72), transparent 68%),
+    radial-gradient(closest-side at 88% 14%, rgba(255, 77, 138, 0.58), transparent 64%),
+    radial-gradient(closest-side at 78% 86%, rgba(202, 17, 86, 0.55), transparent 70%),
+    radial-gradient(closest-side at 20% 82%, rgba(255, 180, 210, 0.42), transparent 66%),
+    linear-gradient(148deg, #ff6b9d 0%, #CA1156 28%, #ff4d8a 52%, #e91a68 76%, #CA1156 100%);
+  background-size: 200% 200%;
+  animation: pts-auth-cover-iri 12s ease-in-out infinite alternate;
+}
+
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__wash,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__blob,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__orb,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__ribbon,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__wave,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__ring,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__beam,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__spark,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__dot,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__float,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__sheen,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__grain,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__vignette,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__mesh,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__halo,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__prism,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__glow,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__flare,
+.pts-auth-split__cover:has(.pts-auth-split__cover-art) .pts-auth-split__diamond {
+  display: none !important;
 }
 
 .pts-auth-split__wash {
@@ -511,17 +572,30 @@ body.pts-body.pts-login.pts-auth-duo {
 /* Cover copy faces — crossfade with slide direction */
 .pts-auth-split__cover-face {
   position: absolute;
-  inset: 0;
+  inset: auto 0 14%;
+  left: 0;
+  right: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 28px 24px;
+  padding: 22px 20px 18px;
+  margin: 0 auto;
+  width: min(88%, 300px);
   z-index: 2;
   pointer-events: none;
   opacity: 0;
   transform: translateY(12px) scale(0.97);
+  border-radius: 22px;
+  background:
+    linear-gradient(165deg, rgba(202, 17, 86, 0.82), rgba(143, 15, 66, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  box-shadow:
+    0 18px 42px rgba(80, 8, 38, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  backdrop-filter: blur(10px) saturate(1.2);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
   transition:
     opacity 0.45s ease,
     transform 0.65s cubic-bezier(0.22, 1, 0.36, 1);
@@ -885,6 +959,7 @@ html[data-theme="dark"] .pts-auth-split__tabs {
 
 @media (prefers-reduced-motion: reduce) {
   .pts-auth-split__cover,
+  .pts-auth-split__cover-art,
   .pts-auth-split__pane,
   .pts-auth-split__cover-face,
   .pts-auth-split__wash,

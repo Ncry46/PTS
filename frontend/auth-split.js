@@ -114,7 +114,7 @@
       switchToCovered();
     });
 
-    // Soft parallax on cover FX layers
+    // Soft parallax on cover art
     if (!reduceMotion) {
       cover.addEventListener('pointermove', (e) => {
         if (window.innerWidth < 900) return;
@@ -122,22 +122,32 @@
         const nx = (e.clientX - rect.left) / rect.width - 0.5;
         const ny = (e.clientY - rect.top) / rect.height - 0.5;
         const fx = cover.querySelector('.pts-auth-split__cover-fx');
-        if (fx) fx.style.transform = `translate3d(${nx * 18}px, ${ny * 14}px, 0) scale(1.04)`;
-        cover.querySelectorAll('.pts-auth-split__blob').forEach((el, i) => {
-          const m = 8 + i * 4;
-          el.style.translate = `${nx * m}px ${ny * m}px`;
-        });
-        cover.querySelectorAll('.pts-auth-split__orb').forEach((el, i) => {
-          const m = 12 + i * 3;
-          el.style.translate = `${nx * -m}px ${ny * -m}px`;
-        });
+        const art = cover.querySelector('.pts-auth-split__cover-art');
+        if (fx) fx.style.transform = `translate3d(${nx * 10}px, ${ny * 8}px, 0)`;
+        if (art) {
+          art.style.transform = `scale(1.08) translate3d(${nx * -14}px, ${ny * -10}px, 0)`;
+        } else {
+          cover.querySelectorAll('.pts-auth-split__blob').forEach((el, i) => {
+            const m = 8 + i * 4;
+            el.style.translate = `${nx * m}px ${ny * m}px`;
+          });
+          cover.querySelectorAll('.pts-auth-split__orb').forEach((el, i) => {
+            const m = 12 + i * 3;
+            el.style.translate = `${nx * -m}px ${ny * -m}px`;
+          });
+        }
       });
       cover.addEventListener('pointerleave', () => {
         const fx = cover.querySelector('.pts-auth-split__cover-fx');
+        const art = cover.querySelector('.pts-auth-split__cover-art');
         if (fx) fx.style.transform = '';
-        cover.querySelectorAll('.pts-auth-split__blob, .pts-auth-split__orb').forEach((el) => {
-          el.style.translate = '';
-        });
+        if (art) {
+          art.style.transform = '';
+        } else {
+          cover.querySelectorAll('.pts-auth-split__blob, .pts-auth-split__orb').forEach((el) => {
+            el.style.translate = '';
+          });
+        }
       });
     }
   }
