@@ -95,6 +95,7 @@ try {
 try { fs.mkdirSync(path.join(uploadsDir, 'slips'), { recursive: true }); } catch (_) {}
 try { fs.mkdirSync(path.join(uploadsDir, 'community'), { recursive: true }); } catch (_) {}
 try { fs.mkdirSync(path.join(uploadsDir, 'auth'), { recursive: true }); } catch (_) {}
+try { fs.mkdirSync(path.join(uploadsDir, 'logo'), { recursive: true }); } catch (_) {}
 
 const COMMUNITY_IMG_DIR = path.join(uploadsDir, 'community');
 const COMMUNITY_IMG_MIME = new Set(['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']);

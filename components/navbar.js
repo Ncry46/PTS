@@ -1,7 +1,7 @@
 /* PTS shared top navigation — self-contained so the header always shows */
 (function () {
   const PTS_LOGO =
-    '/logo.png';
+    '/uploads/logo/Logo.svg';
 
   function ensureThemeApi() {
     if (window.PTSTheme) return window.PTSTheme;

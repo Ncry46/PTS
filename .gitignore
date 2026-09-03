@@ -20,6 +20,8 @@ uploads/*
 !uploads/cert/**
 !uploads/auth/
 !uploads/auth/**
+!uploads/logo/
+!uploads/logo/**
 
 # impeccable-ignore-start
 # Ephemeral output, runtime state, and per-dev overrides.
