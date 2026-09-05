@@ -13,19 +13,8 @@
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260902seed">
-<link rel="stylesheet" href="payments.css?v=20260902seed">
-<link rel="stylesheet" href="pay-modal.css?v=20260727cardicons">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-  /* hard guarantee: ~4–5 cards / row from container width */
-  #courses-grid.pts-course-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(max(190px, calc((100% - 56px) / 5)), 1fr)) !important;
-    gap: 14px !important;
-    width: 100% !important;
-  }
-</style>
+<link rel="stylesheet" href="css/site.css?v=20260902seed"><link rel="stylesheet" href="css/payments.css?v=20260902seed"><link rel="stylesheet" href="css/pay-modal.css?v=20260727cardicons"https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="css/Courses.css?v=20260904css">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
 tailwind.config = {
@@ -320,10 +309,21 @@ function fillCategoryOptions(courses) {
   const sel = document.getElementById('cat-filter');
   if (!sel) return;
   const current = sel.value;
-  const cats = [...new Set(courses.map((c) => c.coursescat_id).filter((v) => v != null && v !== ''))]
-    .sort((a, b) => Number(a) - Number(b));
-  sel.innerHTML = '<option value="">ทุกหมวด</option>' + cats.map((id) =>
-    `<option value="${escapeHtml(String(id))}">หมวด ${escapeHtml(String(id))}</option>`
+  const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+  const nameOf = (c) => {
+    const th = String(c.coursescat_name_th || '').trim();
+    const en = String(c.coursescat_name_en || '').trim();
+    return (lang === 'en' ? (en || th) : (th || en)) || '';
+  };
+  const catMap = new Map();
+  (courses || []).forEach((c) => {
+    const id = c.coursescat_id;
+    if (id == null || id === '' || catMap.has(String(id))) return;
+    catMap.set(String(id), nameOf(c));
+  });
+  const cats = [...catMap.entries()].sort((a, b) => Number(a[0]) - Number(b[0]));
+  sel.innerHTML = '<option value="">ทุกหมวด</option>' + cats.map(([id, name]) =>
+    `<option value="${escapeHtml(id)}">${escapeHtml(name || `หมวด ${id}`)}</option>`
   ).join('');
   if (current && [...sel.options].some((o) => o.value === current)) sel.value = current;
 }

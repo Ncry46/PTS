@@ -179,4 +179,23 @@
     if (sliding) return;
     setMode(mode, { fromUser: true });
   };
+
+  if (cover) {
+    const glow = cover.querySelector('.pts-auth-split__cover-glow');
+    if (glow) {
+      cover.addEventListener('mousemove', (e) => {
+        const rect = cover.getBoundingClientRect();
+        const x = ((e.clientX - rect.left) / rect.width) * 100;
+        const y = ((e.clientY - rect.top) / rect.height) * 100;
+        glow.style.setProperty('--mx', x + '%');
+        glow.style.setProperty('--my', y + '%');
+      });
+      cover.addEventListener('mouseleave', () => {
+        glow.style.opacity = '0';
+      });
+      cover.addEventListener('mouseenter', () => {
+        glow.style.opacity = '1';
+      });
+    }
+  }
 })();

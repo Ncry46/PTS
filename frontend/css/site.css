@@ -535,7 +535,7 @@ a { color: inherit; }
 html[data-theme="dark"] .user-side__link.is-active {
   background: var(--pts-primary);
   border-color: var(--pts-primary);
-  border-color: #b85a70;
+  border-color: #ca1156;
 }
 
 .user-main {
@@ -2994,7 +2994,7 @@ html[data-theme="dark"] .border-primary\/20 {
   border-color: color-mix(in srgb, var(--pts-primary) 55%, transparent) !important;
 }
 html[data-theme="dark"] .bg-primary {
-  background-color: #b85a70 !important;
+  background-color: #ca1156 !important;
 }
 html[data-theme="dark"] .text-on-primary {
   color: #fff !important;

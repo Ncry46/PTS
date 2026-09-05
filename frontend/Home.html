@@ -6,106 +6,7 @@
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet">
-        <link rel="stylesheet" href="site.css?v=20260902seed">
-<style>
-  /* Banner: full-bleed, no ken-burns zoom */
-  #home-banner.pts-home-banner,
-  .pts-home-banner {
-    aspect-ratio: auto !important;
-    width: 100% !important;
-    height: auto !important;
-    max-height: calc(100dvh - var(--pts-nav-h, 68px)) !important;
-    min-height: 0 !important;
-    overflow: hidden !important;
-    background: #140c12 !important;
-  }
-  .pts-home-banner__wash,
-  .pts-home-banner__sheen,
-  .pts-home-banner__blur,
-  .pts-home-banner__fade,
-  .pts-home-banner__accent,
-  .pts-home-banner__veil {
-    display: none !important;
-    animation: none !important;
-  }
-  .pts-home-banner__track {
-    position: relative !important;
-    inset: auto !important;
-    display: flex !important;
-    width: 100% !important;
-    height: auto !important;
-    animation: none !important;
-  }
-  .pts-home-banner.is-entering .pts-home-banner__track {
-    animation: none !important;
-  }
-  .pts-home-banner__slide {
-    position: relative !important;
-    flex: 0 0 100% !important;
-    width: 100% !important;
-    height: auto !important;
-    overflow: hidden !important;
-    line-height: 0 !important;
-  }
-  .pts-home-banner__media,
-  .pts-home-banner__slide.is-active .pts-home-banner__media,
-  .pts-home-banner__slide.is-motion .pts-home-banner__media,
-  .pts-home-banner__slide.is-fit-contain .pts-home-banner__media,
-  video.pts-home-banner__media {
-    position: static !important;
-    inset: auto !important;
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-    max-height: calc(100dvh - var(--pts-nav-h, 68px)) !important;
-    object-fit: cover !important;
-    object-position: center center !important;
-    transform: none !important;
-    animation: none !important;
-    filter: none !important;
-    opacity: 1 !important;
-    transition: none !important;
-  }
-  .pts-home-banner__nav,
-  .pts-home-banner__dots,
-  .pts-home-banner__progress {
-    position: absolute !important;
-  }
-
-  /* Match Courses.html: pts-main pts-main--wide (1480 / 16·28·32) */
-  .pts-home-wide {
-    width: 100% !important;
-    max-width: 1480px !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    box-sizing: border-box !important;
-  }
-  .learn-card.is-active {
-    border-color: currentColor;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
-  }
-  .learn-card.is-active .arrow-icon {
-    transform: rotate(180deg);
-  }
-  @media (min-width: 768px) {
-    .pts-home-wide { padding-left: 28px !important; padding-right: 28px !important; }
-  }
-  @media (min-width: 1280px) {
-    .pts-home-wide { padding-left: 32px !important; padding-right: 32px !important; }
-  }
-  #home-courses.pts-course-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(max(190px, calc((100% - 56px) / 5)), 1fr)) !important;
-    gap: 14px !important;
-    width: 100% !important;
-    max-width: none !important;
-    margin: 0 !important;
-    padding-left: 0 !important;
-    padding-right: 0 !important;
-  }
-</style>
+        <link rel="stylesheet" href="css/site.css?v=20260902seed"><link rel="stylesheet" href="css/Home.css?v=20260904css">
         <!-- pts-build:20260724x-image-banner -->
         <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
         <script id="tailwind-config">try{
@@ -256,123 +157,75 @@
   <div class="pts-home-banner__progress" aria-hidden="true"><span id="home-banner-progress"></span></div>
 </section>
 <!-- Choose Learning Type Section -->
-<section class="py-xl bg-surface">
+<section class="py-xl bg-surface learn-zone">
   <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
-    <h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl" data-i18n="home.learnType">เลือกประเภทการเรียน</h2>
-    
-    <!-- Grid Container (ใส่ items-start ป้องกันการ์ดยืดตามกัน) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-md items-start">
-      
-      <!-- Card 1: Online -->
-      <div class="learn-card bg-surface-container-lowest p-5 rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#00c001]/40 relative overflow-hidden self-start" onclick="toggleLearnCard(this)">
-        <div class="w-12 h-12 bg-[#23ff001a]/10 rounded-2xl flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110 shrink-0">
-          <span class="material-symbols-outlined text-[#00d701] text-[26px]">laptop_mac</span>
-        </div>
-        
-        <div class="flex items-center gap-1.5 mb-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#00c001]"></span>
-          <span class="font-headline-sm text-base font-bold text-[#00c001]">Online</span>
+    <div class="learn-zone__grid">
+      <!-- LEFT: all of "เลือกประเภทการเรียน" -->
+      <div class="learn-zone__left">
+        <span class="learn-zone__kicker" data-i18n="home.learnTypeKicker">Learning mode</span>
+        <h2 class="font-headline-lg text-headline-lg text-on-background learn-zone__title" data-i18n="home.learnType">เลือกประเภทการเรียน</h2>
+        <p class="font-body-md text-body-md text-on-surface-variant learn-zone__sub" data-i18n="home.learnTypeSub">เลือกรูปแบบที่ใช่ ไปกับไลฟ์สไตล์คุณ</p>
+
+        <div class="learn-tabs" id="learn-tabs">
+          <button type="button" class="learn-tab is-online is-active" data-tab="online" data-mode-color="#00c001">
+            <span class="learn-tab__ic"><span class="material-symbols-outlined">laptop_mac</span></span>
+            <span class="learn-tab__label">Online</span>
+          </button>
+          <button type="button" class="learn-tab is-onsite" data-tab="onsite" data-mode-color="#ffc800">
+            <span class="learn-tab__ic"><span class="material-symbols-outlined">business</span></span>
+            <span class="learn-tab__label">Onsite</span>
+          </button>
+          <button type="button" class="learn-tab is-hybrid" data-tab="hybrid" data-mode-color="#2da0f5">
+            <span class="learn-tab__ic"><span class="material-symbols-outlined">sync_alt</span></span>
+            <span class="learn-tab__label">Hybrid</span>
+          </button>
         </div>
 
-        <div class="w-7 h-7 rounded-full bg-[#00c001]/10 flex items-center justify-center text-[#00c001] select-none">
-          <span class="material-symbols-outlined arrow-icon transition-transform duration-300 text-[18px]">expand_more</span>
-        </div>
-
-        <div class="card-details overflow-hidden transition-all duration-400 ease-in-out w-full" style="max-height: 0px; opacity: 0;">
-          <div class="pt-3 mt-3 border-t border-outline-variant/10 text-center text-xs md:text-sm text-on-surface-variant leading-relaxed">
-            <p class="font-normal text-on-surface" data-i18n="home.onlineDesc">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา ดูวิดีโอและ Live ผ่านระบบ</p>
+        <!-- detail card sits inside the left column (below the tabs) -->
+        <div class="learn-detail" id="learn-detail">
+          <div class="learn-detail__inner">
+            <div class="learn-detail__icon-wrap">
+              <span class="material-symbols-outlined learn-detail__icon">laptop_mac</span>
+            </div>
+            <div class="learn-detail__text">
+              <h3 class="learn-detail__title">Online</h3>
+              <p class="learn-detail__desc" data-i18n="home.onlineDesc">เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา ดูวิดีโอและ Live ผ่านระบบ</p>
+              <div class="learn-detail__tags">
+                <span class="learn-detail__tag">💻 ออนไลน์ 100%</span>
+                <span class="learn-detail__tag">⏱ ทุกที่ทุกเวลา</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Card 2: Onsite -->
-      <div class="learn-card bg-surface-container-lowest p-5 rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[#ffc800]/40 relative overflow-hidden self-start" onclick="toggleLearnCard(this)">
-        <div class="w-12 h-12 bg-[#ffcd1829]/10 rounded-2xl flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110 shrink-0">
-          <span class="material-symbols-outlined text-[#ffc800] text-[26px]">business</span>
-        </div>
-        
-        <div class="flex items-center gap-1.5 mb-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-[#ffc800]"></span>
-          <span class="font-headline-sm text-base font-bold text-[#ffc800]">Onsite</span>
-        </div>
-
-        <div class="w-7 h-7 rounded-full bg-[#ffc800]/10 flex items-center justify-center text-[#ffc800] select-none">
-          <span class="material-symbols-outlined arrow-icon transition-transform duration-300 text-[18px]">expand_more</span>
-        </div>
-
-        <div class="card-details overflow-hidden transition-all duration-400 ease-in-out w-full" style="max-height: 0px; opacity: 0;">
-          <div class="pt-3 mt-3 border-t border-outline-variant/10 text-center text-xs md:text-sm text-on-surface-variant leading-relaxed">
-            <p class="font-normal text-on-surface" data-i18n="home.onsiteDesc">เรียนที่ PTS Academy เช็กอินและเช็กเอาต์ผ่าน QR Code ได้รับใบประกาศเมื่อเรียนครบ</p>
+      <!-- RIGHT: why-pts (4 cards) -->
+      <div class="learn-zone__why reveal-block">
+        <div class="learn-zone__why-title font-headline-lg text-headline-lg text-on-background">ทำไมต้องเลือก PTS Learning</div>
+        <div class="learn-zone__why-cards">
+          <div class="learn-zone__why-card text-center">
+            <div class="learn-zone__why-ic"><span class="material-symbols-outlined">diversity_3</span></div>
+            <h3 data-i18n="home.why1">รองรับ Online, Onsite และ Hybrid</h3>
+          </div>
+          <div class="learn-zone__why-card text-center">
+            <div class="learn-zone__why-ic"><span class="material-symbols-outlined">database</span></div>
+            <h3 data-i18n="home.why2">เรียนผ่านระบบเดียว</h3>
+          </div>
+          <div class="learn-zone__why-card text-center">
+            <div class="learn-zone__why-ic"><span class="material-symbols-outlined">trending_up</span></div>
+            <h3 data-i18n="home.why3">ติดตามความก้าวหน้าการเรียน</h3>
+          </div>
+          <div class="learn-zone__why-card text-center">
+            <div class="learn-zone__why-ic"><span class="material-symbols-outlined">verified</span></div>
+            <h3 data-i18n="home.why4">รับใบประกาศอัตโนมัติเมื่อผ่านเงื่อนไข</h3>
           </div>
         </div>
       </div>
-
-      <!-- Card 3: Hybrid -->
-      <div class="learn-card bg-surface-container-lowest p-5 rounded-2xl soft-shadow border border-outline-variant/10 flex flex-col items-center text-center cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-secondary/40 relative overflow-hidden self-start" onclick="toggleLearnCard(this)">
-        <div class="w-12 h-12 bg-[#36a8ff17]/10 rounded-2xl flex items-center justify-center mb-2 transition-transform duration-300 group-hover:scale-110 shrink-0">
-          <span class="material-symbols-outlined text-secondary text-[26px]">sync_alt</span>
-        </div>
-        
-        <div class="flex items-center gap-1.5 mb-2">
-          <span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
-          <span class="font-headline-sm text-base font-bold text-secondary">Hybrid</span>
-        </div>
-
-        <div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center text-secondary select-none">
-          <span class="material-symbols-outlined arrow-icon transition-transform duration-300 text-[18px]">expand_more</span>
-        </div>
-
-        <div class="card-details overflow-hidden transition-all duration-400 ease-in-out w-full" style="max-height: 0px; opacity: 0;">
-          <div class="pt-3 mt-3 border-t border-outline-variant/10 text-center text-xs md:text-sm text-on-surface-variant leading-relaxed">
-            <p class="font-normal text-on-surface" data-i18n="home.hybridDesc">เรียนออนไลน์ควบคู่กับการเข้าเรียนที่สถานที่จริง มีทั้งวิดีโอ บทเรียน และกิจกรรมภาคปฏิบัติ</p>
-          </div>
-        </div>
-      </div>
-
     </div>
   </div>
 </section>
 
-<style>
-  .learn-card {
-    align-self: start; /* การ์ดจะไม่ขยายความสูงตามใบอื่น */
-  }
-  .learn-card.is-active .arrow-icon {
-    transform: rotate(180deg);
-  }
-</style>
-<!-- Why Choose PTS Learning Section -->
-<section class="py-xl bg-surface-container-low">
-<div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
-<h2 class="font-headline-lg text-headline-lg text-on-background text-center mb-xl" data-i18n="home.whysection_title">ทำไมต้องเลือก PTS Learning</h2>
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md">
-<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
-<div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
-<span class="material-symbols-outlined text-primary">diversity_3</span>
-</div>
-<h3 class="font-label-md text-label-md font-bold text-on-surface" data-i18n="home.why1">รองรับ Online, Onsite และ Hybrid</h3>
-</div>
-<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-secondary-container/5 transition-colors">
-<div class="w-14 h-14 bg-secondary-container rounded-xl flex items-center justify-center mx-auto mb-sm">
-<span class="material-symbols-outlined text-secondary">database</span>
-</div>
-<h3 class="font-label-md text-label-md font-bold text-on-surface" data-i18n="home.why2">เรียนผ่านระบบเดียว</h3>
-</div>
-<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-tertiary-container/5 transition-colors">
-<div class="w-14 h-14 bg-tertiary-container text-white rounded-xl flex items-center justify-center mx-auto mb-sm">
-<span class="material-symbols-outlined">trending_up</span>
-</div>
-<h3 class="font-label-md text-label-md font-bold text-on-surface" data-i18n="home.why3">ติดตามความก้าวหน้าการเรียน</h3>
-</div>
-<div class="p-md bg-surface-container-lowest rounded-2xl soft-shadow border border-outline-variant/10 text-center hover:bg-primary-container/5 transition-colors">
-<div class="w-14 h-14 bg-primary-fixed rounded-xl flex items-center justify-center mx-auto mb-sm">
-<span class="material-symbols-outlined text-primary">verified</span>
-</div>
-<h3 class="font-label-md text-label-md font-bold text-on-surface" data-i18n="home.why4">รับใบประกาศอัตโนมัติเมื่อผ่านเงื่อนไข</h3>
-</div>
-</div>
-</div>
-</section>
+
 <!-- Featured Courses (Recommended) — same width/padding as Courses.html -->
 <section class="py-xl pts-section-alt">
 <div class="pts-home-wide mb-xl">
@@ -400,18 +253,27 @@
 <!-- Upcoming / Open Soon Courses Section -->
 <section class="py-xl bg-surface-container-low">
   <div class="pts-home-wide">
-    
+
     <!-- Section Header -->
-    <div class="flex flex-col md:flex-row justify-between items-end gap-md mb-lg">
-      <div class="text-left">
-        <h2 class="font-headline-lg text-headline-lg text-on-background mb-base" data-i18n="home.openSoonTitle">หลักสูตรที่กำลังจะเปิดเร็วๆ นี้</h2>
-        <p class="font-body-md text-body-md text-on-surface-variant" data-i18n="home.openSoonSub">เตรียมพบกับหลักสูตรใหม่ สามารถกดแจ้งเตือนเพื่อรับข่าวสารก่อนใคร</p>
+    <div class="text-center mb-lg">
+      <h2 class="font-headline-lg text-headline-lg text-on-background mb-base" data-i18n="home.openSoonTitle">หลักสูตรที่กำลังจะเปิดเร็วๆ นี้</h2>
+      <p class="font-body-md text-body-md text-on-surface-variant" data-i18n="home.openSoonSub">เตรียมพบกับหลักสูตรใหม่ สามารถกดแจ้งเตือนเพื่อรับข่าวสารก่อนใคร</p>
+    </div>
+
+    <!-- Carousel controls -->
+    <div class="os-bar" id="os-bar">
+      <div class="os-count"><span id="os-cur">01</span> / <span id="os-total">01</span></div>
+      <div class="os-nav">
+        <button type="button" class="os-btn" id="os-prev" aria-label="ก่อนหน้า"><span class="material-symbols-outlined">chevron_left</span></button>
+        <button type="button" class="os-btn" id="os-next" aria-label="ถัดไป"><span class="material-symbols-outlined">chevron_right</span></button>
       </div>
     </div>
 
-    <!-- Grid สำหรับการ์ดหลักสูตร (แสดงสูงสุด 5 ใบ) -->
-    <div id="open-soon-courses" class="pts-course-grid">
-      <div class="text-on-surface-variant col-span-full py-8 text-center" data-i18n="home.loadingCourses">กำลังโหลดหลักสูตร...</div>
+    <!-- Carousel -->
+    <div class="os-viewport" id="os-viewport">
+      <div class="os-track" id="open-soon-courses">
+        <div class="text-on-surface-variant col-span-full py-8 text-center" data-i18n="home.loadingCourses">กำลังโหลดหลักสูตร...</div>
+      </div>
     </div>
 
   </div>
@@ -420,7 +282,7 @@
 <section class="py-xl bg-surface">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
 <div class="text-center mb-xl">
-<h2 class="font-headline-lg text-headline-lg text-on-background" data-i18n="home.stepsTitle">เริ่มต้นเรียนได้ 3 รูปแบบ</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-background" data-i18n="home.stepsTitle">เส้นทางการเรียนรู้กับ PTS Academy (5 Steps)</h2>
 </div>
 <div class="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-md">
 <!-- Step 1 -->
@@ -460,61 +322,20 @@
 <section class="py-xl bg-surface-container-low">
 <div class="max-w-container-max mx-auto px-margin-mobile md:px-lg">
 <div class="text-center mb-xl">
+<div class="tst-kicker">Testimonials</div>
 <h2 class="font-headline-lg text-headline-lg text-on-background mb-base" data-i18n="home.testimonials-title">เสียงจากผู้เรียนของเรา</h2>
 <p class="font-body-md text-body-md text-on-surface-variant" data-i18n="home.testimonials-desc">ความประทับใจจริงจากศิษย์เก่า PTS Learning</p>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-md">
-<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
-<div class="flex gap-xs mb-md">
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"เนื้อหาเข้าใจง่ายมากค่ะ นำไปปรับใช้กับการทำงานจริงได้ทันที โดยเฉพาะเรื่องการจัดตารางงานที่เคยเป็นจุดอ่อน ตอนนี้ทำงานได้เป็นระบบขึ้นมาก"</p>
-<div class="flex items-center gap-sm">
-<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-t9bUuCZPS8uXr-TWSmidD9sEyP8awhLxcxOvGCt7LtTpwAyU6rAY4FMlyzpCaBt5Szxq_rx8QrGYwmEXOqiSMyZvrC1UCcBGEGBIxsvd4NnPNQuy2aez2u5T_7X2yl-9UlYa8aX6jil8ErQGoKR9K2XWCk13Z2rpf7cNUQKnIEXoyGuwKumYSxrcRXDsg69Elgsb77tcqvMISdMeYj_G-ZlU2sEXMjvhfawBexuxv3VveUmHgTdJeA">
-<div>
-<p class="font-label-md text-label-md font-bold">คุณแพรววา</p>
-<p class="font-label-md text-label-md text-on-surface-variant italic">Personal Assistant @ Tech Startup</p>
+<div class="tst-wrap">
+<button type="button" class="tst-arrow" id="tst-prev" aria-label="รีวิวก่อนหน้า"><span class="material-symbols-outlined">chevron_left</span></button>
+<div class="tst-viewport" id="tst-viewport">
+<div class="tst-track" id="home-reviews">
+<div class="text-center text-on-surface-variant py-8" style="flex:1 0 100%">กำลังโหลดรีวิว…</div>
 </div>
 </div>
+<button type="button" class="tst-arrow" id="tst-next" aria-label="รีวิวถัดไป"><span class="material-symbols-outlined">chevron_right</span></button>
 </div>
-<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
-<div class="flex gap-xs mb-md">
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"ชอบระบบตารางเรียนมากค่ะ ทำให้คนทำงานประจำอย่างเราจัดเวลาเรียนได้เอง ไม่กดดัน แถมใบเซอร์ฯ ยังช่วยให้ได้ปรับตำแหน่งด้วยค่ะ"</p>
-<div class="flex items-center gap-sm">
-<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAxbws15uj-fkCaFv6ZWYGvYgp68J0dauCLb-Pux4LNfs_MBDCk9g_176-lMyqVI4NY6eGXvZ_HCSBhZW5mg-eDhTr7vUF3O7Rh8CgGTpjyOesTk9Q5vxdkZrwnrzoEFcbkmH_BEJX9DyrHhyAJrAwfcTFV88ZV2qGv0aEKbYCShZPK6ok-0OjH1o8FR7XWaJuwqnafvLQbin7jxLwOjOJduuRbJ0DjSFs8cy7fILfbGSWdC1lOArecDA">
-<div>
-<p class="font-label-md text-label-md font-bold">คุณมินตรา</p>
-<p class="font-label-md text-label-md text-on-surface-variant italic">Executive Secretary</p>
-</div>
-</div>
-</div>
-<div class="p-lg bg-surface-container-lowest rounded-2xl soft-shadow flex flex-col">
-<div class="flex gap-xs mb-md">
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-<span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
-</div>
-<p class="font-body-md text-body-md text-on-surface-variant mb-lg flex-grow">"ความรู้ที่ได้จากหลักสูตร Digital Tools ช่วยประหยัดเวลาทำงานได้เยอะมากค่ะ ระบบเว็บก็ใช้งานง่าย ลื่นไหลมาก แนะนำเลยค่ะ"</p>
-<div class="flex items-center gap-sm">
-<img alt="User Avatar" class="w-12 h-12 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2CSIg4SXi-ZVHfhgpezFcUa2tM_LG2RTz_t1-rEh7S6nYVKc9lzNE5DHVdV7pUrdwk5Zaj9f9dMC6wtPgMTNQYEY6gFFWbVa5Uoh94JYu6YwEAYZ_kSgnPH4imKG9WsqpW_3k4BG7P-dLk4qdF92dvXFhIXOm_OP3fJ4D4zZx4ZfvsgpBZvQAVPZMU7t1wIJV1khHZ7S-nu7cShoTkjohP0TCLi5oVWf-6KdInNLAKaTbBuxL0n4IRQ">
-<div>
-<p class="font-label-md text-label-md font-bold">คุณรินรดา</p>
-<p class="font-label-md text-label-md text-on-surface-variant italic">Virtual Assistant (Freelance)</p>
-</div>
-</div>
-</div>
+<div class="tst-dots" id="tst-dots"></div>
 </div>
 </div>
 </section>
@@ -613,33 +434,76 @@
 </div>
 
 <script>
-// ✅ ประกาศ toggleLearnCard ไว้ใน Global Scope
-window.toggleLearnCard = function(card) {
-  if (!card) return;
-  const details = card.querySelector('.card-details');
-  if (!details) return;
+// —— Interactive learning-type tab bar ——
+(function () {
+  const tabsEl = document.getElementById('learn-tabs');
+  if (!tabsEl) return;
+  const detailTitle = document.querySelector('.learn-detail__title');
+  const detailDesc = document.querySelector('.learn-detail__desc');
+  const detailIcon = document.querySelector('.learn-detail__icon');
+  const detailWrap = document.getElementById('learn-detail');
+  const iconWrap = document.querySelector('.learn-detail__icon-wrap');
+  const tabs = Array.from(tabsEl.querySelectorAll('.learn-tab'));
 
-  const isActive = card.classList.contains('is-active');
-
-  // ปิดการ์ดใบอื่นทั้งหมดก่อน
-  document.querySelectorAll('.learn-card').forEach(c => {
-    c.classList.remove('is-active');
-    const d = c.querySelector('.card-details');
-    if (d) {
-      d.style.maxHeight = '0px';
-      d.style.opacity = '0';
-      d.style.marginTop = '0px';
+  const DATA = {
+    online: {
+      icon: 'laptop_mac',
+      tags: ['💻 ออนไลน์ 100%', '⏱ ทุกที่ทุกเวลา']
+    },
+    onsite: {
+      icon: 'business',
+      tags: ['🏫 เรียนที่สาขา', '✅ เช็กอินด้วย QR Code']
+    },
+    hybrid: {
+      icon: 'sync_alt',
+      tags: ['🔄 ออนไลน์ + ออนไซต์', '📅 ยืดหยุ่นตามเวลา']
     }
+  };
+
+  function localize(key, fallback) {
+    return (window.PTSLang && typeof window.PTSLang.t === 'function')
+      ? window.PTSLang.t(key, fallback)
+      : fallback;
+  }
+
+  function setModeColor(color) {
+    if (detailWrap) detailWrap.style.setProperty('--mode-c', color);
+  }
+
+  function select(tabKey) {
+    const data = DATA[tabKey];
+    if (!data) return;
+    tabs.forEach(t => t.classList.toggle('is-active', t.dataset.tab === tabKey));
+    const activeBtn = tabs.find(t => t.dataset.tab === tabKey);
+    if (activeBtn) setModeColor(activeBtn.dataset.modeColor);
+    if (detailIcon) detailIcon.textContent = data.icon;
+    if (detailTitle) detailTitle.textContent = tabKey.charAt(0).toUpperCase() + tabKey.slice(1);
+    if (detailDesc) {
+      const key = 'home.' + tabKey + 'Desc';
+      const fallback = {
+        online: 'เรียนผ่านเว็บไซต์ เรียนได้ทุกที่ ทุกเวลา ดูวิดีโอและ Live ผ่านระบบ',
+        onsite: 'เรียนที่ PTS Academy เช็กอินและเช็กเอาต์ผ่าน QR Code ได้รับใบประกาศเมื่อเรียนครบ',
+        hybrid: 'เรียนออนไลน์ควบคู่กับการเข้าเรียนที่สถานที่จริง มีทั้งวิดีโอ บทเรียน และกิจกรรมภาคปฏิบัติ'
+      }[tabKey];
+      detailDesc.textContent = localize(key, fallback);
+    }
+    const tagBox = detailWrap && detailWrap.querySelector('.learn-detail__tags');
+    if (tagBox) tagBox.innerHTML = data.tags.map(tg => `<span class="learn-detail__tag">${tg}</span>`).join('');
+    if (detailWrap) {
+      detailWrap.classList.remove('is-shown');
+      setTimeout(() => detailWrap.classList.add('is-shown'), 60);
+    }
+  }
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => select(tab.dataset.tab));
   });
 
-  // สลับเปิด/ปิดการ์ดที่ถูกกด
-  if (!isActive) {
-    card.classList.add('is-active');
-    details.style.maxHeight = (details.scrollHeight + 20) + "px";
-    details.style.opacity = '1';
-    details.style.marginTop = '12px';
-  }
-};
+  // Init
+  const initial = tabs.find(t => t.classList.contains('is-active')) || tabs[0];
+  setModeColor(initial.dataset.modeColor);
+  setTimeout(() => detailWrap && detailWrap.classList.add('is-shown'), 50);
+})();
 
 document.addEventListener('DOMContentLoaded', async () => {
   const escapeHtml = (t) => String(t || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -842,11 +706,66 @@ document.addEventListener('DOMContentLoaded', async () => {
       .catch(() => render([]));
   })();
 
+  const renderCourseCard = (c, t, showStartDate) => {
+    const mode = String(c.delivery_mode || 'online').toLowerCase();
+    const hoursUnit = t('home.hours', 'ชม.');
+    const hours = c.total_hours != null ? `${Number(c.total_hours)} ${hoursUnit}` : '-';
+    const price = Number(c.price || 0).toLocaleString('th-TH');
+    const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
+    const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00ca01';
+    const badgeLabel = mode === 'onsite' ? 'Onsite' : mode === 'hybrid' ? 'Hybrid' : 'Online';
+    const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+    const courseName = (lang === 'en'
+      ? (c.course_name_en || c.course_name_th || c.course_name || '')
+      : (c.course_name_th || c.course_name_en || c.course_name || '')).toString().trim();
+    const instructor = (lang === 'en'
+      ? (c.instructor_name_en || c.instructor_name_th || c.instructor_name || '')
+      : (c.instructor_name_th || c.instructor_name_en || c.instructor_name || '')).toString().trim() || '-';
+    const detailsLabel = t('btn.details', 'รายละเอียด');
+    let startHtml = '';
+    if (showStartDate && c.start_date) {
+      const raw = String(c.start_date);
+      let d = new Date(raw);
+      if (isNaN(d.getTime())) d = new Date(raw.slice(0, 10) + 'T00:00:00');
+      const formatted = isNaN(d.getTime())
+        ? raw.slice(0, 10)
+        : d.toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: 'numeric' });
+      startHtml = `<div class="pts-course-card__meta-row" style="color:var(--pts-primary)">
+        <span class="material-symbols-outlined" aria-hidden="true">event</span>
+        <span>เริ่ม ${escapeHtml(formatted)}</span>
+      </div>`;
+    }
+    return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
+      <div class="pts-course-card__media">
+        <img alt="" src="${img}" loading="lazy">
+        <span class="pts-course-card__badge" style="background:${badgeBg}">${escapeHtml(badgeLabel)}</span>
+      </div>
+      <div class="pts-course-card__body">
+        <div class="pts-course-card__copy">
+          <div class="pts-course-card__meta-row" title="${escapeHtml(instructor)}">
+            <span class="material-symbols-outlined" aria-hidden="true">person</span>
+            <span>${escapeHtml(instructor)}</span>
+          </div>
+          <div class="pts-course-card__meta-row">
+            <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+            <span>${escapeHtml(hours)}</span>
+          </div>
+          ${startHtml}
+          <h3 class="pts-course-card__section_title">${escapeHtml(courseName || '-')}</h3>
+        </div>
+        <div class="pts-course-card__foot">
+          <span class="pts-course-card__price">฿${price}</span>
+          <span class="pts-btn pts-btn-outline pts-course-card__cta" style="pointer-events:none">${escapeHtml(detailsLabel)}</span>
+        </div>
+      </div>
+    </a>`;
+  };
+
   const renderCourses = () => {
     if (!grid) return;
     const t = (key, fallback) => (window.PTSLang && PTSLang.t ? PTSLang.t(key, fallback) : fallback);
     const localized = (window.PTSCourseI18n ? PTSCourseI18n.localizeAll(allCourses) : allCourses);
-    const list = localized.filter(c => !activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode).slice(0, 5);
+    const list = localized.filter(c => Number(c.is_open_soon) !== 1 && (!activeMode || String(c.delivery_mode||'').toLowerCase() === activeMode)).slice(0, 5);
     if (!list.length) {
       grid.innerHTML = '<div class="col-span-full text-center text-on-surface-variant py-8">' +
         escapeHtml(t('home.emptyCourses', 'ยังไม่มีหลักสูตรในระบบ')) +
@@ -854,48 +773,103 @@ document.addEventListener('DOMContentLoaded', async () => {
         escapeHtml(t('home.viewAll', 'ดูทั้งหมด')) + '</a></div>';
       return;
     }
-    grid.innerHTML = list.map(c => {
-      const mode = String(c.delivery_mode || 'online').toLowerCase();
-      const hoursUnit = t('home.hours', 'ชม.');
-      const hours = c.total_hours != null ? `${Number(c.total_hours)} ${hoursUnit}` : '-';
-      const price = Number(c.price || 0).toLocaleString('th-TH');
-      const img = c.cover_image_url || 'https://placehold.co/640x400/f8e8ec/974258?text=PTS';
-      const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : '#00ca01';
-      const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
-      const courseName = (lang === 'en'
-        ? (c.course_name_en || c.course_name_th || c.course_name || '')
-        : (c.course_name_th || c.course_name_en || c.course_name || '')).toString().trim();
-      const instructor = (lang === 'en'
-        ? (c.instructor_name_en || c.instructor_name_th || c.instructor_name || '')
-        : (c.instructor_name_th || c.instructor_name_en || c.instructor_name || '')).toString().trim() || '-';
-      const detailsLabel = t('btn.details', 'รายละเอียด');
-      return `<a href="CourseDetail.html?courseId=${c.course_id}" class="pts-course-card" style="text-decoration:none;color:inherit">
-        <div class="pts-course-card__media">
-          <img alt="" src="${img}" loading="lazy">
-          <span class="pts-course-card__badge" style="background:${badgeBg}">${escapeHtml(mode)}</span>
-        </div>
-        <div class="pts-course-card__body">
-          <div class="pts-course-card__copy">
-            <div class="pts-course-card__meta-row" title="${escapeHtml(instructor)}">
-              <span class="material-symbols-outlined" aria-hidden="true">person</span>
-              <span>${escapeHtml(instructor)}</span>
-            </div>
-            <div class="pts-course-card__meta-row">
-              <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
-              <span>${escapeHtml(hours)}</span>
-            </div>
-            <h3 class="pts-course-card__section_title">${escapeHtml(courseName || '-')}</h3>
-          </div>
-          <div class="pts-course-card__foot">
-            <span class="pts-course-card__price">฿${price}</span>
-            <span class="pts-btn pts-btn-outline pts-course-card__cta" style="pointer-events:none">${escapeHtml(detailsLabel)}</span>
-          </div>
-        </div>
-      </a>`;
-    }).join('');
+    grid.innerHTML = list.map(c => renderCourseCard(c, t, false)).join('');
   };
 
-  document.addEventListener('pts-lang-change', () => { renderCourses(); });
+  const osTrack = document.getElementById('open-soon-courses');
+  const osView = document.getElementById('os-viewport');
+  const osBar = document.getElementById('os-bar');
+  const osCur = document.getElementById('os-cur');
+  const osTotal = document.getElementById('os-total');
+  const osPrev = document.getElementById('os-prev');
+  const osNext = document.getElementById('os-next');
+  let osPage = 0;
+
+  const osPerView = () => (window.innerWidth <= 600 ? 1 : window.innerWidth <= 900 ? 2 : 3);
+  const osPageCount = () => {
+    const n = osTrack ? osTrack.querySelectorAll('.os-card').length : 0;
+    return Math.max(1, Math.ceil(n / osPerView()));
+  };
+  const osUpdate = () => {
+    const total = osPageCount();
+    if (osCur) osCur.textContent = String(osPage + 1).padStart(2, '0');
+    if (osTotal) osTotal.textContent = String(total).padStart(2, '0');
+    if (osPrev) osPrev.disabled = osPage <= 0;
+    if (osNext) osNext.disabled = osPage >= total - 1;
+    if (osBar) osBar.style.display = total > 1 ? '' : 'none';
+  };
+  const osGo = (p, smooth = true) => {
+    if (!osView) return;
+    const total = osPageCount();
+    osPage = Math.max(0, Math.min(total - 1, p));
+    osView.scrollTo({ left: osPage * osView.clientWidth, behavior: smooth ? 'smooth' : 'auto' });
+    osUpdate();
+  };
+  if (osPrev) osPrev.addEventListener('click', () => osGo(osPage - 1));
+  if (osNext) osNext.addEventListener('click', () => osGo(osPage + 1));
+  if (osView) {
+    let osTick = false;
+    osView.addEventListener('scroll', () => {
+      if (osTick) return;
+      osTick = true;
+      requestAnimationFrame(() => {
+        osTick = false;
+        const w = osView.clientWidth || 1;
+        const total = osPageCount();
+        osPage = Math.max(0, Math.min(total - 1, Math.round(osView.scrollLeft / w)));
+        osUpdate();
+      });
+    }, { passive: true });
+    window.addEventListener('resize', () => osGo(osPage, false));
+  }
+
+  const osCard = (c, t) => {
+    const lang = (window.PTSLang && PTSLang.get && PTSLang.get() === 'en') ? 'en' : 'th';
+    const courseName = (lang === 'en'
+      ? (c.course_name_en || c.course_name_th || c.course_name || '')
+      : (c.course_name_th || c.course_name_en || c.course_name || '')).toString().trim();
+    const instructor = (lang === 'en'
+      ? (c.instructor_name_en || c.instructor_name_th || c.instructor_name || '')
+      : (c.instructor_name_th || c.instructor_name_en || c.instructor_name || '')).toString().trim() || '-';
+    const img = c.cover_image_url || '/uploads/courses/coming-soon.png';
+    const initial = (instructor.trim().charAt(0) || 'P').toUpperCase();
+    let dateText = '';
+    if (c.start_date) {
+      const raw = String(c.start_date);
+      let d = new Date(raw);
+      if (isNaN(d.getTime())) d = new Date(raw.slice(0, 10) + 'T00:00:00');
+      if (!isNaN(d.getTime())) {
+        dateText = 'เริ่ม ' + d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+    }
+    return `<a class="os-card" href="CourseDetail.html?courseId=${c.course_id}" style="text-decoration:none;color:inherit">
+      <div class="os-card__media"><img alt="" src="${img}" loading="lazy"></div>
+      <div class="os-card__body">
+        <h3 class="os-card__title">${escapeHtml(courseName || '-')}</h3>
+        <div class="os-card__foot">
+          <span class="os-card__who"><span class="os-card__ava">${escapeHtml(initial)}</span><span class="os-card__who-name" title="${escapeHtml(instructor)}">${escapeHtml(instructor)}</span></span>
+          ${dateText ? `<span class="os-card__date">${escapeHtml(dateText)}</span>` : ''}
+        </div>
+      </div>
+    </a>`;
+  };
+
+  const renderOpenSoon = () => {
+    if (!osTrack) return;
+    const t = (key, fallback) => (window.PTSLang && PTSLang.t ? PTSLang.t(key, fallback) : fallback);
+    const localized = (window.PTSCourseI18n ? PTSCourseI18n.localizeAll(allCourses) : allCourses);
+    const list = localized.filter(c => Number(c.is_open_soon) === 1).slice(0, 6);
+    if (!list.length) {
+      osTrack.innerHTML = '<div class="text-center text-on-surface-variant py-8" style="flex:1 0 100%">ยังไม่มีหลักสูตรที่กำลังจะเปิดเร็วๆ นี้</div>';
+      osPage = 0;
+      osUpdate();
+      return;
+    }
+    osTrack.innerHTML = list.map(c => osCard(c, t)).join('');
+    osGo(0, false);
+  };
+
+  document.addEventListener('pts-lang-change', () => { renderCourses(); renderOpenSoon(); });
 
   document.querySelectorAll('.home-filter').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -919,9 +893,263 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = await res.json();
     allCourses = data.success ? (data.data || []) : [];
     renderCourses();
+    renderOpenSoon();
   } catch {
     if (grid) grid.innerHTML = '<div class="col-span-full text-center text-error py-8">โหลดหลักสูตรไม่สำเร็จ</div>';
   }
+
+  // Recent reviews from real DB (latest across all courses) — center-focus carousel
+  const reviewsBox = document.getElementById('home-reviews');
+  const tstView = document.getElementById('tst-viewport');
+  const tstDots = document.getElementById('tst-dots');
+  const tstPrev = document.getElementById('tst-prev');
+  const tstNext = document.getElementById('tst-next');
+  let tstIndex = 0;
+
+  const tstReal = () => (reviewsBox ? [...reviewsBox.querySelectorAll('.tst-card:not([data-clone])')] : []);
+  const tstAll = () => (reviewsBox ? [...reviewsBox.querySelectorAll('.tst-card')] : []);
+  // โคลนหัว-ท้ายเพื่อให้ทุกใบ (รวมใบแรก/สุดท้าย) อยู่กลางจอได้จริงแบบไร้รอยต่อ
+  const tstBuildClones = () => {
+    if (!reviewsBox) return;
+    reviewsBox.querySelectorAll('[data-clone]').forEach(el => el.remove());
+    const real = tstReal();
+    if (real.length > 1) {
+      const first = real[0].cloneNode(true);
+      first.setAttribute('data-clone', 'first');
+      first.classList.remove('is-center');
+      const last = real[real.length - 1].cloneNode(true);
+      last.setAttribute('data-clone', 'last');
+      last.classList.remove('is-center');
+      reviewsBox.prepend(last);
+      reviewsBox.append(first);
+    }
+  };
+  const tstWrap = (i) => {
+    const n = tstReal().length;
+    if (!n) return 0;
+    return ((i % n) + n) % n;
+  };
+  // ใบเด่น (ขยาย) = ใบที่อยู่กลางจอเท่านั้น
+  const tstFeatured = (i) => {
+    tstReal().forEach((el, k) => el.classList.toggle('is-center', k === i));
+  };
+  // ตัวหน่วงใส่เด่นระหว่างแอนิเมชัน (ยกเลิกได้เมื่อมีการเลื่อนใหม่มาขัด)
+  let tstFeatTimer = null;
+  const tstClearFeatTimer = () => {
+    if (tstFeatTimer) { window.clearTimeout(tstFeatTimer); tstFeatTimer = null; }
+  };
+  const tstUpdate = () => {
+    const n = tstReal().length;
+    if (tstDots) {
+      [...tstDots.children].forEach((d, i) => d.classList.toggle('is-active', i === tstIndex));
+    }
+    // วนลูปได้ตลอด ปุ่มไม่ต้อง disable (ซ่อนเฉพาะตอนมีใบเดียว)
+    const hideChrome = n < 2;
+    if (tstDots) tstDots.style.display = hideChrome ? 'none' : '';
+    const arrows = [tstPrev, tstNext].filter(Boolean);
+    arrows.forEach(b => { b.style.display = hideChrome ? 'none' : ''; b.disabled = false; });
+  };
+  // Tween นุ่มๆ แทน native smooth-scroll (ลดอาการสะดุด)
+  let tstAnim = null;
+  let tstAnimating = false;
+  const tstTweenTo = (target, dur = 650, onDone = null) => {
+    if (!tstView) { if (onDone) onDone(); return; }
+    if (tstAnim) { cancelAnimationFrame(tstAnim); tstAnim = null; }
+    tstClearFeatTimer();
+    const from = tstView.scrollLeft;
+    const dist = target - from;
+    if (Math.abs(dist) < 1) { tstAnimating = false; if (onDone) onDone(); return; }
+    tstAnimating = true;
+    const t0 = performance.now();
+    const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+    const step = (now) => {
+      const p = Math.min(1, (now - t0) / dur);
+      tstView.scrollLeft = from + dist * ease(p);
+      if (p < 1) {
+        tstAnim = requestAnimationFrame(step);
+      } else {
+        tstAnim = null;
+        tstAnimating = false;
+        // ถึงที่แล้วค่อยใส่เด่นให้ใบเป้าหมาย (ระหว่างทางไม่แตะต้อง)
+        tstFeatured(tstIndex);
+        tstUpdate();
+        if (onDone) onDone();
+      }
+    };
+    tstAnim = requestAnimationFrame(step);
+  };
+  // วัดตำแหน่งด้วย getBoundingClientRect เทียบกับ viewport (ไม่พึ่ง offsetParent)
+  const tstCenterOf = (trackIdx) => {
+    if (!tstView) return 0;
+    const el = tstAll()[trackIdx];
+    if (!el) return tstView.scrollLeft;
+    const vr = tstView.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    return tstView.scrollLeft + (r.left + r.width / 2) - (vr.left + tstView.clientWidth / 2);
+  };
+  const tstSilentJump = (trackIdx) => {
+    if (!tstView) return;
+    if (tstAnim) { cancelAnimationFrame(tstAnim); tstAnim = null; }
+    tstAnimating = false;
+    tstView.scrollLeft = tstCenterOf(trackIdx);
+    tstUpdate();
+  };
+  const tstGo = (i, smooth = true) => {
+    const n = tstReal().length;
+    if (!n || !tstView) return;
+    const from = tstIndex;
+    const to = tstWrap(i);
+    tstIndex = to;
+    // ไม่ล็อกเด่นล่วงหน้า: ให้ scroll-tracking ใส่เด่นตอนการ์ดถึงกลางจริง
+    // (กรณีไม่ animate ให้เด่นทันทีเพราะอยู่ตำแหน่งสุดท้ายแล้ว)
+    if (!smooth) {
+      tstFeatured(to);
+      tstSilentJump(to + 1);
+      return;
+    }
+    // ระหว่างเลื่อนลบเด่นออกก่อน ใบใหม่จะค่อยๆ เด่นขึ้นตั้งแต่กำลังเข้ากลาง
+    tstFeatured(-1);
+    tstClearFeatTimer();
+    tstFeatTimer = window.setTimeout(() => tstFeatured(tstIndex), 420);
+    // ข้ามขอบแบบไร้รอยต่อ: เลื่อนไปโคลนก่อน แล้วกระโดดกลับใบจริงเงียบๆ
+    if (n > 1 && from === n - 1 && to === 0) {
+      tstTweenTo(tstCenterOf(n + 1), 650, () => tstSilentJump(1));
+    } else if (n > 1 && from === 0 && to === n - 1) {
+      tstTweenTo(tstCenterOf(0), 650, () => tstSilentJump(n));
+    } else {
+      tstTweenTo(tstCenterOf(to + 1));
+    }
+    tstUpdate();
+  };
+  if (tstPrev) tstPrev.addEventListener('click', () => { tstGo(tstIndex - 1); tstAuto(); });
+  if (tstNext) tstNext.addEventListener('click', () => { tstGo(tstIndex + 1); tstAuto(); });
+  if (tstView) {
+    let tstTick = false;
+    let tstSettle = null;
+    tstView.addEventListener('scroll', () => {
+      if (tstAnimating) return;
+      if (tstTick) return;
+      tstTick = true;
+      requestAnimationFrame(() => {
+        tstTick = false;
+        tstClearFeatTimer();
+        const all = tstAll();
+        const n = tstReal().length;
+        if (!all.length || !n) return;
+        const vr = tstView.getBoundingClientRect();
+        const vc = vr.left + tstView.clientWidth / 2;
+        let best = 0, bestDist = Infinity;
+        all.forEach((el, i) => {
+          const r = el.getBoundingClientRect();
+          const d = Math.abs((r.left + r.width / 2) - vc);
+          if (d < bestDist) { bestDist = d; best = i; }
+        });
+        // แปลงตำแหน่งโคลนกลับเป็นใบจริง
+        const lastPos = all.length - 1;
+        tstIndex = (n > 1 && best === 0) ? n - 1 : (n > 1 && best === lastPos) ? 0 : best - 1;
+        // เด่นตามใบที่อยู่กลางจอจริงแบบเรียลไทม์ (ไม่ล็อกตามเป้าหมายล่วงหน้า)
+        tstFeatured(tstIndex);
+        tstUpdate();
+        // ปัดนิ้วแล้วปล่อย: ตกบนโคลนให้กระโดดกลับใบจริงเงียบๆ แล้วล็อกใบเด่นกลางจอ
+        if (tstSettle) window.clearTimeout(tstSettle);
+        tstSettle = window.setTimeout(() => {
+          if (tstAnimating) return;
+          if (n > 1 && (best === 0 || best === lastPos)) {
+            tstSilentJump(best === 0 ? n : 1);
+          } else {
+            tstTweenTo(tstCenterOf(best), 350);
+          }
+          tstFeatured(tstIndex);
+          tstUpdate();
+        }, 140);
+      });
+    }, { passive: true });
+    window.addEventListener('resize', () => tstGo(tstIndex, false));
+  }
+
+  // Autoplay: เลื่อนเองทุก 5 วิ วนลูป หยุดตอนผู้ใช้ชี้/แตะ/โฟกัส
+  let tstTimer = null;
+  const tstStop = () => {
+    if (tstTimer) { window.clearInterval(tstTimer); tstTimer = null; }
+  };
+  const tstAuto = () => {
+    tstStop();
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (tstReal().length < 2) return;
+    tstTimer = window.setInterval(() => {
+      const n = tstReal().length;
+      if (!n) return;
+      tstGo((tstIndex + 1) % n);
+    }, 5000);
+  };
+  if (tstView) {
+    tstView.addEventListener('mouseenter', tstStop);
+    tstView.addEventListener('mouseleave', tstAuto);
+    tstView.addEventListener('focusin', tstStop);
+    tstView.addEventListener('focusout', tstAuto);
+    tstView.addEventListener('touchstart', tstStop, { passive: true });
+    tstView.addEventListener('touchend', () => window.setTimeout(tstAuto, 4000), { passive: true });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) tstStop();
+    else tstAuto();
+  });
+
+  const renderReviews = async () => {
+    if (!reviewsBox) return;
+    const t = (key, fallback) => (window.PTSLang && PTSLang.t ? PTSLang.t(key, fallback) : fallback);
+    try {
+      const rlang = (window.PTSLang && PTSLang.get && PTSLang.get()) || 'th';
+      const rurl = (window.ptsWithLang ? ptsWithLang('/api/reviews/latest?limit=6', rlang) : '/api/reviews/latest?limit=6');
+      const rres = await fetch(rurl, {
+        credentials: 'include',
+        cache: 'no-store',
+        headers: { Accept: 'application/json', 'X-PTS-Lang': rlang === 'en' ? 'en' : 'th' }
+      });
+      const rdata = await rres.json();
+      const reviews = rdata.success ? (rdata.data || []) : [];
+      if (!reviews.length) {
+        reviewsBox.innerHTML = '<div class="text-center text-on-surface-variant py-8" style="flex:1 0 100%">ยังไม่มีรีวิวจากผู้เรียนในขณะนี้</div>';
+        if (tstDots) tstDots.innerHTML = '';
+        tstIndex = 0;
+        tstUpdate();
+        return;
+      }
+      reviewsBox.innerHTML = reviews.map(rv => {
+        const stars = Array.from({ length: 5 }, (_, i) =>
+          `<span class="material-symbols-outlined${i < Number(rv.rating) ? '' : ' is-empty'}">star</span>`
+        ).join('');
+        const name = escapeHtml(rv.full_name || 'ผู้เรียน');
+        const initial = escapeHtml(((rv.full_name || 'ผ').trim().charAt(0) || 'ผ').toUpperCase());
+        const comment = escapeHtml(rv.comment || '');
+        const courseLabel = rv.course_name ? escapeHtml(rv.course_name) : '';
+        return `<article class="tst-card">
+          <div class="tst-quote" aria-hidden="true">&ldquo;</div>
+          <div class="tst-stars">${stars}</div>
+          ${comment ? `<p class="tst-text">&ldquo;${comment}&rdquo;</p>` : ''}
+          <div class="tst-foot">
+            <span class="tst-ava">${initial}</span>
+            <span class="tst-who"><strong title="${name}">${name}</strong>${courseLabel ? `<small>เรียน ${courseLabel}</small>` : ''}</span>
+          </div>
+        </article>`;
+      }).join('');
+      if (tstDots) {
+        tstDots.innerHTML = reviews.map((_, i) =>
+          `<button type="button" class="tst-dot" data-i="${i}" aria-label="ไปรีวิวที่ ${i + 1}"></button>`
+        ).join('');
+        tstDots.querySelectorAll('.tst-dot').forEach(d => {
+          d.addEventListener('click', () => { tstGo(Number(d.dataset.i)); tstAuto(); });
+        });
+      }
+      tstIndex = 0;
+      tstBuildClones();
+      tstGo(0, false);
+      tstAuto();
+    } catch {
+      reviewsBox.innerHTML = '<div class="text-center text-on-surface-variant py-8" style="flex:1 0 100%">โหลดรีวิวไม่สำเร็จ</div>';
+    }
+  };
+  renderReviews();
 });
 
 (function(){

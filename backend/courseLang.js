@@ -171,9 +171,15 @@ function courseListTextSql(alias = 'c', lang = 'th') {
 
 function courseMetaSelectSql(alias = 'c') {
     const a = alias ? `${alias}.` : '';
+    // Outer row reference for the correlated category-name subqueries.
+    // Must be table-qualified: with alias '' an unqualified name would
+    // resolve to the inner coursescat table instead of dbo.courses.
+    const idRef = alias ? `${alias}.[coursescat_id]` : `dbo.courses.[coursescat_id]`;
     return `
                     ${a}[course_id] AS [course_id],
                     ${a}[coursescat_id] AS [coursescat_id],
+                    (SELECT TOP 1 cc.[coursescat_name_th] FROM dbo.coursescat cc WHERE cc.[coursescat_id] = ${idRef}) AS [coursescat_name_th],
+                    (SELECT TOP 1 cc.[coursescat_name_en] FROM dbo.coursescat cc WHERE cc.[coursescat_id] = ${idRef}) AS [coursescat_name_en],
                     ${a}[delivery_mode] AS [delivery_mode],
                     ${a}[total_hours] AS [total_hours],
                     ${a}[price] AS [price],

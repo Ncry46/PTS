@@ -1,0 +1,31 @@
+/* FormFill.html — page styles (extracted from inline <style>) */
+
+  .ff-field { margin-bottom: 18px; }
+  .ff-field label { display:block; font-size:14px; font-weight:700; margin-bottom:6px; color:#3d2f34; }
+  html[data-theme="dark"] .ff-field label { color:#f3e9ec; }
+  .ff-field .help { font-size:12px; color:#5c4f55; margin:-2px 0 8px; }
+  .ff-field input[type="text"],
+  .ff-field input[type="email"],
+  .ff-field input[type="tel"],
+  .ff-field input[type="number"],
+  .ff-field input[type="date"],
+  .ff-field select,
+  .ff-field textarea {
+    width:100%; border:1.5px solid rgba(151,66,88,.18); border-radius:14px;
+    padding:12px 14px; font:inherit; background:#faf7f8; outline:none;
+  }
+  .ff-field textarea { min-height:110px; resize:vertical; }
+  .ff-field input:focus, .ff-field select:focus, .ff-field textarea:focus {
+    border-color:var(--pts-primary); box-shadow:0 0 0 4px rgba(151,66,88,.14); background:#fff;
+  }
+  .ff-choice { display:flex; flex-direction:column; gap:8px; }
+  .ff-choice label { font-weight:500; display:flex; align-items:center; gap:10px; margin:0; cursor:pointer; }
+  .ff-shell {
+    max-width:720px; margin:0 auto; border:1px solid rgba(151,66,88,.12);
+    border-radius:24px; background:#fff; padding:28px 24px;
+    box-shadow:0 16px 40px rgba(28,21,32,.06);
+  }
+  html[data-theme="dark"] .ff-shell { background:#1c161a; border-color:rgba(255,255,255,.08); }
+  html[data-theme="dark"] .ff-field input,
+  html[data-theme="dark"] .ff-field select,
+  html[data-theme="dark"] .ff-field textarea { background:#242028; color:#f3e9ec; border-color:rgba(255,255,255,.12); }

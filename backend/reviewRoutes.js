@@ -114,12 +114,42 @@ function mapReview(row) {
         created_at: row.created_at,
         updated_at: row.updated_at,
         full_name: row.username || row.full_name || 'ผู้เรียน',
-        avatar_url: row.Url || row.avatar_url || null
+        avatar_url: row.Url || row.avatar_url || null,
+        course_name: row.course_name || null
     };
 }
 
 function createReviewRouter({ poolPromise, requireLogin }) {
     const router = express.Router();
+
+    // Latest reviews across all courses (for Home testimonials strip)
+    router.get('/reviews/latest', async (req, res) => {
+        const limit = Math.min(parseInt(req.query.limit, 10) || 6, 20);
+        try {
+            const pool = await poolPromise;
+            await ensureCourseReviewsTable(pool);
+            const list = await pool.request()
+                .input('limit', sql.Int, limit)
+                .query(`
+                    SELECT TOP (@limit)
+                        r.review_id, r.course_id, r.user_id, r.rating, r.comment,
+                        r.created_at, r.updated_at, u.username, u.Url,
+                        COALESCE(NULLIF(LTRIM(RTRIM(c.course_name_th)), N''), NULLIF(LTRIM(RTRIM(c.course_name_en)), N''), N'') AS course_name
+                    FROM dbo.course_reviews r
+                    INNER JOIN dbo.users u ON u.user_id = r.user_id
+                    INNER JOIN dbo.courses c ON c.course_id = r.course_id
+                    WHERE r.flag_use = 1 AND LOWER(LTRIM(RTRIM(CAST(u.Role AS NVARCHAR(50))))) = 'student'
+                    ORDER BY r.updated_at DESC, r.review_id DESC
+                `);
+            res.json({
+                success: true,
+                data: (list.recordset || []).map(mapReview)
+            });
+        } catch (error) {
+            console.error('[reviews] latest:', error.message);
+            res.status(500).json({ success: false, message: error.message });
+        }
+    });
 
     router.get('/courses/:courseId/reviews', async (req, res) => {
         const courseId = parseInt(req.params.courseId, 10);
@@ -138,6 +168,7 @@ function createReviewRouter({ poolPromise, requireLogin }) {
                     FROM dbo.course_reviews r
                     INNER JOIN dbo.users u ON u.user_id = r.user_id
                     WHERE r.course_id = @courseId AND ${flagActiveSql('r.flag_use')}
+                      AND LOWER(LTRIM(RTRIM(CAST(u.Role AS NVARCHAR(50))))) = 'student'
                     ORDER BY r.updated_at DESC, r.review_id DESC
                 `);
 
@@ -146,9 +177,11 @@ function createReviewRouter({ poolPromise, requireLogin }) {
                 .query(`
                     SELECT
                         COUNT(*) AS total_reviews,
-                        ISNULL(AVG(CAST(rating AS DECIMAL(10,2))), 0) AS average_rating
-                    FROM dbo.course_reviews
-                    WHERE course_id = @courseId AND ${flagActiveSql('flag_use')}
+                        ISNULL(AVG(CAST(r.rating AS DECIMAL(10,2))), 0) AS average_rating
+                    FROM dbo.course_reviews r
+                    INNER JOIN dbo.users u ON u.user_id = r.user_id
+                    WHERE r.course_id = @courseId AND ${flagActiveSql('r.flag_use')}
+                      AND LOWER(LTRIM(RTRIM(CAST(u.Role AS NVARCHAR(50))))) = 'student'
                 `);
 
             let my_review = null;

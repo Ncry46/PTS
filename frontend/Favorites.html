@@ -12,17 +12,9 @@
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
 <link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="site.css?v=20260902seed">
-<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/site.css?v=20260902seed"https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{colors:{primary:'#ca1156','on-surface-variant':'#544245',error:'#ba1a1a'}}}}</script>
-<style>
-  #course-list.pts-course-grid {
-    display: grid !important;
-    grid-template-columns: repeat(auto-fill, minmax(max(190px, calc((100% - 56px) / 5)), 1fr)) !important;
-    gap: 14px !important;
-    width: 100% !important;
-  }
-</style>
+<link rel="stylesheet" href="css/Favorites.css?v=20260904css">
 </head>
 <body class="pts-body">
 <div id="app-navbar">
@@ -78,7 +70,9 @@ function setTab(tab) {
 function courseCard(c) {
   c = window.PTSCourseI18n ? PTSCourseI18n.localize(c) : c;
   const image = c.cover_image_url || PLACEHOLDER;
-  const mode = (c.delivery_mode || 'หลักสูตร').toString();
+  const mode = (c.delivery_mode || '').toString().toLowerCase();
+  const badgeBg = mode === 'onsite' ? '#ffc800' : mode === 'hybrid' ? '#007ede' : mode === 'online' ? '#00ca01' : '#ca1156';
+  const badgeLabel = mode === 'onsite' ? 'Onsite' : mode === 'hybrid' ? 'Hybrid' : mode === 'online' ? 'Online' : (c.delivery_mode || 'หลักสูตร');
   const hours = c.total_hours != null ? `${Number(c.total_hours)} ชม.` : '';
   const enrolled = Number(c.is_enrolled) === 1;
   const primaryHref = enrolled
@@ -94,7 +88,7 @@ function courseCard(c) {
     <article class="pts-course-card" data-course-id="${c.course_id}">
       <div class="pts-course-card__media">
         <img src="${escapeHtml(image)}" alt="" loading="lazy" onerror="this.onerror=null;this.src='${PLACEHOLDER}'">
-        <span class="pts-course-card__badge">${escapeHtml(mode)}</span>
+        <span class="pts-course-card__badge" style="background:${badgeBg}">${escapeHtml(badgeLabel)}</span>
       </div>
       <div class="pts-course-card__body">
         <div class="pts-course-card__copy">

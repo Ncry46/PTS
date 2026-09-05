@@ -2,7 +2,7 @@
  * Iridescence — vanilla port of React Bits (ogl + WebGL)
  * Imports ogl from vendored frontend/vendor/ogl (no npm runtime needed).
  */
-import { Renderer, Program, Mesh, Color, Triangle } from './vendor/ogl/index.js';
+import { Renderer, Program, Mesh, Color, Triangle } from '../vendor/ogl/index.js';
 
 const vertexShader = `
 attribute vec2 uv;

@@ -1206,3 +1206,14 @@ input[type="password"]::-ms-reveal,
   html[data-theme="dark"] .pts-login__input:focus {
     background: var(--pts-surface-2, #242028) !important;
   }
+  html[data-theme="dark"] .pts-login__input:-webkit-autofill,
+  html[data-theme="dark"] .pts-login__input:-webkit-autofill:hover,
+  html[data-theme="dark"] .pts-login__input:-webkit-autofill:focus {
+    -webkit-text-fill-color: var(--pts-text) !important;
+    caret-color: var(--pts-text) !important;
+    box-shadow: 0 0 0 1000px var(--pts-input-bg, #242028) inset !important;
+  }
+  html[data-theme="dark"] .pts-login__link { color: var(--pts-primary); }
+  html[data-theme="dark"] .pts-login__ico { color: var(--pts-muted); }
+  html[data-theme="dark"] .pts-login__field label,
+  html[data-theme="dark"] .pts-login__field-row label { color: var(--pts-text, #f4eef2); }

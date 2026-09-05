@@ -194,12 +194,8 @@
         border:1px solid color-mix(in srgb, var(--pts-primary,#ca1156) 35%, transparent);
         color:var(--pts-primary,#ca1156); background:var(--pts-surface,#fff);
       }
-      .pts-topnav__btn--auth { border:1px solid color-mix(in srgb, var(--pts-primary,#ca1156) 35%, transparent); color:var(--pts-primary,#ca1156); background:var(--pts-surface,#fff); position:relative; overflow:hidden; display:inline-flex; align-items:center; gap:6px; }
-      .pts-topnav__btn--auth svg { width:15px; height:15px; flex-shrink:0; }
-      .pts-topnav__btn--auth.is-active { background:var(--pts-primary,#ca1156); color:#fff; border-color:var(--pts-primary,#ca1156); box-shadow:0 4px 18px color-mix(in srgb, var(--pts-primary,#ca1156) 40%, transparent); animation:pts-btn-glow 2.4s ease-in-out infinite; }
-      .pts-topnav__btn--auth.is-active::after { content:''; position:absolute; top:0; left:0; width:55%; height:100%; background:linear-gradient(105deg, transparent, rgba(255,255,255,.5), transparent); transform:translateX(-130%); animation:pts-btn-shine 2.4s ease-in-out infinite; pointer-events:none; }
-      @keyframes pts-btn-shine { 0% { transform:translateX(-130%); } 55%, 100% { transform:translateX(260%); } }
-      @keyframes pts-btn-glow { 0%,100% { box-shadow:0 4px 16px color-mix(in srgb, var(--pts-primary,#ca1156) 35%, transparent); } 50% { box-shadow:0 6px 26px color-mix(in srgb, var(--pts-primary,#ca1156) 55%, transparent); } }
+      .pts-topnav__btn--auth { border:1px solid color-mix(in srgb, var(--pts-primary,#ca1156) 35%, transparent); color:var(--pts-primary,#ca1156); background:var(--pts-surface,#fff); }
+      .pts-topnav__btn--auth.is-active { background:var(--pts-primary,#ca1156); color:#fff; border-color:var(--pts-primary,#ca1156); }
       .pts-topnav__btn--primary { background:var(--pts-primary,#ca1156); color:#fff; border:none; }
       .pts-topnav__icon {
         width:40px; height:40px; border:none; border-radius:999px; background:transparent;
@@ -524,8 +520,8 @@
             <a class="pts-topnav__link" href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
           </div>
           <div class="pts-topnav__actions">
-            <a class="pts-topnav__btn pts-topnav__btn--auth pts-topnav__btn--login pts-topnav__btn--desktop" href="Login.html" data-i18n="nav.login"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c0-2.6 2.6-4 7-4s7 1.4 7 4"/></svg>${t('nav.login', 'เข้าสู่ระบบ')}</a>
-            <a class="pts-topnav__btn pts-topnav__btn--auth pts-topnav__btn--register pts-topnav__btn--desktop" href="Login.html?tab=register" data-i18n="nav.register"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8c0-2.6 2.6-4 7-4s7 1.4 7 4"/><path d="M16 11h6M19 8v6"/></svg>${t('nav.register', 'สมัครสมาชิก')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--auth pts-topnav__btn--login pts-topnav__btn--desktop" href="Login.html" data-i18n="nav.login">${t('nav.login', 'เข้าสู่ระบบ')}</a>
+            <a class="pts-topnav__btn pts-topnav__btn--auth pts-topnav__btn--register pts-topnav__btn--desktop" href="Login.html?tab=register" data-i18n="nav.register">${t('nav.register', 'สมัครสมาชิก')}</a>
             ${langToggleHtml()}
             ${themeToggleHtml()}
           </div>

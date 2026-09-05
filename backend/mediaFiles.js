@@ -4,7 +4,7 @@
  */
 const sql = require('mssql');
 
-const CATEGORIES = new Set(['avatars', 'community', 'slips', 'hero', 'cert']);
+const CATEGORIES = new Set(['avatars', 'community', 'slips', 'hero', 'cert', 'covers']);
 
 async function ensureMediaFilesTable(pool) {
     await pool.request().query(`

@@ -7,27 +7,7 @@
 <script src="/comp/theme-boot.js"></script>
 <script src="/comp/i18n-dict.js?v=20260813enfix"></script>
 <script src="/comp/lang-boot.js?v=20260813enfix"></script>
-<link rel="stylesheet" href="site.css?v=20260902seed">
-<link rel="stylesheet" href="auth-scene.css?v=20260813modalfix">
-<link rel="stylesheet" href="login.css?v=20260902seed2">
-<link rel="stylesheet" href="register.css?v=20260805white2">
-<link rel="stylesheet" href="auth-split.css?v=20260902seed4">
-<style id="pts-auth-force-bg">
-  /* White auth page backdrop */
-  body.pts-login, body.pts-register {
-    background: #ffffff !important;
-    background-image: none !important;
-  }
-  .pts-auth-scene { background: #ffffff !important; }
-  .pts-auth-scene__geo,
-  .pts-auth-scene::before,
-  .pts-auth-scene::after,
-  .pts-auth-scene__fx,
-  #auth-iridescence,
-  .pts-auth-build {
-    display: none !important;
-  }
-</style>
+<link rel="stylesheet" href="css/site.css?v=20260902seed"><link rel="stylesheet" href="css/auth-scene.css?v=20260813modalfix"><link rel="stylesheet" href="css/login.css?v=20260902seed2"><link rel="stylesheet" href="css/register.css?v=20260805white2"><link rel="stylesheet" href="css/auth-split.css?v=20260902seed4"><link rel="stylesheet" href="css/Login-page.css?v=20260904css">
 <link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
 </head>
@@ -47,6 +27,7 @@
         <span class="pts-auth-split__cover-fx" aria-hidden="true">
           <img class="pts-auth-split__cover-art" src="/uploads/auth/imglogin.png" alt="" width="1000" height="1400" decoding="async" fetchpriority="high">
           <span class="pts-auth-split__cover-shade"></span>
+          <span class="pts-auth-split__cover-glow" aria-hidden="true"></span>
         </span>
 
         <span class="pts-auth-split__cover-face" data-cover-face="register">
@@ -257,10 +238,10 @@
   </div>
 </div>
 
-<script src="auth-split.js?v=20260902imglogin"></script>
-<script src="login.js?v=20260813modalfix"></script>
-<script src="register.js?v=20260805split1"></script>
-<script src="password-toggle.js?v=20260720e"></script>
+<script src="js/auth-split.js?v=20260902imglogin"></script>
+<script src="js/login.js?v=20260813modalfix"></script>
+<script src="js/register.js?v=20260805split1"></script>
+<script src="js/password-toggle.js?v=20260720e"></script>
 <script src="/comp/navbar.js?v=20260903logo"></script>
 </body>
 </html>

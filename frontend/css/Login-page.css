@@ -1,0 +1,15 @@
+/* Login.html — page styles (extracted from inline <style>) */
+  /* White auth page backdrop */
+  body.pts-login, body.pts-register {
+    background: #ffffff !important;
+    background-image: none !important;
+  }
+  .pts-auth-scene { background: #ffffff !important; }
+  .pts-auth-scene__geo,
+  .pts-auth-scene::before,
+  .pts-auth-scene::after,
+  .pts-auth-scene__fx,
+  #auth-iridescence,
+  .pts-auth-build {
+    display: none !important;
+  }

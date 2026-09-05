@@ -170,7 +170,7 @@ window.PTSLangDict = {
   'home.loadingCourses': { th: 'กำลังโหลดหลักสูตร...', en: 'Loading courses...' },
   'home.emptyCourses': { th: 'ยังไม่มีหลักสูตรในระบบ', en: 'No courses yet' },
   'home.hours': { th: 'ชม.', en: 'hrs' },
-  'home.stepsTitle': { th: 'เริ่มต้นเรียนได้ 3 รูปแบบ', en: 'Start learning in 5 steps' },
+  'home.stepsTitle': { th: 'เส้นทางการเรียนรู้กับ PTS Academy (5 Steps)', en: 'Start learning in 5 steps' },
   'home.step1': { th: 'เลือกหลักสูตร', en: 'Choose a course' },
   'home.step1Desc': { th: 'เลือกวิชาที่คุณสนใจ', en: 'Pick a subject you care about' },
   'home.step2': { th: 'ลงทะเบียน', en: 'Enroll' },

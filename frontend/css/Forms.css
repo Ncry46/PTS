@@ -1,0 +1,20 @@
+/* Forms.html — page styles (extracted from inline <style>) */
+
+  .form-card {
+    border: 1px solid rgba(151,66,88,.14);
+    border-radius: 20px;
+    background: #fff;
+    padding: 20px 22px;
+    transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+  }
+  .form-card:hover {
+    border-color: rgba(151,66,88,.28);
+    box-shadow: 0 14px 36px rgba(28,21,32,.08);
+    transform: translateY(-2px);
+  }
+  .disc-chip {
+    display:inline-flex; align-items:center; gap:6px;
+    padding:6px 12px; border-radius:999px; font-size:12px; font-weight:700;
+    background:rgba(151,66,88,.1); color:var(--pts-primary);
+  }
+  html[data-theme="dark"] .form-card { background: #1c161a; border-color: rgba(255,255,255,.08); }

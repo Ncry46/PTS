@@ -1,0 +1,8 @@
+/* Favorites.html — page styles (extracted from inline <style>) */
+
+  #course-list.pts-course-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(max(190px, calc((100% - 56px) / 5)), 1fr)) !important;
+    gap: 14px !important;
+    width: 100% !important;
+  }

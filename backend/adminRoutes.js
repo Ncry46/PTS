@@ -266,7 +266,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('hours', sql.Decimal(10, 2), Number(total_hours || 1))
                 .input('cover', sql.NVarChar(500), cover_image_url || null)
                 .input('featured', sql.Bit, is_featured ? 1 : 0)
-                .input('coursesFlag', sql.NVarChar(50), coursesFlag != null && coursesFlag !== '' ? String(coursesFlag) : 'Y')
+                .input('coursesFlag', sql.Int, coursesFlag != null && coursesFlag !== '' ? (isFlagActive(coursesFlag) ? 1 : 0) : 1)
                 .input('price', sql.Decimal(10, 2), price != null && price !== '' ? Number(price) : null)
                 .input('description', sql.NVarChar(sql.MAX), text.description_th)
                 .input('descriptionEn', sql.NVarChar(sql.MAX), text.description_en)
@@ -359,7 +359,7 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 .input('cover', sql.NVarChar(500), body.cover_image_url !== undefined ? (body.cover_image_url || null) : null)
                 .input('hasCover', sql.Bit, body.cover_image_url !== undefined ? 1 : 0)
                 .input('featured', sql.Bit, typeof body.is_featured === 'boolean' ? (body.is_featured ? 1 : 0) : null)
-                .input('coursesFlag', sql.NVarChar(50), body.coursesFlag !== undefined ? (body.coursesFlag || null) : null)
+                .input('coursesFlag', sql.Int, body.coursesFlag !== undefined && body.coursesFlag !== '' && body.coursesFlag != null ? (isFlagActive(body.coursesFlag) ? 1 : 0) : null)
                 .input('hasFlag', sql.Bit, body.coursesFlag !== undefined ? 1 : 0)
                 .input('price', sql.Decimal(10, 2), body.price !== undefined && body.price !== '' && body.price != null ? Number(body.price) : null)
                 .input('hasPrice', sql.Bit, body.price !== undefined ? 1 : 0)
@@ -1896,6 +1896,71 @@ function createAdminRouter({ poolPromise, requireLogin }) {
                 url: info.url,
                 filename: info.filename,
                 bytes: info.bytes,
+                driveBackup: !!(drive && drive.ok)
+            });
+        });
+    });
+
+    /** รูปปกหลักสูตร — แอดมินอัปโหลดจากเครื่องได้เลย ไม่ต้องหา URL มาแปะเอง */
+    const COVERS_DIR = path.join(__dirname, '..', 'uploads', 'courses');
+    const coverUpload = multer({
+        storage: multer.diskStorage({
+            destination: (_req, _file, cb) => {
+                try { fs.mkdirSync(COVERS_DIR, { recursive: true }); } catch (_) {}
+                cb(null, COVERS_DIR);
+            },
+            filename: (_req, file, cb) => {
+                const ext = String(path.extname(file.originalname || '').toLowerCase() || '.jpg');
+                const safeExt = ['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(ext) ? ext : '.jpg';
+                cb(null, `cover-${Date.now()}-${Math.round(Math.random() * 1e6)}${safeExt}`);
+            }
+        }),
+        limits: { fileSize: 5 * 1024 * 1024 },
+        fileFilter: (_req, file, cb) => {
+            if (HERO_MIME.has(String(file.mimetype || '').toLowerCase())) cb(null, true);
+            else cb(new Error('รองรับเฉพาะไฟล์รูป JPG, PNG, WEBP หรือ GIF'));
+        }
+    });
+
+    router.post('/course-covers/upload', (req, res) => {
+        if (!requireAdmin(req, res)) return;
+        coverUpload.single('image')(req, res, async (err) => {
+            if (err) {
+                return res.status(400).json({ success: false, message: err.message || 'อัปโหลดไม่สำเร็จ' });
+            }
+            if (!req.file) {
+                return res.status(400).json({ success: false, message: 'กรุณาเลือกไฟล์รูป' });
+            }
+            const localUrl = `/uploads/courses/${req.file.filename}`;
+            const drive = await tryUploadLocalFile(req.file.path, {
+                filename: req.file.filename,
+                mimeType: req.file.mimetype,
+                category: 'covers'
+            });
+            if (drive && !drive.ok && drive.error) console.warn('[cover→drive]', drive.error);
+            try {
+                const pool = await poolPromise;
+                await recordMediaUpload(pool, {
+                    category: 'covers',
+                    userId: req.session?.user?.user_id || null,
+                    originalName: req.file.originalname,
+                    storedFilename: req.file.filename,
+                    mimeType: req.file.mimetype,
+                    fileSizeBytes: req.file.size,
+                    localUrl,
+                    driveFileId: drive && drive.ok ? drive.fileId : null,
+                    driveUrl: drive && drive.ok ? drive.url : null,
+                    publicUrl: (drive && drive.ok && drive.url) ? drive.url : localUrl,
+                    refTable: 'courses',
+                    refId: req.file.filename,
+                    note: 'course cover'
+                });
+            } catch (mediaErr) {
+                console.warn('[cover→media_files]', mediaErr.message);
+            }
+            res.json({
+                success: true,
+                url: localUrl,
                 driveBackup: !!(drive && drive.ok)
             });
         });
