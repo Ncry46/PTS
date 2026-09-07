@@ -589,7 +589,7 @@ html[data-theme="dark"] .user-side__link.is-active {
     height: calc(100dvh - var(--pts-nav-h, 68px));
     overflow-y: auto;
     border-bottom: none;
-    border-right: 1px solid var(--pts-border, rgba(151, 66, 88, 0.14));
+    border-right: 2px solid rgba(202, 17, 86, 0.2);
     padding: 24px 14px 16px;
   }
 }

@@ -839,7 +839,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       let d = new Date(raw);
       if (isNaN(d.getTime())) d = new Date(raw.slice(0, 10) + 'T00:00:00');
       if (!isNaN(d.getTime())) {
-        dateText = 'เริ่ม ' + d.toLocaleDateString('th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
+        dateText = t('home.openSoonStarts', 'เริ่ม') + ' ' + d.toLocaleDateString(lang === 'en' ? 'en-US' : 'th-TH', { day: 'numeric', month: 'long', year: 'numeric' });
       }
     }
     return `<a class="os-card" href="CourseDetail.html?courseId=${c.course_id}" style="text-decoration:none;color:inherit">
@@ -860,7 +860,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const localized = (window.PTSCourseI18n ? PTSCourseI18n.localizeAll(allCourses) : allCourses);
     const list = localized.filter(c => Number(c.is_open_soon) === 1).slice(0, 6);
     if (!list.length) {
-      osTrack.innerHTML = '<div class="text-center text-on-surface-variant py-8" style="flex:1 0 100%">ยังไม่มีหลักสูตรที่กำลังจะเปิดเร็วๆ นี้</div>';
+      osTrack.innerHTML = `<div class="text-center text-on-surface-variant py-8" style="flex:1 0 100%">${t('home.openSoonEmpty', 'ยังไม่มีหลักสูตรที่กำลังจะเปิดเร็วๆ นี้')}</div>`;
       osPage = 0;
       osUpdate();
       return;

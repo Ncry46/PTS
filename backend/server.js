@@ -757,7 +757,7 @@ app.get('/api/community', async (req, res) => {
                 u.username AS author_name,
                 ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
                 (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
-                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
+                (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id AND deleted_at IS NULL) AS comment_count,
                 CASE
                     WHEN @userId IS NULL THEN 0
                     WHEN EXISTS (
@@ -811,7 +811,7 @@ app.get('/api/my/liked-posts', async (req, res) => {
                     u.username AS author_name,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar,
                     (SELECT COUNT(*) FROM post_likes WHERE post_id = p.post_id) AS like_count,
-                    (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id) AS comment_count,
+                    (SELECT COUNT(*) FROM post_comments WHERE post_id = p.post_id AND deleted_at IS NULL) AS comment_count,
                     1 AS liked_by_me
                 FROM dbo.post_likes pl
                 INNER JOIN dbo.community_posts p ON p.post_id = pl.post_id
@@ -1112,14 +1112,16 @@ app.get('/api/community/:postId/comments', async (req, res) => {
                 SELECT
                     c.comment_id,
                     c.post_id,
-                    c.content,
+                    c.comment_text AS content,
                     c.created_at,
+                    c.updated_at,
                     c.user_id AS author_id,
                     u.username AS author_name,
+                    ISNULL(c.parent_id, 0) AS parent_id,
                     ISNULL(u.Url, 'https://ui-avatars.com/api/?name=' + LEFT(u.username, 1) + '&background=F8BBD0&color=880E4F&size=128') AS author_avatar
                 FROM dbo.post_comments c
                 INNER JOIN dbo.users u ON c.user_id = u.user_id
-                WHERE c.post_id = @postId
+                WHERE c.post_id = @postId AND c.deleted_at IS NULL
                 ORDER BY c.created_at ASC
             `);
 
@@ -1136,6 +1138,7 @@ app.post('/api/community/:postId/comments', async (req, res) => {
 
     const postId = parseInt(req.params.postId, 10);
     const content = (req.body.content || '').trim();
+    const parentId = parseInt(req.body.parent_id, 10) || null;
     if (!postId) {
         return res.status(400).json({ success: false, message: 'รหัสโพสต์ไม่ถูกต้อง' });
     }
@@ -1152,10 +1155,11 @@ app.post('/api/community/:postId/comments', async (req, res) => {
             .input('postId', sql.Int, postId)
             .input('userId', sql.Int, user.user_id)
             .input('content', sql.NVarChar, content)
+            .input('parentId', sql.Int, parentId)
             .query(`
-                INSERT INTO dbo.post_comments (post_id, user_id, content, created_at)
-                OUTPUT INSERTED.comment_id, INSERTED.post_id, INSERTED.content, INSERTED.created_at
-                VALUES (@postId, @userId, @content, GETDATE())
+                INSERT INTO dbo.post_comments (post_id, user_id, comment_text, parent_id, created_at)
+                OUTPUT INSERTED.comment_id, INSERTED.post_id, INSERTED.comment_text AS content, ISNULL(INSERTED.parent_id, 0) AS parent_id, INSERTED.created_at
+                VALUES (@postId, @userId, @content, @parentId, GETDATE())
             `);
 
         const created = result.recordset[0];
@@ -1190,6 +1194,66 @@ app.post('/api/community/:postId/comments', async (req, res) => {
     } catch (error) {
         console.error('❌ เพิ่มคอมเมนต์ล้มเหลว:', error.message);
         res.status(500).json({ success: false, message: 'ไม่สามารถคอมเมนต์ได้: ' + error.message });
+    }
+});
+
+// ── DELETE comment ──
+app.delete('/api/community/comments/:commentId', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    const commentId = parseInt(req.params.commentId, 10);
+    if (!commentId) return res.status(400).json({ success: false, message: 'รหัสคอมเมนต์ไม่ถูกต้อง' });
+
+    try {
+        const pool = await poolPromise;
+        const check = await pool.request()
+            .input('commentId', sql.Int, commentId)
+            .query('SELECT user_id, post_id FROM dbo.post_comments WHERE comment_id = @commentId');
+        const row = check.recordset[0];
+        if (!row) return res.status(404).json({ success: false, message: 'ไม่พบคอมเมนต์' });
+        if (Number(row.user_id) !== Number(user.user_id) && user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์ลบคอมเมนต์นี้' });
+        }
+        await pool.request()
+            .input('commentId', sql.Int, commentId)
+            .query('UPDATE dbo.post_comments SET deleted_at = GETDATE() WHERE comment_id = @commentId');
+        res.json({ success: true, message: 'ลบคอมเมนต์สำเร็จ' });
+    } catch (error) {
+        console.error('❌ ลบคอมเมนต์ล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถลบคอมเมนต์ได้: ' + error.message });
+    }
+});
+
+// ── PUT edit comment ──
+app.put('/api/community/comments/:commentId', async (req, res) => {
+    const user = requireLogin(req, res);
+    if (!user) return;
+
+    const commentId = parseInt(req.params.commentId, 10);
+    const content = (req.body.content || '').trim();
+    if (!commentId) return res.status(400).json({ success: false, message: 'รหัสคอมเมนต์ไม่ถูกต้อง' });
+    if (!content) return res.status(400).json({ success: false, message: 'กรุณากรอกข้อความ' });
+    if (content.length > 1000) return res.status(400).json({ success: false, message: 'คอมเมนต์ยาวเกิน 1000 ตัวอักษร' });
+
+    try {
+        const pool = await poolPromise;
+        const check = await pool.request()
+            .input('commentId', sql.Int, commentId)
+            .query('SELECT user_id FROM dbo.post_comments WHERE comment_id = @commentId');
+        const row = check.recordset[0];
+        if (!row) return res.status(404).json({ success: false, message: 'ไม่พบคอมเมนต์' });
+        if (Number(row.user_id) !== Number(user.user_id) && user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'ไม่มีสิทธิ์แก้ไขคอมเมนต์นี้' });
+        }
+        await pool.request()
+            .input('commentId', sql.Int, commentId)
+            .input('content', sql.NVarChar, content)
+            .query('UPDATE dbo.post_comments SET comment_text = @content, updated_at = GETDATE() WHERE comment_id = @commentId');
+        res.json({ success: true, message: 'แก้ไขสำเร็จ', data: { comment_id: commentId, content } });
+    } catch (error) {
+        console.error('❌ แก้ไขคอมเมนต์ล้มเหลว:', error.message);
+        res.status(500).json({ success: false, message: 'ไม่สามารถแก้ไขคอมเมนต์ได้: ' + error.message });
     }
 });
 
@@ -1444,6 +1508,20 @@ app.post('/api/attendance/scan', async (req, res) => {
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในระบบฐานข้อมูลหลังบ้าน' });
     }
 });
+
+// ── Migration: add parent_id to post_comments ──
+(async () => {
+    try {
+        const pool = await poolPromise;
+        await pool.request().query(`
+            IF NOT EXISTS (SELECT 1 FROM sys.columns WHERE object_id = OBJECT_ID('dbo.post_comments') AND name = 'parent_id')
+            ALTER TABLE dbo.post_comments ADD parent_id INT NULL
+        `);
+        console.log('✅ post_comments.parent_id column ensured');
+    } catch (err) {
+        console.warn('⚠ parent_id migration:', err.message);
+    }
+})();
 
 app.listen(PORT, HOST, () => {
     console.log(`🚀 Server running on http://${HOST}:${PORT}`);

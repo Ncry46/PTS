@@ -88,13 +88,14 @@
     main.classList.remove('pts-main--user', 'user-shell');
   }
 
-  async function isLoggedIn() {
+  async function getUserRole() {
     try {
       const res = await fetch('/api/users/me', { credentials: 'include' });
       const data = await res.json();
-      return !!(data && data.loggedIn);
+      if (!data || !data.loggedIn) return null;
+      return String(data.user?.role || data.user?.Role || '').toLowerCase();
     } catch (_) {
-      return false;
+      return null;
     }
   }
 
@@ -105,8 +106,14 @@
       return;
     }
 
-    const loggedIn = await isLoggedIn();
-    if (!loggedIn) {
+    const role = await getUserRole();
+    if (!role) {
+      teardownShell();
+      return;
+    }
+
+    // แอดมินไม่ต้องแสดง sidebar ของนักเรียน
+    if (role === 'admin') {
       teardownShell();
       return;
     }

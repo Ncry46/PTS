@@ -409,19 +409,8 @@
           <a href="Settings.html" role="menuitem" data-i18n="nav.settings">${t('nav.settings', 'ตั้งค่า')}</a>`;
 
     const adminLinks = `
-          <a href="Admin.html#courses" role="menuitem" data-i18n="nav.admin.courses">${t('nav.admin.courses', 'หลักสูตร')}</a>
-          <a href="Admin.html#lessons" role="menuitem" data-i18n="nav.admin.lessons">${t('nav.admin.lessons', 'บทเรียน')}</a>
-          <a href="Admin.html#schedules" role="menuitem" data-i18n="nav.admin.schedules">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
-          <a href="Admin.html#forms" role="menuitem" data-i18n="nav.admin.forms">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
-          <a href="Admin.html#banners" role="menuitem" data-i18n="nav.admin.banners">${t('nav.admin.banners', 'แบนเนอร์')}</a>
-          <a href="Admin.html#cert" role="menuitem" data-i18n="nav.admin.cert">${t('nav.admin.cert', 'ใบประกาศ')}</a>
-          <a href="Admin.html#users" role="menuitem" data-i18n="nav.admin.users">${t('nav.admin.users', 'ผู้ใช้')}</a>
-          <a href="Admin.html#posts" role="menuitem" data-i18n="nav.admin.posts">${t('nav.admin.posts', 'โพสต์')}</a>
-          <a href="Admin.html#payments" role="menuitem" data-i18n="nav.admin.payments">${t('nav.admin.payments', 'ชำระเงิน')}</a>
-          <a href="Admin.html#coupons" role="menuitem" data-i18n="nav.admin.coupons">${t('nav.admin.coupons', 'คูปองส่วนลด')}</a>
-          <a href="Admin.html#audit" role="menuitem" data-i18n="nav.admin.audit">${t('nav.admin.audit', 'ประวัติแอดมิน')}</a>
-          <a href="Admin.html#mail" role="menuitem" data-i18n="nav.admin.mail">${t('nav.admin.mail', 'อีเมล OTP')}</a>
-          <a href="Settings.html" role="menuitem" data-i18n="nav.settings">${t('nav.settings', 'ตั้งค่าโปรไฟล์')}</a>`;
+          <a href="Admin.html" role="menuitem">${t('nav.admin.dashboard', 'แผงควบคุมแอดมิน')}</a>
+          <a href="Settings.html" role="menuitem" data-i18n="nav.admin.profile">${t('nav.admin.profile', 'โปรไฟล์')}</a>`;
 
     return `
       <div class="pts-topnav__user-wrap" data-pts-user-wrap>
@@ -575,19 +564,8 @@
           ${coursesMobileHtml()}
           <a href="Community.html" data-i18n="nav.community">${t('nav.community', 'คอมมูนิตี้')}</a>
           ${isAdmin
-            ? `<a href="Admin.html#courses">${t('nav.admin.courses', 'หลักสูตร')}</a>
-               <a href="Admin.html#lessons">${t('nav.admin.lessons', 'บทเรียน')}</a>
-               <a href="Admin.html#schedules">${t('nav.admin.schedules', 'ตารางเรียน')}</a>
-               <a href="Admin.html#forms">${t('nav.admin.forms', 'แบบฟอร์ม')}</a>
-               <a href="Admin.html#banners">${t('nav.admin.banners', 'แบนเนอร์')}</a>
-               <a href="Admin.html#cert">${t('nav.admin.cert', 'ใบประกาศ')}</a>
-               <a href="Admin.html#users">${t('nav.admin.users', 'ผู้ใช้')}</a>
-               <a href="Admin.html#posts">${t('nav.admin.posts', 'โพสต์')}</a>
-               <a href="Admin.html#payments">${t('nav.admin.payments', 'ชำระเงิน')}</a>
-               <a href="Admin.html#coupons">${t('nav.admin.coupons', 'คูปองส่วนลด')}</a>
-               <a href="Admin.html#audit">${t('nav.admin.audit', 'ประวัติแอดมิน')}</a>
-               <a href="Admin.html#mail">${t('nav.admin.mail', 'อีเมล OTP')}</a>
-               <a href="Settings.html">${t('nav.settings', 'ตั้งค่าโปรไฟล์')}</a>`
+            ? `<a href="Admin.html">${t('nav.admin.dashboard', 'แผงควบคุมแอดมิน')}</a>
+               <a href="Settings.html">${t('nav.admin.profile', 'โปรไฟล์')}</a>`
             : `<a href="DashbordU.html">${t('nav.dashboard', 'แดชบอร์ด')}</a>
                <a href="MyCourses.html">${t('nav.mycourses', 'หลักสูตรของฉัน')}</a>
                <a href="Payments.html">${t('nav.payments', 'การชำระเงิน')}</a>

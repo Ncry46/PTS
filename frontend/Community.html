@@ -9,9 +9,11 @@
 <script src="/comp/lang-boot.js?v=20260813enfix"></script>
 <link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet">
-<link rel="stylesheet" href="css/site.css?v=20260902seed"https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link rel="stylesheet" href="css/site.css?v=20260902seed">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
 tailwind.config = {
+  darkMode: "class",
   theme: {
     extend: {
       colors: {
@@ -50,7 +52,7 @@ tailwind.config = {
       <div>
         <span class="pts-chip mb-3">PA Community</span>
         <h1 class="text-3xl md:text-4xl font-bold leading-tight mb-2 pts-display" data-i18n="page.community.section_title">คอมมูนิตี้ผู้ช่วยมืออาชีพ</h1>
-        <p class="text-on-surface-variant max-w-2xl" data-i18n="page.community.sub">แลกเปลี่ยนประสบการณ์ อ่านโพสต์ และเรียนรู้จากเพื่อนร่วมอาชีพ</p>
+        <p class="max-w-2xl" style="color:rgba(255,240,245,.92)" data-i18n="page.community.sub">พื้นที่แลกเปลี่ยนประสบการณ์ เรียนรู้ร่วมกัน และเติบโตไปในสายอาชีพผู้ช่วยมืออาชีพ</p>
       </div>
       <div id="hero-actions" class="flex flex-wrap gap-2"></div>
     </div>
@@ -58,10 +60,15 @@ tailwind.config = {
 
   <div class="pts-grid-2">
     <div class="space-y-4">
-      <section id="composer-section" class="pts-card p-5 hidden">
-        <h2 class="font-bold text-primary mb-3">สร้างโพสต์ใหม่</h2>
-        <p class="text-sm text-on-surface-variant mb-3">โพสต์จะขึ้นในคอมมูนิตี้ทันที — ไม่ต้องรอแอดมินอนุมัติ</p>
-        <textarea id="post-content" rows="3" maxlength="2000" placeholder="คุณกำลังคิดอะไรอยู่..."
+      <section id="composer-section" class="cm-composer pts-card p-5 hidden">
+        <div class="cm-composer-header">
+          <img id="composer-avatar" class="cm-composer-avatar" src="" alt="">
+          <div class="flex-1">
+            <p id="composer-name" class="cm-composer-name"></p>
+            <p class="text-xs text-on-surface-variant">กำลังคิดอะไรอยู่?</p>
+          </div>
+        </div>
+        <textarea id="post-content" rows="3" maxlength="2000" placeholder="เขียนโพสต์ของคุณ..."
           class="w-full rounded-2xl border border-outline-variant bg-white p-4 outline-none focus:ring-2 focus:ring-primary/20"></textarea>
         <div id="image-preview" class="cm-image-preview" hidden>
           <img id="image-preview-img" alt="ตัวอย่างรูปโพสต์">
@@ -90,7 +97,7 @@ tailwind.config = {
 
       <div class="flex items-center justify-between">
         <h2 class="cm-feed-title">โพสต์ล่าสุด</h2>
-        <a id="liked-link" href="Liked.html" class="hidden text-sm font-bold text-primary hover:underline">โพสต์ที่ถูกใจ →</a>
+        <a id="liked-link" href="Liked.html" class="hidden text-sm font-bold text-primary hover:underline">รายการโปรด →</a>
       </div>
       <div id="post-container" class="space-y-4"></div>
     </div>
@@ -103,6 +110,18 @@ tailwind.config = {
           <h3 class="font-bold">กำลังพูดถึง</h3>
         </div>
         <ul id="trending-container" class="space-y-2"></ul>
+      </section>
+      <section class="cm-rules pts-card p-5">
+        <div class="flex items-center gap-2 mb-3">
+          <span class="material-symbols-outlined text-primary">verified_user</span>
+          <h3 class="font-bold">แนวทางคอมมูนิตี้</h3>
+        </div>
+        <ul class="cm-rules-list">
+          <li>แชร์ประสบการณ์จริงจากงานจริง</li>
+          <li>เคารพความคิดเห็นที่หลากหลาย</li>
+          <li>ไม่เผยแพร่ข้อมูลส่วนตัวของผู้อื่น</li>
+          <li>ถาม-ตอบด้วยความสุภาพ</li>
+        </ul>
       </section>
     </aside>
   </div>
@@ -251,13 +270,22 @@ function makePostCard(post) {
         ${currentUser ? '' : '<span class="text-xs text-on-surface-variant ml-auto">อ่านได้อย่างเดียว</span>'}
       </div>
       <div class="comment-panel hidden mt-4 border-t border-outline-variant/30 pt-4" data-post-id="${post.post_id}">
-        <div class="comment-list space-y-2 mb-3"></div>
+        <div class="comment-list mb-3"></div>
         ${currentUser ? `
-          <div class="flex gap-2">
-            <input type="text" maxlength="1000" placeholder="เขียนคอมเมนต์..." class="comment-input flex-1 rounded-full border px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-primary/20">
-            <button type="button" class="comment-submit pts-btn pts-btn-primary" data-post-id="${post.post_id}">ส่ง</button>
+          <div class="cm-comment-input-row">
+            <img class="cm-comment-avatar" src="${currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || 'U')}&background=F8BBD0&color=880E4F&size=64`}" alt="">
+            <div class="cm-comment-input-wrap">
+              <input type="text" maxlength="1000" placeholder="เขียนคอมเมนต์..." class="comment-input" data-post-id="${post.post_id}">
+              <button type="button" class="comment-submit" data-post-id="${post.post_id}">
+                <span class="material-symbols-outlined">send</span>
+              </button>
+            </div>
           </div>` : `
-          <p class="text-sm text-on-surface-variant">เข้าสู่ระบบเพื่อคอมเมนต์ · <a class="text-primary font-bold" href="Login.html">เข้าสู่ระบบ</a></p>`}
+          <p class="text-sm text-on-surface-variant text-center py-2">เข้าสู่ระบบเพื่อคอมเมนต์ · <a class="text-primary font-bold" href="Login.html">เข้าสู่ระบบ</a></p>`}
+        <div class="comment-reply-banner hidden" data-post-id="${post.post_id}">
+          <span class="comment-reply-to-text"></span>
+          <button type="button" class="comment-reply-cancel" aria-label="ยกเลิก">✕</button>
+        </div>
       </div>
     </article>`;
 }
@@ -267,6 +295,8 @@ function renderAuthUi() {
   const likedLink = document.getElementById('liked-link');
   const side = document.getElementById('side-cta');
   const hero = document.getElementById('hero-actions');
+  const avatar = document.getElementById('composer-avatar');
+  const name = document.getElementById('composer-name');
 
   if (currentUser) {
     composer.classList.remove('hidden');
@@ -274,6 +304,8 @@ function renderAuthUi() {
     likedLink.href = 'Favorites.html#posts';
     likedLink.textContent = 'รายการโปรด →';
     hero.innerHTML = `<a class="pts-btn pts-btn-outline" href="Favorites.html">รายการโปรด</a>`;
+    if (avatar) avatar.src = currentUser.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser.name || 'U')}&background=F8BBD0&color=880E4F&size=128`;
+    if (name) name.textContent = currentUser.name || '';
     side.innerHTML = `
       <h3 class="font-bold mb-1" style="color:var(--cm-red-deep,#9b0d42)">สวัสดี คุณ ${escapeHtml(currentUser.name || '')}</h3>
       <p class="text-sm text-on-surface-variant mb-3">โพสต์ คอมเมนต์ และกดถูกใจได้แล้ว</p>
@@ -284,7 +316,7 @@ function renderAuthUi() {
     hero.innerHTML = '';
     side.innerHTML = `
       <h3 class="font-bold mb-1" style="color:var(--cm-red-deep,#9b0d42)">เข้าร่วมพูดคุย</h3>
-      <p class="text-sm text-on-surface-variant mb-3">ยังไม่ล็อกอิน: อ่านได้อย่างเดียว</p>
+      <p class="text-sm text-on-surface-variant mb-3">เข้าสู่ระบบเพื่อโพสต์ คอมเมนต์ และกดถูกใจ</p>
       <a class="pts-btn pts-btn-primary w-full" href="Login.html">เข้าสู่ระบบ</a>`;
   }
 }
@@ -321,27 +353,111 @@ async function loadTrending() {
   }
 }
 
+function highlightMentions(text) {
+  return escapeHtml(text).replace(/@(\S+)/g, '<span class="cm-mention">@$1</span>');
+}
+
+function isOwnComment(c) {
+  if (!currentUser) return false;
+  const cid = String(c.author_id || '');
+  const uid = String(currentUser.user_id || currentUser.id || '');
+  return cid && uid && cid === uid;
+}
+
+function makeCommentCard(c, isReply) {
+  const avatar = c.author_avatar || `https://ui-avatars.com/api/?name=${escapeHtml(c.author_name || 'U')}&background=F8BBD0&color=880E4F&size=64`;
+  const own = isOwnComment(c);
+  return `
+    <div class="cm-comment${isReply ? ' cm-comment--reply' : ''}" data-comment-id="${c.comment_id}" data-author-id="${c.author_id}">
+      <img class="cm-comment-avatar" src="${avatar}" alt="">
+      <div class="cm-comment-body">
+        <div class="cm-comment-bubble">
+          <p class="cm-comment-author">${c.author_id
+            ? `<a href="User.html?id=${Number(c.author_id)}" style="color:inherit">${escapeHtml(c.author_name || 'ผู้ใช้งาน')}</a>`
+            : escapeHtml(c.author_name || 'ผู้ใช้งาน')}</p>
+          <p class="cm-comment-text">${highlightMentions(c.content || '')}</p>
+        </div>
+        <div class="cm-comment-actions">
+          <button type="button" class="cm-comment-reply-btn" data-comment-id="${c.comment_id}" data-author-name="${escapeHtml(c.author_name || '')}">ตอบกลับ</button>
+          <span class="cm-comment-dot">·</span>
+          <span class="cm-comment-time">${timeAgo(c.created_at)}${c.updated_at ? ' · <em>แก้ไขล่าสุด</em>' : ''}</span>
+          ${own ? `
+          <div class="cm-comment-more-wrap">
+            <button type="button" class="cm-comment-more-btn" data-comment-id="${c.comment_id}">
+              <span class="material-symbols-outlined">more_horiz</span>
+            </button>
+            <div class="cm-comment-more-menu hidden" data-comment-id="${c.comment_id}">
+              <button type="button" class="cm-comment-menu-item cm-comment-edit-btn" data-comment-id="${c.comment_id}">
+                <span class="material-symbols-outlined">edit</span> แก้ไข
+              </button>
+              <button type="button" class="cm-comment-menu-item cm-comment-delete-btn" data-comment-id="${c.comment_id}">
+                <span class="material-symbols-outlined">delete</span> ลบ
+              </button>
+            </div>
+          </div>` : ''}
+          <button type="button" class="cm-comment-like-btn" data-comment-id="${c.comment_id}">
+            <span class="material-symbols-outlined">thumb_up</span>
+          </button>
+        </div>
+      </div>
+    </div>`;
+}
+
 async function loadComments(postId, panel) {
   const list = panel.querySelector('.comment-list');
-  list.innerHTML = '<div class="text-sm text-on-surface-variant">กำลังโหลด...</div>';
+  list.innerHTML = '<div class="text-sm text-on-surface-variant" style="padding:8px 0">กำลังโหลด...</div>';
   const res = await fetch(`/api/community/${postId}/comments`, { credentials: 'include' });
   const data = await res.json();
   if (!res.ok || !data.success) {
-    list.innerHTML = `<div class="text-sm text-error">${escapeHtml(data.message || 'โหลดคอมเมนต์ไม่สำเร็จ')}</div>`;
+    list.innerHTML = `<div class="text-sm text-error" style="padding:8px 0">${escapeHtml(data.message || 'โหลดคอมเมนต์ไม่สำเร็จ')}</div>`;
     return;
   }
   if (!data.data.length) {
-    list.innerHTML = '<div class="text-sm text-on-surface-variant">ยังไม่มีคอมเมนต์</div>';
+    list.innerHTML = '<div class="text-sm text-on-surface-variant" style="padding:8px 0">ยังไม่มีคอมเมนต์</div>';
     return;
   }
-  list.innerHTML = data.data.map(c => `
-    <div class="bg-surface-container-low rounded-xl p-3">
-      <p class="text-sm font-bold">${c.author_id
-        ? `<a href="User.html?id=${Number(c.author_id)}" class="hover:underline" style="color:inherit">${escapeHtml(c.author_name || '')}</a>`
-        : escapeHtml(c.author_name || '')}
-        <span class="font-normal text-xs text-on-surface-variant">${timeAgo(c.created_at)}</span></p>
-      <p class="text-sm text-on-surface-variant whitespace-pre-line mt-1">${escapeHtml(c.content || '')}</p>
-    </div>`).join('');
+  const comments = data.data;
+  const topLevel = comments.filter(c => !c.parent_id);
+  const replyMap = {};
+  comments.filter(c => c.parent_id).forEach(c => {
+    if (!replyMap[c.parent_id]) replyMap[c.parent_id] = [];
+    replyMap[c.parent_id].push(c);
+  });
+
+  let html = '';
+  topLevel.forEach(c => {
+    html += makeCommentCard(c, false);
+    const replies = replyMap[c.comment_id];
+    if (replies && replies.length) {
+      html += '<div class="cm-comment-replies" data-parent-id="' + c.comment_id + '">';
+      replies.forEach(r => { html += makeCommentCard(r, true); });
+      html += `<button type="button" class="cm-toggle-replies" data-parent-id="${c.comment_id}" data-total="${replies.length}">
+        <span class="material-symbols-outlined cm-toggle-icon">expand_more</span>
+        <span class="cm-toggle-text">ซ่อนคำตอบ</span>
+      </button>`;
+      html += '</div>';
+    }
+  });
+  list.innerHTML = html;
+
+  list.querySelectorAll('.cm-toggle-replies').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const parentId = btn.dataset.parentId;
+      const repliesEl = list.querySelector(`.cm-comment-replies[data-parent-id="${parentId}"]`);
+      if (!repliesEl) return;
+      const isCollapsed = repliesEl.classList.toggle('cm-replies-collapsed');
+      const icon = btn.querySelector('.cm-toggle-icon');
+      const text = btn.querySelector('.cm-toggle-text');
+      const total = Number(btn.dataset.total || 0);
+      if (isCollapsed) {
+        icon.textContent = 'expand_more';
+        text.textContent = `ดูความเห็นทั้งหมด ${total} รายการ`;
+      } else {
+        icon.textContent = 'expand_less';
+        text.textContent = 'ซ่อนคำตอบ';
+      }
+    });
+  });
 }
 
 document.getElementById('btn-add-feeling')?.addEventListener('click', () => {
@@ -445,6 +561,96 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
   const likeBtn = e.target.closest('.like-btn');
   const commentToggle = e.target.closest('.comment-toggle');
   const commentSubmit = e.target.closest('.comment-submit');
+  const replyBtn = e.target.closest('.cm-comment-reply-btn');
+  const replyCancel = e.target.closest('.comment-reply-cancel');
+  const commentLikeBtn = e.target.closest('.cm-comment-like-btn');
+  const moreBtn = e.target.closest('.cm-comment-more-btn');
+  const editBtn = e.target.closest('.cm-comment-edit-btn');
+  const deleteBtn = e.target.closest('.cm-comment-delete-btn');
+
+  // close any open more-menu when clicking elsewhere
+  if (!moreBtn && !editBtn && !deleteBtn) {
+    document.querySelectorAll('.cm-comment-more-menu:not(.hidden)').forEach(m => m.classList.add('hidden'));
+  }
+
+  if (moreBtn) {
+    const cid = moreBtn.dataset.commentId;
+    document.querySelectorAll('.cm-comment-more-menu:not(.hidden)').forEach(m => {
+      if (m.dataset.commentId !== cid) m.classList.add('hidden');
+    });
+    const menu = document.querySelector(`.cm-comment-more-menu[data-comment-id="${cid}"]`);
+    if (menu) menu.classList.toggle('hidden');
+    e.stopPropagation();
+    return;
+  }
+
+  if (deleteBtn) {
+    const commentId = deleteBtn.dataset.commentId;
+    if (!confirm('ต้องการลบคอมเมนต์นี้?')) return;
+    try {
+      const res = await fetch(`/api/community/comments/${commentId}`, { method: 'DELETE', credentials: 'include' });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'ลบไม่สำเร็จ');
+      const el = document.querySelector(`.cm-comment[data-comment-id="${commentId}"]`);
+      if (el) {
+        const repliesEl = el.closest('.cm-comment-replies');
+        el.remove();
+        if (repliesEl) {
+          const remaining = repliesEl.querySelectorAll('.cm-comment');
+          if (!remaining.length) repliesEl.remove();
+        }
+      }
+    } catch (err) { alert(err.message); }
+    return;
+  }
+
+  if (editBtn) {
+    const commentId = editBtn.dataset.commentId;
+    const el = document.querySelector(`.cm-comment[data-comment-id="${commentId}"]`);
+    const bubble = el.querySelector('.cm-comment-bubble');
+    const textEl = bubble.querySelector('.cm-comment-text');
+    const oldText = textEl.textContent.trim();
+    const textarea = document.createElement('textarea');
+    textarea.className = 'cm-edit-textarea';
+    textarea.value = oldText;
+    textarea.maxLength = 1000;
+    textEl.replaceWith(textarea);
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+
+    const actions = document.createElement('div');
+    actions.className = 'cm-edit-actions';
+    actions.innerHTML = `
+      <button type="button" class="cm-edit-cancel">ยกเลิก</button>
+      <button type="button" class="cm-edit-save pts-btn pts-btn-primary">บันทึก</button>`;
+    bubble.appendChild(actions);
+
+    actions.querySelector('.cm-edit-cancel').addEventListener('click', () => {
+      textarea.replaceWith(textEl);
+      actions.remove();
+    });
+    actions.querySelector('.cm-edit-save').addEventListener('click', async () => {
+      const newContent = textarea.value.trim();
+      if (!newContent || newContent === oldText) { textarea.replaceWith(textEl); actions.remove(); return; }
+      try {
+        const res = await fetch(`/api/community/comments/${commentId}`, {
+          method: 'PUT', credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: newContent })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || 'แก้ไขไม่สำเร็จ');
+        textEl.innerHTML = highlightMentions(newContent);
+        textarea.replaceWith(textEl);
+        actions.remove();
+      } catch (err) { alert(err.message); }
+    });
+
+    // close more menu
+    const menu = document.querySelector(`.cm-comment-more-menu[data-comment-id="${commentId}"]`);
+    if (menu) menu.classList.add('hidden');
+    return;
+  }
 
   if (likeBtn) {
     if (!requireAuth('กดถูกใจ')) return;
@@ -466,6 +672,41 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
     return;
   }
 
+  if (replyBtn) {
+    if (!requireAuth('ตอบกลับ')) return;
+    const postId = replyBtn.closest('.comment-panel').dataset.postId;
+    const banner = document.querySelector(`.comment-reply-banner[data-post-id="${postId}"]`);
+    const authorName = replyBtn.dataset.authorName || '';
+    banner.classList.remove('hidden');
+    banner.querySelector('.comment-reply-to-text').textContent = `กำลังตอบกลับ ${authorName}`;
+    banner.dataset.replyTo = replyBtn.dataset.commentId;
+    const input = document.querySelector(`.comment-panel[data-post-id="${postId}"] .comment-input`);
+    if (input) {
+      input.value = `@${authorName} `;
+      input.focus();
+      input.setSelectionRange(input.value.length, input.value.length);
+      input.placeholder = 'เขียนคอมเมนต์...';
+    }
+    return;
+  }
+
+  if (replyCancel) {
+    const banner = replyCancel.closest('.comment-reply-banner');
+    const postId = banner.dataset.postId;
+    banner.classList.add('hidden');
+    delete banner.dataset.replyTo;
+    const input = document.querySelector(`.comment-panel[data-post-id="${postId}"] .comment-input`);
+    if (input) { input.value = ''; input.placeholder = 'เขียนคอมเมนต์...'; }
+    return;
+  }
+
+  if (commentLikeBtn) {
+    if (!requireAuth('กดถูกใจ')) return;
+    const commentId = commentLikeBtn.dataset.commentId;
+    commentLikeBtn.classList.toggle('cm-comment-like-active');
+    return;
+  }
+
   if (commentSubmit) {
     if (!requireAuth('คอมเมนต์')) return;
     const postId = commentSubmit.dataset.postId;
@@ -473,18 +714,22 @@ document.getElementById('post-container').addEventListener('click', async (e) =>
     const input = panel.querySelector('.comment-input');
     const content = (input.value || '').trim();
     if (!content) return;
+    const banner = document.querySelector(`.comment-reply-banner[data-post-id="${postId}"]`);
+    const parentId = banner && banner.dataset.replyTo ? Number(banner.dataset.replyTo) : null;
     commentSubmit.disabled = true;
     try {
       const res = await fetch(`/api/community/${postId}/comments`, {
         method: 'POST', credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content })
+        body: JSON.stringify({ content, parent_id: parentId })
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.message || 'คอมเมนต์ไม่สำเร็จ');
       input.value = '';
       const countEl = document.querySelector(`.comment-toggle[data-post-id="${postId}"] .comment-count`);
       if (countEl) countEl.textContent = Number(countEl.textContent || 0) + 1;
+      if (banner) { banner.classList.add('hidden'); delete banner.dataset.replyTo; }
+      input.placeholder = 'เขียนคอมเมนต์...';
       await loadComments(postId, panel);
     } catch (err) {
       const errEl = panel.querySelector('.comment-error') || (() => {

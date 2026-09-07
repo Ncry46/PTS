@@ -139,7 +139,7 @@ function createProfileRouter({ poolPromise, requireLogin }) {
                             p.image_url,
                             p.created_at,
                             (SELECT COUNT(*) FROM dbo.post_likes pl WHERE pl.post_id = p.post_id) AS like_count,
-                            (SELECT COUNT(*) FROM dbo.post_comments pc WHERE pc.post_id = p.post_id) AS comment_count
+                            (SELECT COUNT(*) FROM dbo.post_comments pc WHERE pc.post_id = p.post_id AND pc.deleted_at IS NULL) AS comment_count
                         FROM dbo.community_posts p
                         WHERE p.user_id = @userId AND ${flagActiveSql('p.flag_use')}
                         ORDER BY p.created_at DESC

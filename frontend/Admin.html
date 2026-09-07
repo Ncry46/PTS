@@ -31,27 +31,85 @@
 </div>
 <main class="pts-main pts-main--user admin-shell">
   <aside class="admin-side" aria-label="เมนูแอดมิน">
-    <p class="admin-side__label">จัดการระบบ</p>
     <nav class="admin-side__nav">
-      <button type="button" class="tab-btn active" data-tab="courses">หลักสูตร</button>
-      <button type="button" class="tab-btn" data-tab="lessons">บทเรียน</button>
-      <button type="button" class="tab-btn" data-tab="schedules">ตารางเรียน</button>
-      <button type="button" class="tab-btn" data-tab="forms">แบบฟอร์ม</button>
-      <button type="button" class="tab-btn" data-tab="banners">แบนเนอร์</button>
-      <button type="button" class="tab-btn" data-tab="cert">ใบประกาศ</button>
-      <button type="button" class="tab-btn" data-tab="users">ผู้ใช้</button>
-      <button type="button" class="tab-btn" data-tab="posts">โพสต์</button>
-      <button type="button" class="tab-btn" data-tab="payments">ชำระเงิน</button>
-      <button type="button" class="tab-btn" data-tab="coupons">คูปองส่วนลด</button>
-      <button type="button" class="tab-btn" data-tab="audit">ประวัติแอดมิน</button>
-      <button type="button" class="tab-btn" data-tab="mail">อีเมล OTP</button>
+      <div class="admin-side__group" data-group="learning">
+        <button type="button" class="admin-side__toggle" aria-expanded="true">
+          <span>จัดการการเรียน</span>
+          <span class="material-symbols-outlined admin-side__chevron">expand_more</span>
+        </button>
+        <div class="admin-side__items">
+          <button type="button" class="tab-btn active" data-tab="courses">
+            <span class="material-symbols-outlined">menu_book</span><span>หลักสูตร</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="lessons">
+            <span class="material-symbols-outlined">article</span><span>บทเรียน</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="schedules">
+            <span class="material-symbols-outlined">calendar_month</span><span>ตารางเรียน</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="cert">
+            <span class="material-symbols-outlined">workspace_premium</span><span>ใบประกาศนียบัตร</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-side__group" data-group="finance">
+        <button type="button" class="admin-side__toggle" aria-expanded="true">
+          <span>การเงินและผู้ใช้งาน</span>
+          <span class="material-symbols-outlined admin-side__chevron">expand_more</span>
+        </button>
+        <div class="admin-side__items">
+          <button type="button" class="tab-btn" data-tab="payments">
+            <span class="material-symbols-outlined">receipt_long</span><span>ตรวจสอบการชำระเงิน</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="users">
+            <span class="material-symbols-outlined">group</span><span>จัดการผู้ใช้งาน</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="coupons">
+            <span class="material-symbols-outlined">local_offer</span><span>คูปองส่วนลด</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-side__group" data-group="web">
+        <button type="button" class="admin-side__toggle" aria-expanded="true">
+          <span>หน้าเว็บและโปรโมต</span>
+          <span class="material-symbols-outlined admin-side__chevron">expand_more</span>
+        </button>
+        <div class="admin-side__items">
+          <button type="button" class="tab-btn" data-tab="banners">
+            <span class="material-symbols-outlined">view_carousel</span><span>แบนเนอร์หน้าเว็บ</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="posts">
+            <span class="material-symbols-outlined">newspaper</span><span>ข่าวสาร / โพสต์</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="forms">
+            <span class="material-symbols-outlined">edit_note</span><span>แบบฟอร์มรับข้อมูล</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="admin-side__group" data-group="system">
+        <button type="button" class="admin-side__toggle" aria-expanded="true">
+          <span>ตั้งค่าระบบ</span>
+          <span class="material-symbols-outlined admin-side__chevron">expand_more</span>
+        </button>
+        <div class="admin-side__items">
+          <button type="button" class="tab-btn" data-tab="mail">
+            <span class="material-symbols-outlined">mail</span><span>ระบบส่งอีเมล &amp; OTP</span>
+          </button>
+          <button type="button" class="tab-btn" data-tab="audit">
+            <span class="material-symbols-outlined">history</span><span>ประวัติการทำงานแอดมิน</span>
+          </button>
+        </div>
+      </div>
     </nav>
   </aside>
   <div class="admin-main">
     <section class="pts-page-hero">
       <span class="pts-chip mb-3">Admin</span>
       <h1 class="text-3xl md:text-4xl font-bold text-primary mb-2 pts-display" data-i18n="page.admin.section_title">แผงควบคุมแอดมิน</h1>
-      <p class="text-on-surface-variant" data-i18n="page.admin.sub">จัดการหลักสูตร บทเรียน ตารางเรียน ผู้ใช้ โพสต์ การชำระเงิน คูปองส่วนลด แบนเนอร์ รูปใบประกาศ และการส่งอีเมล OTP</p>
+      <p class="text-on-surface-variant" data-i18n="page.admin.sub">จัดการหลักสูตร บทเรียน ตารางเรียน ใบประกาศนียบัตร การชำระเงิน ผู้ใช้ คูปอง แบนเนอร์ โพสต์ แบบฟอร์ม อีเมล OTP และประวัติการทำงาน</p>
     </section>
     <section id="panel" class="pts-panel"></section>
   </div>
@@ -3418,6 +3476,17 @@ async function activateTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.tab === key);
   });
+  // expand parent group of active tab
+  const activeBtn = document.querySelector(`.tab-btn[data-tab="${key}"]`);
+  if (activeBtn) {
+    const group = activeBtn.closest('.admin-side__group');
+    if (group) {
+      const toggle = group.querySelector('.admin-side__toggle');
+      const items = group.querySelector('.admin-side__items');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+      if (items) items.classList.remove('is-collapsed');
+    }
+  }
   const panel = document.getElementById('panel');
   if (panel) panel.innerHTML = '<p class="text-sm text-on-surface-variant">กำลังโหลด...</p>';
   try {
@@ -3433,6 +3502,15 @@ async function activateTab(name) {
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.onclick = () => activateTab(btn.dataset.tab);
+});
+
+document.querySelectorAll('.admin-side__toggle').forEach(toggle => {
+  toggle.onclick = () => {
+    const expanded = toggle.getAttribute('aria-expanded') === 'true';
+    toggle.setAttribute('aria-expanded', String(!expanded));
+    const items = toggle.nextElementSibling;
+    if (items) items.classList.toggle('is-collapsed', expanded);
+  };
 });
 
 window.addEventListener('hashchange', () => {
