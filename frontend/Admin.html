@@ -368,106 +368,173 @@ async function renderCourses() {
   };
 
   document.getElementById('panel').innerHTML = `
-    <h2 id="course-form-section_title" class="adm-form-title">สร้างหลักสูตรใหม่</h2>
+    <div class="adm-create-wrap">
 
-    <div class="adm-form-row">
-      <div class="adm-form-section adm-form-col">
-        <h3 class="adm-form-section__title"><span class="adm-form-section__num">1</span> ข้อมูลหลักสูตร <span class="adm-form-section__sub">(General Info)</span></h3>
-        <div class="grid grid-cols-1 gap-4">
-          <div>
-            <label for="c-name" class="adm-label">ชื่อหลักสูตร (ไทย) <span class="text-error">*</span></label>
-            <input id="c-name" class="adm-input" placeholder="พิมพ์ชื่อภาษาไทย">
+      <!-- Header -->
+      <div class="adm-create-header">
+        <div class="adm-create-header__left">
+          <h2 class="adm-create-header__title">สร้างหลักสูตรใหม่ <span class="adm-slash">/</span> แก้ไขหลักสูตร</h2>
+          <span class="adm-live-badge">Live Editor</span>
+        </div>
+        <div class="adm-create-header__right">
+          <a class="adm-settings-link" href="#"><span class="material-symbols-outlined">settings</span> SETTINGS: (Settings)</a>
+        </div>
+      </div>
+      <p class="adm-create-header__desc">เริ่มต้นสร้างหลักสูตรของคุณ กำหนดรายวิชา เนื้อหา และตั้งค่าต่างๆ พร้อมเปิดสอนได้ทันที</p>
+
+      <!-- Row 1+2 -->
+      <div class="adm-form-row">
+        <!-- Section 1 -->
+        <div class="adm-form-section adm-form-col">
+          <div class="adm-section-top">
+            <h3 class="adm-form-section__title"><span class="adm-form-section__num">1</span> ข้อมูลหลักสูตร <span class="adm-form-section__sub">(General Info)</span></h3>
+            <a class="adm-section-action" href="#"><span class="material-symbols-outlined">auto_awesome</span> สร้างด้วยข้อมูลอัจฉริยะ</a>
           </div>
-          <div>
-            <label for="c-name-en" class="adm-label">ชื่อหลักสูตร (English)</label>
-            <input id="c-name-en" class="adm-input" placeholder="e.g. Course Title">
+          <div class="adm-field-stack">
+            <div class="adm-field">
+              <label for="c-name" class="adm-label">ชื่อหลักสูตร (ไทย) <span class="adm-required">*</span></label>
+              <input id="c-name" class="adm-input" placeholder="กรอกชื่อหลักสูตร">
+            </div>
+            <div class="adm-field">
+              <label for="c-name-en" class="adm-label">ชื่อหลักสูตร (English)</label>
+              <input id="c-name-en" class="adm-input" placeholder="กรอกชื่อหลักสูตรภาษาอังกฤษ">
+            </div>
+            <div class="adm-field-divider"></div>
+            <div class="adm-field-row">
+              <div class="adm-field">
+                <label for="c-instructor" class="adm-label">ชื่อวิทยากร</label>
+                <div class="adm-input-icon"><span class="material-symbols-outlined">person</span><input id="c-instructor" class="adm-input adm-input--icon" placeholder="กรอกชื่อวิทยากร"></div>
+              </div>
+              <div class="adm-field">
+                <label for="c-instructor-en" class="adm-label">ชื่อวิทยากร (English)</label>
+                <div class="adm-input-icon"><span class="material-symbols-outlined">badge</span><input id="c-instructor-en" class="adm-input adm-input--icon" placeholder="กรอกชื่อวิทยากรภาษาอังกฤษ"></div>
+              </div>
+            </div>
           </div>
-          <div>
-            <label for="c-instructor" class="adm-label">ชื่อวิทยากร</label>
-            <input id="c-instructor" class="adm-input" placeholder="อ. สมชาย">
+        </div>
+
+        <!-- Section 2 -->
+        <div class="adm-form-section adm-form-col">
+          <div class="adm-section-top">
+            <h3 class="adm-form-section__title"><span class="adm-form-section__num">2</span> รูปแบบและราคา <span class="adm-form-section__sub">(Type & Price)</span></h3>
           </div>
-          <div>
-            <label for="c-instructor-en" class="adm-label">ชื่อวิทยากร (English)</label>
-            <input id="c-instructor-en" class="adm-input" placeholder="e.g. Somchai">
+          <div class="adm-field-stack">
+            <div class="adm-field">
+              <label for="c-mode" class="adm-label">รูปแบบการเรียน <span class="adm-required">*</span></label>
+              <select id="c-mode" class="adm-input"><option value="" selected disabled>— เลือกรูปแบบการเรียน —</option><option value="online">Online — เรียนออนไลน์</option><option value="onsite">Onsite — เรียนที่สถาบัน</option><option value="hybrid">Hybrid — ผสมออนไลน์+เข้าชั้นเรียน</option></select>
+              <p class="adm-field-note"><span class="material-symbols-outlined">info</span> เลือกรูปแบบการเรียนรู้ที่เหมาะสม</p>
+            </div>
+            <div class="adm-field">
+              <label for="c-cat" class="adm-label">หมวดหมู่ <span class="adm-required">*</span></label>
+              <select id="c-cat" class="adm-input"><option value="" selected disabled>— เลือกหมวดหมู่ —</option></select>
+              <p class="adm-field-note"><span class="material-symbols-outlined">info</span> เลือกหมวดหมู่ที่เหมาะสม</p>
+            </div>
+            <div class="adm-field-row">
+              <div class="adm-field">
+                <label for="c-price" class="adm-label">ราคา (บาท)</label>
+                <div class="adm-input-suffix">
+                  <input id="c-price" type="number" step="0.01" min="0" class="adm-input" placeholder="กรอกราคา">
+                  <span class="adm-suffix">บาท</span>
+                </div>
+              </div>
+              <div class="adm-field">
+                <label for="c-hours" class="adm-label">จำนวนชั่วโมงเรียน</label>
+                <div class="adm-input-suffix">
+                  <input id="c-hours" type="number" step="0.1" min="0" class="adm-input" placeholder="กรอกจำนวนชั่วโมง">
+                  <span class="adm-suffix">ชั่วโมง</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="adm-form-section adm-form-col">
-        <h3 class="adm-form-section__title"><span class="adm-form-section__num">2</span> รูปแบบและราคา <span class="adm-form-section__sub">(Type & Price)</span></h3>
-        <div class="grid grid-cols-1 gap-4">
-          <div>
-            <label for="c-mode" class="adm-label">รูปแบบการเรียน <span class="text-error">*</span></label>
-            <select id="c-mode" class="adm-input"><option value="online">Online — เรียนออนไลน์</option><option value="onsite">Onsite — เรียนที่สถาบัน</option><option value="hybrid">Hybrid — ผสมออนไลน์+เข้าชั้นเรียน</option></select>
+      <!-- Row 3+4 -->
+      <div class="adm-form-row">
+        <!-- Section 3 -->
+        <div class="adm-form-section adm-form-col">
+          <div class="adm-section-top">
+            <h3 class="adm-form-section__title"><span class="adm-form-section__num">3</span> รูปปกและคำอธิบาย <span class="adm-form-section__sub">(Media & Description)</span></h3>
+            <a class="adm-section-action" href="#"><span class="material-symbols-outlined">upload_file</span> อัปโหลดรูปปกและวิดีโอ</a>
           </div>
-          <div>
-            <label for="c-cat" class="adm-label">หมวดหมู่ <span class="text-error">*</span></label>
-            <select id="c-cat" class="adm-input"><option value="">— เลือกหมวดหมู่ —</option></select>
-          </div>
-          <div>
-            <label for="c-price" class="adm-label">ราคา (บาท)</label>
-            <input id="c-price" type="number" step="0.01" min="0" class="adm-input" placeholder="1500">
-          </div>
-          <div>
-            <label for="c-hours" class="adm-label">จำนวนชั่วโมงเรียน</label>
-            <input id="c-hours" type="number" step="0.1" min="0" class="adm-input" value="4">
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="adm-form-row">
-      <div class="adm-form-section adm-form-col">
-        <h3 class="adm-form-section__title"><span class="adm-form-section__num">3</span> รูปปกและคำอธิบาย <span class="adm-form-section__sub">(Media & Description)</span></h3>
-        <div class="grid grid-cols-1 gap-4">
-          <div>
-            <label class="adm-label">รูปปกหลักสูตร</label>
-            <div class="adm-cover-upload" id="cover-drop-zone">
-              <span class="material-symbols-outlined adm-cover-upload__icon">cloud_upload</span>
-              <p class="adm-cover-upload__text">ลากรูปมาวางที่นี่ หรือ <label for="cover-file" class="adm-cover-upload__link">คลิกเพื่อเลือกรูป</label> <span class="adm-cover-upload__hint">(1280×720px)</span></p>
-              <input type="file" id="cover-file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
-              <input id="c-cover" class="hidden" placeholder="URL">
+          <div class="adm-field-stack">
+            <div class="adm-field">
+              <label class="adm-label">รูปปกหลักสูตร</label>
+              <div class="adm-cover-upload" id="cover-drop-zone">
+                <div class="adm-cover-upload__circle"><span class="material-symbols-outlined">cloud_upload</span></div>
+                <p class="adm-cover-upload__text">ลากรูปมาวางที่นี่ หรือ <label for="cover-file" class="adm-cover-upload__link">คลิกเพื่อเลือก</label></p>
+                <p class="adm-cover-upload__hint">(1280×720px — JPG, PNG, GIF, WebP, ไม่เกิน 5MB)</p>
+                <input type="file" id="cover-file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
+                <input id="c-cover" class="hidden" placeholder="URL">
+              </div>
+              <img id="cover-preview" alt="ตัวอย่างรูปปก" class="hidden mt-2 rounded-xl border" style="max-height:120px;max-width:100%;object-fit:cover">
+              <p id="cover-msg" class="text-xs mt-1"></p>
             </div>
-            <img id="cover-preview" alt="ตัวอย่างรูปปก" class="hidden mt-3 rounded-xl border" style="max-height:160px;max-width:100%;object-fit:cover">
-            <p id="cover-msg" class="text-xs mt-1"></p>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="c-desc" class="adm-label">รายละเอียดคอร์ส (ไทย)</label>
-              <textarea id="c-desc" class="adm-input adm-textarea" rows="3" placeholder="พิมพ์เนื้อหาภาษาไทย..."></textarea>
+            <div class="adm-field">
+              <div class="adm-section-top" style="margin-bottom:8px">
+                <label for="c-desc" class="adm-label" style="margin:0">รายละเอียดคอร์ส (ไทย)</label>
+                <a class="adm-section-action" href="#"><span class="material-symbols-outlined">translate</span> English description</a>
+              </div>
+              <textarea id="c-desc" class="adm-input adm-textarea" rows="3" placeholder="กรอกรายละเอียดหลักสูตรภาษาไทย"></textarea>
             </div>
-            <div>
+            <div class="adm-field">
               <label for="c-desc-en" class="adm-label">รายละเอียดคอร์ส (English)</label>
-              <textarea id="c-desc-en" class="adm-input adm-textarea" rows="3" placeholder="Write description..."></textarea>
+              <textarea id="c-desc-en" class="adm-input adm-textarea" rows="3" placeholder="กรอกรายละเอียดหลักสูตรภาษาอังกฤษ"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="adm-form-col">
+          <div class="adm-form-section adm-display-card">
+            <div class="adm-section-top">
+              <h3 class="adm-form-section__title"><span class="adm-form-section__num">4</span> ตั้งค่าการแสดงผล <span class="adm-form-section__sub">(Display & Visibility)</span></h3>
+            </div>
+            <p class="adm-display-card__desc">ตั้งค่าการแสดงผลและควบคุมการเข้าถึง</p>
+            <div class="adm-checkbox-col">
+              <label class="adm-checkbox adm-checkbox--card">
+                <input type="checkbox" id="c-featured">
+                <span class="adm-checkbox__mark"></span>
+                <span class="adm-checkbox__body">
+                  <span class="adm-checkbox__text">แสดงเป็นคอร์สแนะนำหน้าแรก</span>
+                  <span class="adm-checkbox__sub">Course product settings Feature Course (แสดงบนหน้าแรก)</span>
+                </span>
+                <span class="adm-tag adm-tag--home">Home</span>
+              </label>
+              <label class="adm-checkbox adm-checkbox--card">
+                <input type="checkbox" id="c-open-soon">
+                <span class="adm-checkbox__mark"></span>
+                <span class="adm-checkbox__body">
+                  <span class="adm-checkbox__text">ติดป้าย "เปิดเร็วๆ นี้"</span>
+                  <span class="adm-checkbox__sub">สร้าง Bridge ให้กับผู้เรียน Course Soon (เปิดให้สมัครได้ล่วงหน้า)</span>
+                </span>
+                <span class="adm-tag adm-tag--soon">Soon</span>
+              </label>
+              <label class="adm-checkbox adm-checkbox--card">
+                <input type="checkbox" id="c-enrollment">
+                <span class="adm-checkbox__mark"></span>
+                <span class="adm-checkbox__body">
+                  <span class="adm-checkbox__text">เปิดให้สมัครเรียนแล้ว (Enrollment Active)</span>
+                  <span class="adm-checkbox__sub">รับสมัครได้ทันที หลักสูตรจะแสดงในหน้าค้นหาและพร้อมเปิดสอน</span>
+                </span>
+                <span class="adm-tag adm-tag--active">Active</span>
+              </label>
+            </div>
+            <div class="adm-display-info">
+              <span class="material-symbols-outlined">info</span>
+              <span>รายละเอียดwillเปิดแสดงหลักสูตรที่คุณสร้างขึ้น และเปิดรับสมัครได้ตามที่กำหนด</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div class="adm-form-col adm-badge-col">
-        <div class="adm-badge-card">
-          <h3 class="adm-badge-card__title">ตั้งค่าการแสดงผล</h3>
-          <div class="adm-checkbox-col">
-            <label class="adm-checkbox">
-              <input type="checkbox" id="c-featured">
-              <span class="adm-checkbox__mark"></span>
-              <span>แสดงเป็นคอร์สแนะนำหน้าแรก</span>
-            </label>
-            <label class="adm-checkbox">
-              <input type="checkbox" id="c-open-soon">
-              <span class="adm-checkbox__mark"></span>
-              <span>ติดป้าย "เปิดเร็วๆ นี้"</span>
-            </label>
-          </div>
-        </div>
+      <!-- Footer -->
+      <div class="adm-form-footer">
+        <button id="cancel-edit-course" type="button" class="adm-btn-cancel hidden">ยกเลิก</button>
+        <button id="create-course" class="adm-btn-save"><span class="material-symbols-outlined">save</span> บันทึกสร้างหลักสูตร</button>
       </div>
+      <p id="course-form-msg" class="pts-msg mb-4"></p>
     </div>
-
-    <div class="adm-form-actions">
-      <button id="cancel-edit-course" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิก</button>
-      <button id="create-course" class="pts-btn pts-btn-primary"><span class="material-symbols-outlined">save</span> บันทึกสร้างหลักสูตร</button>
-    </div>
-    <p id="course-form-msg" class="pts-msg mb-4"></p>
 
     <div class="adm-c-head">
       <div>
@@ -483,7 +550,6 @@ async function renderCourses() {
   `;
 
   const formMsg = document.getElementById('course-form-msg');
-  const formsection_title = document.getElementById('course-form-section_title');
   const createBtn = document.getElementById('create-course');
   const cancelBtn = document.getElementById('cancel-edit-course');
   const searchInput = document.getElementById('course-search');
@@ -512,7 +578,7 @@ async function renderCourses() {
     document.getElementById('c-instructor').value = instTh;
     document.getElementById('c-instructor-en').value = instEn;
     document.getElementById('c-mode').value = c?.delivery_mode || 'online';
-    document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : 4;
+    document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : '';
     document.getElementById('c-price').value = c?.price != null ? Number(c.price) : '';
     document.getElementById('c-cat').value = c?.coursescat_id != null ? Number(c.coursescat_id) : '';
     document.getElementById('c-start').value = toDateInput(c?.start_date);
@@ -529,6 +595,7 @@ async function renderCourses() {
     
     document.getElementById('c-featured').checked = Number(c?.is_featured) === 1;
     document.getElementById('c-open-soon').checked = Number(c?.is_open_soon) === 1;
+    document.getElementById('c-enrollment').checked = Number(c?.coursesFlag) === 1 || !c;
   };
 
   const setEditMode = (course) => {
@@ -538,8 +605,8 @@ async function renderCourses() {
     });
     if (course) {
       fillForm(course);
-      formsection_title.textContent = 'แก้ไขหลักสูตร';
-      createBtn.textContent = 'บันทึกการแก้ไข';
+      document.querySelector('.adm-create-header__title').textContent = 'แก้ไขหลักสูตร';
+      createBtn.innerHTML = '<span class="material-symbols-outlined">save</span> บันทึกการแก้ไข';
       cancelBtn.classList.remove('hidden');
       formMsg.textContent = `กำลังแก้ไข ID ${course.course_id}`;
       formMsg.className = 'pts-msg mb-4';
@@ -549,8 +616,8 @@ async function renderCourses() {
       document.getElementById('c-name').scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
       fillForm(null);
-      formsection_title.textContent = 'สร้างหลักสูตรใหม่';
-      createBtn.textContent = 'สร้างหลักสูตร';
+      document.querySelector('.adm-create-header__title').textContent = 'สร้างหลักสูตรใหม่';
+      createBtn.innerHTML = '<span class="material-symbols-outlined">save</span> บันทึกสร้างหลักสูตร';
       cancelBtn.classList.add('hidden');
       formMsg.textContent = '';
       formMsg.className = 'pts-msg mb-4';
@@ -668,7 +735,8 @@ async function renderCourses() {
       description_en: document.getElementById('c-desc-en').value,
       description: document.getElementById('c-desc').value,
       is_featured: document.getElementById('c-featured').checked ? 1 : 0,
-      is_open_soon: document.getElementById('c-open-soon').checked ? 1 : 0
+      is_open_soon: document.getElementById('c-open-soon').checked ? 1 : 0,
+      coursesFlag: document.getElementById('c-enrollment').checked ? 1 : 0
     };
     createBtn.disabled = true;
     try {
