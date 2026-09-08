@@ -752,3 +752,265 @@
     text-align:center; padding:28px 16px; color:#5c4f55; font-size:13px;
     border:1px dashed rgba(151,66,88,.2); border-radius:16px; background:#fff;
   }
+
+/* ── Course form redesign ── */
+.adm-form-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--pts-text);
+  margin-bottom: 16px;
+}
+.adm-form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.adm-form-col {
+  flex: 1;
+  margin-bottom: 0;
+}
+@media (max-width: 768px) {
+  .adm-form-row { flex-direction: column; }
+}
+.adm-lang-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid rgba(202,17,86,0.12);
+  padding-bottom: 0;
+}
+.adm-lang-tab {
+  border: 0;
+  background: transparent;
+  color: var(--pts-muted, #65676b);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  padding: 8px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color .15s, border-color .15s;
+}
+.adm-lang-tab:hover { color: var(--pts-text); }
+.adm-lang-tab.is-active {
+  color: var(--pts-primary);
+  border-bottom-color: var(--pts-primary);
+}
+.adm-form-section {
+  background: #fff;
+  border: 1px solid rgba(202,17,86,0.1);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.adm-form-section__title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--pts-text);
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.adm-form-section__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: var(--pts-primary);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.adm-form-section__sub {
+  font-weight: 400;
+  font-size: 0.82rem;
+  color: var(--pts-muted, #65676b);
+}
+.adm-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--pts-text);
+  margin-bottom: 6px;
+}
+.adm-input {
+  width: 100%;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--pts-text);
+  background: #fff;
+  transition: border-color .15s, box-shadow .15s;
+  outline: none;
+}
+.adm-input:focus {
+  border-color: var(--pts-primary);
+  box-shadow: 0 0 0 3px rgba(202,17,86,0.1);
+}
+.adm-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+.adm-cover-upload {
+  border: 2px dashed rgba(202,17,86,0.25);
+  border-radius: 12px;
+  padding: 20px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.adm-cover-upload:hover,
+.adm-cover-upload.is-dragover {
+  border-color: var(--pts-primary);
+  background: rgba(202,17,86,0.03);
+}
+.adm-cover-upload__icon {
+  font-size: 32px;
+  color: var(--pts-primary);
+  opacity: 0.6;
+}
+.adm-cover-upload__text {
+  font-size: 0.85rem;
+  color: var(--pts-text);
+  margin: 6px 0 0;
+}
+.adm-cover-upload__link {
+  color: var(--pts-primary);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.adm-cover-upload__hint {
+  font-size: 0.75rem;
+  color: var(--pts-muted, #65676b);
+}
+.adm-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adm-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.9rem;
+  color: var(--pts-text);
+  cursor: pointer;
+}
+.adm-checkbox input { display: none; }
+.adm-checkbox__mark {
+  width: 20px; height: 20px;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  flex-shrink: 0;
+  position: relative;
+  transition: border-color .15s, background .15s;
+}
+.adm-checkbox input:checked + .adm-checkbox__mark {
+  background: var(--pts-primary);
+  border-color: var(--pts-primary);
+}
+.adm-checkbox input:checked + .adm-checkbox__mark::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 5px;
+  width: 6px; height: 10px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.adm-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.adm-checkbox-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.adm-badge-col {
+  display: flex;
+  align-items: stretch;
+}
+.adm-badge-card {
+  width: 100%;
+  background: linear-gradient(135deg, rgba(202,17,86,0.06), transparent);
+  border: 2px solid rgba(202,17,86,0.18);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.adm-badge-card__title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--pts-text);
+  margin: 0 0 14px;
+}
+.adm-checkbox-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.adm-checkbox-col .adm-checkbox {
+  padding: 12px 16px;
+  border: 2px solid rgba(202,17,86,0.2);
+  border-radius: 10px;
+  background: #fff;
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+.adm-checkbox-col .adm-checkbox:hover {
+  border-color: rgba(202,17,86,0.4);
+  background: rgba(202,17,86,0.05);
+  box-shadow: 0 2px 8px rgba(202,17,86,0.08);
+}
+.adm-checkbox-col .adm-checkbox input:checked ~ * {
+  color: var(--pts-primary);
+  font-weight: 700;
+}
+.adm-checkbox-col .adm-checkbox__mark {
+  width: 22px; height: 22px;
+  border-width: 2.5px;
+}
+.adm-checkbox-col .adm-checkbox__mark::after {
+  top: 2px; left: 6px;
+  width: 6px; height: 11px;
+}
+.adm-form-divider {
+  height: 1px;
+  background: rgba(202,17,86,0.12);
+  margin: 4px 0;
+}
+
+/* ── Dark mode ── */
+html[data-theme="dark"] .adm-form-section {
+  background: #1c1518;
+  border-color: rgba(232,149,168,0.15);
+}
+html[data-theme="dark"] .adm-input {
+  background: #2a2226;
+  border-color: #444;
+  color: #f0e6ea;
+}
+html[data-theme="dark"] .adm-input:focus {
+  border-color: var(--pts-primary);
+}
+html[data-theme="dark"] .adm-cover-upload {
+  border-color: rgba(202,17,86,0.3);
+  background: rgba(202,17,86,0.04);
+}
+html[data-theme="dark"] .adm-checkbox__mark {
+  border-color: #555;
+}

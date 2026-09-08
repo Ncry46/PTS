@@ -257,9 +257,6 @@ async function renderCourses() {
   };
 
   document.getElementById('c-cover')?.addEventListener('input', syncCoverPreview);
-  document.getElementById('cover-upload-btn')?.addEventListener('click', () => {
-    document.getElementById('cover-file')?.click();
-  });
   document.getElementById('cover-file')?.addEventListener('change', async (e) => {
     const file = e.target?.files?.[0];
     const msg = document.getElementById('cover-msg');
@@ -371,112 +368,104 @@ async function renderCourses() {
   };
 
   document.getElementById('panel').innerHTML = `
-    <h2 id="course-form-section_title" class="font-bold text-lg mb-1">สร้างหลักสูตรใหม่</h2>
-    <p class="text-sm text-on-surface-variant mb-4">กรอกทีละขั้นตามลำดับ ช่องที่มี <span class="text-error font-bold">*</span> จำเป็นต้องกรอก</p>
+    <h2 id="course-form-section_title" class="adm-form-title">สร้างหลักสูตรใหม่</h2>
 
-    <h3 class="font-bold text-sm mb-2">1. ชื่อหลักสูตรและวิทยากร</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
-      <div>
-        <label for="c-name" class="block text-sm font-bold mb-1">ชื่อหลักสูตร (ภาษาไทย) <span class="text-error">*</span></label>
-        <input id="c-name" class="border rounded-xl px-3 py-2 w-full" placeholder="เช่น การบริหารงานเลขาฯ ยุคดิจิทัล">
-        <p class="text-xs text-on-surface-variant mt-1">ชื่อที่ผู้เรียนเห็นเมื่อใช้ภาษาไทย</p>
-      </div>
-      <div>
-        <label for="c-name-en" class="block text-sm font-bold mb-1">ชื่อหลักสูตร (English)</label>
-        <input id="c-name-en" class="border rounded-xl px-3 py-2 w-full" placeholder="e.g. Digital Secretary Masterclass">
-        <p class="text-xs text-on-surface-variant mt-1">แสดงเมื่อผู้เรียนสลับเป็นภาษาอังกฤษ (เว้นว่างได้)</p>
-      </div>
-      <div>
-        <label for="c-instructor" class="block text-sm font-bold mb-1">ชื่อวิทยากร</label>
-        <input id="c-instructor" class="border rounded-xl px-3 py-2 w-full" placeholder="เช่น อ. สมชาย">
-      </div>
-      <div>
-        <label for="c-instructor-en" class="block text-sm font-bold mb-1">วิทยากร (English)</label>
-        <input id="c-instructor-en" class="border rounded-xl px-3 py-2 w-full" placeholder="e.g. Somchai">
-      </div>
-    </div>
-
-    <h3 class="font-bold text-sm mb-2">2. รูปแบบ ราคา และหมวดหมู่</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
-      <div>
-        <label for="c-mode" class="block text-sm font-bold mb-1">รูปแบบการเรียน</label>
-        <select id="c-mode" class="border rounded-xl px-3 py-2 w-full"><option value="online">Online — เรียนออนไลน์</option><option value="onsite">Onsite — เรียนที่สถาบัน</option><option value="hybrid">Hybrid — ผสมออนไลน์+เข้าชั้นเรียน</option></select>
-      </div>
-      <div>
-        <label for="c-hours" class="block text-sm font-bold mb-1">จำนวนชั่วโมงเรียน</label>
-        <input id="c-hours" type="number" step="0.1" min="0" class="border rounded-xl px-3 py-2 w-full" value="4">
-        <p class="text-xs text-on-surface-variant mt-1">ความยาวรวมของหลักสูตร เช่น 4</p>
-      </div>
-      <div>
-        <label for="c-price" class="block text-sm font-bold mb-1">ราคา (บาท)</label>
-        <input id="c-price" type="number" step="0.01" min="0" class="border rounded-xl px-3 py-2 w-full" placeholder="เช่น 1500">
-        <p class="text-xs text-on-surface-variant mt-1">ใส่ 0 ถ้าเรียนฟรี</p>
-      </div>
-      <div>
-        <label for="c-cat" class="block text-sm font-bold mb-1">หมวดหมู่ <span class="text-error">*</span></label>
-        <select id="c-cat" class="border rounded-xl px-3 py-2 w-full"><option value="">— เลือกหมวดหมู่ —</option></select>
-        <p class="text-xs text-on-surface-variant mt-1">เลือกให้ตรง ช่วยให้ผู้เรียนค้นหาเจอ</p>
-      </div>
-    </div>
-
-    <h3 class="font-bold text-sm mb-2">3. รูปปกหลักสูตร</h3>
-    <div class="mb-5">
-      <label for="c-cover" class="block text-sm font-bold mb-1">รูปปก</label>
-      <div class="flex flex-wrap items-center gap-2">
-        <input id="c-cover" class="border rounded-xl px-3 py-2 flex-1 min-w-[220px]" placeholder="หรือวางลิงก์รูปภาพ (https://...)">
-        <input type="file" id="cover-file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
-        <button type="button" id="cover-upload-btn" class="pts-btn pts-btn-outline">อัปโหลดรูปจากเครื่อง</button>
-      </div>
-      <p class="text-xs text-on-surface-variant mt-1">กด “อัปโหลดรูปจากเครื่อง” แล้วเลือกรูปได้เลย (JPG/PNG/WEBP/GIF ไม่เกิน 5MB, แนะนำ 1280×800) — ถ้าเว้นว่างระบบใช้รูปเริ่มต้นให้</p>
-      <img id="cover-preview" alt="ตัวอย่างรูปปก" class="hidden mt-2 rounded-xl border" style="max-height:160px;max-width:100%;object-fit:cover">
-      <p id="cover-msg" class="text-xs mt-1"></p>
-    </div>
-
-    <h3 class="font-bold text-sm mb-2">4. รายละเอียดและกำหนดการ</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-5">
-      <div>
-        <label for="c-start" class="block text-sm font-bold mb-1">วันที่เริ่มเรียน</label>
-        <input id="c-start" type="date" class="border rounded-xl px-3 py-2 w-full" title="วันที่เริ่มเรียน (เว้นว่างได้ถ้ายังไม่กำหนด)">
-        <p class="text-xs text-on-surface-variant mt-1">เว้นว่างได้ถ้ายังไม่กำหนดวัน</p>
-      </div>
-      <div>
-        <label for="c-enrolled" class="block text-sm font-bold mb-1">จำนวนผู้เรียนเริ่มต้น</label>
-        <input id="c-enrolled" type="number" min="0" class="border rounded-xl px-3 py-2 w-full" value="0">
-        <p class="text-xs text-on-surface-variant mt-1">ปกติปล่อย 0 ไว้ ระบบจะนับเพิ่มอัตโนมัติเมื่อมีคนสมัคร</p>
-      </div>
-      <div>
-        <label for="c-flag" class="block text-sm font-bold mb-1">สถานะ</label>
-        <select id="c-flag" class="border rounded-xl px-3 py-2 w-full">
-          <option value="Y">เปิดใช้งาน (ผู้เรียนมองเห็น)</option>
-          <option value="N">ปิดใช้งาน (ซ่อนจากผู้เรียน)</option>
-        </select>
-      </div>
-      <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <div>
-          <label for="c-desc" class="block text-sm font-bold mb-1">คำอธิบาย (ภาษาไทย)</label>
-          <textarea id="c-desc" class="border rounded-xl px-3 py-2 w-full" rows="3" placeholder="ผู้เรียนจะได้อะไรจากคอร์สนี้..."></textarea>
+    <div class="adm-form-row">
+      <div class="adm-form-section adm-form-col">
+        <h3 class="adm-form-section__title"><span class="adm-form-section__num">1</span> ข้อมูลหลักสูตร <span class="adm-form-section__sub">(General Info)</span></h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label for="c-name" class="adm-label">ชื่อหลักสูตร (ไทย) <span class="text-error">*</span></label>
+            <input id="c-name" class="adm-input" placeholder="พิมพ์ชื่อภาษาไทย">
+          </div>
+          <div>
+            <label for="c-name-en" class="adm-label">ชื่อหลักสูตร (English)</label>
+            <input id="c-name-en" class="adm-input" placeholder="e.g. Course Title">
+          </div>
+          <div>
+            <label for="c-instructor" class="adm-label">ชื่อวิทยากร</label>
+            <input id="c-instructor" class="adm-input" placeholder="อ. สมชาย">
+          </div>
+          <div>
+            <label for="c-instructor-en" class="adm-label">ชื่อวิทยากร (English)</label>
+            <input id="c-instructor-en" class="adm-input" placeholder="e.g. Somchai">
+          </div>
         </div>
-        <div>
-          <label for="c-desc-en" class="block text-sm font-bold mb-1">คำอธิบาย (English)</label>
-          <textarea id="c-desc-en" class="border rounded-xl px-3 py-2 w-full" rows="3" placeholder="What will learners get..."></textarea>
+      </div>
+
+      <div class="adm-form-section adm-form-col">
+        <h3 class="adm-form-section__title"><span class="adm-form-section__num">2</span> รูปแบบและราคา <span class="adm-form-section__sub">(Type & Price)</span></h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label for="c-mode" class="adm-label">รูปแบบการเรียน <span class="text-error">*</span></label>
+            <select id="c-mode" class="adm-input"><option value="online">Online — เรียนออนไลน์</option><option value="onsite">Onsite — เรียนที่สถาบัน</option><option value="hybrid">Hybrid — ผสมออนไลน์+เข้าชั้นเรียน</option></select>
+          </div>
+          <div>
+            <label for="c-cat" class="adm-label">หมวดหมู่ <span class="text-error">*</span></label>
+            <select id="c-cat" class="adm-input"><option value="">— เลือกหมวดหมู่ —</option></select>
+          </div>
+          <div>
+            <label for="c-price" class="adm-label">ราคา (บาท)</label>
+            <input id="c-price" type="number" step="0.01" min="0" class="adm-input" placeholder="1500">
+          </div>
+          <div>
+            <label for="c-hours" class="adm-label">จำนวนชั่วโมงเรียน</label>
+            <input id="c-hours" type="number" step="0.1" min="0" class="adm-input" value="4">
+          </div>
         </div>
       </div>
     </div>
 
-    <h3 class="font-bold text-sm mb-2">5. การแสดงผล</h3>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-      <div>
-        <label class="text-sm flex items-center gap-2 font-bold"><input type="checkbox" id="c-featured"> ขึ้นแนะนำบนหน้าแรก</label>
-        <p class="text-xs text-on-surface-variant mt-1">ติ๊กถ้าอยากให้คอร์สนี้โชว์เด่น</p>
+    <div class="adm-form-row">
+      <div class="adm-form-section adm-form-col">
+        <h3 class="adm-form-section__title"><span class="adm-form-section__num">3</span> รูปปกและคำอธิบาย <span class="adm-form-section__sub">(Media & Description)</span></h3>
+        <div class="grid grid-cols-1 gap-4">
+          <div>
+            <label class="adm-label">รูปปกหลักสูตร</label>
+            <div class="adm-cover-upload" id="cover-drop-zone">
+              <span class="material-symbols-outlined adm-cover-upload__icon">cloud_upload</span>
+              <p class="adm-cover-upload__text">ลากรูปมาวางที่นี่ หรือ <label for="cover-file" class="adm-cover-upload__link">คลิกเพื่อเลือกรูป</label> <span class="adm-cover-upload__hint">(1280×720px)</span></p>
+              <input type="file" id="cover-file" accept="image/jpeg,image/png,image/webp,image/gif" class="hidden">
+              <input id="c-cover" class="hidden" placeholder="URL">
+            </div>
+            <img id="cover-preview" alt="ตัวอย่างรูปปก" class="hidden mt-3 rounded-xl border" style="max-height:160px;max-width:100%;object-fit:cover">
+            <p id="cover-msg" class="text-xs mt-1"></p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="c-desc" class="adm-label">รายละเอียดคอร์ส (ไทย)</label>
+              <textarea id="c-desc" class="adm-input adm-textarea" rows="3" placeholder="พิมพ์เนื้อหาภาษาไทย..."></textarea>
+            </div>
+            <div>
+              <label for="c-desc-en" class="adm-label">รายละเอียดคอร์ส (English)</label>
+              <textarea id="c-desc-en" class="adm-input adm-textarea" rows="3" placeholder="Write description..."></textarea>
+            </div>
+          </div>
+        </div>
       </div>
-      <div>
-        <label class="text-sm flex items-center gap-2 font-bold"><input type="checkbox" id="c-open-soon"> ป้าย “เปิดเร็วๆ นี้”</label>
-        <p class="text-xs text-on-surface-variant mt-1">สำหรับคอร์สที่กำลังจะเปิด ควรใส่วันที่เริ่มเรียนด้วย</p>
+
+      <div class="adm-form-col adm-badge-col">
+        <div class="adm-badge-card">
+          <h3 class="adm-badge-card__title">ตั้งค่าการแสดงผล</h3>
+          <div class="adm-checkbox-col">
+            <label class="adm-checkbox">
+              <input type="checkbox" id="c-featured">
+              <span class="adm-checkbox__mark"></span>
+              <span>แสดงเป็นคอร์สแนะนำหน้าแรก</span>
+            </label>
+            <label class="adm-checkbox">
+              <input type="checkbox" id="c-open-soon">
+              <span class="adm-checkbox__mark"></span>
+              <span>ติดป้าย "เปิดเร็วๆ นี้"</span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="flex flex-wrap gap-2 mb-6">
-      <button id="create-course" class="bg-primary text-white px-5 py-2 rounded-full font-bold">สร้างหลักสูตร</button>
-      <button id="cancel-edit-course" type="button" class="pts-btn pts-btn-ghost hidden">ยกเลิกแก้ไข</button>
+
+    <div class="adm-form-actions">
+      <button id="cancel-edit-course" type="button" class="pts-btn pts-btn-outline hidden">ยกเลิก</button>
+      <button id="create-course" class="pts-btn pts-btn-primary"><span class="material-symbols-outlined">save</span> บันทึกสร้างหลักสูตร</button>
     </div>
     <p id="course-form-msg" class="pts-msg mb-4"></p>
 
@@ -500,6 +489,16 @@ async function renderCourses() {
   const searchInput = document.getElementById('course-search');
   const countEl = document.getElementById('course-count');
   const listArea = document.getElementById('course-list-area');
+
+  // cover drag & drop
+  const dropZone = document.getElementById('cover-drop-zone');
+  const coverFile = document.getElementById('cover-file');
+  if (dropZone && coverFile) {
+    dropZone.addEventListener('click', () => coverFile.click());
+    dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('is-dragover'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('is-dragover'));
+    dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.classList.remove('is-dragover'); if (e.dataTransfer.files.length) coverFile.files = e.dataTransfer.files; coverFile.dispatchEvent(new Event('change')); });
+  }
 
   const fillForm = (c) => {
     const nameTh = c?.course_name_th || c?.course_name || '';
@@ -2402,7 +2401,6 @@ async function renderPayments() {
   let payments = Array.isArray(payRes.data) ? payRes.data.slice() : [];
   let accessCodes = Array.isArray(codeRes.data) ? codeRes.data.slice() : [];
   let filter = 'pending_review';
-  let couponFilter = 'all';
 
   const fmtMoney = (n) => Number(n || 0).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 
@@ -2463,8 +2461,6 @@ async function renderPayments() {
     if (filter === 'pending_review') rows = rows.filter((p) => p.status === 'pending_review');
     else if (filter === 'paid') rows = rows.filter((p) => p.status === 'paid');
     else if (filter === 'rejected') rows = rows.filter((p) => p.status === 'rejected');
-    if (couponFilter === 'yes') rows = rows.filter((p) => p.coupon_id != null && p.coupon_id !== '');
-    else if (couponFilter === 'no') rows = rows.filter((p) => p.coupon_id == null || p.coupon_id === '');
     return rows;
   };
 
@@ -2511,11 +2507,6 @@ async function renderPayments() {
           ทั้งหมด<span class="adm-pay-tab__n">${c.all}</span>
         </button>
       </div>
-      <div class="adm-pay-tabs" role="tablist" aria-label="กรองคูปอง" style="margin-top:8px">
-        <button type="button" class="adm-pay-tab ${couponFilter === 'all' ? 'is-active' : ''}" data-coupon="all">คูปองทั้งหมด</button>
-        <button type="button" class="adm-pay-tab ${couponFilter === 'yes' ? 'is-active' : ''}" data-coupon="yes">มีคูปอง</button>
-        <button type="button" class="adm-pay-tab ${couponFilter === 'no' ? 'is-active' : ''}" data-coupon="no">ไม่มีคูปอง</button>
-      </div>
 
       <div class="adm-c-table-wrap">
         <table class="adm-c-table">
@@ -2524,7 +2515,6 @@ async function renderPayments() {
               <th>นักเรียน</th>
               <th>หลักสูตร</th>
               <th>ที่มา</th>
-              <th>คูปอง</th>
               <th>ช่องทาง</th>
               <th>ยอด / เวลาโอน</th>
               <th>สลิป</th>
@@ -2541,7 +2531,6 @@ async function renderPayments() {
                 </td>
                 <td>${escapeHtml(getCourseName(p) || '—')}</td>
                 <td>${sourceBadge(p)}</td>
-                <td>${couponCell(p)}</td>
                 <td><span class="adm-pay-meta">${escapeHtml(methodLabel(p))}</span></td>
                 <td>
                   <div class="adm-c-name">฿${fmtMoney(p.amount)}</div>
@@ -2560,7 +2549,7 @@ async function renderPayments() {
                   ${p.reject_reason ? `<div class="adm-pay-meta mt-1">${escapeHtml(p.reject_reason)}</div>` : ''}
                 </td>
                 <td>${rowActions(p)}</td>
-              </tr>`).join('') || '<tr><td colspan="9" class="adm-c-empty" style="border:0">ไม่มีรายการในแท็บนี้</td></tr>'}
+              </tr>`).join('') || '              <tr><td colspan="8" class="adm-c-empty" style="border:0">ไม่มีรายการในแท็บนี้</td></tr>'}
           </tbody>
         </table>
       </div>
@@ -2595,58 +2584,10 @@ async function renderPayments() {
             ${rowActions(p)}
           </article>`).join('') || '<div class="adm-c-empty">ไม่มีรายการในแท็บนี้</div>'}
       </div>
-
-      <div class="adm-pay-section">
-        <div class="adm-c-head">
-          <div>
-            <h3>รหัสเข้าเรียน (Access Code)</h3>
-            <p>สร้างรหัสให้นักเรียนกรอกเพื่อเปิดคอร์ส — จะบันทึกเป็นที่มา “ใช้รหัสเข้าเรียน”</p>
-          </div>
-        </div>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-          <label class="text-sm font-semibold text-on-surface-variant">หลักสูตร
-            <select id="ac-course" class="mt-1 w-full border rounded-xl px-3 py-2">
-              <option value="">-- เลือก --</option>
-              ${coursesCache.map((c) => `<option value="${c.course_id}">${escapeHtml(getCourseName(c))}</option>`).join('')}
-            </select>
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">รหัส (ว่าง = สุ่มให้)
-            <input id="ac-code" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น PTS-CLASS-A1">
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">จำนวนครั้งใช้ได้ (ว่าง = ไม่จำกัด)
-            <input id="ac-max" type="number" min="1" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น 30">
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant">หมดอายุ (ถ้ามี)
-            <input id="ac-exp" type="datetime-local" class="mt-1 w-full border rounded-xl px-3 py-2">
-          </label>
-          <label class="text-sm font-semibold text-on-surface-variant md:col-span-2">หมายเหตุ
-            <input id="ac-note" class="mt-1 w-full border rounded-xl px-3 py-2" placeholder="เช่น รุ่น ก.ค. 69">
-          </label>
-        </div>
-        <button type="button" id="ac-create" class="pts-btn pts-btn-primary mb-2">สร้างรหัส</button>
-        <p id="ac-msg" class="pts-msg mb-3"></p>
-        <div class="space-y-2">
-          ${accessCodes.map((a) => `
-            <div class="border rounded-xl p-3 flex flex-wrap justify-between gap-2 items-start">
-              <div>
-                <p class="font-bold font-mono tracking-wide">${escapeHtml(a.code)}</p>
-                <p class="adm-pay-meta">${escapeHtml(getCourseName(a) || '')} · ใช้แล้ว ${Number(a.used_count || 0)}${a.max_uses != null ? ` / ${a.max_uses}` : ''}</p>
-                <p class="adm-pay-meta">${a.expires_at ? `หมดอายุ ${fmtDt(a.expires_at)}` : 'ไม่หมดอายุ'}${a.note ? ` · ${escapeHtml(a.note)}` : ''}</p>
-              </div>
-              <button type="button" class="pts-btn pts-btn-outline ac-toggle" data-id="${a.access_code_id}" data-flag="${a.flag_use === 'Y' || a.flag_use === '1' || a.flag_use === true || a.flag_use === 1 ? 'N' : 'Y'}">
-                ${a.flag_use === 'Y' || a.flag_use === '1' || a.flag_use === true || a.flag_use === 1 ? 'ปิดใช้' : 'เปิดใช้'}
-              </button>
-            </div>`).join('') || '<p class="adm-pay-meta">ยังไม่มีรหัสเข้าเรียน</p>'}
-        </div>
-      </div>
     `;
 
     document.querySelectorAll('.adm-pay-tab[data-filter]').forEach((btn) => {
       btn.onclick = () => { filter = btn.dataset.filter; paint(); };
-    });
-
-    document.querySelectorAll('.adm-pay-tab[data-coupon]').forEach((btn) => {
-      btn.onclick = () => { couponFilter = btn.dataset.coupon; paint(); };
     });
 
     document.querySelectorAll('.pay-approve').forEach((btn) => {
