@@ -289,46 +289,61 @@ async function renderCourses() {
       <button type="button" class="pts-btn pts-btn-ghost del-course" data-id="${c.course_id}" style="color:#ba1a1a;">ลบ</button>
     </div>`;
 
-  const rowHtml = (c) => `
-    <tr data-course-id="${c.course_id}">
+  const rowHtml = (c) => {
+    const mode = String(c.delivery_mode || '').toLowerCase();
+    const modeLabel = mode === 'online' ? 'Online' : mode === 'onsite' ? 'Onsite' : mode === 'hybrid' ? 'Hybrid' : (c.delivery_mode || '—');
+    const cat = catName(c);
+    const hours = c.total_hours != null ? Number(c.total_hours) : 0;
+    const price = c.price != null ? Number(c.price) : 0;
+    const enrolled = Number(c.total_enrolled || 0);
+    return `<tr data-course-id="${c.course_id}">
+      <td class="adm-c-td-name">
+        <span class="adm-c-id">ID ${escapeHtml(c.course_id)}</span>
+        <span class="adm-c-title">${escapeHtml(courseTitle(c))}</span>
+      </td>
+      <td class="adm-c-td-instructor">${escapeHtml(courseInstructor(c))}</td>
+      <td><span class="${modeClass(c.delivery_mode)}">${escapeHtml(modeLabel)}</span></td>
+      <td>${escapeHtml(cat)}</td>
+      <td class="adm-c-num">${hours}</td>
+      <td class="adm-c-num">${price > 0 ? fmtPrice(c.price) : '—'}</td>
+      <td class="adm-c-num">${enrolled}</td>
       <td>
-        <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(courseTitle(c))}${c.course_name_en && courseTitle(c) && c.course_name_en !== courseTitle(c) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
-          ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
+        ${c.is_open_soon ? '<span class="adm-c-status adm-c-status--soon">เปิดเร็วๆ นี้</span>' :
+          c.is_featured ? '<span class="adm-c-status adm-c-status--featured">แนะนำ</span>' :
+          '<span class="adm-c-status adm-c-status--normal">ปกติ</span>'}
+      </td>
+      <td class="adm-c-date">${fmtDate(c.start_date) !== '—' ? fmtDate(c.start_date) : fmtDate(c.created_at)}</td>
+      <td class="adm-c-td-actions">
+        <div class="adm-c-actions">
+          <button type="button" class="adm-action-btn adm-action-edit" data-id="${c.course_id}" title="แก้ไข"><span class="material-symbols-outlined">edit</span></button>
+          <button type="button" class="adm-action-btn adm-action-del" data-id="${c.course_id}" title="ลบ"><span class="material-symbols-outlined">delete</span></button>
         </div>
       </td>
-      <td>${escapeHtml(courseInstructor(c))}</td>
-      <td><span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span></td>
-      <td>${escapeHtml(catName(c))}</td>
-      <td>${Number(c.total_hours || 0)} ชม.</td>
-      <td>${fmtPrice(c.price)}</td>
-      <td>${Number(c.total_enrolled || 0)}</td>
-      <td><span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span></td>
-      <td>${fmtDate(c.start_date) !== '—' ? fmtDate(c.start_date) : fmtDate(c.created_at)}</td>
-      <td>${actionBtns(c)}</td>
     </tr>`;
+  };
 
   const cardHtml = (c) => `
     <article class="adm-c-card" data-course-id="${c.course_id}">
       <div class="adm-c-card__top">
-        <div class="adm-c-course">
-          <span class="adm-c-id" title="รหัสหลักสูตร">ID ${escapeHtml(c.course_id)}</span>
-          <div class="adm-c-name">${escapeHtml(courseTitle(c))}${c.course_name_en && courseTitle(c) && c.course_name_en !== courseTitle(c) ? `<div class="text-xs text-on-surface-variant" style="font-weight:500;margin-top:2px">${escapeHtml(c.course_name_en)}</div>` : ''}</div>
+        <div>
+          <span class="adm-c-id">ID ${escapeHtml(c.course_id)}</span>
+          <span class="adm-c-title" style="margin-left:10px">${escapeHtml(courseTitle(c))}</span>
         </div>
         <span class="${modeClass(c.delivery_mode)}">${escapeHtml(c.delivery_mode || '—')}</span>
       </div>
       <div class="adm-c-card__meta">
         <span>${escapeHtml(courseInstructor(c))}</span>
-        <span>หมวด: ${escapeHtml(catName(c))}</span>
+        <span>${escapeHtml(catName(c))}</span>
         <span>${Number(c.total_hours || 0)} ชม.</span>
         <span>${fmtPrice(c.price)}</span>
-        <span>ลงทะเบียน ${Number(c.total_enrolled || 0)}</span>
-        <span class="adm-c-badge${c.is_featured ? ' is-on' : ''}">${c.is_featured ? 'แนะนำ' : 'ปกติ'}</span>
-        ${c.is_open_soon ? '<span class="adm-c-badge">เปิดเร็วๆ นี้</span>' : ''}
-        <span>${fmtDate(c.start_date)}</span>
+        <span>ลงชื่อ ${Number(c.total_enrolled || 0)}</span>
+        ${c.is_open_soon ? '<span class="adm-c-status adm-c-status--soon">เปิดเร็วๆ นี้</span>' :
+          '<span class="adm-c-status adm-c-status--normal">ปกติ</span>'}
       </div>
-      ${actionBtns(c)}
+      <div class="adm-c-actions">
+        <button type="button" class="adm-action-btn adm-action-edit" data-id="${c.course_id}" title="แก้ไข"><span class="material-symbols-outlined">edit</span></button>
+        <button type="button" class="adm-action-btn adm-action-del" data-id="${c.course_id}" title="ลบ"><span class="material-symbols-outlined">delete</span></button>
+      </div>
     </article>`;
 
   const matchesQuery = (c, q) => {
@@ -510,28 +525,17 @@ async function renderCourses() {
                 </span>
                 <span class="adm-tag adm-tag--soon">Soon</span>
               </label>
-              <label class="adm-checkbox adm-checkbox--card">
-                <input type="checkbox" id="c-enrollment">
-                <span class="adm-checkbox__mark"></span>
-                <span class="adm-checkbox__body">
-                  <span class="adm-checkbox__text">เปิดให้สมัครเรียนแล้ว (Enrollment Active)</span>
-                  <span class="adm-checkbox__sub">รับสมัครได้ทันที หลักสูตรจะแสดงในหน้าค้นหาและพร้อมเปิดสอน</span>
-                </span>
-                <span class="adm-tag adm-tag--active">Active</span>
-              </label>
             </div>
             <div class="adm-display-info">
               <span class="material-symbols-outlined">info</span>
               <span>รายละเอียดwillเปิดแสดงหลักสูตรที่คุณสร้างขึ้น และเปิดรับสมัครได้ตามที่กำหนด</span>
             </div>
+            <div class="adm-form-footer">
+              <button id="cancel-edit-course" type="button" class="adm-btn-cancel hidden">ยกเลิก</button>
+              <button id="create-course" class="adm-btn-save"><span class="material-symbols-outlined">save</span> บันทึกสร้างหลักสูตร</button>
+            </div>
           </div>
         </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="adm-form-footer">
-        <button id="cancel-edit-course" type="button" class="adm-btn-cancel hidden">ยกเลิก</button>
-        <button id="create-course" class="adm-btn-save"><span class="material-symbols-outlined">save</span> บันทึกสร้างหลักสูตร</button>
       </div>
       <p id="course-form-msg" class="pts-msg mb-4"></p>
     </div>
@@ -577,33 +581,50 @@ async function renderCourses() {
     document.getElementById('c-name-en').value = nameEn;
     document.getElementById('c-instructor').value = instTh;
     document.getElementById('c-instructor-en').value = instEn;
-    document.getElementById('c-mode').value = c?.delivery_mode || 'online';
+
+    const rawMode = (c?.delivery_mode || '').toLowerCase();
+    let modeVal = '';
+    if (rawMode.includes('online')) modeVal = 'online';
+    else if (rawMode.includes('onsite') || rawMode.includes('on site') || rawMode.includes('สถาบัน')) modeVal = 'onsite';
+    else if (rawMode.includes('hybrid')) modeVal = 'hybrid';
+    document.getElementById('c-mode').value = modeVal;
+
     document.getElementById('c-hours').value = c?.total_hours != null ? Number(c.total_hours) : '';
     document.getElementById('c-price').value = c?.price != null ? Number(c.price) : '';
-    document.getElementById('c-cat').value = c?.coursescat_id != null ? Number(c.coursescat_id) : '';
-    document.getElementById('c-start').value = toDateInput(c?.start_date);
-    document.getElementById('c-enrolled').value = c?.total_enrolled != null ? Number(c.total_enrolled) : 0;
-    
-    const flagOff = c?.coursesFlag === 'N' || c?.coursesFlag === 0 || c?.coursesFlag === false
-      || c?.flag_use === 'N' || c?.flag_use === 0 || c?.flag_use === false;
-    document.getElementById('c-flag').value = flagOff ? 'N' : 'Y';
-    
+
+    const catEl = document.getElementById('c-cat');
+    const catId = c?.coursescat_id != null ? Number(c.coursescat_id) : '';
+    if (catId && catEl.querySelector('option[value="'+catId+'"]')) {
+      catEl.value = catId;
+    }
+
     document.getElementById('c-cover').value = c?.cover_image_url || '';
     syncCoverPreview();
     document.getElementById('c-desc').value = descTh;
     document.getElementById('c-desc-en').value = descEn;
-    
-    document.getElementById('c-featured').checked = Number(c?.is_featured) === 1;
+    document.getElementById('c-featured').checked = Number(c?.is_featured) === 1 && !c?.is_open_soon;
     document.getElementById('c-open-soon').checked = Number(c?.is_open_soon) === 1;
-    document.getElementById('c-enrollment').checked = Number(c?.coursesFlag) === 1 || !c;
   };
+
+  document.getElementById('c-featured')?.addEventListener('change', function() {
+    if (this.checked) document.getElementById('c-open-soon').checked = false;
+  });
+  document.getElementById('c-open-soon')?.addEventListener('change', function() {
+    if (this.checked) document.getElementById('c-featured').checked = false;
+  });
 
   const setEditMode = (course) => {
     editingId = course ? course.course_id : null;
+    document.querySelectorAll('.adm-action-edit.is-active').forEach((el) => {
+      el.classList.remove('is-active');
+    });
     document.querySelectorAll('[data-course-id].is-editing').forEach((el) => {
       el.classList.remove('is-editing');
     });
     if (course) {
+      document.querySelectorAll(`.adm-action-edit[data-id="${course.course_id}"]`).forEach((el) => {
+        el.classList.add('is-active');
+      });
       fillForm(course);
       document.querySelector('.adm-create-header__title').textContent = 'แก้ไขหลักสูตร';
       createBtn.innerHTML = '<span class="material-symbols-outlined">save</span> บันทึกการแก้ไข';
@@ -622,36 +643,6 @@ async function renderCourses() {
       formMsg.textContent = '';
       formMsg.className = 'pts-msg mb-4';
     }
-  };
-
-  const bindListActions = () => {
-    document.querySelectorAll('.edit-course').forEach((btn) => {
-      btn.onclick = () => {
-        const course = coursesCache.find((c) => String(c.course_id) === String(btn.dataset.id));
-        if (course) setEditMode(course);
-      };
-    });
-    document.querySelectorAll('.feature-btn').forEach((btn) => {
-      btn.onclick = async () => {
-        await api(`/api/admin/courses/${btn.dataset.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({ is_featured: btn.dataset.featured === '1' ? 1 : 0 })
-        });
-        renderCourses();
-      };
-    });
-    document.querySelectorAll('.del-course').forEach((btn) => {
-      btn.onclick = async () => {
-        const ok = window.confirm('ลบหลักสูตรนี้ใช่หรือไม่? (จะซ่อนจากรายการหลักสูตร)');
-        if (!ok) return;
-        try {
-          await api(`/api/admin/courses/${btn.dataset.id}`, { method: 'DELETE' });
-          await renderCourses();
-        } catch (e) {
-          alert(e.message || 'ลบไม่สำเร็จ');
-        }
-      };
-    });
   };
 
   const renderList = (query = '') => {
@@ -675,16 +666,16 @@ async function renderCourses() {
         <table class="adm-c-table">
           <thead>
             <tr>
-              <th>หลักสูตร</th>
+              <th class="th-name">หลักสูตร</th>
               <th>วิทยากร</th>
               <th>รูปแบบ</th>
-              <th>หมวดหมู่</th>
-              <th>ชั่วโมง</th>
-              <th>ราคา</th>
-              <th>ลงทะเบียน</th>
+              <th>หมวด</th>
+              <th class="th-num">ชม.</th>
+              <th class="th-num">ราคา</th>
+              <th class="th-num">ลงชื่อ</th>
               <th>สถานะ</th>
-              <th>วันเริ่ม/สร้าง</th>
-              <th>จัดการ</th>
+              <th class="th-date">วันที่</th>
+              <th class="th-actions">จัดการ</th>
             </tr>
           </thead>
           <tbody>${filtered.map(rowHtml).join('')}</tbody>
@@ -692,7 +683,6 @@ async function renderCourses() {
       </div>
       <div class="adm-c-cards">${filtered.map(cardHtml).join('')}</div>
     `;
-    bindListActions();
     if (editingId) {
       document.querySelectorAll(`[data-course-id="${editingId}"]`).forEach((el) => {
         el.classList.add('is-editing');
@@ -727,16 +717,12 @@ async function renderCourses() {
       total_hours: Number(document.getElementById('c-hours').value || 1),
       price: document.getElementById('c-price').value === '' ? null : Number(document.getElementById('c-price').value),
       coursescat_id: document.getElementById('c-cat').value === '' ? null : Number(document.getElementById('c-cat').value),
-      start_date: document.getElementById('c-start').value || null,
-      total_enrolled: Number(document.getElementById('c-enrolled').value || 0),
-      coursesFlag: document.getElementById('c-flag').value || 'Y',
       cover_image_url: document.getElementById('c-cover').value,
       description_th: document.getElementById('c-desc').value,
       description_en: document.getElementById('c-desc-en').value,
       description: document.getElementById('c-desc').value,
       is_featured: document.getElementById('c-featured').checked ? 1 : 0,
-      is_open_soon: document.getElementById('c-open-soon').checked ? 1 : 0,
-      coursesFlag: document.getElementById('c-enrollment').checked ? 1 : 0
+      is_open_soon: document.getElementById('c-open-soon').checked ? 1 : 0
     };
     createBtn.disabled = true;
     try {
@@ -757,6 +743,22 @@ async function renderCourses() {
       formMsg.className = 'pts-msg pts-msg--err mb-4';
     } finally {
       createBtn.disabled = false;
+    }
+  };
+
+  panel.onclick = (e) => {
+    const btn = e.target.closest('.adm-action-edit, .adm-action-del');
+    if (!btn) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const id = btn.dataset.id;
+    if (btn.classList.contains('adm-action-edit')) {
+      const course = coursesCache.find((c) => String(c.course_id) === String(id));
+      if (course) setEditMode(course);
+    } else if (btn.classList.contains('adm-action-del')) {
+      if (confirm('ลบหลักสูตรนี้ใช่หรือไม่?')) {
+        api(`/api/admin/courses/${id}`, { method: 'DELETE' }).then(() => renderCourses());
+      }
     }
   };
 
