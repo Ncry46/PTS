@@ -6,7 +6,8 @@
 <script src="/comp/i18n-dict.js?v=20260813enfix"></script>
 <script src="/comp/lang-boot.js?v=20260813enfix"></script>
 <script src="/comp/course-i18n.js?v=20260810selectstar"></script>
-<link rel="stylesheet" href="css/site.css?v=20260902seed"https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<link rel="stylesheet" href="css/site.css?v=20260902seed">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="/comp/attendance-qr.js?v=20260722h"></script>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <link href="https://cdn.jsdelivr.net/gh/lazywasabi/thai-web-fonts@7/fonts/LINESeedSansTH/LINESeedSansTH.css" rel="stylesheet">
@@ -191,7 +192,7 @@
 <div>
 <div class="dash-section-head">
 <h3 class="font-headline-sm text-headline-sm">เรียนต่อ</h3>
-<a class="font-label-md text-label-md hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>
+<a class="font-label-md text-label-md hover:underline" href="MyCourses.html" id="dash-more-courses" style="display:none">ดูเพิ่มเติม →</a>
 </div>
 <div id="dash-my-courses" class="dash-myc-list">
 <div class="dash-myc-empty">กำลังโหลดหลักสูตร...</div>
@@ -535,8 +536,8 @@ const myCoursesEl = document.getElementById('dash-my-courses');
         const courses = payload.data || [];
         window.__ptsDashCourses = courses;
         window.__ptsDashCoursesEl = myCoursesEl;
-        // API already ORDER BY updated_at DESC — show only 5 most recent
-        const recent = courses.slice(0, 5);
+        // API already ORDER BY updated_at DESC — show only 4 most recent
+        const recent = courses.slice(0, 4);
         if (!courses.length) {
             myCoursesEl.innerHTML = `
                 <div class="dash-myc-empty">
@@ -552,12 +553,8 @@ const myCoursesEl = document.getElementById('dash-my-courses');
                 </div>`;
         } else {
             myCoursesEl.innerHTML = recent.map(dashCourseCard).join('');
-            if (courses.length > 5) {
-                const note = document.createElement('p');
-                note.className = 'text-sm text-on-surface-variant mt-3';
-                note.style.gridColumn = '1 / -1';
-                note.innerHTML = `แสดง ${recent.length} จาก ${courses.length} หลักสูตรล่าสุด · <a class="text-primary font-bold hover:underline" href="MyCourses.html">ดูทั้งหมดในหลักสูตรของฉัน</a>`;
-                myCoursesEl.appendChild(note);
+            if (courses.length > 4) {
+                document.getElementById('dash-more-courses').style.display = '';
             }
         }
     } catch (error) {

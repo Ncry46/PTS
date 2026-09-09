@@ -498,10 +498,10 @@
   }
   .adm-c-mode {
     display:inline-flex; align-items:center; padding:3px 10px; border-radius:6px;
-    font-size:11px; font-weight:700; background:rgba(202,17,86,0.08); color:var(--pts-primary);
+    font-size:11px; font-weight:700; background:#00ca01; color:#fff;
   }
-  .adm-c-mode--onsite { background:#e8f1fb; color:#1e6fba; }
-  .adm-c-mode--hybrid { background:#e8f6ec; color:#166c39; }
+  .adm-c-mode--onsite { background:#ffc800; color:#fff; }
+  .adm-c-mode--hybrid { background:#007ede; color:#fff; }
   .adm-c-badge {
     display:inline-flex; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700;
     background:#f0f0f0; color:#666;
@@ -511,9 +511,9 @@
     display:inline-flex; padding:3px 10px; border-radius:6px; font-size:11px; font-weight:700;
     white-space:nowrap; overflow:visible;
   }
-  .adm-c-status--featured { background:rgba(202,17,86,0.1); color:var(--pts-primary); }
-  .adm-c-status--soon { background:rgba(234,179,8,0.12); color:#b45309; }
-  .adm-c-status--normal { background:#f0f0f0; color:#666; }
+  .adm-c-status--featured { background:#7c3aed; color:#fff; }
+  .adm-c-status--soon { background:#f97316; color:#fff; }
+  .adm-c-status--normal { background:#e2e8f0; color:#475569; }
   .adm-c-badge-sm {
     display:inline-flex; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:700;
     background:rgba(234,179,8,0.12); color:#b45309;
@@ -1300,15 +1300,15 @@ html[data-theme="dark"] .adm-action-btn {
 }
 html[data-theme="dark"] .adm-action-btn .material-symbols-outlined { color: #aaa; }
 html[data-theme="dark"] .adm-c-mode {
-  background: rgba(202,17,86,0.15);
+  background: #00ca01; color: #fff;
 }
-html[data-theme="dark"] .adm-c-mode--onsite { background: rgba(30,111,186,0.15); color: #5ba8e8; }
-html[data-theme="dark"] .adm-c-mode--hybrid { background: rgba(22,108,57,0.15); color: #4ade80; }
+html[data-theme="dark"] .adm-c-mode--onsite { background: #ffc800; color: #fff; }
+html[data-theme="dark"] .adm-c-mode--hybrid { background: #007ede; color: #fff; }
 html[data-theme="dark"] .adm-c-badge { background: rgba(255,255,255,0.08); color: #aaa; }
 html[data-theme="dark"] .adm-c-badge.is-on { background: rgba(202,17,86,0.15); color: #e894ab; }
-html[data-theme="dark"] .adm-c-status--featured { background: rgba(202,17,86,0.15); color: #e894ab; }
-html[data-theme="dark"] .adm-c-status--soon { background: rgba(234,179,8,0.15); color: #fbbf24; }
-html[data-theme="dark"] .adm-c-status--normal { background: rgba(255,255,255,0.08); color: #aaa; }
+html[data-theme="dark"] .adm-c-status--featured { background: #7c3aed; color: #fff; }
+html[data-theme="dark"] .adm-c-status--soon { background: #f97316; color: #fff; }
+html[data-theme="dark"] .adm-c-status--normal { background: #334155; color: #94a3b8; }
 html[data-theme="dark"] .adm-action-btn.is-active .material-symbols-outlined { color: #fbbf24; }
 html[data-theme="dark"] .adm-c-card {
   background: #1c1518;
